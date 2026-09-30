@@ -216,15 +216,27 @@ function ResonanceRecord({ active = [true, false, true, false], layers = [], act
           const turbulence=Math.max(.2,Math.min(1.4,Number(layer.turbulence??.72)))
           const live=layerIndex===activePartIndex?liveAmount:0
           const flowPaths=[
-            [[.9,-.58],[-.42,-1.02],[-1.02,.18],[.54,.86]],
-            [[-.92,-.48],[.28,-1.04],[1.02,.02],[-.06,.9]],
-            [[-.86,.52],[-.38,1.02],[.76,.94],[.92,-.26]],
-            [[.68,.92],[1.05,.16],[.45,-.92],[-.62,-.78]]
+            [
+              [[.94,-.62],[-.42,-1.04],[-1.04,.18],[.56,.88]],
+              [[-.9,.58],[-.28,1.05],[.92,.82],[.98,-.18]]
+            ],
+            [
+              [[-.94,-.5],[.3,-1.06],[1.05,.02],[-.08,.92]],
+              [[.88,.72],[1.04,-.2],[.16,-.94],[-.74,-.58]]
+            ],
+            [
+              [[-.9,.56],[-.4,1.05],[.8,.96],[.94,-.3]],
+              [[.8,-.84],[-.16,-1.04],[-.98,-.2],[-.34,.82]]
+            ],
+            [
+              [[.7,.94],[1.08,.18],[.46,-.96],[-.66,-.8]],
+              [[-.9,-.12],[-.72,.92],[.58,1.02],[.94,.16]]
+            ]
           ]
-          const controls=flowPaths[layerIndex]
           const projectRotation=((numericSeed%37)/37-.5)*.14,rotationCos=Math.cos(projectRotation),rotationSin=Math.sin(projectRotation)
-          const strandCount=Math.round(38+energy*28+live*12)
-          const pointOnFlow=(t,offset,wobble=0)=>{
+          const strandCount=Math.round(50+energy*34+live*14)
+          const pointOnFlow=(t,offset,wobble=0,branch=0)=>{
+            const controls=flowPaths[layerIndex][branch%2]
             const u=1-t,u2=u*u,t2=t*t
             let x=u2*u*controls[0][0]+3*u2*t*controls[1][0]+3*u*t2*controls[2][0]+t2*t*controls[3][0]
             let y=u2*u*controls[0][1]+3*u2*t*controls[1][1]+3*u*t2*controls[2][1]+t2*t*controls[3][1]
@@ -244,20 +256,21 @@ function ResonanceRecord({ active = [true, false, true, false], layers = [], act
             const normalized=(strand/(strandCount-1)-.5)
             const offset=normalized*spread*3.2+(random()-.5)*spread*.5
             const start=.02+random()*.13,end=.82+random()*.17,wobble=random()*Math.PI*2
+            const branch=strand%5<2?1:0
             ctx.beginPath()
             for(let step=0;step<=54;step++){
-              const t=start+(end-start)*(step/54),point=pointOnFlow(t,offset,wobble)
+              const t=start+(end-start)*(step/54),point=pointOnFlow(t,offset,wobble,branch)
               if(step===0)ctx.moveTo(point[0],point[1]);else ctx.lineTo(point[0],point[1])
             }
             const prominence=.018+Math.pow(1-Math.abs(normalized),2)*(.045+energy*.045)+random()*.018
             ctx.strokeStyle=`rgba(${color[0]},${color[1]},${color[2]},${prominence*(1+live*.65)})`
             ctx.lineWidth=ratio*(.28+random()*.62+energy*.22);ctx.stroke()
           }
-          const particleCount=Math.round(230+energy*260+live*100)
+          const particleCount=Math.round(360+energy*360+live*120)
           for(let particle=0;particle<particleCount;particle++){
             const t=Math.pow(random(),.92)*.92+.025
             const clustered=((random()+random()+random())/3-.5)*spread*3.9
-            const point=pointOnFlow(t,clustered,random()*6.283)
+            const point=pointOnFlow(t,clustered,random()*6.283,random()<.38?1:0)
             const flicker=.22+random()*.78,sizeDot=ratio*(.32+random()*(.72+energy*.64+live*.25))
             ctx.beginPath();ctx.arc(point[0],point[1],sizeDot,0,Math.PI*2)
             ctx.fillStyle=`rgba(${color[0]},${color[1]},${color[2]},${(.08+flicker*.5)*(1+live*.55)})`;ctx.fill()
