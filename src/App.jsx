@@ -208,14 +208,14 @@ function ResonanceRecord({ active = [true, false, true, false], layers = [], act
             if(delta){if(max===r)hue=60*(((g-b)/delta)%6);else if(max===g)hue=60*((b-r)/delta+2);else hue=60*((r-g)/delta+4);if(hue<0)hue+=360}
             const visible=max>.16&&a>0
             const matches=layerIndex===0?visible&&hue>=205&&hue<265&&saturation>.3:layerIndex===1?visible&&(hue<18||hue>=342)&&saturation>.32:layerIndex===2?visible&&hue>=28&&hue<72&&saturation>.16&&max>.28:visible&&hue>=145&&hue<205&&saturation>.25
-            if(matches){layerPixels.data[pixel]=sourcePixels.data[pixel];layerPixels.data[pixel+1]=sourcePixels.data[pixel+1];layerPixels.data[pixel+2]=sourcePixels.data[pixel+2];layerPixels.data[pixel+3]=Math.round(a*Math.min(1,.55+max*.72))}
+            if(matches){layerPixels.data[pixel]=sourcePixels.data[pixel];layerPixels.data[pixel+1]=sourcePixels.data[pixel+1];layerPixels.data[pixel+2]=sourcePixels.data[pixel+2];layerPixels.data[pixel+3]=Math.round(a*Math.min(1,.84+max*.34))}
           }
           layerContext.putImageData(layerPixels,0,0);referenceLayers[layerIndex]=layerCanvas
         }
         drawParticleRecord(performance.now())
       }
       referenceImage.onload=prepareReferenceLayers
-      referenceImage.src='/resonance-reference-v1.png'
+      referenceImage.src='/resonance-reference-v2.png'
       let animationFrame=0,lastFrame=0
       const drawParticleRecord=(now=0)=>{
         const size=canvas.clientWidth
@@ -231,6 +231,8 @@ function ResonanceRecord({ active = [true, false, true, false], layers = [], act
           const radius=discRadius*(.22+groove*.00765)
           ctx.beginPath();ctx.arc(c,c,radius,0,Math.PI*2);ctx.strokeStyle=`rgba(188,164,136,${groove%7===0?.032:.012})`;ctx.lineWidth=Math.max(1,ratio*.32);ctx.stroke()
         }
+        const completeTexture=state==='complete'&&referenceImage.complete&&referenceLayers.length===4
+        if(completeTexture){ctx.save();ctx.globalCompositeOperation='source-over';ctx.globalAlpha=.92;ctx.drawImage(referenceImage,c-discRadius,c-discRadius,discRadius*2,discRadius*2);ctx.restore()}
         const liveAmount=state==='recording'?Math.min(1,Math.max(0,levelRef.current))*1.4:0
         slots.forEach((layer,layerIndex)=>{
           if(!layer)return
@@ -242,7 +244,7 @@ function ResonanceRecord({ active = [true, false, true, false], layers = [], act
           const turbulence=Math.max(.2,Math.min(1.4,Number(layer.turbulence??.72)))
           const live=layerIndex===activePartIndex?liveAmount:0
           const textureLayer=referenceLayers[layerIndex]
-          if(textureLayer){
+          if(textureLayer&&!completeTexture){
             const phase=Number(layer.phase??0),featureScale=.985+(baseRadius-.55)*.045+live*.012
             ctx.save();ctx.translate(c,c);ctx.rotate((phase%1-.5)*.035+(state==='recording'&&layerIndex===activePartIndex?now*.000025*live:0));ctx.scale(featureScale,featureScale)
             ctx.globalCompositeOperation='lighter';ctx.globalAlpha=Math.min(1,.7+energy*.28+live*.18);ctx.drawImage(textureLayer,-discRadius,-discRadius,discRadius*2,discRadius*2);ctx.restore()
