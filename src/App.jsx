@@ -215,7 +215,7 @@ function ResonanceRecord({ active = [true, false, true, false], layers = [], act
         ctx.beginPath(); ctx.arc(center, center, r, 0, Math.PI * 2)
         ctx.strokeStyle = `rgba(236,230,220,${.025 + (r % 9) * .0015})`; ctx.lineWidth = .65; ctx.stroke()
       }
-      const layerSlots = layers.length ? PARTS.map(part => layers.find(layer => layer?.partId === part.id) || null) : active.map((enabled,voice) => enabled ? { partId:PARTS[voice]?.id,seed:numericSeed+voice*97,spread:.09,turbulence:.72,filamentCount:14,particleCount:80,opacity:.3,phase:voice*1.47,envelope:Array(24).fill(.42) } : null)
+      const layerSlots = layers.length ? layers.map(layer=>layer||null) : active.map((enabled,voice) => enabled ? { partId:PARTS[voice]?.id,seed:numericSeed+voice*97,spread:.09,turbulence:.72,filamentCount:14,particleCount:80,opacity:.3,phase:voice*1.47,envelope:Array(24).fill(.42) } : null)
       layerSlots.forEach((storedLayer, voice) => {
         const isLive = state === 'recording' && voice === activePartIndex
         if (!storedLayer && !isLive) return
