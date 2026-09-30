@@ -48,6 +48,17 @@ export async function loadTrack(id) {
   return track
 }
 
+export async function deleteTrack(id) {
+  const db = await openDatabase()
+  await new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE, 'readwrite')
+    tx.objectStore(STORE).delete(id)
+    tx.oncomplete = resolve
+    tx.onerror = () => reject(tx.error)
+  })
+  db.close()
+}
+
 export async function clearProjectTracks(projectId) {
   const tracks = await loadProjectTracks(projectId)
   const db = await openDatabase()

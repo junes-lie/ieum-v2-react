@@ -1,6 +1,6 @@
 {
-  "passed": 73,
-  "total": 73,
+  "passed": 80,
+  "total": 80,
   "checks": [
     {
       "name": "첫 진입은 같은 4 Part 프로젝트의 제출 Track 2개",
@@ -148,7 +148,12 @@
       "detail": ""
     },
     {
-      "name": "Multitrack은 사용자가 작업실 CTA를 눌러 진입",
+      "name": "첫 Track부터 작업실 안에서 현재 Mix와 Track Row 제공",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "통합 현재 Mix에서도 하단 내비게이션 유지",
       "pass": true,
       "detail": ""
     },
@@ -260,7 +265,7 @@
         {
           "id": "ieum-v2:voice-profile:v7:sample",
           "kind": "voice-sample",
-          "bytes": 50494,
+          "bytes": 49528,
           "origin": "live-microphone-voice-sample"
         }
       ]
@@ -321,6 +326,14 @@
       "detail": ""
     },
     {
+      "name": "Stop 분석값이 Review의 Resonance Record Layer에 즉시 반영",
+      "pass": true,
+      "detail": {
+        "before": "11c840d2",
+        "review": "10295059"
+      }
+    },
+    {
       "name": "Review 전에는 Track/진행률이 증가하지 않음",
       "pass": true,
       "detail": {
@@ -352,6 +365,26 @@
       }
     },
     {
+      "name": "Review 이탈 뒤 작업실 CTA가 임시 녹음을 구분",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "임시 Take를 다시 열면 Review와 동일 Layer 복원",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "다시 녹음 전에 현재 Take 폐기 확인",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "재녹음 취소 시 Review 원본과 Layer 유지",
+      "pass": true,
+      "detail": ""
+    },
+    {
       "name": "내 Review 제출 후에만 2/4에서 3/4",
       "pass": true,
       "detail": {
@@ -359,7 +392,7 @@
         "joined": true,
         "invited": false,
         "candidateAccepted": false,
-        "recordSignature": "1344358a",
+        "recordSignature": "10295059",
         "mix": null,
         "trackCount": 3,
         "tracks": {
@@ -382,8 +415,8 @@
           "tenor": {
             "origin": "live-microphone-recording",
             "bytes": 58424,
-            "fingerprint": "757d1a6a",
-            "layer": "e1e9b02b",
+            "fingerprint": "5f1d3078",
+            "layer": "0e912903",
             "participant": "JISUN"
           }
         }
@@ -394,16 +427,16 @@
       "pass": true,
       "detail": {
         "before": "11c840d2",
-        "after": "1344358a"
+        "after": "10295059"
       }
     },
     {
-      "name": "Review 제출 후 강제 이동 없이 작업실에서 제출 상태 확인",
+      "name": "Review 제출 후 작업실에서 제출 상태와 통합 Mix 확인",
       "pass": true,
       "detail": ""
     },
     {
-      "name": "Multitrack에서 하단 내비게이션 숨김",
+      "name": "별도 Multitrack 화면 없이 작업실 하단 내비게이션 유지",
       "pass": true,
       "detail": ""
     },
@@ -415,7 +448,7 @@
         "joined": true,
         "invited": true,
         "candidateAccepted": false,
-        "recordSignature": "1344358a",
+        "recordSignature": "10295059",
         "mix": null,
         "trackCount": 3,
         "tracks": {
@@ -438,8 +471,8 @@
           "tenor": {
             "origin": "live-microphone-recording",
             "bytes": 58424,
-            "fingerprint": "757d1a6a",
-            "layer": "e1e9b02b",
+            "fingerprint": "5f1d3078",
+            "layer": "0e912903",
             "participant": "JISUN"
           }
         }
@@ -453,7 +486,7 @@
         "joined": true,
         "invited": true,
         "candidateAccepted": true,
-        "recordSignature": "1344358a",
+        "recordSignature": "10295059",
         "mix": null,
         "trackCount": 3,
         "tracks": {
@@ -476,8 +509,8 @@
           "tenor": {
             "origin": "live-microphone-recording",
             "bytes": 58424,
-            "fingerprint": "757d1a6a",
-            "layer": "e1e9b02b",
+            "fingerprint": "5f1d3078",
+            "layer": "0e912903",
             "participant": "JISUN"
           }
         }
@@ -491,7 +524,7 @@
         "joined": true,
         "invited": true,
         "candidateAccepted": true,
-        "recordSignature": "b4aa69fb",
+        "recordSignature": "7aa7e2fa",
         "mix": null,
         "trackCount": 4,
         "tracks": {
@@ -514,8 +547,8 @@
           "tenor": {
             "origin": "live-microphone-recording",
             "bytes": 58424,
-            "fingerprint": "757d1a6a",
-            "layer": "e1e9b02b",
+            "fingerprint": "5f1d3078",
+            "layer": "0e912903",
             "participant": "JISUN"
           },
           "bass": {
@@ -533,8 +566,8 @@
       "name": "4번째 Track 도착 시 같은 Record가 다시 성장",
       "pass": true,
       "detail": {
-        "three": "1344358a",
-        "four": "b4aa69fb"
+        "three": "10295059",
+        "four": "7aa7e2fa"
       }
     },
     {
@@ -563,6 +596,11 @@
       "detail": ""
     },
     {
+      "name": "완성곡 Back은 제출 화면이 아닌 작업실에 머묾",
+      "pass": true,
+      "detail": ""
+    },
+    {
       "name": "완성 뒤 프로젝트 Like 항목이 04/04 COMPLETE로 갱신",
       "pass": true,
       "detail": ""
@@ -575,7 +613,7 @@
         "joined": true,
         "invited": true,
         "candidateAccepted": true,
-        "recordSignature": "b4aa69fb",
+        "recordSignature": "7aa7e2fa",
         "mix": {
           "bytes": 3175244,
           "duration": 18,
@@ -618,8 +656,8 @@
           "tenor": {
             "origin": "live-microphone-recording",
             "bytes": 58424,
-            "fingerprint": "757d1a6a",
-            "layer": "e1e9b02b",
+            "fingerprint": "5f1d3078",
+            "layer": "0e912903",
             "participant": "JISUN"
           }
         }
