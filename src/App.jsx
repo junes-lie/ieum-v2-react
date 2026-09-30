@@ -218,22 +218,22 @@ void main(){
   float width=.07+a.z*.84;float d=abs(r-center);float ribbon=exp(-1.82*d*d/(width*width));
   float lobeA=pow(.5+.5*cos(theta-b.x*.73-seed*.11),3.4);float lobeB=.78*pow(.5+.5*cos(theta-b.x*.41+2.35+seed*.07),5.2);float presence=.055+max(lobeA,lobeB);
   float flowNoise=fbm(polar*2.45+vec2((r-center)*12.+seed,-(r-center)*10.+seed*.4));
-  float fibers=pow(.5+.5*cos((r-center)*178.+flowNoise*24.+sin(theta*7.+seed)*2.4),10.);
-  float hair=pow(.5+.5*cos((r-center)*318.+flowNoise*15.),17.);
+  float fibers=pow(.5+.5*cos((r-center)*132.+flowNoise*5.5+sin(theta*3.+seed)*1.1),22.);
+  float hair=pow(.5+.5*cos((r-center)*248.+flowNoise*8.5+sin(theta*5.-seed)*.8),28.);
   float flowAngle=b.x+seed*.17+r*1.55;float cs=cos(flowAngle),sn=sin(flowAngle);vec2 flowP=mat2(cs,-sn,sn,cs)*p;
   vec2 organicP=flowP*vec2(5.4,8.6);float domain=fbm(organicP*.34+vec2(seed,-seed*.37));
   float ridge=pow(1.-abs(noise(organicP+vec2(domain*3.1,-domain*2.4))*2.-1.),4.6);
   float ridgeFine=pow(1.-abs(noise(organicP*1.72+vec2(-domain*2.2,domain*2.8))*2.-1.),8.5);
   float plumeCurve=flowP.y-flowP.x*.12-sin(flowP.x*2.8+seed)*(.14+a.w*.018)-sin(flowP.x*6.1-seed)*.025;
   float plumeWidth=.075+a.z*.62;float plume=exp(-1.8*plumeCurve*plumeCurve/(plumeWidth*plumeWidth))*smoothstep(1.02,.16,abs(flowP.x));
-  float plumeFibers=pow(.5+.5*cos(plumeCurve*188.+domain*23.),11.);
+  float plumeFibers=pow(.5+.5*cos(plumeCurve*112.+domain*6.5),22.);
   vec2 sparkGrid=(p+vec2(seed*.01))*uResolution.x*.18;vec2 sparkCell=floor(sparkGrid);vec2 sparkUv=fract(sparkGrid)-.5;
   float sparkShape=smoothstep(.34,.035,length(sparkUv));float spark=sparkShape*step(.9,hash21(sparkCell+seed))*ribbon*presence;
   vec2 pinGrid=(p+vec2(seed*.013))*uResolution.x*.31;vec2 pinCell=floor(pinGrid);vec2 pinUv=fract(pinGrid)-.5;
   float pinShape=smoothstep(.22,.018,length(pinUv));float pin=pinShape*step(.94,hash21(pinCell-seed))*ribbon*presence;
-  float colorHaze=ribbon*presence*(.024+flowNoise*.018)+plume*(.009+domain*.008);
-  float ringFlow=ribbon*presence*(.018+fibers*.4+hair*.15+ridge*.3+ridgeFine*.19);
-  float crossingFlow=plume*(.007+plumeFibers*.34+ridge*.24+ridgeFine*.14)*(.22+.78*presence);
+  float colorHaze=ribbon*presence*(.013+flowNoise*.01)+plume*(.005+domain*.004);
+  float ringFlow=ribbon*presence*(.012+fibers*.84+hair*.34+ridge*.17+ridgeFine*.1);
+  float crossingFlow=plume*(.004+plumeFibers*.68+ridge*.14+ridgeFine*.08)*(.22+.78*presence);
   float intensity=colorHaze+ringFlow+crossingFlow+spark*3.1+pin*3.4;
   intensity*=.72+b.y*.78+live*uLiveLevel*.55;col+=voiceColor(i)*intensity;
  }
