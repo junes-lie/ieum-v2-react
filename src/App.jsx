@@ -450,6 +450,37 @@ function CreateProject({ back, complete, initialSongId }) {
   </main></div>
 }
 
+function microphoneRecoveryGuide() {
+  const ua = navigator.userAgent || ''
+  const ios = /iPhone|iPad|iPod/i.test(ua)
+  if (ios && /CriOS/i.test(ua)) return {
+    title:'Chrome의 마이크 권한을 켜주세요.',
+    steps:['iPhone 설정 앱을 엽니다.','앱 → Chrome → 마이크를 켭니다.','Chrome으로 돌아와 이 페이지를 새로고침합니다.']
+  }
+  if (ios) return {
+    title:'브라우저의 마이크 권한을 켜주세요.',
+    steps:['iPhone 설정 앱을 엽니다.','사용 중인 브라우저의 마이크 권한을 켭니다.','이 페이지로 돌아와 다시 요청합니다.']
+  }
+  if (/Android/i.test(ua)) return {
+    title:'Chrome의 마이크 권한을 켜주세요.',
+    steps:['주소창 왼쪽 사이트 아이콘을 누릅니다.','권한 → 마이크 → 허용을 선택합니다.','이 페이지로 돌아와 다시 요청합니다.']
+  }
+  return {
+    title:'브라우저의 마이크 권한을 확인해 주세요.',
+    steps:['주소창의 사이트 설정을 엽니다.','마이크를 허용합니다.','이 페이지로 돌아와 다시 요청합니다.']
+  }
+}
+
+function MicrophonePermissionNotice({ error, onRetry, permissionDenied = true }) {
+  const guide = microphoneRecoveryGuide()
+  return <div className="permission-error" role="alert">
+    <strong>{permissionDenied ? guide.title : '마이크를 시작하지 못했어요.'}</strong>
+    <span>{error}</span>
+    {permissionDenied && <ol>{guide.steps.map(step=><li key={step}>{step}</li>)}</ol>}
+    <button className="secondary" onClick={onRetry}>{permissionDenied ? '설정 확인 후 다시 요청' : '다시 시도'}</button>
+  </div>
+}
+
 function VoiceSetup({ complete, go }) {
   const [step, setStep] = useState('intro')
   const [permission, setPermission] = useState('idle')
@@ -510,13 +541,13 @@ function VoiceSetup({ complete, go }) {
   return <div className="screen voice-screen">
     <TopBar title={['sample-select','sample','complete'].includes(step) ? 'VOICE PROFILE' : 'VOICE RANGE'} back={() => step === 'sample' ? setStep('sample-select') : step === 'sample-select' ? setStep('range-result') : step === 'complete' ? setStep('sample') : go('detail')} meta={step === 'complete' ? 'READY' : ['sample-select','sample'].includes(step) ? 'PROFILE AUDIO' : 'RANGE CHECK'} />
     <main className="voice-main">
-      {step === 'intro' && <section className="setup-copy"><p className="kicker">About 30 seconds</p><h1>편한 음역을<br/>측정해요.</h1><p>별도 곡을 녹음하지 않습니다. 낮은 음부터 높은 음까지 편하게 소리 내면 음정 표본만 측정합니다.</p><button className="primary" data-action="range-start" onClick={startRange}>음역 측정 시작</button></section>}
+      {step === 'intro' && <section className="setup-copy"><p className="kicker">About 30 seconds</p><h1>편한 음역을<br/>측정해요.</h1><p>별도 곡을 녹음하지 않습니다. 낮은 음부터 높은 음까지 편하게 소리 내면 음정 표본만 측정합니다.</p><p className="permission-primer">처음 한 번만 브라우저의 마이크 권한 창이 열립니다. 허용하면 바로 측정을 시작합니다.</p><button className="primary" data-action="range-start" onClick={startRange}>마이크 허용하고 음역 측정 시작</button></section>}
       {step === 'range-running' && <section className="measurement"><p className="kicker">RANGE · {fmt(seconds)}</p><h1>낮은 음부터 높은 음까지<br/>편하게 소리 내보세요.</h1><div className="level-orbit" style={{ '--level': level }}><span /></div><p className="pitch-readout">{pitch ? `${midiToNote(pitch)} · ${Math.round(440*Math.pow(2,(pitch-69)/12))}Hz` : '음정을 듣고 있어요…'}</p><p>자동으로 넘어가지 않습니다. 낮은 음과 높은 음을 충분히 낸 뒤 직접 마치세요.</p><button className="secondary" data-action="range-finish" onClick={finishRange}>측정 마치기 · {pitchSamples.current.length} samples</button></section>}
       {step === 'range-result' && <section className="result-block"><p className="kicker">실제 마이크 음정 분석</p><h1>측정된 음역<br/><span>{range?.label}</span></h1><p>{range?.sampleCount}개의 유효 음정 표본으로 계산했습니다. 이 데이터는 Part Fit에만 사용하며 Voice Identity나 프로젝트 Record를 만들지 않습니다.</p><dl className="measurement-proof"><div><dt>Pitch confidence</dt><dd>{Math.round((range?.confidence||0)*100)}%</dd></div><div><dt>Microphone</dt><dd>{range?.microphone?.label || 'Unavailable'}</dd></div><div><dt>Sample rate</dt><dd>{range?.microphone?.settings?.sampleRate || 'Browser default'} Hz</dd></div></dl><div className="range-rail"><i/><b style={{left:`${Math.max(0,((range?.lowMidi||48)-36)/48*100)}%`,width:`${Math.max(8,((range?.highMidi||60)-(range?.lowMidi||48))/48*100)}%`}}/></div><div className="review-actions"><button className="secondary" onClick={()=>setStep('intro')}>다시 측정</button><button className="primary" data-action="sample-next" onClick={() => setStep('sample-select')}>Sample Song 고르기</button></div></section>}
       {step === 'sample-select' && <section className="sample-select-stage"><p className="kicker">VP03 · 내 음역에 맞는 세 곡</p><h1>대표 Sample로 부를<br/>한 곡을 골라요.</h1><p>세 곡은 제공곡 확정 전 Placeholder입니다. 선택한 곡의 같은 구간을 15–20초 녹음합니다.</p><div className="sample-song-list">{SAMPLE_SONGS.map(song=><button key={song.id} className={sampleSong.id===song.id?'active':''} aria-pressed={sampleSong.id===song.id} onClick={()=>setSampleSong(song)}><span>{song.title}</span><strong>{song.range}</strong><small>{song.key} · {song.mood}</small></button>)}</div><button className="primary" onClick={()=>setStep('sample')}>{sampleSong.title} 녹음하기</button></section>}
       {step === 'sample' && <section className="sample-stage"><p className="kicker">Separate profile audio · {sampleSong.title}</p><h1>대표 Voice Sample을<br/>별도로 녹음해요.</h1><p>음역 측정과 다른 목적·저장 데이터입니다. 실제 제공 음원은 아직 확정되지 않아 지정 가사 구간을 무반주로 녹음합니다.</p><blockquote>“{sampleSong.lyric}”</blockquote>{sampleStatus === 'review' ? <><Player source={sampleDraft?.url} durationHint={sampleDraft?.duration} playing={samplePlaying} setPlaying={setSamplePlaying}/><div className="sample-proof"><span>VOICE SAMPLE · {fmt(sampleDraft?.duration)}</span><span>{sampleDraft?.features?.fingerprint || '분석 없음'}</span></div><VoiceIdentity/><div className="review-actions"><button className="secondary" data-action="sample-retry" onClick={retrySample}>다시 부르기</button><button className="primary" data-action="voice-complete" onClick={() => setStep('complete')}>이 샘플 사용하기</button></div></> : <><div className="level-orbit sample-meter" style={{ '--level': level }}><span /></div><p className="record-status">{sampleStatus === 'recording' ? `RECORDING · ${fmt(seconds)}` : '15–20초 권장'}</p><button className={`record-btn ${sampleStatus === 'recording' ? 'stop' : ''}`} data-action={sampleStatus === 'recording' ? 'sample-stop' : 'sample-start'} onClick={sampleStatus === 'recording' ? stopSample : startSample}><Icon name={sampleStatus === 'recording' ? 'stop' : 'mic'} size={27}/></button></>}</section>}
       {step === 'complete' && <section className="voice-complete-stage"><p className="kicker">VP06 · Voice profile ready</p><h1>목소리 준비를<br/>마쳤어요.</h1><VoiceIdentity/><dl className="profile-ready-summary"><div><dt>편한 음역</dt><dd>{range?.label}</dd></div><div><dt>대표 Sample</dt><dd>{sampleSong.title} · {fmt(sampleDraft?.duration)}</dd></div><div><dt>Voice Identity</dt><dd>로컬 생성형 AI 미연결</dd></div></dl><p>Voice Identity는 실제 생성 모델이 연결되기 전까지 완료로 표시하지 않습니다.</p><button className="primary" data-action="profile-finish" onClick={() => complete({ range:range?.label, rangeData:range, sample:sampleDraft, sampleSong, identity:{status:'blocked',reason:'free-local-generative-model-not-connected'} })}>선택한 Part Fit으로 돌아가기</button></section>}
-      {error && <div className="permission-error" role="alert"><strong>{permission==='denied'?'마이크를 사용할 수 없어요.':'측정을 계속할 수 없어요.'}</strong><span>{error}</span><button className="secondary" onClick={permission==='denied'?(step==='sample'?startSample:startRange):()=>setError('')}>{permission==='denied'?'다시 시도':'계속 측정하기'}</button></div>}
+      {error && <MicrophonePermissionNotice error={error} permissionDenied={permission==='denied'} onRetry={step==='sample'?startSample:startRange}/>} 
     </main>
   </div>
 }
@@ -670,7 +701,7 @@ function Recorder({ go, submit, partId, projectTracks, layers, project = PROJECT
       <div className="recording-timeline" aria-label="녹음 시간"><div><span>RECORD TIME</span><b>{fmt(seconds)} / {fmt(recordingWindow)}</b></div><div className="time-progress"><span style={{width:`${Math.min(100,seconds/recordingWindow*100)}%`}}/></div></div>
       <div className="meter-row"><span>MIC</span><div className={`input-meter ${peak>.9?'clip':''}`} aria-label="마이크 입력 볼륨"><span style={{width:`${Math.max(2,level*100)}%`}}/><i style={{left:`${Math.min(98,peak*100)}%`}}/></div><b>{peak>.9?'CLIP':level>.08?'GOOD':'LOW'}</b></div>{noiseFloor>0&&<p className={`noise-status ${noiseFloor>.08?'warning':''}`}>주변 소음 · {noiseFloor>.08?'높음 — Review에서 다시 녹음을 선택할 수 있어요.':'양호'} ({Math.round(noiseFloor*100)}%)</p>}
       <section className="guide-panel"><div className="section-head"><h2>Guide audio</h2><span>녹음 파일과 분리</span></div><label><span>Backing track</span><input type="checkbox" checked={guides.backing} onChange={e=>setGuides({...guides,backing:e.target.checked})}/><i/></label>{guideTracks.map(track=>{const part=parts.find(item=>item.id===track.partId);const actualIndex=parts.findIndex(item=>item.id===track.partId);return <label key={track.id}><span><b style={{color:part?.color}}>{part?.name}</b> · {track.participant}</span><input type="checkbox" checked={Boolean(guides.parts[actualIndex])} onChange={e=>{const nextParts=[...guides.parts];nextParts[actualIndex]=e.target.checked;setGuides({...guides,parts:nextParts})}}/><i/></label>})}</section>
-      {error && <div className="permission-error" role="alert"><strong>마이크를 사용할 수 없어요.</strong><span>{error}</span></div>}
+      {error && <MicrophonePermissionNotice error={error} onRetry={begin}/>} 
       {status === 'review' ? <section className="record-review"><p className="kicker">Review · {fmt(draft?.duration)}</p><h2>{draft?.features?.peak > .92 ? '일부 구간이 너무 크게 녹음됐어요.' : noiseFloor>.08?'주변 소음이 함께 녹음됐을 수 있어요.':'제출할 Track을 확인해 주세요.'}</h2><p>{noiseFloor>.08?'다시 녹음을 권하지만 제출을 막지는 않습니다. 제출 후 기본 노이즈 정리를 적용합니다. ':''}{draft?.features ? `에너지 ${Math.round(draft.features.energy*100)} · 밝기 ${Math.round(draft.features.brightness*100)} · 거칠기 ${Math.round(draft.features.roughness*100)} · 특징 ${draft.features.fingerprint}` : '오디오 분석을 완료하지 못했지만 재생 후 제출할 수 있어요.'}</p><Player source={draft?.url} durationHint={draft?.duration} playing={reviewPlaying} setPlaying={setReviewPlaying}/><div className="review-actions"><button className="secondary" data-action="record-retry" onClick={retry}>다시 녹음</button><button className="primary" data-action="record-submit" onClick={() => submit({...draft,noiseFloor},currentPart)}>녹음 제출</button></div></section>
       : <div className="recorder-controls">
           {status === 'ready' && <button className="record-btn" data-action="record-start" aria-label="녹음 시작" onClick={begin}><Icon name="mic" size={28}/></button>}
