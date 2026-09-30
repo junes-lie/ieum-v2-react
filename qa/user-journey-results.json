@@ -1,0 +1,643 @@
+{
+  "passed": 71,
+  "total": 71,
+  "checks": [
+    {
+      "name": "첫 진입은 같은 4 Part 프로젝트의 제출 Track 2개",
+      "pass": true,
+      "detail": {
+        "screen": "home",
+        "joined": false,
+        "invited": false,
+        "candidateAccepted": false,
+        "trackCount": 2,
+        "tracks": {
+          "soprano": {
+            "origin": "local-formant-singing-demo",
+            "demo": true,
+            "bytes": 1038914,
+            "fingerprint": "adc27717",
+            "layer": "6d1db994",
+            "participant": "윤슬"
+          },
+          "alto": {
+            "origin": "local-formant-singing-demo",
+            "demo": true,
+            "bytes": 1038914,
+            "fingerprint": "114c6156",
+            "layer": "09d6df3f",
+            "participant": "도윤"
+          }
+        }
+      }
+    },
+    {
+      "name": "두 Track 출처를 합성 데모로 공개",
+      "pass": true,
+      "detail": {
+        "soprano": {
+          "origin": "local-formant-singing-demo",
+          "demo": true,
+          "bytes": 1038914,
+          "fingerprint": "adc27717",
+          "layer": "6d1db994",
+          "participant": "윤슬"
+        },
+        "alto": {
+          "origin": "local-formant-singing-demo",
+          "demo": true,
+          "bytes": 1038914,
+          "fingerprint": "114c6156",
+          "layer": "09d6df3f",
+          "participant": "도윤"
+        }
+      }
+    },
+    {
+      "name": "두 Track 모두 실제 Blob·분석·Layer 보유",
+      "pass": true,
+      "detail": {
+        "soprano": {
+          "origin": "local-formant-singing-demo",
+          "demo": true,
+          "bytes": 1038914,
+          "fingerprint": "adc27717",
+          "layer": "6d1db994",
+          "participant": "윤슬"
+        },
+        "alto": {
+          "origin": "local-formant-singing-demo",
+          "demo": true,
+          "bytes": 1038914,
+          "fingerprint": "114c6156",
+          "layer": "09d6df3f",
+          "participant": "도윤"
+        }
+      }
+    },
+    {
+      "name": "홈에 02/04가 표시됨",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "모든 곡 상세에 해당 곡 프로젝트 생성 CTA",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "곡 상세에서 시작하면 그 곡을 유지하고 Part·Key 단계로 진입",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "생성 전 내 Part와 초기 진행률을 함께 확인",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "새 프로젝트도 기존과 동일한 작업실 route·화면 사용",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "새 프로젝트 작업실은 00/02, 내 Part 확정, 제출 Track 없음",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "새 프로젝트 Record는 0 Track",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "새 프로젝트 작업실은 해당 프로젝트 Part만 표시",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "작업실은 중복 없이 Primary CTA 하나와 OPEN Part 행 액션만 제공",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "새 프로젝트 남은 Part가 전체 Vocal Finder에 연결",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "새 프로젝트 초대 전송 뒤 같은 작업실로 복귀",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "새 프로젝트 초대 수락은 진행률을 올리지 않음",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "새 프로젝트 내 Part가 동일 Recorder에 연결",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "새 프로젝트 Review 제출 후 작업실에 실제 Track 1개 누적",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "Multitrack은 사용자가 작업실 CTA를 눌러 진입",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "컬렉션은 프로젝트·보컬·곡 세 객체 탭",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "초기 프로젝트 Like 컬렉션은 비어 있음",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "초기 보컬 Save 컬렉션은 비어 있음",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "초기 곡 Save 컬렉션은 비어 있음",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "곡 둘러보기는 여러 Song Object 목록",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "Song 선택 시 통합 Song / Project Detail 진입",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "같은 곡의 Project Carousel 제공",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "Project 선택 시 Part 구성이 해당 프로젝트 기준으로 교체",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "상세의 현재 데모 Track 출처와 비보컬 성격 표시",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "다른 참여자 Part에 녹음 버튼 없음",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "상세 북마크는 곡 Save로만 저장",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "새로고침 뒤 곡 Save 유지",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "저장 곡은 Song Object와 Project Carousel이 있는 통합 상세로 이동",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "음역 측정은 자동 통과하지 않음",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "음역 결과에 Voice Identity/Record를 표시하지 않음",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "Voice Sample은 별도 Sample Song 선택 단계",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "선택한 Sample Song을 별도 프로필 오디오로 녹음",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "Voice Sample Review는 커스텀 플레이어",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "Voice Identity 생성형 AI 미검증을 명시",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "Voice Range와 Voice Sample이 별도 저장 데이터",
+      "pass": true,
+      "detail": [
+        {
+          "id": "ieum-v2:voice-profile:v7:range",
+          "kind": "voice-range",
+          "bytes": 0,
+          "origin": "measured-pitch-range"
+        },
+        {
+          "id": "ieum-v2:voice-profile:v7:sample",
+          "kind": "voice-sample",
+          "bytes": 49527,
+          "origin": "live-microphone-voice-sample"
+        }
+      ]
+    },
+    {
+      "name": "참여 확정 후에도 진행률은 제출 기준 2/4",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "내 Tenor에만 녹음 CTA, Bass에는 보컬 찾기만 제공",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "7일간 내 Part 미완료 시 Projects 카드에 녹음 필요 배지",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "지연 카드에서 작업실 진입 시 배너와 내 Part 강조",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "프로젝트 Like는 프로젝트 탭에 02/04로 저장",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "Vocal Finder의 별 저장은 보컬 탭에 표시",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "저장 보컬은 전체 Vocal Profile로 이동",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "참여 확정 뒤 My Projects에 자동 수집",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "Recorder에서 하단 내비게이션 숨김",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "Backing + 기존 제출 2 Track을 독립 Guide로 표시",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "프로젝트 Review도 커스텀 플레이어",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "Review 전에는 Track/진행률이 증가하지 않음",
+      "pass": true,
+      "detail": {
+        "screen": "record",
+        "joined": true,
+        "invited": false,
+        "candidateAccepted": false,
+        "trackCount": 2,
+        "tracks": {
+          "alto": {
+            "origin": "local-formant-singing-demo",
+            "demo": true,
+            "bytes": 1038914,
+            "fingerprint": "114c6156",
+            "layer": "09d6df3f",
+            "participant": "도윤"
+          },
+          "soprano": {
+            "origin": "local-formant-singing-demo",
+            "demo": true,
+            "bytes": 1038914,
+            "fingerprint": "adc27717",
+            "layer": "6d1db994",
+            "participant": "윤슬"
+          }
+        }
+      }
+    },
+    {
+      "name": "내 Review 제출 후에만 2/4에서 3/4",
+      "pass": true,
+      "detail": {
+        "screen": "workspace",
+        "joined": true,
+        "invited": false,
+        "candidateAccepted": false,
+        "trackCount": 3,
+        "tracks": {
+          "alto": {
+            "origin": "local-formant-singing-demo",
+            "demo": true,
+            "bytes": 1038914,
+            "fingerprint": "114c6156",
+            "layer": "09d6df3f",
+            "participant": "도윤"
+          },
+          "soprano": {
+            "origin": "local-formant-singing-demo",
+            "demo": true,
+            "bytes": 1038914,
+            "fingerprint": "adc27717",
+            "layer": "6d1db994",
+            "participant": "윤슬"
+          },
+          "tenor": {
+            "origin": "live-microphone-recording",
+            "bytes": 58424,
+            "fingerprint": "18748273",
+            "layer": "7c70313f",
+            "participant": "JISUN"
+          }
+        }
+      }
+    },
+    {
+      "name": "Review 제출 후 강제 이동 없이 작업실에서 제출 상태 확인",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "Multitrack에서 하단 내비게이션 숨김",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "초대를 보내도 Track과 진행률은 3/4 유지",
+      "pass": true,
+      "detail": {
+        "screen": "workspace",
+        "joined": true,
+        "invited": true,
+        "candidateAccepted": false,
+        "trackCount": 3,
+        "tracks": {
+          "alto": {
+            "origin": "local-formant-singing-demo",
+            "demo": true,
+            "bytes": 1038914,
+            "fingerprint": "114c6156",
+            "layer": "09d6df3f",
+            "participant": "도윤"
+          },
+          "soprano": {
+            "origin": "local-formant-singing-demo",
+            "demo": true,
+            "bytes": 1038914,
+            "fingerprint": "adc27717",
+            "layer": "6d1db994",
+            "participant": "윤슬"
+          },
+          "tenor": {
+            "origin": "live-microphone-recording",
+            "bytes": 58424,
+            "fingerprint": "18748273",
+            "layer": "7c70313f",
+            "participant": "JISUN"
+          }
+        }
+      }
+    },
+    {
+      "name": "몇 초 뒤 초대 수락만으로는 Track이 생기지 않음",
+      "pass": true,
+      "detail": {
+        "screen": "workspace",
+        "joined": true,
+        "invited": true,
+        "candidateAccepted": true,
+        "trackCount": 3,
+        "tracks": {
+          "alto": {
+            "origin": "local-formant-singing-demo",
+            "demo": true,
+            "bytes": 1038914,
+            "fingerprint": "114c6156",
+            "layer": "09d6df3f",
+            "participant": "도윤"
+          },
+          "soprano": {
+            "origin": "local-formant-singing-demo",
+            "demo": true,
+            "bytes": 1038914,
+            "fingerprint": "adc27717",
+            "layer": "6d1db994",
+            "participant": "윤슬"
+          },
+          "tenor": {
+            "origin": "live-microphone-recording",
+            "bytes": 58424,
+            "fingerprint": "18748273",
+            "layer": "7c70313f",
+            "participant": "JISUN"
+          }
+        }
+      }
+    },
+    {
+      "name": "수락 뒤 Bass 데모 Track이 실제 도착할 때 4/4",
+      "pass": true,
+      "detail": {
+        "screen": "workspace",
+        "joined": true,
+        "invited": true,
+        "candidateAccepted": true,
+        "trackCount": 4,
+        "tracks": {
+          "alto": {
+            "origin": "local-formant-singing-demo",
+            "demo": true,
+            "bytes": 1038914,
+            "fingerprint": "114c6156",
+            "layer": "09d6df3f",
+            "participant": "도윤"
+          },
+          "soprano": {
+            "origin": "local-formant-singing-demo",
+            "demo": true,
+            "bytes": 1038914,
+            "fingerprint": "adc27717",
+            "layer": "6d1db994",
+            "participant": "윤슬"
+          },
+          "tenor": {
+            "origin": "live-microphone-recording",
+            "bytes": 58424,
+            "fingerprint": "18748273",
+            "layer": "7c70313f",
+            "participant": "JISUN"
+          },
+          "bass": {
+            "origin": "local-formant-singing-demo",
+            "demo": true,
+            "bytes": 1038914,
+            "fingerprint": "366f0923",
+            "layer": "476f9980",
+            "participant": "Luna"
+          }
+        }
+      }
+    },
+    {
+      "name": "마지막 Track 도착 후에도 작업실을 강제로 이탈하지 않음",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "화면 이동과 무관하게 Auto Mix 자동 시작",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "완성곡 Credits 네 Track",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "완성곡에서 하단 내비게이션 복귀",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "LOCAL DEMO와 사용자 Track이 Credits에서 구분됨",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "완성 뒤 프로젝트 Like 항목이 04/04 COMPLETE로 갱신",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "새로고침 뒤 Auto Mix Blob과 프로젝트 Like 상태 유지",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "완성 프로젝트 Like는 재생 가능한 완성곡으로 이동",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "프로젝트 Like만 개별 해제 가능",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "프로젝트 Like 해제 후에도 Vocal Save 유지",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "프로젝트 Like 해제 후에도 Song Save 유지",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "MY에서 처음부터 검증할 초기화 경로 제공",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "초기화 뒤 사용자 상태와 Tenor Track 제거",
+      "pass": true,
+      "detail": {
+        "screen": "home",
+        "joined": false,
+        "invited": false,
+        "candidateAccepted": false,
+        "trackCount": 2,
+        "tracks": {
+          "soprano": {
+            "origin": "local-formant-singing-demo",
+            "demo": true,
+            "bytes": 1038914,
+            "fingerprint": "adc27717",
+            "layer": "6d1db994",
+            "participant": "윤슬"
+          },
+          "alto": {
+            "origin": "local-formant-singing-demo",
+            "demo": true,
+            "bytes": 1038914,
+            "fingerprint": "114c6156",
+            "layer": "09d6df3f",
+            "participant": "도윤"
+          }
+        }
+      }
+    },
+    {
+      "name": "초기화 뒤 같은 프로젝트의 공개 데모 2 Track만 재준비",
+      "pass": true,
+      "detail": {
+        "screen": "home",
+        "joined": false,
+        "invited": false,
+        "candidateAccepted": false,
+        "trackCount": 2,
+        "tracks": {
+          "soprano": {
+            "origin": "local-formant-singing-demo",
+            "demo": true,
+            "bytes": 1038914,
+            "fingerprint": "adc27717",
+            "layer": "6d1db994",
+            "participant": "윤슬"
+          },
+          "alto": {
+            "origin": "local-formant-singing-demo",
+            "demo": true,
+            "bytes": 1038914,
+            "fingerprint": "114c6156",
+            "layer": "09d6df3f",
+            "participant": "도윤"
+          }
+        }
+      }
+    },
+    {
+      "name": "콘솔/HTTP 오류 없음",
+      "pass": true,
+      "detail": []
+    }
+  ],
+  "errors": [],
+  "evidence": {
+    "browser": "Edge Chromium 390x844",
+    "microphone": "Chromium fake media device — 물리 휴대폰/사람 목소리 아님",
+    "journey": "화면 버튼 순서로 실행; 내부 함수로 단계 건너뛰지 않음",
+    "ai": "Voice Identity/Resonance Record 생성형 AI 미검증 상태 유지"
+  }
+}

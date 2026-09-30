@@ -1,0 +1,11 @@
+{
+  "name": "IEUM V2",
+  "short_name": "IEUM",
+  "description": "서로 다른 목소리로 한 곡을 완성하는 보컬 협업 서비스",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#050403",
+  "theme_color": "#0d0b09",
+  "orientation": "portrait-primary",
+  "lang": "ko-KR"
+}

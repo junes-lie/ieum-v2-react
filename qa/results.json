@@ -1,0 +1,5 @@
+{
+  "status": "superseded",
+  "reason": "Do not use legacy pass counts as completion evidence.",
+  "currentEvidence": "user-journey-results.json"
+}
