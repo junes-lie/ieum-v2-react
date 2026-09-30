@@ -200,7 +200,7 @@ function ResonanceRecord({ active = [true, false, true, false], layers = [], act
     }
     const colors = ['62,137,255','255,121,103','232,197,153','67,199,190']
     const draw = (now = 0) => {
-      if (now && now - lastPaint < 32) { raf = requestAnimationFrame(draw); return }
+      if (now && now - lastPaint < 48) { raf = requestAnimationFrame(draw); return }
       if (now) lastPaint = now
       const size = canvas.clientWidth
       if (size < 8) return
@@ -221,69 +221,100 @@ function ResonanceRecord({ active = [true, false, true, false], layers = [], act
         if (!storedLayer && !isLive) return
         const layer = storedLayer || { seed:numericSeed + voice * 997, baseRadius:[.72,.59,.48,.35][voice], spread:.08, turbulence:1, filamentCount:12, particleCount:58, opacity:.28, phase:voice }
         const liveLevel = levelRef.current
-        const energy = isLive ? .72 + liveLevel * .9 : state === 'playing' ? .82 : state === 'complete' ? .76 : .64
-        const lineCount = Math.max(18,Math.min(34,(layer.filamentCount||12)*1.55))
+        const energy = isLive ? .78 + liveLevel * .9 : state === 'playing' ? .96 : state === 'complete' ? .9 : .78
+        const lineCount = Math.max(30,Math.min(52,(layer.filamentCount||12)*2.45))
         const rotation = frame * (voice % 2 ? -.00019 : .00016)
         const envelopeAt=t=>layer.envelope?.[Math.min((layer.envelope?.length||1)-1,Math.floor(t*(layer.envelope?.length||1)))]||.35
+        const voicePhase=(layer.phase||0)+voice*.31
+        const baseRadius=.54+((layer.baseRadius??.52)-.54)*.3
+        const turbulence=layer.turbulence||.7
+        const spread=layer.spread||.09
+        const peakA=.08+random((layer.seed||0)+voice*113)*.36
+        const peakB=(peakA+.38+random((layer.seed||0)+voice*173)*.22)%1
+        const circularDistance=(a,b)=>Math.min(Math.abs(a-b),1-Math.abs(a-b))
+        const presenceAt=t=>{
+          const a=Math.exp(-Math.pow(circularDistance(t,peakA)/.17,2))
+          const b=Math.exp(-Math.pow(circularDistance(t,peakB)/.12,2))*.82
+          return .055+Math.max(a,b)
+        }
         const flowPoint=(t,band=0,flutter=0,branch=0)=>{
-          const envelope=envelopeAt(t)
-          const voicePhase=(layer.phase||0)+voice*.39
-          const curl=Math.sin(t*Math.PI*2.35+voicePhase)*(.18+(layer.turbulence||.7)*.05)
-          const fork=branch*Math.sin(Math.PI*Math.min(1,t*1.12))*(.28+(layer.turbulence||.7)*.06)
-          const angle=voicePhase+t*Math.PI*1.72+curl+fork+rotation+band*.27
-          const width=radius*(.065+(layer.spread||.08)*.68)*(.38+Math.sin(t*Math.PI)*1.02)
-          const breath=isLive?Math.sin(t*Math.PI*9+frame*.055)*liveLevel*radius*.038:0
-          const branchLift=branch*Math.sin(t*Math.PI)*radius*(.075+.025*(layer.turbulence||.7))
-          const rr=radius*(.17+t*.7)+Math.sin(t*Math.PI*1.55+voice*.9)*radius*.105+band*width+branchLift+flutter+breath+envelope*radius*.055
-          return [center+Math.cos(angle)*rr*(1+.06*Math.sin(angle*2.2+voice)),center+Math.sin(angle)*rr]
+          const angle=voicePhase+(t-.08)*Math.PI*2.18+rotation+Math.sin(t*Math.PI*4.2+voicePhase)*turbulence*.035+branch*Math.sin(t*Math.PI)*.34
+          const width=radius*(.04+spread*.82)*(.55+Math.sin(t*Math.PI)*.64)
+          const voiceShape=Math.sin(angle*1.37+voicePhase)*radius*(.095+turbulence*.012)+Math.sin(angle*3.13+(layer.seed||0)*.00003)*radius*(.035+turbulence*.008)
+          const breath=isLive?Math.sin(t*Math.PI*10+frame*.055)*liveLevel*radius*.032:0
+          const rr=radius*baseRadius+voiceShape+band*width+branch*Math.sin(t*Math.PI)*radius*.065+flutter+breath
+          return [center+Math.cos(angle)*rr*(1+.055*Math.sin(angle*2.05+voice)),center+Math.sin(angle)*rr*(.985+.025*Math.cos(angle*1.7))]
         }
         ctx.save()
         ctx.globalCompositeOperation = 'screen'
         ctx.lineCap='round'
-        for(let haze=0;haze<5;haze++){
-          ctx.beginPath()
-          for(let i=0;i<=72;i++){
-            const t=i/72
-            const branch=haze===1?-.72:haze===3?.72:0
-            const point=flowPoint(t,(haze-2)*.34,Math.sin(t*19+haze+(layer.seed||0)*.0001)*radius*.012,branch)
-            if(!i)ctx.moveTo(point[0],point[1]);else ctx.lineTo(point[0],point[1])
+        ctx.filter='blur(6px)'
+        for(let haze=0;haze<4;haze++){
+          const branch=haze===1?-.62:haze===2?.62:0
+          for(let start=0;start<96;start+=6){
+            ctx.beginPath()
+            for(let i=start;i<=start+6;i++){
+              const t=i/96
+              const point=flowPoint(t,(haze-1.5)*.4,0,branch)
+              if(i===start)ctx.moveTo(point[0],point[1]);else ctx.lineTo(point[0],point[1])
+            }
+            const presence=presenceAt((start+3)/96)
+            ctx.strokeStyle=`rgba(${colors[voice]},${(.018+energy*.018)*presence})`
+            ctx.lineWidth=16+haze*4.5
+            ctx.stroke()
           }
-          ctx.strokeStyle=`rgba(${colors[voice]},${.012+energy*.012})`
-          ctx.lineWidth=11+haze*3.1
-          ctx.stroke()
         }
+        ctx.filter='none'
         for (let line = 0; line < lineCount; line++) {
-          const points = 96
-          const band=(line-lineCount/2)/(lineCount/2)
-          const branch=line%5===0?(line%10===0?-.72:.72):0
-          ctx.beginPath()
-          for (let i = 0; i <= points; i++) {
-            const t=i/points
-            const grain=Math.sin(t*Math.PI*(7+(layer.turbulence||.7)*2)+line*.83+(layer.seed||0)*.00004)*radius*(.004+(layer.turbulence||.7)*.006)
-            const point=flowPoint(t,band,grain,branch)
-            if (!i) ctx.moveTo(point[0],point[1]); else ctx.lineTo(point[0],point[1])
+          const points = 84
+          const band=(line-(lineCount-1)/2)/(lineCount/2)
+          const branch=line%9===0?(line%18===0?-.58:.58):0
+          const edge=1-Math.abs(band)*.68
+          const isCore=Math.abs(band)<.34
+          ctx.shadowBlur=isCore?2.8:0
+          ctx.shadowColor=isCore?`rgba(${colors[voice]},.42)`:'transparent'
+          for(let start=0;start<points;start+=4){
+            ctx.beginPath()
+            for(let i=start;i<=Math.min(points,start+4);i++){
+              const t=i/points
+              const grain=Math.sin(t*Math.PI*(8.5+turbulence*2)+line*.79+(layer.seed||0)*.00004)*radius*(.0025+turbulence*.0045)
+              const point=flowPoint(t,band,grain,branch)
+              if(i===start)ctx.moveTo(point[0],point[1]);else ctx.lineTo(point[0],point[1])
+            }
+            const segmentT=(start+2)/points
+            const envelope=.25+envelopeAt(segmentT)*.95
+            const pulse=.72+.28*Math.sin(segmentT*Math.PI*6+voicePhase+line*.11)
+            ctx.strokeStyle=`rgba(${colors[voice]},${(.055+(layer.opacity||.3)*.2+energy*.055)*edge*envelope*pulse*presenceAt(segmentT)})`
+            ctx.lineWidth=.32+(line%7)*.12
+            ctx.stroke()
           }
-          ctx.strokeStyle=`rgba(${colors[voice]},${(.052+(layer.opacity||.3)*.15+energy*.045)*(1-Math.abs(band)*.55)})`
-          ctx.lineWidth=.4+(line%5)*.15
-          ctx.stroke()
+          ctx.shadowBlur=0
         }
         const density = compact ? .62 : 1
-        const particles = Math.round(Math.min(760,Math.max(420,(layer.particleCount||58)*6.8))*density)
+        const particles = Math.round(Math.min(980,Math.max(620,(layer.particleCount||58)*8.7))*density)
         for (let p = 0; p < particles; p++) {
-          const t=random(p*17+voice*401+(layer.seed||0))
-          const band=(random(p*31+(layer.seed||0))-.5)*2
+          const centerPeak=random(p*59+(layer.seed||0))<.62?peakA:peakB
+          const cluster=(random(p*17+voice*401+(layer.seed||0))+random(p*23+(layer.seed||0))+random(p*29+voice)-1.5)*.24
+          const t=(centerPeak+cluster+1)%1
+          const band=(random(p*31+(layer.seed||0))+random(p*37+voice)-1)*1.32
           const branchRoll=random(p*47+(layer.seed||0)+voice*29)
-          const branch=branchRoll>.79?.72:branchRoll<.18?-.72:0
-          const flutter=(random(p*11+voice)-.5)*radius*(.018+(layer.turbulence||.7)*.018)
+          const branch=branchRoll>.88?.58:branchRoll<.12?-.58:0
+          const flutter=(random(p*11+voice)-.5)*radius*(.009+turbulence*.012)
           const point=flowPoint(t,band,flutter,branch)
           const envelope=envelopeAt(t)
-          const alpha=(.12+random(p+numericSeed+(layer.seed||0))*.7)*energy*(.44+envelope*.76)*(1-Math.abs(band)*.34)
-          const dot=.38+random(p*13)*1.65
-          ctx.fillStyle = `rgba(${colors[voice]},${alpha})`
-          ctx.fillRect(point[0],point[1],dot,dot)
-          if (p % 19 === 0) {
-            ctx.beginPath();ctx.arc(point[0],point[1],.75+random(p*19)*1.35,0,Math.PI*2)
-            ctx.fillStyle=`rgba(${colors[voice]},${Math.min(.7,alpha*1.45)})`;ctx.fill()
+          const alpha=(.18+random(p+numericSeed+(layer.seed||0))*.76)*energy*(.36+envelope*.92)*(1-Math.abs(band)*.42)
+          const dot=.34+random(p*13)*1.55
+          if(p%2===0){
+            const next=flowPoint(Math.min(1,t+.009+random(p*43)*.011),band,flutter,branch)
+            ctx.beginPath();ctx.moveTo(point[0],point[1]);ctx.lineTo(next[0],next[1])
+            ctx.strokeStyle=`rgba(${colors[voice]},${alpha*.72})`;ctx.lineWidth=.3+random(p*53)*.8;ctx.stroke()
+          }else{
+            ctx.fillStyle = `rgba(${colors[voice]},${alpha})`
+            ctx.fillRect(point[0],point[1],dot,dot)
+          }
+          if (p % 29 === 0) {
+            ctx.beginPath();ctx.arc(point[0],point[1],.7+random(p*19)*1.2,0,Math.PI*2)
+            ctx.fillStyle=`rgba(${colors[voice]},${Math.min(.78,alpha*1.55)})`;ctx.fill()
           }
         }
         ctx.restore()
@@ -309,7 +340,7 @@ function ResonanceRecord({ active = [true, false, true, false], layers = [], act
       ctx.beginPath(); ctx.arc(center, center, radius * .2, 0, Math.PI * 2); ctx.fillStyle = hub; ctx.fill(); ctx.strokeStyle = 'rgba(236,230,220,.12)'; ctx.stroke()
       ctx.beginPath(); ctx.arc(center, center, radius * .035, 0, Math.PI * 2); ctx.fillStyle = '#050403'; ctx.fill()
       frame++
-      if (state === 'playing' || state === 'recording' || state === 'processing') raf = requestAnimationFrame(draw)
+      if (state === 'recording' || state === 'processing') raf = requestAnimationFrame(draw)
     }
     draw()
     const observer = new ResizeObserver(() => { cancelAnimationFrame(raf); if (resize()) draw() })
