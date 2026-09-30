@@ -52,7 +52,19 @@ export function microphoneErrorMessage(error) {
   return error?.message || '마이크를 시작하지 못했어요. Safari 또는 Chrome에서 다시 시도해 주세요.'
 }
 
-export async function requestMicrophone() {
+async function configureMicrophoneTrack(track, voiceProcessing) {
+  if (!track?.applyConstraints) return
+  try {
+    const supported = navigator.mediaDevices.getSupportedConstraints?.() || {}
+    const constraints = {}
+    if (supported.echoCancellation) constraints.echoCancellation = voiceProcessing
+    if (supported.noiseSuppression) constraints.noiseSuppression = voiceProcessing
+    if (supported.autoGainControl) constraints.autoGainControl = voiceProcessing
+    if (Object.keys(constraints).length) await track.applyConstraints(constraints)
+  } catch { /* Mobile browsers may keep their own input processing. */ }
+}
+
+export async function requestMicrophone({ voiceProcessing = false } = {}) {
   if (!window.isSecureContext) {
     const error = new Error('HTTPS가 아닌 환경에서는 마이크를 사용할 수 없어요.')
     error.name = 'SecurityError'
@@ -63,7 +75,10 @@ export async function requestMicrophone() {
     error.name = 'NotSupportedError'
     throw error
   }
-  if (runtime.stream?.active) return runtime.stream
+  if (runtime.stream?.active) {
+    await configureMicrophoneTrack(runtime.stream.getAudioTracks()[0],voiceProcessing)
+    return runtime.stream
+  }
   let timedOut = false
   // `audio: true` is intentionally used for the first permission request.
   // Some mobile WebViews reject optional desktop-oriented audio constraints
@@ -80,6 +95,9 @@ export async function requestMicrophone() {
   finally { if (!timedOut) window.clearTimeout(timeoutId) }
   pending.then(stream => { if (timedOut) stream.getTracks().forEach(track=>track.stop()) }).catch(()=>{})
   const track = runtime.stream.getAudioTracks()[0]
+  // Range/profile sampling prefers an unprocessed signal. Project recording
+  // enables voice processing when speaker-played guides could leak back in.
+  await configureMicrophoneTrack(track,voiceProcessing)
   runtime.microphoneInfo = {
     label: track?.label || '권한이 허용된 마이크',
     settings: track?.getSettings?.() || {},
@@ -101,20 +119,46 @@ export function monitorInput(onFrame, { detectPitch = false } = {}) {
   cancelAnimationFrame(runtime.raf)
   const buffer = new Float32Array(runtime.analyser?.fftSize || 2048)
   const estimatePitch = (samples, sampleRate, rms) => {
-    if (rms < 0.012) return { hz:0, confidence:0 }
+    // Phone microphones often report a much lower normalized level than the
+    // Chromium fake device. Keep the gate conservative, but do not discard a
+    // softly sung voice before periodicity is evaluated.
+    if (rms < 0.0055) return { hz:0, confidence:0 }
     const minLag = Math.floor(sampleRate / 1000)
     const maxLag = Math.min(Math.floor(sampleRate / 70), samples.length / 2)
-    let bestLag = 0, bestScore = 0
-    for (let lag = minLag; lag <= maxLag; lag += 4) {
-      let correlation = 0, energyA = 0, energyB = 0
+    const difference = new Float32Array(maxLag + 1)
+    let running = 0
+    for (let lag = 1; lag <= maxLag; lag++) {
+      let sum = 0
       for (let i = 0; i < samples.length - lag; i += 4) {
-        const a = samples[i], b = samples[i + lag]
-        correlation += a * b; energyA += a * a; energyB += b * b
+        const delta = samples[i] - samples[i + lag]
+        sum += delta * delta
       }
-      const score = correlation / Math.sqrt(Math.max(1e-12, energyA * energyB))
-      if (score > bestScore) { bestScore = score; bestLag = lag }
+      difference[lag] = sum
+      running += sum
+      difference[lag] = running > 0 ? (sum * lag) / running : 1
     }
-    return { hz:bestScore > .72 && bestLag ? sampleRate / bestLag : 0, confidence:bestScore }
+    let bestLag = 0
+    for (let lag = minLag; lag < maxLag - 1; lag++) {
+      if (difference[lag] < 0.22 && difference[lag] <= difference[lag + 1]) {
+        while (lag + 1 < maxLag && difference[lag + 1] < difference[lag]) lag++
+        bestLag = lag
+        break
+      }
+    }
+    if (!bestLag) {
+      let bestValue = 1
+      for (let lag = minLag; lag <= maxLag; lag++) {
+        if (difference[lag] < bestValue) { bestValue = difference[lag]; bestLag = lag }
+      }
+      if (bestValue > 0.34) return { hz:0, confidence:Math.max(0,1-bestValue) }
+    }
+    const left = difference[Math.max(minLag,bestLag-1)]
+    const center = difference[bestLag]
+    const right = difference[Math.min(maxLag,bestLag+1)]
+    const denominator = left - 2 * center + right
+    const refinedLag = bestLag + (Math.abs(denominator) > 1e-8 ? .5 * (left - right) / denominator : 0)
+    const confidence = Math.max(0,Math.min(1,1-center))
+    return { hz:confidence >= .66 && refinedLag > 0 ? sampleRate / refinedLag : 0, confidence }
   }
   let pitchFrame = 0, lastPitch = 0, lastConfidence = 0
   const tick = () => {
@@ -226,7 +270,8 @@ function scheduleRecordingGuides(offsetSec = 0) {
 }
 
 export async function startRecording({ onFrame, guides, guideTracks = [], countIn = 0 }) {
-  const stream = await requestMicrophone()
+  const hasSpeakerGuides = Boolean(guides?.backing || guides?.parts?.some(Boolean))
+  const stream = await requestMicrophone({ voiceProcessing:hasSpeakerGuides })
   if (!window.MediaRecorder) {
     stopMicrophone()
     const error = new Error('이 브라우저는 마이크 입력은 지원하지만 오디오 녹음 저장은 지원하지 않아요. 최신 Safari 또는 Chrome에서 열어 주세요.')
