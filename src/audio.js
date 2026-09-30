@@ -31,16 +31,44 @@ function context() {
   return runtime.context
 }
 
+export function isMicrophonePermissionError(error) {
+  return ['NotAllowedError', 'PermissionDeniedError', 'SecurityError'].includes(error?.name)
+}
+
+export function microphoneErrorMessage(error) {
+  if (!window.isSecureContext || error?.name === 'SecurityError') {
+    return '보안 연결(HTTPS)이 아니어서 마이크를 열 수 없어요. Safari 또는 Chrome에서 https://ieum-v2-react.vercel.app 을 직접 열어 주세요.'
+  }
+  if (isMicrophonePermissionError(error)) {
+    return '마이크 접근이 차단됐어요. 메신저·SNS·앱 내부 브라우저가 아니라 Safari 또는 Chrome에서 열고, 주소창의 사이트 설정에서 마이크를 허용한 뒤 다시 시도해 주세요.'
+  }
+  if (error?.name === 'NotFoundError' || error?.name === 'DevicesNotFoundError') {
+    return '사용 가능한 마이크를 찾지 못했어요. 블루투스·이어폰 연결을 확인하고 다시 시도해 주세요.'
+  }
+  if (error?.name === 'NotReadableError' || error?.name === 'TrackStartError') {
+    return '다른 앱이 마이크를 사용 중이거나 운영체제가 마이크를 열지 못했어요. 통화·녹음 앱을 닫고 다시 시도해 주세요.'
+  }
+  if (error?.name === 'PermissionTimeoutError') return error.message
+  return error?.message || '마이크를 시작하지 못했어요. Safari 또는 Chrome에서 다시 시도해 주세요.'
+}
+
 export async function requestMicrophone() {
-  if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) {
-    throw new Error('마이크는 HTTPS 또는 localhost의 지원 브라우저에서 사용할 수 있어요.')
+  if (!window.isSecureContext) {
+    const error = new Error('HTTPS가 아닌 환경에서는 마이크를 사용할 수 없어요.')
+    error.name = 'SecurityError'
+    throw error
+  }
+  if (!navigator.mediaDevices?.getUserMedia) {
+    const error = new Error('이 브라우저는 마이크 입력을 지원하지 않아요. Safari 또는 Chrome에서 열어 주세요.')
+    error.name = 'NotSupportedError'
+    throw error
   }
   if (runtime.stream?.active) return runtime.stream
   let timedOut = false
-  const pending = navigator.mediaDevices.getUserMedia({
-    audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false },
-    video: false
-  })
+  // `audio: true` is intentionally used for the first permission request.
+  // Some mobile WebViews reject optional desktop-oriented audio constraints
+  // before they even show the operating-system permission prompt.
+  const pending = navigator.mediaDevices.getUserMedia({ audio: true, video: false })
   let timeoutId = 0
   const timeout = new Promise((_,reject) => { timeoutId = window.setTimeout(() => {
     timedOut = true
@@ -199,6 +227,12 @@ function scheduleRecordingGuides(offsetSec = 0) {
 
 export async function startRecording({ onFrame, guides, guideTracks = [], countIn = 0 }) {
   const stream = await requestMicrophone()
+  if (!window.MediaRecorder) {
+    stopMicrophone()
+    const error = new Error('이 브라우저는 마이크 입력은 지원하지만 오디오 녹음 저장은 지원하지 않아요. 최신 Safari 또는 Chrome에서 열어 주세요.')
+    error.name = 'NotSupportedError'
+    throw error
+  }
   const ctx = context()
   await ctx.resume()
   const decodedGuides = await Promise.all(guideTracks.filter(track => track?.blob).map(async track => ({ track, buffer: await decodeBlob(ctx, track.blob) })))

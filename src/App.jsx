@@ -5,6 +5,8 @@ import {
   cancelRecording,
   createAutoMix,
   getMicrophoneDiagnostics,
+  isMicrophonePermissionError,
+  microphoneErrorMessage,
   monitorInput,
   pauseRecording,
   playCurrentMix,
@@ -477,7 +479,7 @@ function VoiceSetup({ complete, go }) {
         }
       }, { detectPitch:true })
       timer.current = window.setInterval(() => setSeconds(value => value + 1), 1000)
-    } catch (e) { setPermission('denied'); setError(e.name === 'NotAllowedError' ? '마이크 권한이 거부됐어요. 브라우저 설정에서 허용한 뒤 다시 시도해 주세요.' : e.message) }
+    } catch (e) { setPermission(isMicrophonePermissionError(e) ? 'denied' : 'error'); setError(microphoneErrorMessage(e)) }
   }
   const finishRange = () => {
     const values = [...pitchSamples.current].sort((a,b)=>a-b)
@@ -495,7 +497,7 @@ function VoiceSetup({ complete, go }) {
       setError(''); setPermission('granted'); setSampleStatus('recording'); setSeconds(0)
       await startRecording({ onFrame:frame=>setLevel(frame.level), guides:{backing:false,parts:[false,false,false,false]}, guideTracks:[], countIn:0 })
       timer.current = window.setInterval(() => setSeconds(value => value + 1), 1000)
-    } catch (e) { setPermission('denied'); setSampleStatus('ready'); setError(e.name === 'NotAllowedError' ? '마이크 권한이 거부됐어요.' : e.message) }
+    } catch (e) { setPermission(isMicrophonePermissionError(e) ? 'denied' : 'error'); setSampleStatus('ready'); setError(microphoneErrorMessage(e)) }
   }
   const stopSample = async () => {
     clearInterval(timer.current)
@@ -653,7 +655,7 @@ function Recorder({ go, submit, partId, projectTracks, layers, project = PROJECT
       setNoiseFloor(sorted[Math.floor(sorted.length*.65)]||0)
       await startRecording({ onFrame: frame => { setLevel(frame.level); setPeak(frame.peak) }, guides, guideTracks })
       setStatus('recording'); setSeconds(0); timer.current = window.setInterval(() => setSeconds(s => s + .1), 100)
-    } catch (e) { setError(e.name === 'NotAllowedError' ? '마이크 권한이 거부됐어요. 브라우저 설정에서 권한을 허용한 뒤 다시 시도해 주세요.' : e.message); setStatus('ready'); setCountIn(0) }
+    } catch (e) { setError(microphoneErrorMessage(e)); setStatus('ready'); setCountIn(0) }
   }
   const pause = () => { pauseRecording(); setStatus('paused'); clearInterval(timer.current) }
   const resume = () => { resumeRecording(); setStatus('recording'); timer.current = window.setInterval(() => setSeconds(s => s + .1), 100) }
