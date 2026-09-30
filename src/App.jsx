@@ -199,7 +199,7 @@ varying vec2 vUv;uniform vec2 uResolution;uniform float uTime;uniform float uLiv
 float hash21(vec2 p){p=fract(p*vec2(123.34,456.21));p+=dot(p,p+45.32);return fract(p.x*p.y);}
 float noise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(hash21(i),hash21(i+vec2(1,0)),f.x),mix(hash21(i+vec2(0,1)),hash21(i+vec2(1)),f.x),f.y);}
 float fbm(vec2 p){float v=0.,a=.5;for(int j=0;j<4;j++){v+=a*noise(p);p=p*2.03+vec2(17.1,9.2);a*=.5;}return v;}
-vec3 voiceColor(int i){if(i==0)return vec3(.24,.54,1.);if(i==1)return vec3(1.,.43,.35);if(i==2)return vec3(.94,.78,.58);return vec3(.22,.78,.73);}
+vec3 voiceColor(int i){if(i==0)return vec3(.2,.62,1.22);if(i==1)return vec3(1.12,.39,.3);if(i==2)return vec3(.96,.79,.58);return vec3(.18,.82,.76);}
 void main(){
  vec2 p=(vUv-.5)*2.;float r=length(p),ang=atan(p.y,p.x);float disc=1.-smoothstep(.965,.997,r);
  vec3 col=mix(vec3(.025,.019,.016),vec3(.12,.095,.076),max(0.,1.-r)*.55);
@@ -217,11 +217,21 @@ void main(){
   float flowNoise=fbm(polar*2.45+vec2((r-center)*12.+seed,-(r-center)*10.+seed*.4));
   float fibers=pow(.5+.5*cos((r-center)*178.+flowNoise*24.+sin(theta*7.+seed)*2.4),10.);
   float hair=pow(.5+.5*cos((r-center)*318.+flowNoise*15.),17.);
+  float flowAngle=b.x+seed*.17+r*1.55;float cs=cos(flowAngle),sn=sin(flowAngle);vec2 flowP=mat2(cs,-sn,sn,cs)*p;
+  vec2 organicP=flowP*vec2(5.4,8.6);float domain=fbm(organicP*.34+vec2(seed,-seed*.37));
+  float ridge=pow(1.-abs(noise(organicP+vec2(domain*3.1,-domain*2.4))*2.-1.),4.6);
+  float ridgeFine=pow(1.-abs(noise(organicP*1.72+vec2(-domain*2.2,domain*2.8))*2.-1.),8.5);
+  float plumeCurve=flowP.y-flowP.x*.12-sin(flowP.x*2.8+seed)*(.14+a.w*.018)-sin(flowP.x*6.1-seed)*.025;
+  float plumeWidth=.075+a.z*.62;float plume=exp(-1.8*plumeCurve*plumeCurve/(plumeWidth*plumeWidth))*smoothstep(1.02,.16,abs(flowP.x));
+  float plumeFibers=pow(.5+.5*cos(plumeCurve*188.+domain*23.),11.);
   vec2 sparkGrid=(p+vec2(seed*.01))*uResolution.x*.18;vec2 sparkCell=floor(sparkGrid);vec2 sparkUv=fract(sparkGrid)-.5;
   float sparkShape=smoothstep(.34,.035,length(sparkUv));float spark=sparkShape*step(.9,hash21(sparkCell+seed))*ribbon*presence;
   vec2 pinGrid=(p+vec2(seed*.013))*uResolution.x*.31;vec2 pinCell=floor(pinGrid);vec2 pinUv=fract(pinGrid)-.5;
   float pinShape=smoothstep(.22,.018,length(pinUv));float pin=pinShape*step(.94,hash21(pinCell-seed))*ribbon*presence;
-  float intensity=ribbon*presence*(.045+fibers*.72+hair*.28)+spark*3.1+pin*3.4;
+  float colorHaze=ribbon*presence*(.07+flowNoise*.055)+plume*(.026+domain*.024);
+  float ringFlow=ribbon*presence*(.028+fibers*.29+hair*.1+ridge*.39+ridgeFine*.16);
+  float crossingFlow=plume*(.012+plumeFibers*.25+ridge*.32+ridgeFine*.11)*(.22+.78*presence);
+  float intensity=colorHaze+ringFlow+crossingFlow+spark*3.1+pin*3.4;
   intensity*=.72+b.y*.78+live*uLiveLevel*.55;col+=voiceColor(i)*intensity;
  }
  float sheen=smoothstep(.13,0.,abs(p.x+p.y*.58-.12))*(1.-smoothstep(.18,.9,r))*.045;col+=vec3(.75,.68,.58)*sheen;
