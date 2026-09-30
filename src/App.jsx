@@ -186,6 +186,80 @@ function ResonanceRecord({ active = [true, false, true, false], layers = [], act
     if(layers.length)layers.forEach((layer,index)=>{const partIndex=PARTS.findIndex(part=>part.id===layer?.partId);slots[partIndex>=0?partIndex:index]=layer})
     else active.forEach((enabled,index)=>{if(enabled)slots[index]={partId:PARTS[index]?.id,seed:numericSeed+index*97,baseRadius:[.72,.59,.48,.36][index],spread:.1,turbulence:.72,opacity:.34,phase:index*1.47}})
     if(state==='recording'&&!slots[activePartIndex])slots[activePartIndex]={partId:PARTS[activePartIndex]?.id,seed:numericSeed+activePartIndex*997,baseRadius:[.72,.59,.48,.36][activePartIndex],spread:.09,turbulence:1,opacity:.3,phase:activePartIndex}
+    const particleContext=canvas.getContext('2d',{alpha:true})
+    if(particleContext){
+      const palette=[[62,137,255],[255,121,103],[232,197,153],[67,199,190]]
+      const seededRandom=(seedValue)=>{let value=(Math.abs(Math.floor(seedValue))||1)>>>0;return()=>{value+=0x6D2B79F5;let t=value;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296}}
+      let animationFrame=0,lastFrame=0
+      const drawParticleRecord=(now=0)=>{
+        const size=canvas.clientWidth
+        if(size<8)return
+        const ratio=Math.min(window.devicePixelRatio||1,2),pixels=Math.round(size*ratio)
+        if(canvas.width!==pixels||canvas.height!==pixels){canvas.width=pixels;canvas.height=pixels}
+        const ctx=particleContext,c=pixels/2,discRadius=c*.965
+        ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,pixels,pixels);ctx.save();ctx.beginPath();ctx.arc(c,c,discRadius,0,Math.PI*2);ctx.clip()
+        const vinyl=ctx.createRadialGradient(c*.82,c*.76,c*.04,c,c,discRadius)
+        vinyl.addColorStop(0,'#211a15');vinyl.addColorStop(.22,'#100c0a');vinyl.addColorStop(.72,'#090706');vinyl.addColorStop(1,'#030303');ctx.fillStyle=vinyl;ctx.fillRect(0,0,pixels,pixels)
+        ctx.globalCompositeOperation='screen'
+        for(let groove=0;groove<96;groove++){
+          const radius=discRadius*(.22+groove*.00765)
+          ctx.beginPath();ctx.arc(c,c,radius,0,Math.PI*2);ctx.strokeStyle=`rgba(188,164,136,${groove%7===0?.032:.012})`;ctx.lineWidth=Math.max(1,ratio*.32);ctx.stroke()
+        }
+        const liveAmount=state==='recording'?Math.min(1,Math.max(0,levelRef.current))*1.4:0
+        slots.forEach((layer,layerIndex)=>{
+          if(!layer)return
+          const layerSeed=Number(layer.seed??numericSeed+layerIndex*97)+numericSeed*.071
+          const random=seededRandom(layerSeed),color=palette[layerIndex]
+          const energy=Math.max(.12,Math.min(1,Number(layer.opacity??.34)*1.85))
+          const baseRadius=Math.max(.3,Math.min(.82,Number(layer.baseRadius??.55)))
+          const spread=Math.max(.055,Math.min(.24,Number(layer.spread??.1)))
+          const turbulence=Math.max(.2,Math.min(1.4,Number(layer.turbulence??.72)))
+          const live=layerIndex===activePartIndex?liveAmount:0
+          const direction=-1
+          const sharedOrigin=-.42+((numericSeed%29)/29-.5)*.18
+          const layerOffset=(layerIndex-1.5)*.22+(Number(layer.phase??0)%1)*.08
+          const strandCount=Math.round(38+energy*28+live*12)
+          const pointOnFlow=(t,offset,wobble=0)=>{
+            const inhale=Math.sin(Math.PI*t)
+            const radius=.77+(baseRadius-.55)*.13-inhale*(.25+spread*.42)+offset*(.42+spread*.9)+Math.sin(t*9.2+layerSeed*.017+wobble)*.018*turbulence
+            const angle=sharedOrigin+layerOffset+direction*(t*(4.65+turbulence*.28)+Math.sin(t*Math.PI)*.36)+Math.sin(t*5.4+wobble)*.028*turbulence+(state==='recording'&&layerIndex===activePartIndex?now*.00016*live:0)
+            return [c+Math.cos(angle)*discRadius*radius,c+Math.sin(angle)*discRadius*radius]
+          }
+          ctx.globalCompositeOperation='lighter'
+          for(let strand=0;strand<strandCount;strand++){
+            const normalized=(strand/(strandCount-1)-.5)
+            const offset=normalized*spread*3.2+(random()-.5)*spread*.5
+            const start=.02+random()*.13,end=.82+random()*.17,wobble=random()*Math.PI*2
+            ctx.beginPath()
+            for(let step=0;step<=54;step++){
+              const t=start+(end-start)*(step/54),point=pointOnFlow(t,offset,wobble)
+              if(step===0)ctx.moveTo(point[0],point[1]);else ctx.lineTo(point[0],point[1])
+            }
+            const prominence=.018+Math.pow(1-Math.abs(normalized),2)*(.045+energy*.045)+random()*.018
+            ctx.strokeStyle=`rgba(${color[0]},${color[1]},${color[2]},${prominence*(1+live*.65)})`
+            ctx.lineWidth=ratio*(.28+random()*.62+energy*.22);ctx.stroke()
+          }
+          const particleCount=Math.round(230+energy*260+live*100)
+          for(let particle=0;particle<particleCount;particle++){
+            const t=Math.pow(random(),.92)*.92+.025
+            const clustered=((random()+random()+random())/3-.5)*spread*3.9
+            const point=pointOnFlow(t,clustered,random()*6.283)
+            const flicker=.22+random()*.78,sizeDot=ratio*(.32+random()*(.72+energy*.64+live*.25))
+            ctx.beginPath();ctx.arc(point[0],point[1],sizeDot,0,Math.PI*2)
+            ctx.fillStyle=`rgba(${color[0]},${color[1]},${color[2]},${(.08+flicker*.5)*(1+live*.55)})`;ctx.fill()
+            if(random()>.9){ctx.beginPath();ctx.moveTo(point[0]-sizeDot*2.8,point[1]);ctx.lineTo(point[0]+sizeDot*2.8,point[1]);ctx.strokeStyle=`rgba(${color[0]},${color[1]},${color[2]},${.12+flicker*.28})`;ctx.lineWidth=Math.max(.45,ratio*.34);ctx.stroke()}
+          }
+        })
+        ctx.globalCompositeOperation='source-over'
+        const sheen=ctx.createLinearGradient(c*.28,c*.2,c*1.62,c*1.74);sheen.addColorStop(0,'rgba(255,236,206,.045)');sheen.addColorStop(.46,'rgba(255,236,206,0)');sheen.addColorStop(.53,'rgba(255,236,206,.025)');sheen.addColorStop(1,'rgba(255,236,206,0)');ctx.fillStyle=sheen;ctx.fillRect(0,0,pixels,pixels)
+        const hubRadius=discRadius*.205,hub=ctx.createRadialGradient(c-hubRadius*.28,c-hubRadius*.3,0,c,c,hubRadius);hub.addColorStop(0,'#5b4431');hub.addColorStop(.36,'#35281e');hub.addColorStop(1,'#0d0a08');ctx.beginPath();ctx.arc(c,c,hubRadius,0,Math.PI*2);ctx.fillStyle=hub;ctx.fill();ctx.strokeStyle='rgba(193,151,105,.34)';ctx.lineWidth=ratio;ctx.stroke()
+        for(let ring=1;ring<9;ring++){ctx.beginPath();ctx.arc(c,c,hubRadius*(ring/9),0,Math.PI*2);ctx.strokeStyle='rgba(204,166,122,.035)';ctx.lineWidth=Math.max(.5,ratio*.3);ctx.stroke()}
+        ctx.beginPath();ctx.arc(c,c,discRadius*.033,0,Math.PI*2);ctx.fillStyle='#020202';ctx.fill();ctx.restore()
+      }
+      const draw=(now=0)=>{if(now&&now-lastFrame<50){animationFrame=requestAnimationFrame(draw);return}lastFrame=now;drawParticleRecord(now);if(state==='recording'||state==='processing')animationFrame=requestAnimationFrame(draw)}
+      draw();const particleObserver=new ResizeObserver(()=>drawParticleRecord(performance.now()));particleObserver.observe(canvas)
+      return()=>{particleObserver.disconnect();cancelAnimationFrame(animationFrame)}
+    }
     const gl=canvas.getContext('webgl',{alpha:true,antialias:true,premultipliedAlpha:true})
     let raf=0,lastPaint=0
     if(!gl){
