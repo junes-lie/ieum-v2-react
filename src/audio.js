@@ -1,4 +1,5 @@
 import { analyzeAudioBuffer } from './voiceAnalysis.js'
+import { estimatePitch } from './pitch.js'
 
 const AudioContextClass = window.AudioContext || window.webkitAudioContext
 const OfflineAudioContextClass = window.OfflineAudioContext || window.webkitOfflineAudioContext
@@ -53,7 +54,7 @@ export function microphoneErrorMessage(error) {
 }
 
 async function configureMicrophoneTrack(track, voiceProcessing) {
-  if (!track?.applyConstraints) return
+  if (!track?.applyConstraints || typeof voiceProcessing !== 'boolean') return
   try {
     const supported = navigator.mediaDevices.getSupportedConstraints?.() || {}
     const constraints = {}
@@ -64,7 +65,7 @@ async function configureMicrophoneTrack(track, voiceProcessing) {
   } catch { /* Mobile browsers may keep their own input processing. */ }
 }
 
-export async function requestMicrophone({ voiceProcessing = false } = {}) {
+export async function requestMicrophone({ voiceProcessing = null } = {}) {
   if (!window.isSecureContext) {
     const error = new Error('HTTPS가 아닌 환경에서는 마이크를 사용할 수 없어요.')
     error.name = 'SecurityError'
@@ -109,48 +110,16 @@ export async function requestMicrophone({ voiceProcessing = false } = {}) {
   await ctx.resume()
   runtime.source = ctx.createMediaStreamSource(runtime.stream)
   runtime.analyser = ctx.createAnalyser()
-  runtime.analyser.fftSize = 2048
-  runtime.analyser.smoothingTimeConstant = 0.68
+  runtime.analyser.fftSize = 4096
+  runtime.analyser.smoothingTimeConstant = 0.55
   runtime.source.connect(runtime.analyser)
   return runtime.stream
 }
 
 export function monitorInput(onFrame, { detectPitch = false } = {}) {
   cancelAnimationFrame(runtime.raf)
-  const buffer = new Float32Array(runtime.analyser?.fftSize || 2048)
-  const estimatePitch = (samples, sampleRate, rms) => {
-    // Keep the proven normalized-autocorrelation path for live phone voices.
-    // The fake device was much more periodic than a human voice, so the YIN
-    // threshold used in the previous build rejected almost every phone frame.
-    if (rms < 0.004) return { hz:0, confidence:0 }
-    const minLag = Math.floor(sampleRate / 1000)
-    const maxLag = Math.min(Math.floor(sampleRate / 70), samples.length / 2)
-    let mean = 0
-    for (let i = 0; i < samples.length; i += 4) mean += samples[i]
-    mean /= Math.ceil(samples.length / 4)
-    let bestLag = 0, bestScore = 0
-    const scores = new Float32Array(maxLag + 1)
-    for (let lag = minLag; lag <= maxLag; lag += 2) {
-      let correlation = 0, energyA = 0, energyB = 0
-      for (let i = 0; i < samples.length - lag; i += 4) {
-        const a = samples[i] - mean
-        const b = samples[i + lag] - mean
-        correlation += a * b
-        energyA += a * a
-        energyB += b * b
-      }
-      const score = correlation / Math.sqrt(Math.max(1e-12,energyA * energyB))
-      scores[lag] = score
-      if (score > bestScore) { bestScore = score; bestLag = lag }
-    }
-    if (!bestLag || bestScore < 0.48) return { hz:0, confidence:Math.max(0,bestScore) }
-    const left = scores[Math.max(minLag,bestLag-2)] || bestScore
-    const right = scores[Math.min(maxLag,bestLag+2)] || bestScore
-    const denominator = left - 2 * bestScore + right
-    const refinedLag = bestLag + (Math.abs(denominator) > 1e-8 ? (left-right) / denominator : 0)
-    return { hz:sampleRate / Math.max(1,refinedLag), confidence:bestScore }
-  }
-  let pitchFrame = 0, lastPitch = 0, lastConfidence = 0
+  const buffer = new Float32Array(runtime.analyser?.fftSize || 4096)
+  let pitchFrame = 0, lastPitch = 0, lastConfidence = 0, lastDetectedAt = 0, pitchReason = 'waiting'
   const tick = () => {
     if (!runtime.analyser) return
     runtime.analyser.getFloatTimeDomainData(buffer)
@@ -162,11 +131,17 @@ export function monitorInput(onFrame, { detectPitch = false } = {}) {
       if (i && Math.sign(value) !== Math.sign(buffer[i - 1])) crossings++
     }
     const rms = Math.sqrt(sum / buffer.length)
-    const pitchFresh = detectPitch && pitchFrame++ % 4 === 0
+    const pitchFresh = detectPitch && pitchFrame++ % 3 === 0
     if (pitchFresh) {
       const estimate = estimatePitch(buffer, context().sampleRate, rms)
-      lastPitch = estimate.hz
+      if (estimate.hz) {
+        lastPitch = estimate.hz
+        lastDetectedAt = performance.now()
+      } else if (performance.now() - lastDetectedAt > 350 || rms < 0.0015) {
+        lastPitch = 0
+      }
       lastConfidence = estimate.confidence
+      pitchReason = estimate.hz ? 'detected' : lastPitch ? 'tracked' : estimate.reason
     }
     const pitchHz = lastPitch
     onFrame?.({
@@ -175,6 +150,8 @@ export function monitorInput(onFrame, { detectPitch = false } = {}) {
       crossings: crossings / buffer.length,
       pitchHz,
       pitchConfidence: lastConfidence,
+      pitchReason,
+      rms,
       pitchFresh,
       midi: pitchHz ? 69 + 12 * Math.log2(pitchHz / 440) : null,
       waveform: new Float32Array(buffer)
@@ -261,7 +238,7 @@ function scheduleRecordingGuides(offsetSec = 0) {
 
 export async function startRecording({ onFrame, guides, guideTracks = [], countIn = 0 }) {
   const hasSpeakerGuides = Boolean(guides?.backing || guides?.parts?.some(Boolean))
-  const stream = await requestMicrophone({ voiceProcessing:hasSpeakerGuides })
+  const stream = await requestMicrophone({ voiceProcessing:hasSpeakerGuides ? true : null })
   if (!window.MediaRecorder) {
     stopMicrophone()
     const error = new Error('이 브라우저는 마이크 입력은 지원하지만 오디오 녹음 저장은 지원하지 않아요. 최신 Safari 또는 Chrome에서 열어 주세요.')
