@@ -239,7 +239,7 @@ void main(){
   float colorHaze=ribbon*presence*(.009+flowNoise*.007)+(plume+plume2)*(.008+domain*.005);
   float ringFlow=ribbon*presence*(.007+fibers*.19+hair*.08+ridge*.08+ridgeFine*.05);
   float streamWindow=.025+.975*pow(presence,1.42);
-  float crossingFlow=(plume*(.006+plumeFibers*.96+ridge*.12+ridgeFine*.07)+plume2*(.004+plumeFibers2*.62+ridgeFine*.08))*streamWindow;
+  float crossingFlow=(plume*(.008+plumeFibers*1.28+ridge*.15+ridgeFine*.09)+plume2*(.006+plumeFibers2*.84+ridgeFine*.1))*streamWindow;
   float intensity=colorHaze+ringFlow+crossingFlow+spark*3.1+pin*3.4;
   intensity*=.72+b.y*.78+live*uLiveLevel*.55;col+=voiceColor(i)*intensity;
  }
