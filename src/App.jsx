@@ -190,6 +190,32 @@ function ResonanceRecord({ active = [true, false, true, false], layers = [], act
     if(particleContext){
       const palette=[[62,137,255],[255,121,103],[232,197,153],[67,199,190]]
       const seededRandom=(seedValue)=>{let value=(Math.abs(Math.floor(seedValue))||1)>>>0;return()=>{value+=0x6D2B79F5;let t=value;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296}}
+      const referenceLayers=[]
+      const referenceImage=new Image()
+      referenceImage.decoding='async'
+      const prepareReferenceLayers=()=>{
+        const textureSize=620,source=document.createElement('canvas'),sourceContext=source.getContext('2d',{willReadFrequently:true})
+        source.width=textureSize;source.height=textureSize;sourceContext.drawImage(referenceImage,0,0,textureSize,textureSize)
+        const sourcePixels=sourceContext.getImageData(0,0,textureSize,textureSize)
+        for(let layerIndex=0;layerIndex<4;layerIndex++){
+          const layerCanvas=document.createElement('canvas'),layerContext=layerCanvas.getContext('2d')
+          layerCanvas.width=textureSize;layerCanvas.height=textureSize
+          const layerPixels=layerContext.createImageData(textureSize,textureSize)
+          for(let pixel=0;pixel<sourcePixels.data.length;pixel+=4){
+            const r=sourcePixels.data[pixel]/255,g=sourcePixels.data[pixel+1]/255,b=sourcePixels.data[pixel+2]/255,a=sourcePixels.data[pixel+3]
+            const max=Math.max(r,g,b),min=Math.min(r,g,b),delta=max-min,saturation=max?delta/max:0
+            let hue=0
+            if(delta){if(max===r)hue=60*(((g-b)/delta)%6);else if(max===g)hue=60*((b-r)/delta+2);else hue=60*((r-g)/delta+4);if(hue<0)hue+=360}
+            const visible=max>.16&&a>0
+            const matches=layerIndex===0?visible&&hue>=205&&hue<265&&saturation>.3:layerIndex===1?visible&&(hue<18||hue>=342)&&saturation>.32:layerIndex===2?visible&&hue>=28&&hue<72&&saturation>.16&&max>.28:visible&&hue>=145&&hue<205&&saturation>.25
+            if(matches){layerPixels.data[pixel]=sourcePixels.data[pixel];layerPixels.data[pixel+1]=sourcePixels.data[pixel+1];layerPixels.data[pixel+2]=sourcePixels.data[pixel+2];layerPixels.data[pixel+3]=Math.round(a*Math.min(1,.55+max*.72))}
+          }
+          layerContext.putImageData(layerPixels,0,0);referenceLayers[layerIndex]=layerCanvas
+        }
+        drawParticleRecord(performance.now())
+      }
+      referenceImage.onload=prepareReferenceLayers
+      referenceImage.src='/resonance-reference-v1.png'
       let animationFrame=0,lastFrame=0
       const drawParticleRecord=(now=0)=>{
         const size=canvas.clientWidth
@@ -215,6 +241,12 @@ function ResonanceRecord({ active = [true, false, true, false], layers = [], act
           const spread=Math.max(.055,Math.min(.24,Number(layer.spread??.1)))
           const turbulence=Math.max(.2,Math.min(1.4,Number(layer.turbulence??.72)))
           const live=layerIndex===activePartIndex?liveAmount:0
+          const textureLayer=referenceLayers[layerIndex]
+          if(textureLayer){
+            const phase=Number(layer.phase??0),featureScale=.985+(baseRadius-.55)*.045+live*.012
+            ctx.save();ctx.translate(c,c);ctx.rotate((phase%1-.5)*.035+(state==='recording'&&layerIndex===activePartIndex?now*.000025*live:0));ctx.scale(featureScale,featureScale)
+            ctx.globalCompositeOperation='lighter';ctx.globalAlpha=Math.min(1,.7+energy*.28+live*.18);ctx.drawImage(textureLayer,-discRadius,-discRadius,discRadius*2,discRadius*2);ctx.restore()
+          }
           const flowPaths=[
             [
               [[.94,-.62],[-.42,-1.04],[-1.04,.18],[.56,.88]],
@@ -234,7 +266,7 @@ function ResonanceRecord({ active = [true, false, true, false], layers = [], act
             ]
           ]
           const projectRotation=((numericSeed%37)/37-.5)*.14,rotationCos=Math.cos(projectRotation),rotationSin=Math.sin(projectRotation)
-          const strandCount=Math.round(50+energy*34+live*14)
+          const strandCount=textureLayer?Math.round(10+energy*8+live*8):Math.round(50+energy*34+live*14)
           const pointOnFlow=(t,offset,wobble=0,branch=0)=>{
             const controls=flowPaths[layerIndex][branch%2]
             const u=1-t,u2=u*u,t2=t*t
@@ -266,7 +298,7 @@ function ResonanceRecord({ active = [true, false, true, false], layers = [], act
             ctx.strokeStyle=`rgba(${color[0]},${color[1]},${color[2]},${prominence*(1+live*.65)})`
             ctx.lineWidth=ratio*(.28+random()*.62+energy*.22);ctx.stroke()
           }
-          const particleCount=Math.round(360+energy*360+live*120)
+          const particleCount=textureLayer?Math.round(55+energy*55+live*60):Math.round(360+energy*360+live*120)
           for(let particle=0;particle<particleCount;particle++){
             const t=Math.pow(random(),.92)*.92+.025
             const clustered=((random()+random()+random())/3-.5)*spread*3.9
@@ -285,7 +317,7 @@ function ResonanceRecord({ active = [true, false, true, false], layers = [], act
       }
       const draw=(now=0)=>{if(now&&now-lastFrame<50){animationFrame=requestAnimationFrame(draw);return}lastFrame=now;drawParticleRecord(now);if(state==='recording'||state==='processing')animationFrame=requestAnimationFrame(draw)}
       draw();const particleObserver=new ResizeObserver(()=>drawParticleRecord(performance.now()));particleObserver.observe(canvas)
-      return()=>{particleObserver.disconnect();cancelAnimationFrame(animationFrame)}
+      return()=>{particleObserver.disconnect();cancelAnimationFrame(animationFrame);referenceImage.onload=null}
     }
     const gl=canvas.getContext('webgl',{alpha:true,antialias:true,premultipliedAlpha:true})
     let raf=0,lastPaint=0
