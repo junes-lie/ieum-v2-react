@@ -51,8 +51,7 @@
 .workspace-screen main{max-width:430px}
 .workspace-screen>main>.record{width:min(82vw,344px);margin:0 auto 30px}
 .current-mix{scroll-margin-top:18px;margin:42px -18px 0;padding:32px 18px 26px;border-top:1px solid var(--line);background:linear-gradient(180deg,rgba(33,28,24,.38),transparent)}
-.current-mix-head{display:grid;grid-template-columns:1fr 112px;gap:14px;align-items:center}
-.current-mix-head .record{width:112px;margin:0}
+.current-mix-head{display:block;padding-bottom:14px}
 .current-mix-head h2{margin-bottom:8px}
 .current-mix-head p:not(.kicker){font-size:11px;margin:0}
 .listening-context{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px;padding:12px 0;font-size:10px;border-top:1px solid var(--line)}
@@ -67,7 +66,6 @@
 .confirm-modal{width:min(394px,100%);padding:24px;background:var(--surface);border:1px solid var(--line-strong)}
 .confirm-modal h2{font-size:24px}
 .confirm-modal p:not(.kicker){font-size:12px}
-@media(max-width:380px){.current-mix-head{grid-template-columns:1fr 92px}.current-mix-head .record{width:92px}}
 .complete-badge{display:inline-flex;padding:6px 10px;border:1px solid var(--line-strong);font:500 9px/1 var(--mono);letter-spacing:.12em;color:var(--secondary)}
 .final-player-label{text-align:center;font:500 10px/1 var(--mono);letter-spacing:.1em;margin:12px 0 0;color:var(--primary)}
 .complete-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:26px}

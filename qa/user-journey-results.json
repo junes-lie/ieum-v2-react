@@ -265,7 +265,7 @@
         {
           "id": "ieum-v2:voice-profile:v7:sample",
           "kind": "voice-sample",
-          "bytes": 49528,
+          "bytes": 50494,
           "origin": "live-microphone-voice-sample"
         }
       ]
@@ -330,7 +330,7 @@
       "pass": true,
       "detail": {
         "before": "11c840d2",
-        "review": "10295059"
+        "review": "851466eb"
       }
     },
     {
@@ -392,7 +392,7 @@
         "joined": true,
         "invited": false,
         "candidateAccepted": false,
-        "recordSignature": "10295059",
+        "recordSignature": "851466eb",
         "mix": null,
         "trackCount": 3,
         "tracks": {
@@ -415,8 +415,8 @@
           "tenor": {
             "origin": "live-microphone-recording",
             "bytes": 58424,
-            "fingerprint": "5f1d3078",
-            "layer": "0e912903",
+            "fingerprint": "7382081e",
+            "layer": "46f82c93",
             "participant": "JISUN"
           }
         }
@@ -427,7 +427,7 @@
       "pass": true,
       "detail": {
         "before": "11c840d2",
-        "after": "10295059"
+        "after": "851466eb"
       }
     },
     {
@@ -448,7 +448,7 @@
         "joined": true,
         "invited": true,
         "candidateAccepted": false,
-        "recordSignature": "10295059",
+        "recordSignature": "851466eb",
         "mix": null,
         "trackCount": 3,
         "tracks": {
@@ -471,8 +471,8 @@
           "tenor": {
             "origin": "live-microphone-recording",
             "bytes": 58424,
-            "fingerprint": "5f1d3078",
-            "layer": "0e912903",
+            "fingerprint": "7382081e",
+            "layer": "46f82c93",
             "participant": "JISUN"
           }
         }
@@ -486,7 +486,7 @@
         "joined": true,
         "invited": true,
         "candidateAccepted": true,
-        "recordSignature": "10295059",
+        "recordSignature": "851466eb",
         "mix": null,
         "trackCount": 3,
         "tracks": {
@@ -509,8 +509,8 @@
           "tenor": {
             "origin": "live-microphone-recording",
             "bytes": 58424,
-            "fingerprint": "5f1d3078",
-            "layer": "0e912903",
+            "fingerprint": "7382081e",
+            "layer": "46f82c93",
             "participant": "JISUN"
           }
         }
@@ -524,7 +524,7 @@
         "joined": true,
         "invited": true,
         "candidateAccepted": true,
-        "recordSignature": "7aa7e2fa",
+        "recordSignature": "4c41a120",
         "mix": null,
         "trackCount": 4,
         "tracks": {
@@ -547,8 +547,8 @@
           "tenor": {
             "origin": "live-microphone-recording",
             "bytes": 58424,
-            "fingerprint": "5f1d3078",
-            "layer": "0e912903",
+            "fingerprint": "7382081e",
+            "layer": "46f82c93",
             "participant": "JISUN"
           },
           "bass": {
@@ -566,8 +566,8 @@
       "name": "4번째 Track 도착 시 같은 Record가 다시 성장",
       "pass": true,
       "detail": {
-        "three": "10295059",
-        "four": "7aa7e2fa"
+        "three": "851466eb",
+        "four": "4c41a120"
       }
     },
     {
@@ -613,7 +613,7 @@
         "joined": true,
         "invited": true,
         "candidateAccepted": true,
-        "recordSignature": "7aa7e2fa",
+        "recordSignature": "4c41a120",
         "mix": {
           "bytes": 3175244,
           "duration": 18,
@@ -656,8 +656,8 @@
           "tenor": {
             "origin": "live-microphone-recording",
             "bytes": 58424,
-            "fingerprint": "5f1d3078",
-            "layer": "0e912903",
+            "fingerprint": "7382081e",
+            "layer": "46f82c93",
             "participant": "JISUN"
           }
         }

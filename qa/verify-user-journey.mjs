@@ -139,6 +139,7 @@ check('Voice Range와 Voice Sample이 별도 저장 데이터',profileRecords.so
 await page.locator('[data-action="join-part"]').click()
 check('참여 확정 후에도 진행률은 제출 기준 2/4',await page.locator('.top-meta').innerText()==='02/04 · PARTS')
 check('내 Tenor에만 녹음 CTA, Bass에는 보컬 찾기만 제공',await page.locator('[data-action="record-part"]').isVisible()&&await page.locator('[data-part="soprano"] .row-action,[data-part="alto"] .row-action').count()===0&&(await page.locator('[data-part="bass"] .row-action').innerText())==='보컬 찾기')
+await page.screenshot({path:path.join(here,'record-2-of-4.png'),fullPage:true})
 await page.evaluate(()=>{
   const key='ieum-v2:user-state:v7'
   const state=JSON.parse(localStorage.getItem(key)||'{}')
@@ -191,6 +192,7 @@ check('내 Review 제출 후에만 2/4에서 3/4',afterSubmit.trackCount===3&&af
 check('실제 Track 제출 시 Record signature가 바뀌고 기존 Layer는 유지',afterSubmit.recordSignature!==initial.recordSignature&&afterSubmit.tracks.soprano.layer===initial.tracks.soprano.layer&&afterSubmit.tracks.alto.layer===initial.tracks.alto.layer,{before:initial.recordSignature,after:afterSubmit.recordSignature})
 check('Review 제출 후 작업실에서 제출 상태와 통합 Mix 확인',await page.locator('.workspace-screen').isVisible()&&(await page.locator('.top-meta').innerText()).includes('03/04')&&await page.locator('#current-mix').isVisible())
 check('별도 Multitrack 화면 없이 작업실 하단 내비게이션 유지',await page.locator('.multitrack-screen').count()===0&&await page.locator('.bottom-nav').isVisible())
+await page.screenshot({path:path.join(here,'record-3-of-4.png'),fullPage:true})
 await page.locator('[data-part="bass"] .row-action').click()
 await page.locator('[data-action="candidate"]').first().click()
 await page.locator('[data-action="invite"]').click()
@@ -212,6 +214,7 @@ await page.waitForSelector('.complete-screen',{timeout:10000})
 check('완성곡 Credits 네 Track',await page.locator('.credits .part-row').count()===4)
 check('완성곡에서 하단 내비게이션 복귀',await page.locator('.bottom-nav').isVisible())
 check('LOCAL DEMO와 사용자 Track이 Credits에서 구분됨',(await page.locator('.credits').innerText()).includes('LOCAL DEMO')&&(await page.locator('.credits').innerText()).includes('JISUN'))
+await page.screenshot({path:path.join(here,'record-4-of-4-complete.png'),fullPage:true})
 await page.locator('[data-action="back"]').click()
 await page.waitForTimeout(1600)
 check('완성곡 Back은 제출 화면이 아닌 작업실에 머묾',await page.locator('.workspace-screen').isVisible()&&await page.locator('.recording-screen').count()===0)

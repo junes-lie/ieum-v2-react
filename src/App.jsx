@@ -215,69 +215,50 @@ function ResonanceRecord({ active = [true, false, true, false], layers = [], act
         ctx.beginPath(); ctx.arc(center, center, r, 0, Math.PI * 2)
         ctx.strokeStyle = `rgba(236,230,220,${.025 + (r % 9) * .0015})`; ctx.lineWidth = .65; ctx.stroke()
       }
-      const layerSlots = layers.length ? PARTS.map((part,voice) => layers.find(layer => layer?.partId === part.id) || { inactive:true, partId:part.id, seed:numericSeed+voice*97, baseRadius:[.72,.59,.48,.35][voice], spread:.035, turbulence:.28, filamentCount:5, particleCount:22, opacity:.035, phase:voice }) : active.map((enabled,voice) => ({ inactive:!enabled, partId: PARTS[voice]?.id, seed: numericSeed + voice * 97, baseRadius: [.72,.59,.48,.35][voice], spread:enabled?.08:.035, turbulence:enabled?.7:.28, filamentCount:enabled?15:5, particleCount:enabled?90:22, opacity:enabled?.32:.035, phase:voice }))
+      const layerSlots = layers.length ? PARTS.map(part => layers.find(layer => layer?.partId === part.id) || null) : active.map((enabled,voice) => enabled ? { partId:PARTS[voice]?.id,seed:numericSeed+voice*97,spread:.09,turbulence:.72,filamentCount:14,particleCount:80,opacity:.3,phase:voice*1.47,envelope:Array(24).fill(.42) } : null)
       layerSlots.forEach((storedLayer, voice) => {
         const isLive = state === 'recording' && voice === activePartIndex
-        const enabled = Boolean(storedLayer) || isLive
-        if (!enabled) return
+        if (!storedLayer && !isLive) return
         const layer = storedLayer || { seed:numericSeed + voice * 997, baseRadius:[.72,.59,.48,.35][voice], spread:.08, turbulence:1, filamentCount:12, particleCount:58, opacity:.28, phase:voice }
-        const inactive = Boolean(layer.inactive) && !isLive
         const liveLevel = levelRef.current
-        const energy = inactive ? .12 : isLive ? .72 + liveLevel * .9 : state === 'playing' ? .78 : .64
-        const baseRadius = radius * (.25 + (layer.baseRadius || .5) * .72)
-        const lineCount = inactive ? 4 : Math.max(9, Math.min(17, (layer.filamentCount || 12) + 2))
+        const energy = isLive ? .72 + liveLevel * .9 : state === 'playing' ? .82 : state === 'complete' ? .76 : .64
+        const lineCount = Math.max(9,Math.min(20,layer.filamentCount||12))
+        const rotation = frame * (voice % 2 ? -.00019 : .00016)
         ctx.save()
         ctx.globalCompositeOperation = 'screen'
-        for (let ribbon = 0; ribbon < 3; ribbon++) {
-          const points = 86
-          ctx.beginPath()
-          for (let i = 0; i <= points; i++) {
-            const angle = (i / points) * Math.PI * 2 + frame * (voice % 2 ? -.00028 : .00022)
-            const crest = Math.pow((Math.sin(angle * 2 + layer.phase + voice * .7) + 1) / 2, 2.1)
-            const wave = Math.sin(angle * (5 + layer.turbulence) + ribbon * 1.7 + layer.phase) * (5 + layer.turbulence * 3)
-            const envelope = layer.envelope?.[Math.floor((i / points) * layer.envelope.length)] || .35
-            const rr = baseRadius + (ribbon - 1) * 7 + wave + crest * radius * (.055 + layer.spread * .45) + envelope * 8
-            const x = center + Math.cos(angle) * rr
-            const y = center + Math.sin(angle) * rr
-            if (!i) ctx.moveTo(x, y); else ctx.lineTo(x, y)
-          }
-          ctx.strokeStyle = `rgba(${colors[voice]},${.018 + (layer.opacity || .3) * .04 + energy * .012})`
-          ctx.lineWidth = .8 + ribbon * .45
-          ctx.stroke()
-        }
         for (let line = 0; line < lineCount; line++) {
-          const points = 104
+          const points = 112
+          const lineOffset=(line-lineCount/2)*(.0045+(layer.spread||.08)*.055)
           ctx.beginPath()
           for (let i = 0; i <= points; i++) {
-            const angle = (i / points) * Math.PI * 2 + frame * (voice % 2 ? -.00028 : .00022)
-            const noise = Math.sin(angle * (5 + layer.turbulence) + line * .57 + layer.phase) * (2.6 + layer.turbulence * 2.8)
-              + Math.sin(angle * (13 + voice) + layer.seed * .0003) * (1.8 + layer.spread * 12)
-              + (random(i + line * 211 + voice * 79 + layer.seed) - .5) * (2.4 + layer.turbulence)
-            const pulse = isLive ? Math.sin(angle * 9 + frame * .05) * liveLevel * 12 : 0
-            const envelope = layer.envelope?.[Math.floor((i / points) * layer.envelope.length)] || .35
-            const spiral = ((i / points) - .5) * radius * .075
-            const rr = baseRadius + spiral + (line - lineCount/2) * (1.05 + layer.spread * 8) + (noise + pulse + envelope * 5) * energy
-            const x = center + Math.cos(angle) * rr * (1 + .028 * Math.sin(angle * 3 + voice))
-            const y = center + Math.sin(angle) * rr
+            const t=i/points
+            const envelope=layer.envelope?.[Math.min((layer.envelope?.length||1)-1,Math.floor(t*(layer.envelope?.length||1)))]||.35
+            const angle=(layer.phase||0)+voice*.62+t*Math.PI*2.28+lineOffset+rotation
+            const breath=isLive?Math.sin(t*Math.PI*8+frame*.055)*liveLevel*radius*.035:0
+            const grain=Math.sin(t*Math.PI*(4.2+(layer.turbulence||.7))+line*.71+(layer.seed||0)*.00004)*radius*(.012+(layer.spread||.08)*.12)
+            const rr=radius*(.16+t*.76)+Math.sin(t*Math.PI*2+voice)*radius*.07+grain+breath+envelope*radius*.03
+            const x=center+Math.cos(angle)*rr*(1+.055*Math.sin(angle*2.1+voice))
+            const y=center+Math.sin(angle)*rr
             if (!i) ctx.moveTo(x, y); else ctx.lineTo(x, y)
           }
-          ctx.strokeStyle = `rgba(${colors[voice]},${.075 + (layer.opacity || .3) * .2 + energy * .045 + (line % 5) * .009})`
-          ctx.lineWidth = .45 + (line % 4) * .22
+          ctx.strokeStyle=`rgba(${colors[voice]},${(.065+(layer.opacity||.3)*.2+energy*.05)*(1-Math.abs(line-lineCount/2)/lineCount*.48)})`
+          ctx.lineWidth=.38+(line%4)*.18
           ctx.stroke()
         }
         const density = compact ? .62 : 1
-        const particles = Math.round((inactive ? 38 : Math.min(300, Math.max(140, (layer.particleCount || 58) * 3.15))) * density)
+        const particles = Math.round(Math.min(380,Math.max(170,(layer.particleCount||58)*3.4))*density)
         for (let p = 0; p < particles; p++) {
-          const angle = random(p + voice * 401 + layer.seed) * Math.PI * 2 + frame * (voice%2?-.00032:.00028)
-          const arm = Math.pow((Math.sin(angle * 2 + layer.phase + voice * .7) + 1) / 2, 2.2)
-          const rr = baseRadius + (random(p * 7 + voice + layer.seed) - .5) * radius * (.18 + arm * .34) + Math.sin(angle*5+p)*6
-          const alpha = (.08 + random(p + numericSeed + layer.seed) * .42) * (.18 + arm * .82)
-          const dot = .38 + random(p * 13) * 1.32
-          ctx.fillStyle = `rgba(${colors[voice]},${alpha * energy})`
+          const t=random(p*17+voice*401+(layer.seed||0))
+          const scatter=(random(p*31+(layer.seed||0))-.5)*radius*(.025+(layer.spread||.08)*.42)
+          const angle=(layer.phase||0)+voice*.62+t*Math.PI*2.28+rotation+(random(p*11+voice)-.5)*.22
+          const rr=radius*(.16+t*.76)+Math.sin(t*Math.PI*2+voice)*radius*.07+scatter
+          const alpha=(.14+random(p+numericSeed+(layer.seed||0))*.58)*energy*(.48+t*.52)
+          const dot=.35+random(p*13)*1.25
+          ctx.fillStyle = `rgba(${colors[voice]},${alpha})`
           ctx.fillRect(center + Math.cos(angle) * rr, center + Math.sin(angle) * rr, dot, dot)
-          if (p % 17 === 0) {
-            ctx.beginPath(); ctx.arc(center + Math.cos(angle) * rr, center + Math.sin(angle) * rr, 1.1 + random(p * 19) * 1.4, 0, Math.PI * 2)
-            ctx.fillStyle = `rgba(${colors[voice]},${Math.min(.72,alpha * energy * 1.7)})`; ctx.fill()
+          if (p % 23 === 0) {
+            ctx.beginPath(); ctx.arc(center+Math.cos(angle)*rr,center+Math.sin(angle)*rr,.8+random(p*19)*1.2,0,Math.PI*2)
+            ctx.fillStyle=`rgba(${colors[voice]},${Math.min(.7,alpha*1.45)})`;ctx.fill()
           }
         }
         ctx.restore()
@@ -565,6 +546,7 @@ function VoiceSetup({ complete, go }) {
 }
 
 function Workspace({ go, project = PROJECT, song, isCreated = false, ownerPartId, findVocal, joined, invited, invitedPerson, candidateAccepted, candidateArrivalStatus, projectTracks, layers, recordPart, projectLiked, toggleProjectLike, openVocalProfile, mix, mixStatus = 'idle', completionDelayed = false, hasDraft = false }) {
+  const [mixPlaying,setMixPlaying]=useState(false)
   const baseParts = project.parts || PART_CATALOG.slice(0,project.partCount)
   const projectParts = baseParts.map(part => {
     const track = projectTracks[part.id]
@@ -580,22 +562,18 @@ function Workspace({ go, project = PROJECT, song, isCreated = false, ownerPartId
   const invitedParts = isCreated ? projectParts.filter(part=>part.invitationStatus) : []
   const myPart = projectParts.find(part=>part.participantId===CURRENT_USER_ID)
   const canRecordMyPart = myPart?.status === 'ready'
+  const partAction = part => {
+    if (isCreated && part.invitationStatus==='sent') return {action:()=>findVocal(part.id),label:'다른 보컬 찾기'}
+    if (isCreated && ownerPartId && !part.participantId && !part.invitationStatus) return {action:()=>findVocal(part.id),label:'보컬 찾기'}
+    if (!isCreated && part.id==='bass' && !projectTracks.bass && !candidateAccepted) return {action:()=>findVocal(part.id),label:invited?'다른 보컬 찾기':'보컬 찾기'}
+    return {}
+  }
   return <div className="screen workspace-screen">
     <TopBar back={() => isCreated ? go('projects') : go('detail')} meta={`${String(submitted).padStart(2,'0')}/${String(projectParts.length).padStart(2,'0')} · PARTS`} />
     <main>
       <div className="title-row"><div><p className="kicker">{song?.title || 'A Thousand Years'}</p><h1>Voices in progress</h1></div><button className={`icon-btn ${projectLiked?'active':''}`} aria-label={projectLiked?'프로젝트 Like 취소':'프로젝트 Like'} aria-pressed={projectLiked} data-action="toggle-project-like" onClick={toggleProjectLike}><Icon name="heart"/></button></div>
       {completionDelayed&&<section className="completion-delay-banner" role="status" data-state="completion-delayed"><strong>내 녹음을 이어갈 차례예요.</strong><p>마지막 유효 활동 후 7일이 지났습니다. 미완료된 내 Part를 제출하면 프로젝트가 다시 진행돼요.</p></section>}
-      <ResonanceRecord layers={layers} state="rest" seed={project.seed}/>
-      <section className="part-list">
-        {projectParts.map(part => {
-          let action
-          let actionLabel
-          if (isCreated && part.invitationStatus==='sent') { action=()=>findVocal(part.id); actionLabel='다른 보컬 찾기' }
-          else if (isCreated && ownerPartId && !part.participantId && !part.invitationStatus) { action=()=>findVocal(part.id); actionLabel='보컬 찾기' }
-          else if (!isCreated && part.id === 'bass' && !projectTracks.bass && !candidateAccepted) { action=()=>findVocal(part.id); actionLabel=invited?'다른 보컬 찾기':'보컬 찾기' }
-          return <PartRow key={part.id} part={part} action={action} actionLabel={actionLabel} urgent={completionDelayed&&part.participantId===CURRENT_USER_ID&&part.status==='ready'} onParticipant={part.participantId&&part.participantId!==CURRENT_USER_ID?()=>openVocalProfile(part.participantId):undefined}/>
-        })}
-      </section>
+      <ResonanceRecord layers={layers} state={mixStatus==='processing'?'processing':mixPlaying?'playing':'rest'} seed={project.seed}/>
       <p className="demo-disclosure">초대 수락과 Track 제출은 다른 상태입니다. 진행률과 Record는 실제 Track이 제출될 때만 증가합니다.</p>
       {isCreated && invitedParts.map(part=><section className="invite-status" data-invite-state={part.invitationStatus} key={part.id}><span>{part.invitationStatus==='accepted'?`${part.participant} · ${part.name} 참여 확정`:`${part.name} · ${(part.invitations||[]).filter(item=>item.status==='sent').length}명 수락 대기`}</span><b>{part.invitationStatus==='accepted'?'TRACK WAIT':'ACCEPT WAIT'}</b></section>)}
       {!isCreated && invited && !candidateAccepted && <section className="invite-status" data-invite-state="sent"><span>{invitedPerson.name}에게 Bass 초대 보냄</span><b>ACCEPT WAIT</b></section>}
@@ -606,7 +584,7 @@ function Workspace({ go, project = PROJECT, song, isCreated = false, ownerPartId
         {submitted > 0 && <button className={canRecordMyPart?'secondary':'primary'} data-action={mix?'open-complete':'focus-current-mix'} onClick={() => mix ? go('complete') : document.getElementById('current-mix')?.scrollIntoView({behavior:'smooth',block:'start'})}><Icon name="headphones"/> {mix?'완성곡 듣기':mixStatus==='processing'?'Auto Mix 확인':'현재 Mix 듣기'}</button>}
         {canRecordMyPart && <button className="primary" data-action="record-part" onClick={() => recordPart(myPart.id)}>{hasDraft?'녹음 이어서 확인하기':'내 Part 녹음하기'}</button>}
       </div>
-      {submitted > 0 && <CurrentMixPanel project={project} parts={baseParts} projectTracks={projectTracks} layers={layers} mix={mix} mixStatus={mixStatus} openVocalProfile={openVocalProfile}/>}
+      <CurrentMixPanel parts={projectParts} projectTracks={projectTracks} mix={mix} mixStatus={mixStatus} openVocalProfile={openVocalProfile} onPlayingChange={setMixPlaying} partAction={partAction} completionDelayed={completionDelayed}/>
     </main>
   </div>
 }
@@ -783,7 +761,7 @@ function Player({ source, playing, setPlaying, duration: durationProp = 18, dura
   return <div className="audio-player"><div className="time-row"><span>{fmt(time)}</span><input aria-label="재생 위치" type="range" min="0" max={duration} step=".1" value={Math.min(time,duration)} onChange={e=>seek(Number(e.target.value))}/><span>{fmt(duration)}</span></div><button className="play-btn" aria-label={playing?'일시정지':'재생'} onClick={()=>setPlaying(!playing)}><Icon name={playing?'pause':'play'} size={26}/></button>{source && <audio ref={audioRef} src={source} onLoadedMetadata={e=>Number.isFinite(e.currentTarget.duration)&&setMediaDuration(e.currentTarget.duration)} onTimeUpdate={e=>setTime(e.currentTarget.currentTime)} onEnded={()=>setPlaying(false)} />}</div>
 }
 
-function CurrentMixPanel({ project, parts, projectTracks, layers, mix, mixStatus, openVocalProfile }) {
+function CurrentMixPanel({ parts, projectTracks, mix, mixStatus, openVocalProfile, onPlayingChange, partAction, completionDelayed }) {
   const [included,setIncluded]=useState({backing:true,parts:parts.map(()=>true)})
   const [playing,setPlaying]=useState(false)
   const [selectedTrackId,setSelectedTrackId]=useState(null)
@@ -791,6 +769,7 @@ function CurrentMixPanel({ project, parts, projectTracks, layers, mix, mixStatus
   const trackArray=Object.values(projectTracks).filter(track=>track.kind!=='temporary-recording')
   const selectedTrack=selectedTrackId?projectTracks[selectedTrackId]:null
   const rows=parts.map(part=>projectTracks[part.id]?{...part,...projectTracks[part.id],status:'submitted',duration:fmt(projectTracks[part.id].duration)}:part)
+  useEffect(()=>onPlayingChange?.(playing),[playing,onPlayingChange])
   useEffect(()=>{
     if(!playing||selectedTrack?.url||mix?.url){stopRef.current?.();return}
     playCurrentMix({included,tracks:trackArray,duration:18,onEnded:()=>setPlaying(false)}).then(stop=>{stopRef.current=stop})
@@ -799,10 +778,8 @@ function CurrentMixPanel({ project, parts, projectTracks, layers, mix, mixStatus
   useEffect(()=>()=>{stopRef.current?.();stopGuides()},[])
   const chooseTrack=id=>{setPlaying(false);setSelectedTrackId(id);window.setTimeout(()=>setPlaying(true),0)}
   return <section id="current-mix" className="current-mix" aria-label="현재 Mix와 Track">
-    <div className="current-mix-head"><div><p className="kicker">Current mix · {trackArray.length}/{parts.length}</p><h2>{mixStatus==='processing'?'곡을 완성하고 있어요.':mixStatus==='complete'?'완성된 목소리':'지금까지의 목소리'}</h2><p>{mixStatus==='processing'?'Track 정렬과 밸런스를 적용하는 중이에요. 이 화면을 나가도 계속됩니다.':'제출된 Track을 하나씩 또는 함께 들을 수 있어요.'}</p></div><ResonanceRecord layers={layers} seed={project.seed} state={mixStatus==='processing'?'processing':playing?'playing':'rest'} compact/></div>
-    {selectedTrack&&<div className="listening-context"><span>개별 Track</span><b>{selectedTrack.participant} · {parts.find(part=>part.id===selectedTrack.partId)?.name}</b><button onClick={()=>{setPlaying(false);setSelectedTrackId(null)}}>현재 Mix로</button></div>}
-    <Player source={selectedTrack?.url||mix?.url} durationHint={selectedTrack?.duration||mix?.duration} playing={playing} setPlaying={setPlaying}/>
-    <div className="track-list"><div className="section-head"><h2>Parts · Tracks</h2><span>독립 원본</span></div><div className="backing-row"><span>Backing Track</span><button className={`include-toggle ${included.backing?'on':''}`} aria-pressed={included.backing} onClick={()=>setIncluded(value=>({...value,backing:!value.backing}))}><span/></button></div>{rows.map((part,index)=><PartRow key={part.id} part={part} included={part.status==='submitted'?included.parts[index]:undefined} onPlay={part.status==='submitted'?()=>chooseTrack(part.id):undefined} onParticipant={part.participantId&&part.participantId!==CURRENT_USER_ID?()=>openVocalProfile(part.participantId):undefined} onToggle={part.status==='submitted'?()=>setIncluded(value=>{const next=[...value.parts];next[index]=!next[index];return {...value,parts:next}}):undefined}/>)}</div>
+    {trackArray.length>0&&<><div className="current-mix-head"><p className="kicker">Current mix · {trackArray.length}/{parts.length}</p><h2>{mixStatus==='processing'?'곡을 완성하고 있어요.':mixStatus==='complete'?'완성된 목소리':'지금까지의 목소리'}</h2><p>{mixStatus==='processing'?'Track 정렬과 밸런스를 적용하는 중이에요. 이 화면을 나가도 계속됩니다.':'제출된 Track을 하나씩 또는 함께 들을 수 있어요.'}</p></div>{selectedTrack&&<div className="listening-context"><span>개별 Track</span><b>{selectedTrack.participant} · {parts.find(part=>part.id===selectedTrack.partId)?.name}</b><button onClick={()=>{setPlaying(false);setSelectedTrackId(null)}}>현재 Mix로</button></div>}<Player source={selectedTrack?.url||mix?.url} durationHint={selectedTrack?.duration||mix?.duration} playing={playing} setPlaying={setPlaying}/></>}
+    <div className="track-list part-list"><div className="section-head"><h2>Parts · Tracks</h2><span>상태 · 재생 · Mix</span></div>{trackArray.length>0&&<div className="backing-row"><span>Backing Track</span><button className={`include-toggle ${included.backing?'on':''}`} aria-pressed={included.backing} onClick={()=>setIncluded(value=>({...value,backing:!value.backing}))}><span/></button></div>}{rows.map((part,index)=>{const partCta=partAction?.(part)||{};return <PartRow key={part.id} part={part} action={partCta.action} actionLabel={partCta.label} urgent={completionDelayed&&part.participantId===CURRENT_USER_ID&&part.status==='ready'} included={part.status==='submitted'?included.parts[index]:undefined} onPlay={part.status==='submitted'?()=>chooseTrack(part.id):undefined} onParticipant={part.participantId&&part.participantId!==CURRENT_USER_ID?()=>openVocalProfile(part.participantId):undefined} onToggle={part.status==='submitted'?()=>setIncluded(value=>{const next=[...value.parts];next[index]=!next[index];return {...value,parts:next}}):undefined}/>})}</div>
     {mixStatus==='error'&&<p className="mix-error" role="alert">Auto Mix를 완료하지 못했어요. 제출된 원본 Track은 그대로 보관되어 있어요.</p>}
   </section>
 }
