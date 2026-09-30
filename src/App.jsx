@@ -215,15 +215,29 @@ function ResonanceRecord({ active = [true, false, true, false], layers = [], act
           const spread=Math.max(.055,Math.min(.24,Number(layer.spread??.1)))
           const turbulence=Math.max(.2,Math.min(1.4,Number(layer.turbulence??.72)))
           const live=layerIndex===activePartIndex?liveAmount:0
-          const direction=-1
-          const sharedOrigin=-.42+((numericSeed%29)/29-.5)*.18
-          const layerOffset=(layerIndex-1.5)*.22+(Number(layer.phase??0)%1)*.08
+          const flowPaths=[
+            [[.9,-.58],[-.42,-1.02],[-1.02,.18],[.54,.86]],
+            [[-.92,-.48],[.28,-1.04],[1.02,.02],[-.06,.9]],
+            [[-.86,.52],[-.38,1.02],[.76,.94],[.92,-.26]],
+            [[.68,.92],[1.05,.16],[.45,-.92],[-.62,-.78]]
+          ]
+          const controls=flowPaths[layerIndex]
+          const projectRotation=((numericSeed%37)/37-.5)*.14,rotationCos=Math.cos(projectRotation),rotationSin=Math.sin(projectRotation)
           const strandCount=Math.round(38+energy*28+live*12)
           const pointOnFlow=(t,offset,wobble=0)=>{
-            const inhale=Math.sin(Math.PI*t)
-            const radius=.77+(baseRadius-.55)*.13-inhale*(.25+spread*.42)+offset*(.42+spread*.9)+Math.sin(t*9.2+layerSeed*.017+wobble)*.018*turbulence
-            const angle=sharedOrigin+layerOffset+direction*(t*(4.65+turbulence*.28)+Math.sin(t*Math.PI)*.36)+Math.sin(t*5.4+wobble)*.028*turbulence+(state==='recording'&&layerIndex===activePartIndex?now*.00016*live:0)
-            return [c+Math.cos(angle)*discRadius*radius,c+Math.sin(angle)*discRadius*radius]
+            const u=1-t,u2=u*u,t2=t*t
+            let x=u2*u*controls[0][0]+3*u2*t*controls[1][0]+3*u*t2*controls[2][0]+t2*t*controls[3][0]
+            let y=u2*u*controls[0][1]+3*u2*t*controls[1][1]+3*u*t2*controls[2][1]+t2*t*controls[3][1]
+            const dx=3*u2*(controls[1][0]-controls[0][0])+6*u*t*(controls[2][0]-controls[1][0])+3*t2*(controls[3][0]-controls[2][0])
+            const dy=3*u2*(controls[1][1]-controls[0][1])+6*u*t*(controls[2][1]-controls[1][1])+3*t2*(controls[3][1]-controls[2][1])
+            const length=Math.max(.001,Math.hypot(dx,dy)),normalX=-dy/length,normalY=dx/length
+            const featureScale=.88+(baseRadius-.55)*.16
+            const noiseOffset=(Math.sin(t*12.7+wobble+layerSeed*.011)*.018+Math.sin(t*31.1-wobble)*.006)*turbulence
+            x=x*featureScale+normalX*(offset*.5+noiseOffset)
+            y=y*featureScale+normalY*(offset*.5+noiseOffset)
+            const rotatedX=x*rotationCos-y*rotationSin,rotatedY=x*rotationSin+y*rotationCos
+            const livePull=state==='recording'&&layerIndex===activePartIndex?Math.sin(Math.PI*t)*live*.018*Math.sin(now*.004+t*8):0
+            return [c+rotatedX*discRadius,c+(rotatedY+livePull)*discRadius]
           }
           ctx.globalCompositeOperation='lighter'
           for(let strand=0;strand<strandCount;strand++){
