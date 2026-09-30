@@ -119,46 +119,36 @@ export function monitorInput(onFrame, { detectPitch = false } = {}) {
   cancelAnimationFrame(runtime.raf)
   const buffer = new Float32Array(runtime.analyser?.fftSize || 2048)
   const estimatePitch = (samples, sampleRate, rms) => {
-    // Phone microphones often report a much lower normalized level than the
-    // Chromium fake device. Keep the gate conservative, but do not discard a
-    // softly sung voice before periodicity is evaluated.
-    if (rms < 0.0055) return { hz:0, confidence:0 }
+    // Keep the proven normalized-autocorrelation path for live phone voices.
+    // The fake device was much more periodic than a human voice, so the YIN
+    // threshold used in the previous build rejected almost every phone frame.
+    if (rms < 0.004) return { hz:0, confidence:0 }
     const minLag = Math.floor(sampleRate / 1000)
     const maxLag = Math.min(Math.floor(sampleRate / 70), samples.length / 2)
-    const difference = new Float32Array(maxLag + 1)
-    let running = 0
-    for (let lag = 1; lag <= maxLag; lag++) {
-      let sum = 0
+    let mean = 0
+    for (let i = 0; i < samples.length; i += 4) mean += samples[i]
+    mean /= Math.ceil(samples.length / 4)
+    let bestLag = 0, bestScore = 0
+    const scores = new Float32Array(maxLag + 1)
+    for (let lag = minLag; lag <= maxLag; lag += 2) {
+      let correlation = 0, energyA = 0, energyB = 0
       for (let i = 0; i < samples.length - lag; i += 4) {
-        const delta = samples[i] - samples[i + lag]
-        sum += delta * delta
+        const a = samples[i] - mean
+        const b = samples[i + lag] - mean
+        correlation += a * b
+        energyA += a * a
+        energyB += b * b
       }
-      difference[lag] = sum
-      running += sum
-      difference[lag] = running > 0 ? (sum * lag) / running : 1
+      const score = correlation / Math.sqrt(Math.max(1e-12,energyA * energyB))
+      scores[lag] = score
+      if (score > bestScore) { bestScore = score; bestLag = lag }
     }
-    let bestLag = 0
-    for (let lag = minLag; lag < maxLag - 1; lag++) {
-      if (difference[lag] < 0.22 && difference[lag] <= difference[lag + 1]) {
-        while (lag + 1 < maxLag && difference[lag + 1] < difference[lag]) lag++
-        bestLag = lag
-        break
-      }
-    }
-    if (!bestLag) {
-      let bestValue = 1
-      for (let lag = minLag; lag <= maxLag; lag++) {
-        if (difference[lag] < bestValue) { bestValue = difference[lag]; bestLag = lag }
-      }
-      if (bestValue > 0.34) return { hz:0, confidence:Math.max(0,1-bestValue) }
-    }
-    const left = difference[Math.max(minLag,bestLag-1)]
-    const center = difference[bestLag]
-    const right = difference[Math.min(maxLag,bestLag+1)]
-    const denominator = left - 2 * center + right
-    const refinedLag = bestLag + (Math.abs(denominator) > 1e-8 ? .5 * (left - right) / denominator : 0)
-    const confidence = Math.max(0,Math.min(1,1-center))
-    return { hz:confidence >= .66 && refinedLag > 0 ? sampleRate / refinedLag : 0, confidence }
+    if (!bestLag || bestScore < 0.48) return { hz:0, confidence:Math.max(0,bestScore) }
+    const left = scores[Math.max(minLag,bestLag-2)] || bestScore
+    const right = scores[Math.min(maxLag,bestLag+2)] || bestScore
+    const denominator = left - 2 * bestScore + right
+    const refinedLag = bestLag + (Math.abs(denominator) > 1e-8 ? (left-right) / denominator : 0)
+    return { hz:sampleRate / Math.max(1,refinedLag), confidence:bestScore }
   }
   let pitchFrame = 0, lastPitch = 0, lastConfidence = 0
   const tick = () => {
@@ -172,7 +162,7 @@ export function monitorInput(onFrame, { detectPitch = false } = {}) {
       if (i && Math.sign(value) !== Math.sign(buffer[i - 1])) crossings++
     }
     const rms = Math.sqrt(sum / buffer.length)
-    const pitchFresh = detectPitch && pitchFrame++ % 6 === 0
+    const pitchFresh = detectPitch && pitchFrame++ % 4 === 0
     if (pitchFresh) {
       const estimate = estimatePitch(buffer, context().sampleRate, rms)
       lastPitch = estimate.hz
