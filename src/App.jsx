@@ -202,8 +202,11 @@ float fbm(vec2 p){float v=0.,a=.5;for(int j=0;j<4;j++){v+=a*noise(p);p=p*2.03+ve
 vec3 voiceColor(int i){if(i==0)return vec3(.2,.62,1.22);if(i==1)return vec3(1.12,.39,.3);if(i==2)return vec3(.96,.79,.58);return vec3(.18,.82,.76);}
 void main(){
  vec2 p=(vUv-.5)*2.;float r=length(p),ang=atan(p.y,p.x);float disc=1.-smoothstep(.965,.997,r);
- vec3 col=mix(vec3(.025,.019,.016),vec3(.12,.095,.076),max(0.,1.-r)*.55);
- float grooves=(.5+.5*sin(r*430.+sin(ang*3.)*1.7))*(.01+.013*smoothstep(.2,.95,r));col+=vec3(grooves);
+ float warmFalloff=max(0.,1.-r);float materialNoise=(noise(p*vec2(92.,77.))-.5)*.008;
+ vec3 col=mix(vec3(.016,.012,.01),vec3(.105,.081,.064),warmFalloff*.58)+materialNoise;
+ float groovesA=(.5+.5*sin(r*430.+sin(ang*3.)*1.7))*(.009+.012*smoothstep(.2,.95,r));
+ float groovesB=(.5+.5*sin(r*267.-sin(ang*2.)*1.2))*.006;col+=vec3(groovesA+groovesB);
+ float outerRim=smoothstep(.947,.973,r)*(1.-smoothstep(.985,.998,r));col+=vec3(.18,.145,.11)*outerRim*.22;
  for(int i=0;i<4;i++){
   vec4 a=uLayerA[i],b=uLayerB[i];if(a.x<.5)continue;
   float live=1.-step(.45,abs(float(i)-uLiveIndex));float seed=b.z*37.13;
@@ -212,7 +215,7 @@ void main(){
   float theta=ang+warp+sin(ang*2.+b.x)*.035;
   float center=.54+(a.y-.54)*.31+sin(theta+b.x)*(.12+a.w*.014)+sin(theta*3.+seed)*(.045+a.w*.009);
   center+=live*sin(theta*8.+uTime*3.2)*uLiveLevel*.028;
-  float width=.062+a.z*.78;float d=abs(r-center);float ribbon=exp(-1.9*d*d/(width*width));
+  float width=.07+a.z*.84;float d=abs(r-center);float ribbon=exp(-1.82*d*d/(width*width));
   float lobeA=pow(.5+.5*cos(theta-b.x*.73-seed*.11),3.4);float lobeB=.78*pow(.5+.5*cos(theta-b.x*.41+2.35+seed*.07),5.2);float presence=.055+max(lobeA,lobeB);
   float flowNoise=fbm(polar*2.45+vec2((r-center)*12.+seed,-(r-center)*10.+seed*.4));
   float fibers=pow(.5+.5*cos((r-center)*178.+flowNoise*24.+sin(theta*7.+seed)*2.4),10.);
@@ -228,14 +231,18 @@ void main(){
   float sparkShape=smoothstep(.34,.035,length(sparkUv));float spark=sparkShape*step(.9,hash21(sparkCell+seed))*ribbon*presence;
   vec2 pinGrid=(p+vec2(seed*.013))*uResolution.x*.31;vec2 pinCell=floor(pinGrid);vec2 pinUv=fract(pinGrid)-.5;
   float pinShape=smoothstep(.22,.018,length(pinUv));float pin=pinShape*step(.94,hash21(pinCell-seed))*ribbon*presence;
-  float colorHaze=ribbon*presence*(.07+flowNoise*.055)+plume*(.026+domain*.024);
-  float ringFlow=ribbon*presence*(.028+fibers*.29+hair*.1+ridge*.39+ridgeFine*.16);
-  float crossingFlow=plume*(.012+plumeFibers*.25+ridge*.32+ridgeFine*.11)*(.22+.78*presence);
+  float colorHaze=ribbon*presence*(.024+flowNoise*.018)+plume*(.009+domain*.008);
+  float ringFlow=ribbon*presence*(.018+fibers*.4+hair*.15+ridge*.3+ridgeFine*.19);
+  float crossingFlow=plume*(.007+plumeFibers*.34+ridge*.24+ridgeFine*.14)*(.22+.78*presence);
   float intensity=colorHaze+ringFlow+crossingFlow+spark*3.1+pin*3.4;
   intensity*=.72+b.y*.78+live*uLiveLevel*.55;col+=voiceColor(i)*intensity;
  }
- float sheen=smoothstep(.13,0.,abs(p.x+p.y*.58-.12))*(1.-smoothstep(.18,.9,r))*.045;col+=vec3(.75,.68,.58)*sheen;
- float hub=1.-smoothstep(.185,.202,r);vec3 hubCol=mix(vec3(.025,.019,.016),vec3(.19,.15,.12),max(0.,1.-r/.2)*.7);col=mix(col,hubCol,hub);
+ float sheen=smoothstep(.2,0.,abs(p.x+p.y*.58-.12))*(1.-smoothstep(.12,.91,r))*.038;col+=vec3(.72,.63,.51)*sheen;
+ float hub=1.-smoothstep(.185,.205,r);float hubDepth=max(0.,1.-r/.205);
+ vec3 hubCol=mix(vec3(.027,.02,.016),vec3(.2,.155,.112),hubDepth*.78);
+ float hubGroove=(.5+.5*sin(r*185.))*smoothstep(.035,.19,r)*.025;hubCol+=vec3(.32,.245,.18)*hubGroove;
+ float hubSpec=smoothstep(.09,0.,length(p-vec2(-.055,.065)))*.13;hubCol+=vec3(.7,.56,.4)*hubSpec;
+ col=mix(col,hubCol,hub);float hubRim=smoothstep(.21,.198,r)*(1.-smoothstep(.185,.194,r));col+=vec3(.28,.215,.16)*hubRim*.32;
  float hole=1.-smoothstep(.026,.038,r);col=mix(col,vec3(.005,.004,.003),hole);
  col=1.-exp(-col*1.18);col=pow(col,vec3(.9));gl_FragColor=vec4(col*disc,disc);
 }`
@@ -250,7 +257,7 @@ void main(){
     gl.uniform4fv(gl.getUniformLocation(program,'uLayerA[0]'),layerA);gl.uniform4fv(gl.getUniformLocation(program,'uLayerB[0]'),layerB)
     gl.uniform1f(gl.getUniformLocation(program,'uLiveIndex'),state==='recording'?activePartIndex:-10)
     const timeLocation=gl.getUniformLocation(program,'uTime'),levelLocation=gl.getUniformLocation(program,'uLiveLevel'),resolutionLocation=gl.getUniformLocation(program,'uResolution')
-    const ratio=Math.min(window.devicePixelRatio||1,compact?1.55:2)
+    const ratio=Math.min(window.devicePixelRatio||1,2)
     const resize=()=>{const size=canvas.clientWidth;if(size<8)return false;const pixels=Math.round(size*ratio);if(canvas.width!==pixels||canvas.height!==pixels){canvas.width=pixels;canvas.height=pixels;gl.viewport(0,0,pixels,pixels)}gl.uniform2f(resolutionLocation,pixels,pixels);return true}
     const draw=(now=0)=>{if(now&&now-lastPaint<48){raf=requestAnimationFrame(draw);return}if(now)lastPaint=now;if(!resize())return;gl.uniform1f(timeLocation,now*.001);gl.uniform1f(levelLocation,levelRef.current);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT);gl.drawArrays(gl.TRIANGLES,0,6);if(state==='recording'||state==='processing')raf=requestAnimationFrame(draw)}
     draw();const observer=new ResizeObserver(()=>{cancelAnimationFrame(raf);draw()})
