@@ -181,171 +181,71 @@ function ResonanceRecord({ active = [true, false, true, false], layers = [], act
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
-    const ctx = canvas.getContext('2d')
-    const ratio = Math.min(window.devicePixelRatio || 1, 2)
-    let frame = 0, raf = 0, lastPaint = 0
-    const resize = () => {
-      const size = canvas.clientWidth
-      if (size < 8) return false
-      canvas.width = size * ratio
-      canvas.height = size * ratio
-      ctx.setTransform(ratio, 0, 0, ratio, 0, 0)
-      return true
-    }
-    resize()
     const numericSeed = typeof seed === 'number' ? seed : [...String(seed)].reduce((sum,char,index)=>sum+char.charCodeAt(0)*(index+17),0)
-    const random = value => {
-      const x = Math.sin(value * 12.9898 + numericSeed * 0.0147) * 43758.5453
-      return x - Math.floor(x)
+    const slots=Array(4).fill(null)
+    if(layers.length)layers.forEach((layer,index)=>{const partIndex=PARTS.findIndex(part=>part.id===layer?.partId);slots[partIndex>=0?partIndex:index]=layer})
+    else active.forEach((enabled,index)=>{if(enabled)slots[index]={partId:PARTS[index]?.id,seed:numericSeed+index*97,baseRadius:[.72,.59,.48,.36][index],spread:.1,turbulence:.72,opacity:.34,phase:index*1.47}})
+    if(state==='recording'&&!slots[activePartIndex])slots[activePartIndex]={partId:PARTS[activePartIndex]?.id,seed:numericSeed+activePartIndex*997,baseRadius:[.72,.59,.48,.36][activePartIndex],spread:.09,turbulence:1,opacity:.3,phase:activePartIndex}
+    const gl=canvas.getContext('webgl',{alpha:true,antialias:true,premultipliedAlpha:true})
+    let raf=0,lastPaint=0
+    if(!gl){
+      const ctx=canvas.getContext('2d'),ratio=Math.min(window.devicePixelRatio||1,2)
+      const drawFallback=()=>{const size=canvas.clientWidth;if(size<8)return;canvas.width=size*ratio;canvas.height=size*ratio;ctx.setTransform(ratio,0,0,ratio,0,0);const c=size/2,r=c-3;ctx.clearRect(0,0,size,size);ctx.beginPath();ctx.arc(c,c,r,0,Math.PI*2);ctx.fillStyle='#090706';ctx.fill();slots.forEach((layer,index)=>{if(!layer)return;ctx.beginPath();ctx.arc(c,c,r*(.48+index*.06),0,Math.PI*2);ctx.strokeStyle=['#3e89ff','#ff7967','#e8c599','#43c7be'][index];ctx.globalAlpha=.45;ctx.lineWidth=3;ctx.stroke()});ctx.globalAlpha=1;ctx.beginPath();ctx.arc(c,c,r*.2,0,Math.PI*2);ctx.fillStyle='#0b0908';ctx.fill()}
+      drawFallback();const observer=new ResizeObserver(drawFallback);observer.observe(canvas);return()=>observer.disconnect()
     }
-    const colors = ['62,137,255','255,121,103','232,197,153','67,199,190']
-    const draw = (now = 0) => {
-      if (now && now - lastPaint < 48) { raf = requestAnimationFrame(draw); return }
-      if (now) lastPaint = now
-      const size = canvas.clientWidth
-      if (size < 8) return
-      const center = size / 2
-      const radius = center - 4
-      ctx.clearRect(0, 0, size, size)
-      const base = ctx.createRadialGradient(center * .82, center * .72, 0, center, center, radius)
-      base.addColorStop(0, '#312923'); base.addColorStop(.18, '#1a1512'); base.addColorStop(.58, '#0f0c0a'); base.addColorStop(.9, '#080706'); base.addColorStop(1, '#030302')
-      ctx.beginPath(); ctx.arc(center, center, radius, 0, Math.PI * 2); ctx.fillStyle = base; ctx.fill()
-      ctx.save(); ctx.beginPath(); ctx.arc(center, center, radius - 1, 0, Math.PI * 2); ctx.clip()
-      for (let r = radius * .22; r < radius * .97; r += 3.2) {
-        ctx.beginPath(); ctx.arc(center, center, r, 0, Math.PI * 2)
-        ctx.strokeStyle = `rgba(236,230,220,${.025 + (r % 9) * .0015})`; ctx.lineWidth = .65; ctx.stroke()
-      }
-      const layerSlots = layers.length ? layers.map(layer=>layer||null) : active.map((enabled,voice) => enabled ? { partId:PARTS[voice]?.id,seed:numericSeed+voice*97,spread:.09,turbulence:.72,filamentCount:14,particleCount:80,opacity:.3,phase:voice*1.47,envelope:Array(24).fill(.42) } : null)
-      layerSlots.forEach((storedLayer, voice) => {
-        const isLive = state === 'recording' && voice === activePartIndex
-        if (!storedLayer && !isLive) return
-        const layer = storedLayer || { seed:numericSeed + voice * 997, baseRadius:[.72,.59,.48,.35][voice], spread:.08, turbulence:1, filamentCount:12, particleCount:58, opacity:.28, phase:voice }
-        const liveLevel = levelRef.current
-        const energy = isLive ? .78 + liveLevel * .9 : state === 'playing' ? .96 : state === 'complete' ? .9 : .78
-        const lineCount = Math.max(30,Math.min(52,(layer.filamentCount||12)*2.45))
-        const rotation = frame * (voice % 2 ? -.00019 : .00016)
-        const envelopeAt=t=>layer.envelope?.[Math.min((layer.envelope?.length||1)-1,Math.floor(t*(layer.envelope?.length||1)))]||.35
-        const voicePhase=(layer.phase||0)+voice*.31
-        const baseRadius=.54+((layer.baseRadius??.52)-.54)*.3
-        const turbulence=layer.turbulence||.7
-        const spread=layer.spread||.09
-        const peakA=.08+random((layer.seed||0)+voice*113)*.36
-        const peakB=(peakA+.38+random((layer.seed||0)+voice*173)*.22)%1
-        const circularDistance=(a,b)=>Math.min(Math.abs(a-b),1-Math.abs(a-b))
-        const presenceAt=t=>{
-          const a=Math.exp(-Math.pow(circularDistance(t,peakA)/.17,2))
-          const b=Math.exp(-Math.pow(circularDistance(t,peakB)/.12,2))*.82
-          return .055+Math.max(a,b)
-        }
-        const flowPoint=(t,band=0,flutter=0,branch=0)=>{
-          const angle=voicePhase+(t-.08)*Math.PI*2.18+rotation+Math.sin(t*Math.PI*4.2+voicePhase)*turbulence*.035+branch*Math.sin(t*Math.PI)*.34
-          const width=radius*(.04+spread*.82)*(.55+Math.sin(t*Math.PI)*.64)
-          const voiceShape=Math.sin(angle*1.37+voicePhase)*radius*(.095+turbulence*.012)+Math.sin(angle*3.13+(layer.seed||0)*.00003)*radius*(.035+turbulence*.008)
-          const breath=isLive?Math.sin(t*Math.PI*10+frame*.055)*liveLevel*radius*.032:0
-          const rr=radius*baseRadius+voiceShape+band*width+branch*Math.sin(t*Math.PI)*radius*.065+flutter+breath
-          return [center+Math.cos(angle)*rr*(1+.055*Math.sin(angle*2.05+voice)),center+Math.sin(angle)*rr*(.985+.025*Math.cos(angle*1.7))]
-        }
-        ctx.save()
-        ctx.globalCompositeOperation = 'screen'
-        ctx.lineCap='round'
-        ctx.filter='blur(6px)'
-        for(let haze=0;haze<4;haze++){
-          const branch=haze===1?-.62:haze===2?.62:0
-          for(let start=0;start<96;start+=6){
-            ctx.beginPath()
-            for(let i=start;i<=start+6;i++){
-              const t=i/96
-              const point=flowPoint(t,(haze-1.5)*.4,0,branch)
-              if(i===start)ctx.moveTo(point[0],point[1]);else ctx.lineTo(point[0],point[1])
-            }
-            const presence=presenceAt((start+3)/96)
-            ctx.strokeStyle=`rgba(${colors[voice]},${(.018+energy*.018)*presence})`
-            ctx.lineWidth=16+haze*4.5
-            ctx.stroke()
-          }
-        }
-        ctx.filter='none'
-        for (let line = 0; line < lineCount; line++) {
-          const points = 84
-          const band=(line-(lineCount-1)/2)/(lineCount/2)
-          const branch=line%9===0?(line%18===0?-.58:.58):0
-          const edge=1-Math.abs(band)*.68
-          const isCore=Math.abs(band)<.34
-          ctx.shadowBlur=isCore?2.8:0
-          ctx.shadowColor=isCore?`rgba(${colors[voice]},.42)`:'transparent'
-          for(let start=0;start<points;start+=4){
-            ctx.beginPath()
-            for(let i=start;i<=Math.min(points,start+4);i++){
-              const t=i/points
-              const grain=Math.sin(t*Math.PI*(8.5+turbulence*2)+line*.79+(layer.seed||0)*.00004)*radius*(.0025+turbulence*.0045)
-              const point=flowPoint(t,band,grain,branch)
-              if(i===start)ctx.moveTo(point[0],point[1]);else ctx.lineTo(point[0],point[1])
-            }
-            const segmentT=(start+2)/points
-            const envelope=.25+envelopeAt(segmentT)*.95
-            const pulse=.72+.28*Math.sin(segmentT*Math.PI*6+voicePhase+line*.11)
-            ctx.strokeStyle=`rgba(${colors[voice]},${(.055+(layer.opacity||.3)*.2+energy*.055)*edge*envelope*pulse*presenceAt(segmentT)})`
-            ctx.lineWidth=.32+(line%7)*.12
-            ctx.stroke()
-          }
-          ctx.shadowBlur=0
-        }
-        const density = compact ? .62 : 1
-        const particles = Math.round(Math.min(980,Math.max(620,(layer.particleCount||58)*8.7))*density)
-        for (let p = 0; p < particles; p++) {
-          const centerPeak=random(p*59+(layer.seed||0))<.62?peakA:peakB
-          const cluster=(random(p*17+voice*401+(layer.seed||0))+random(p*23+(layer.seed||0))+random(p*29+voice)-1.5)*.24
-          const t=(centerPeak+cluster+1)%1
-          const band=(random(p*31+(layer.seed||0))+random(p*37+voice)-1)*1.32
-          const branchRoll=random(p*47+(layer.seed||0)+voice*29)
-          const branch=branchRoll>.88?.58:branchRoll<.12?-.58:0
-          const flutter=(random(p*11+voice)-.5)*radius*(.009+turbulence*.012)
-          const point=flowPoint(t,band,flutter,branch)
-          const envelope=envelopeAt(t)
-          const alpha=(.18+random(p+numericSeed+(layer.seed||0))*.76)*energy*(.36+envelope*.92)*(1-Math.abs(band)*.42)
-          const dot=.34+random(p*13)*1.55
-          if(p%2===0){
-            const next=flowPoint(Math.min(1,t+.009+random(p*43)*.011),band,flutter,branch)
-            ctx.beginPath();ctx.moveTo(point[0],point[1]);ctx.lineTo(next[0],next[1])
-            ctx.strokeStyle=`rgba(${colors[voice]},${alpha*.72})`;ctx.lineWidth=.3+random(p*53)*.8;ctx.stroke()
-          }else{
-            ctx.fillStyle = `rgba(${colors[voice]},${alpha})`
-            ctx.fillRect(point[0],point[1],dot,dot)
-          }
-          if (p % 29 === 0) {
-            ctx.beginPath();ctx.arc(point[0],point[1],.7+random(p*19)*1.2,0,Math.PI*2)
-            ctx.fillStyle=`rgba(${colors[voice]},${Math.min(.78,alpha*1.55)})`;ctx.fill()
-          }
-        }
-        ctx.restore()
-      })
-      if (state === 'recording') {
-        const voice = Math.max(0,activePartIndex), liveColor = colors[voice]
-        const liveLevel = levelRef.current
-        ctx.save(); ctx.globalCompositeOperation='source-over'
-        for(let stream=0;stream<9;stream++){
-          const drift=(stream-4)*2.2
-          ctx.beginPath();ctx.moveTo(center+drift,size+8)
-          ctx.bezierCurveTo(center+drift*3,size*.82,center+Math.sin(stream)*18,size*.68,center+Math.cos(stream)*10,center+radius*.56)
-          ctx.strokeStyle=`rgba(${liveColor},${.045+liveLevel*.14})`;ctx.lineWidth=.6+(stream%3)*.25;ctx.stroke()
-        }
-        ctx.restore()
-      }
-      const sheen = ctx.createLinearGradient(0, 0, size, size)
-      sheen.addColorStop(.2, 'rgba(236,230,220,0)'); sheen.addColorStop(.48, 'rgba(236,230,220,.055)'); sheen.addColorStop(.56, 'rgba(236,230,220,0)')
-      ctx.fillStyle = sheen; ctx.fillRect(0, 0, size, size)
-      ctx.restore()
-      const hub = ctx.createRadialGradient(center * .93, center * .91, 2, center, center, radius * .2)
-      hub.addColorStop(0, '#3a312b'); hub.addColorStop(.35, '#171310'); hub.addColorStop(1, '#080706')
-      ctx.beginPath(); ctx.arc(center, center, radius * .2, 0, Math.PI * 2); ctx.fillStyle = hub; ctx.fill(); ctx.strokeStyle = 'rgba(236,230,220,.12)'; ctx.stroke()
-      ctx.beginPath(); ctx.arc(center, center, radius * .035, 0, Math.PI * 2); ctx.fillStyle = '#050403'; ctx.fill()
-      frame++
-      if (state === 'recording' || state === 'processing') raf = requestAnimationFrame(draw)
-    }
-    draw()
-    const observer = new ResizeObserver(() => { cancelAnimationFrame(raf); if (resize()) draw() })
+    const vertex=`attribute vec2 aPosition;varying vec2 vUv;void main(){vUv=aPosition*.5+.5;gl_Position=vec4(aPosition,0.,1.);}`
+    const fragment=`precision highp float;
+varying vec2 vUv;uniform vec2 uResolution;uniform float uTime;uniform float uLiveLevel;uniform float uLiveIndex;uniform vec4 uLayerA[4];uniform vec4 uLayerB[4];
+float hash21(vec2 p){p=fract(p*vec2(123.34,456.21));p+=dot(p,p+45.32);return fract(p.x*p.y);}
+float noise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(hash21(i),hash21(i+vec2(1,0)),f.x),mix(hash21(i+vec2(0,1)),hash21(i+vec2(1)),f.x),f.y);}
+float fbm(vec2 p){float v=0.,a=.5;for(int j=0;j<4;j++){v+=a*noise(p);p=p*2.03+vec2(17.1,9.2);a*=.5;}return v;}
+vec3 voiceColor(int i){if(i==0)return vec3(.24,.54,1.);if(i==1)return vec3(1.,.43,.35);if(i==2)return vec3(.94,.78,.58);return vec3(.22,.78,.73);}
+void main(){
+ vec2 p=(vUv-.5)*2.;float r=length(p),ang=atan(p.y,p.x);float disc=1.-smoothstep(.965,.997,r);
+ vec3 col=mix(vec3(.025,.019,.016),vec3(.12,.095,.076),max(0.,1.-r)*.55);
+ float grooves=(.5+.5*sin(r*430.+sin(ang*3.)*1.7))*(.01+.013*smoothstep(.2,.95,r));col+=vec3(grooves);
+ for(int i=0;i<4;i++){
+  vec4 a=uLayerA[i],b=uLayerB[i];if(a.x<.5)continue;
+  float live=1.-step(.45,abs(float(i)-uLiveIndex));float seed=b.z*37.13;
+  vec2 polar=vec2(cos(ang),sin(ang));
+  float warp=(fbm(polar*1.65+vec2(r*2.7+seed,-r*2.1+seed*.7))-.5)*(.2+a.w*.085);
+  float theta=ang+warp+sin(ang*2.+b.x)*.035;
+  float center=.54+(a.y-.54)*.31+sin(theta+b.x)*(.12+a.w*.014)+sin(theta*3.+seed)*(.045+a.w*.009);
+  center+=live*sin(theta*8.+uTime*3.2)*uLiveLevel*.028;
+  float width=.062+a.z*.78;float d=abs(r-center);float ribbon=exp(-1.9*d*d/(width*width));
+  float lobeA=pow(.5+.5*cos(theta-b.x*.73-seed*.11),3.4);float lobeB=.78*pow(.5+.5*cos(theta-b.x*.41+2.35+seed*.07),5.2);float presence=.055+max(lobeA,lobeB);
+  float flowNoise=fbm(polar*2.45+vec2((r-center)*12.+seed,-(r-center)*10.+seed*.4));
+  float fibers=pow(.5+.5*cos((r-center)*178.+flowNoise*24.+sin(theta*7.+seed)*2.4),10.);
+  float hair=pow(.5+.5*cos((r-center)*318.+flowNoise*15.),17.);
+  vec2 sparkGrid=(p+vec2(seed*.01))*uResolution.x*.18;vec2 sparkCell=floor(sparkGrid);vec2 sparkUv=fract(sparkGrid)-.5;
+  float sparkShape=smoothstep(.34,.035,length(sparkUv));float spark=sparkShape*step(.9,hash21(sparkCell+seed))*ribbon*presence;
+  vec2 pinGrid=(p+vec2(seed*.013))*uResolution.x*.31;vec2 pinCell=floor(pinGrid);vec2 pinUv=fract(pinGrid)-.5;
+  float pinShape=smoothstep(.22,.018,length(pinUv));float pin=pinShape*step(.94,hash21(pinCell-seed))*ribbon*presence;
+  float intensity=ribbon*presence*(.045+fibers*.72+hair*.28)+spark*3.1+pin*3.4;
+  intensity*=.72+b.y*.78+live*uLiveLevel*.55;col+=voiceColor(i)*intensity;
+ }
+ float sheen=smoothstep(.13,0.,abs(p.x+p.y*.58-.12))*(1.-smoothstep(.18,.9,r))*.045;col+=vec3(.75,.68,.58)*sheen;
+ float hub=1.-smoothstep(.185,.202,r);vec3 hubCol=mix(vec3(.025,.019,.016),vec3(.19,.15,.12),max(0.,1.-r/.2)*.7);col=mix(col,hubCol,hub);
+ float hole=1.-smoothstep(.026,.038,r);col=mix(col,vec3(.005,.004,.003),hole);
+ col=1.-exp(-col*1.18);col=pow(col,vec3(.9));gl_FragColor=vec4(col*disc,disc);
+}`
+    const compile=(type,source)=>{const shader=gl.createShader(type);gl.shaderSource(shader,source);gl.compileShader(shader);if(!gl.getShaderParameter(shader,gl.COMPILE_STATUS))throw new Error(gl.getShaderInfoLog(shader));return shader}
+    let program
+    try{program=gl.createProgram();gl.attachShader(program,compile(gl.VERTEX_SHADER,vertex));gl.attachShader(program,compile(gl.FRAGMENT_SHADER,fragment));gl.linkProgram(program);if(!gl.getProgramParameter(program,gl.LINK_STATUS))throw new Error(gl.getProgramInfoLog(program))}catch(error){console.error('Resonance shader unavailable',error);return}
+    gl.useProgram(program)
+    const buffer=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,buffer);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,-1,1,1,-1,1,1]),gl.STATIC_DRAW)
+    const position=gl.getAttribLocation(program,'aPosition');gl.enableVertexAttribArray(position);gl.vertexAttribPointer(position,2,gl.FLOAT,false,0,0)
+    const layerA=new Float32Array(16),layerB=new Float32Array(16)
+    slots.forEach((layer,index)=>{if(!layer)return;layerA.set([1,layer.baseRadius??.52,layer.spread??.09,layer.turbulence??.7],index*4);layerB.set([layer.phase??index,layer.opacity??.3,((layer.seed??numericSeed+index*97)%100000)/100000,0],index*4)})
+    gl.uniform4fv(gl.getUniformLocation(program,'uLayerA[0]'),layerA);gl.uniform4fv(gl.getUniformLocation(program,'uLayerB[0]'),layerB)
+    gl.uniform1f(gl.getUniformLocation(program,'uLiveIndex'),state==='recording'?activePartIndex:-10)
+    const timeLocation=gl.getUniformLocation(program,'uTime'),levelLocation=gl.getUniformLocation(program,'uLiveLevel'),resolutionLocation=gl.getUniformLocation(program,'uResolution')
+    const ratio=Math.min(window.devicePixelRatio||1,compact?1.55:2)
+    const resize=()=>{const size=canvas.clientWidth;if(size<8)return false;const pixels=Math.round(size*ratio);if(canvas.width!==pixels||canvas.height!==pixels){canvas.width=pixels;canvas.height=pixels;gl.viewport(0,0,pixels,pixels)}gl.uniform2f(resolutionLocation,pixels,pixels);return true}
+    const draw=(now=0)=>{if(now&&now-lastPaint<48){raf=requestAnimationFrame(draw);return}if(now)lastPaint=now;if(!resize())return;gl.uniform1f(timeLocation,now*.001);gl.uniform1f(levelLocation,levelRef.current);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT);gl.drawArrays(gl.TRIANGLES,0,6);if(state==='recording'||state==='processing')raf=requestAnimationFrame(draw)}
+    draw();const observer=new ResizeObserver(()=>{cancelAnimationFrame(raf);draw()})
     observer.observe(canvas)
-    return () => { observer.disconnect(); cancelAnimationFrame(raf) }
+    return () => { observer.disconnect(); cancelAnimationFrame(raf);gl.deleteBuffer(buffer);gl.deleteProgram(program) }
   }, [active.join(','), layers.map(layer=>layer?.signature||'').join(','), activePartIndex, state, seed])
   const layerCount = layers.length ? layers.filter(Boolean).length : active.filter(Boolean).length
   return <figure className={`record ${compact ? 'record-compact' : ''}`} data-state={state} data-record-signature={projectRecordSignature(String(seed),layers)} aria-label={label || `공명 레코드, ${layerCount}개 Track 활성`}>
