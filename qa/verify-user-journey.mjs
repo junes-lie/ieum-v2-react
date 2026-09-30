@@ -27,6 +27,8 @@ const visibleState=()=>page.evaluate(()=>{
     joined:state?.joined,
     invited:state?.invited,
     candidateAccepted:state?.candidateAccepted,
+    recordSignature:state?.recordSignature,
+    mix:state?.mix ? { bytes:state.mix.blob?.size||state.mix.bytes||0, duration:state.mix.duration, origin:state.mix.origin, processing:state.mix.processing } : null,
     trackCount:Object.keys(state?.projectTracks||{}).length,
     tracks:Object.fromEntries(Object.entries(state?.projectTracks||{}).map(([id,track])=>[id,{origin:track.origin,demo:track.demo,bytes:track.blob?.size||0,fingerprint:track.features?.fingerprint,layer:track.layer?.signature,participant:track.participant}]))
   }
@@ -175,6 +177,7 @@ await page.locator('[data-action="record-submit"]').click()
 await page.waitForFunction(()=>window.__IEUM_V2__?.state?.screen==='workspace',null,{timeout:10000})
 const afterSubmit=await visibleState()
 check('내 Review 제출 후에만 2/4에서 3/4',afterSubmit.trackCount===3&&afterSubmit.tracks.tenor?.origin==='live-microphone-recording'&&!afterSubmit.tracks.bass,afterSubmit)
+check('실제 Track 제출 시 Record signature가 바뀌고 기존 Layer는 유지',afterSubmit.recordSignature!==initial.recordSignature&&afterSubmit.tracks.soprano.layer===initial.tracks.soprano.layer&&afterSubmit.tracks.alto.layer===initial.tracks.alto.layer,{before:initial.recordSignature,after:afterSubmit.recordSignature})
 check('Review 제출 후 강제 이동 없이 작업실에서 제출 상태 확인',await page.locator('.workspace-screen').isVisible()&&(await page.locator('.top-meta').innerText()).includes('03/04'))
 await page.locator('[data-action="open-multitrack"]').click()
 check('Multitrack에서 하단 내비게이션 숨김',await page.locator('.bottom-nav').count()===0)
@@ -191,6 +194,7 @@ check('몇 초 뒤 초대 수락만으로는 Track이 생기지 않음',inviteAc
 await page.waitForFunction(()=>window.__IEUM_V2__?.state?.readyForMix===true&&window.__IEUM_V2__?.state?.screen==='workspace',null,{timeout:10000})
 const afterArrival=await visibleState()
 check('수락 뒤 Bass 데모 Track이 실제 도착할 때 4/4',afterArrival.trackCount===4&&afterArrival.tracks.bass?.origin==='local-formant-singing-demo',afterArrival)
+check('4번째 Track 도착 시 같은 Record가 다시 성장',afterArrival.recordSignature!==afterSubmit.recordSignature&&afterArrival.tracks.tenor.layer===afterSubmit.tracks.tenor.layer,{three:afterSubmit.recordSignature,four:afterArrival.recordSignature})
 check('마지막 Track 도착 후에도 작업실을 강제로 이탈하지 않음',await page.locator('.workspace-screen').isVisible())
 await page.waitForFunction(()=>window.__IEUM_V2__?.state?.mixStatus==='processing'||window.__IEUM_V2__?.state?.mixStatus==='complete',null,{timeout:10000})
 check('화면 이동과 무관하게 Auto Mix 자동 시작',['processing','complete'].includes((await page.evaluate(()=>window.__IEUM_V2__.state.mixStatus))))
@@ -205,8 +209,9 @@ await page.getByRole('button',{name:'컬렉션',exact:true}).click()
 check('완성 뒤 프로젝트 Like 항목이 04/04 COMPLETE로 갱신',await page.locator('.collection-card').isVisible()&&(await page.locator('.collection-card').innerText()).includes('COMPLETE · 04/04'))
 await page.reload({waitUntil:'networkidle'})
 await page.waitForFunction(()=>window.__IEUM_V2__?.state?.mix?.blob?.size>0,null,{timeout:30000})
+const persistedComplete=await visibleState()
 await page.getByRole('button',{name:'컬렉션',exact:true}).click()
-check('새로고침 뒤 Auto Mix Blob과 프로젝트 Like 상태 유지',(await page.locator('.collection-card').innerText()).includes('완성곡과 Credits 보기'))
+check('새로고침 뒤 Auto Mix Blob·Record·프로젝트 Like 상태 유지',(await page.locator('.collection-card').innerText()).includes('완성곡과 Credits 보기')&&persistedComplete.mix?.bytes>44&&persistedComplete.recordSignature===afterArrival.recordSignature,persistedComplete)
 await page.locator('[data-action="open-project-like"]').click()
 check('완성 프로젝트 Like는 재생 가능한 완성곡으로 이동',await page.locator('.complete-screen audio').count()===1&&Boolean(await page.locator('.complete-screen audio').getAttribute('src')))
 await page.getByRole('button',{name:'컬렉션',exact:true}).click()

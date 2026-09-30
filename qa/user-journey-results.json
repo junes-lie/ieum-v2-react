@@ -1,6 +1,6 @@
 {
-  "passed": 71,
-  "total": 71,
+  "passed": 73,
+  "total": 73,
   "checks": [
     {
       "name": "첫 진입은 같은 4 Part 프로젝트의 제출 Track 2개",
@@ -10,6 +10,8 @@
         "joined": false,
         "invited": false,
         "candidateAccepted": false,
+        "recordSignature": "11c840d2",
+        "mix": null,
         "trackCount": 2,
         "tracks": {
           "soprano": {
@@ -258,7 +260,7 @@
         {
           "id": "ieum-v2:voice-profile:v7:sample",
           "kind": "voice-sample",
-          "bytes": 49527,
+          "bytes": 50494,
           "origin": "live-microphone-voice-sample"
         }
       ]
@@ -326,6 +328,8 @@
         "joined": true,
         "invited": false,
         "candidateAccepted": false,
+        "recordSignature": "11c840d2",
+        "mix": null,
         "trackCount": 2,
         "tracks": {
           "alto": {
@@ -355,6 +359,8 @@
         "joined": true,
         "invited": false,
         "candidateAccepted": false,
+        "recordSignature": "1344358a",
+        "mix": null,
         "trackCount": 3,
         "tracks": {
           "alto": {
@@ -376,11 +382,19 @@
           "tenor": {
             "origin": "live-microphone-recording",
             "bytes": 58424,
-            "fingerprint": "18748273",
-            "layer": "7c70313f",
+            "fingerprint": "757d1a6a",
+            "layer": "e1e9b02b",
             "participant": "JISUN"
           }
         }
+      }
+    },
+    {
+      "name": "실제 Track 제출 시 Record signature가 바뀌고 기존 Layer는 유지",
+      "pass": true,
+      "detail": {
+        "before": "11c840d2",
+        "after": "1344358a"
       }
     },
     {
@@ -401,6 +415,8 @@
         "joined": true,
         "invited": true,
         "candidateAccepted": false,
+        "recordSignature": "1344358a",
+        "mix": null,
         "trackCount": 3,
         "tracks": {
           "alto": {
@@ -422,8 +438,8 @@
           "tenor": {
             "origin": "live-microphone-recording",
             "bytes": 58424,
-            "fingerprint": "18748273",
-            "layer": "7c70313f",
+            "fingerprint": "757d1a6a",
+            "layer": "e1e9b02b",
             "participant": "JISUN"
           }
         }
@@ -437,6 +453,8 @@
         "joined": true,
         "invited": true,
         "candidateAccepted": true,
+        "recordSignature": "1344358a",
+        "mix": null,
         "trackCount": 3,
         "tracks": {
           "alto": {
@@ -458,8 +476,8 @@
           "tenor": {
             "origin": "live-microphone-recording",
             "bytes": 58424,
-            "fingerprint": "18748273",
-            "layer": "7c70313f",
+            "fingerprint": "757d1a6a",
+            "layer": "e1e9b02b",
             "participant": "JISUN"
           }
         }
@@ -473,6 +491,8 @@
         "joined": true,
         "invited": true,
         "candidateAccepted": true,
+        "recordSignature": "b4aa69fb",
+        "mix": null,
         "trackCount": 4,
         "tracks": {
           "alto": {
@@ -494,8 +514,8 @@
           "tenor": {
             "origin": "live-microphone-recording",
             "bytes": 58424,
-            "fingerprint": "18748273",
-            "layer": "7c70313f",
+            "fingerprint": "757d1a6a",
+            "layer": "e1e9b02b",
             "participant": "JISUN"
           },
           "bass": {
@@ -507,6 +527,14 @@
             "participant": "Luna"
           }
         }
+      }
+    },
+    {
+      "name": "4번째 Track 도착 시 같은 Record가 다시 성장",
+      "pass": true,
+      "detail": {
+        "three": "1344358a",
+        "four": "b4aa69fb"
       }
     },
     {
@@ -540,9 +568,62 @@
       "detail": ""
     },
     {
-      "name": "새로고침 뒤 Auto Mix Blob과 프로젝트 Like 상태 유지",
+      "name": "새로고침 뒤 Auto Mix Blob·Record·프로젝트 Like 상태 유지",
       "pass": true,
-      "detail": ""
+      "detail": {
+        "screen": "home",
+        "joined": true,
+        "invited": true,
+        "candidateAccepted": true,
+        "recordSignature": "b4aa69fb",
+        "mix": {
+          "bytes": 3175244,
+          "duration": 18,
+          "origin": "offline-audio-context:offset+noise-gate+rms-normalize+eq+compressor+limiter",
+          "processing": {
+            "alignment": "recording-guide-offset",
+            "noiseGate": true,
+            "normalization": "RMS -18.4 dBFS target",
+            "eq": "85 Hz HPF + 2.8 kHz presence",
+            "compressor": true,
+            "limiter": "-3 dB"
+          }
+        },
+        "trackCount": 4,
+        "tracks": {
+          "alto": {
+            "origin": "local-formant-singing-demo",
+            "demo": true,
+            "bytes": 1038914,
+            "fingerprint": "114c6156",
+            "layer": "09d6df3f",
+            "participant": "도윤"
+          },
+          "bass": {
+            "origin": "local-formant-singing-demo",
+            "demo": true,
+            "bytes": 1038914,
+            "fingerprint": "366f0923",
+            "layer": "476f9980",
+            "participant": "Luna"
+          },
+          "soprano": {
+            "origin": "local-formant-singing-demo",
+            "demo": true,
+            "bytes": 1038914,
+            "fingerprint": "adc27717",
+            "layer": "6d1db994",
+            "participant": "윤슬"
+          },
+          "tenor": {
+            "origin": "live-microphone-recording",
+            "bytes": 58424,
+            "fingerprint": "757d1a6a",
+            "layer": "e1e9b02b",
+            "participant": "JISUN"
+          }
+        }
+      }
     },
     {
       "name": "완성 프로젝트 Like는 재생 가능한 완성곡으로 이동",
@@ -577,6 +658,8 @@
         "joined": false,
         "invited": false,
         "candidateAccepted": false,
+        "recordSignature": "11c840d2",
+        "mix": null,
         "trackCount": 2,
         "tracks": {
           "soprano": {
@@ -606,6 +689,8 @@
         "joined": false,
         "invited": false,
         "candidateAccepted": false,
+        "recordSignature": "11c840d2",
+        "mix": null,
         "trackCount": 2,
         "tracks": {
           "soprano": {
