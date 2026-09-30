@@ -1,3 +1,5 @@
+import { estimatePitch } from './pitch.js'
+
 const clamp01 = value => Math.max(0, Math.min(1, value))
 const round = (value, places = 5) => Number(value.toFixed(places))
 
@@ -65,7 +67,7 @@ export function analyzeAudioBuffer(audioBuffer) {
   const fftSize = 1024
   const frameCount = Math.min(72, Math.max(12, Math.floor(source.length / fftSize)))
   const hop = Math.max(1, Math.floor((source.length - fftSize) / Math.max(1, frameCount - 1)))
-  const frameRms = [], centroids = [], rolloffs = [], flatnesses = [], zcrs = [], fluxes = []
+  const frameRms = [], centroids = [], rolloffs = [], flatnesses = [], zcrs = [], fluxes = [], pitchMidis = []
   const bandEnergy = [0, 0, 0]
   let previous = null, globalPeak = 0
 
@@ -78,7 +80,14 @@ export function analyzeAudioBuffer(audioBuffer) {
       globalPeak = Math.max(globalPeak, Math.abs(frame[i]))
       if (i && Math.sign(frame[i]) !== Math.sign(frame[i - 1])) crossings++
     }
-    frameRms.push(Math.sqrt(sumSquares / fftSize))
+    const currentRms = Math.sqrt(sumSquares / fftSize)
+    frameRms.push(currentRms)
+    if (frameIndex % 2 === 0) {
+      const pitch = estimatePitch(frame, sampleRate, currentRms)
+      if (pitch.hz >= 65 && pitch.hz <= 1050 && pitch.confidence >= .30) {
+        pitchMidis.push(69 + 12 * Math.log2(pitch.hz / 440))
+      }
+    }
     zcrs.push(crossings / fftSize)
     const spectrum = fftMagnitudes(frame)
     let magnitudeSum = 0, weighted = 0, logSum = 0, cumulative = 0
@@ -124,11 +133,24 @@ export function analyzeAudioBuffer(audioBuffer) {
   const centroidHz = mean(centroids)
   const rolloffHz = mean(rolloffs)
   const flatness = clamp01(mean(flatnesses))
-  const flux = clamp01(mean(fluxes) * 8)
+  const flux = clamp01(mean(fluxes) * 2.2)
   const zcr = clamp01(mean(zcrs) * 10)
-  const dynamicRange = clamp01((percentile(frameRms, .9) - percentile(frameRms, .1)) * 12)
+  const activeThreshold = Math.max(.002, percentile(frameRms, .8) * .18)
+  const activeFrames = frameRms.map(value => value >= activeThreshold)
+  const activeRms = frameRms.filter((_, index) => activeFrames[index])
+  const dynamicRange = clamp01((percentile(activeRms, .9) - percentile(activeRms, .1)) * 7)
+  let onsetCount = 0
+  for (let index = 0; index < activeFrames.length; index++) {
+    if (activeFrames[index] && (index === 0 || !activeFrames[index - 1])) onsetCount++
+  }
+  const activeRatio = activeFrames.filter(Boolean).length / Math.max(1, activeFrames.length)
+  const articulation = clamp01((onsetCount / Math.max(.5, audioBuffer.duration)) / 4)
+  const pitchDiffs = pitchMidis.slice(1).map((value, index) => Math.abs(value - pitchMidis[index])).filter(value => value <= 7)
+  const pitchMotion = pitchDiffs.length ? percentile(pitchDiffs, .6) : 0
+  const pitchRange = pitchMidis.length > 2 ? percentile(pitchMidis, .85) - percentile(pitchMidis, .15) : 0
+  const pitchVariation = clamp01(pitchMotion / 3.5 * .62 + pitchRange / 20 * .38)
   const features = {
-    version: 'ieum-basic-voice-v2',
+    version: 'ieum-basic-voice-v3',
     durationSec: round(audioBuffer.duration, 3),
     sampleRate,
     rms: round(rms),
@@ -145,6 +167,10 @@ export function analyzeAudioBuffer(audioBuffer) {
     spectralFlux: round(flux),
     zeroCrossing: round(zcr),
     dynamicRange: round(dynamicRange),
+    activeRatio: round(activeRatio),
+    articulation: round(articulation),
+    pitchVariation: round(pitchVariation),
+    pitchFrameCount: pitchMidis.length,
     envelope
   }
   features.fingerprint = hashText(JSON.stringify(features))
@@ -158,7 +184,7 @@ export function buildVoiceLayer(projectSeed, partId, features) {
   const seed = Number.parseInt(seedHex, 16) >>> 0
   const partDepth = { soprano:.72, alto:.59, tenor:.48, bass:.36 }[partId] ?? .52
   const layer = {
-    version: 'ieum-layer-v3-part-depth-features',
+    version: 'ieum-layer-v4-voice-grain',
     partId,
     sourceFingerprint: features.fingerprint,
     projectSeed,
@@ -170,6 +196,9 @@ export function buildVoiceLayer(projectSeed, partId, features) {
     particleCount: Math.round(42 + features.brightness * 45 + features.roughness * 38),
     opacity: round(.2 + features.energy * .24, 4),
     drift: round(.16 + features.spectralFlux * .45, 4),
+    continuity: round(clamp01(features.activeRatio * .72 + (1 - features.articulation) * .28), 4),
+    articulation: round(features.articulation, 4),
+    pitchWobble: round(features.pitchVariation, 4),
     phase: round((seed % 6283) / 1000, 4),
     envelope: features.envelope
   }

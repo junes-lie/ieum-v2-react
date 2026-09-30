@@ -21,6 +21,7 @@ import { buildVoiceLayer, projectRecordSignature } from './voiceAnalysis.js'
 import { clearProjectTracks, deleteTrack, loadProjectTracks, loadTrack, saveTrack } from './trackStore.js'
 import { createProjectModel, SUPPORTED_PART_COUNTS } from './projectModel.js'
 import { CURRENT_USER_ID, PEOPLE, PERSON_BY_ID, SAMPLE_SONGS, personFromName } from './catalog.js'
+import { createRecordingInflowRenderer, createResonanceRenderer } from './resonanceWebGL.js'
 
 const PART_CATALOG = [
   { id: 'soprano', name: 'Soprano', ko: '소프라노', color: '#3b82f6', range: 'C4–F5', participantId:'yoonseul', participant: '윤슬', status: 'accepted', duration: null },
@@ -133,6 +134,21 @@ async function loadDemoTrackByPart(partId) {
   return loadDisclosedDemoTrack(entry)
 }
 
+async function refreshTrackAnalysis(track, projectSeed) {
+  let features = track.features
+  if (features?.version !== 'ieum-basic-voice-v3') {
+    const analyzed = await analyzeBlob(track.blob)
+    features = analyzed.features
+  }
+  const refreshed = {
+    ...track,
+    features,
+    layer:buildVoiceLayer(projectSeed,track.partId,features)
+  }
+  if (features !== track.features || refreshed.layer?.signature !== track.layer?.signature) await saveTrack(refreshed)
+  return refreshed
+}
+
 function Icon({ name, size = 20 }) {
   const paths = {
     back: <path d="m15 18-6-6 6-6" />,
@@ -174,7 +190,7 @@ function VoiceIdentity({ identity }) {
   </figure>
 }
 
-function ResonanceRecord({ active = [true, false, true, false], layers = [], activePartIndex = 1, state = 'rest', level = 0, seed = PROJECT_SEED, label, compact = false }) {
+function LegacyResonanceRecord({ active = [true, false, true, false], layers = [], activePartIndex = 1, state = 'rest', level = 0, seed = PROJECT_SEED, label, compact = false }) {
   const canvasRef = useRef(null)
   const levelRef = useRef(level)
   useEffect(() => { levelRef.current = level }, [level])
@@ -414,6 +430,92 @@ void main(){
     <canvas ref={canvasRef} />
     {state === 'processing' && <div className="record-processing">MIX</div>}
   </figure>
+}
+
+function ResonanceRecord({ active = [true, false, true, false], layers = [], activePartIndex = 1, state = 'rest', level = 0, seed = PROJECT_SEED, label, compact = false }) {
+  const materialRef = useRef(null)
+  const particleRef = useRef(null)
+  const levelRef = useRef(level)
+  const [rendererError, setRendererError] = useState('')
+  useEffect(() => { levelRef.current = level }, [level])
+
+  const numericSeed = typeof seed === 'number' ? seed : [...String(seed)].reduce((sum,char,index)=>sum+char.charCodeAt(0)*(index+17),0)
+  const slots = Array(4).fill(null)
+  if (layers.length) layers.forEach((layer,index) => {
+    const partIndex = PARTS.findIndex(part => part.id === layer?.partId)
+    slots[partIndex >= 0 ? partIndex : index] = layer
+  })
+  else active.forEach((enabled,index) => {
+    if (enabled) slots[index] = {
+      partId:PARTS[index]?.id,
+      seed:numericSeed+index*97,
+      spread:.1,
+      turbulence:.72,
+      opacity:.34,
+      drift:.24,
+      signature:`preview-${numericSeed}-${index}`
+    }
+  })
+  if (state === 'recording' && !slots[activePartIndex]) slots[activePartIndex] = {
+    partId:PARTS[activePartIndex]?.id,
+    seed:numericSeed+activePartIndex*997,
+    spread:.09,
+    turbulence:1,
+    opacity:.3,
+    drift:.32,
+    signature:`recording-${numericSeed}-${activePartIndex}`
+  }
+  const slotSignature = slots.map(layer => layer?.signature || layer?.seed || '-').join(':')
+
+  useEffect(() => {
+    const canvas = particleRef.current
+    const materialCanvas = materialRef.current
+    if (!canvas || !materialCanvas) return
+    const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches === true
+    let renderer
+    try {
+      renderer = createResonanceRenderer({
+        canvas,
+        materialCanvas,
+        slots,
+        projectSeed:String(seed),
+        state,
+        activePartIndex,
+        levelRef,
+        reducedMotion
+      })
+      setRendererError('')
+    } catch (error) {
+      console.error('Resonance WebGL unavailable', error)
+      setRendererError('WEBGL UNAVAILABLE')
+    }
+    return () => renderer?.dispose()
+  }, [slotSignature, activePartIndex, state, seed])
+
+  const layerCount = layers.length ? layers.filter(Boolean).length : active.filter(Boolean).length
+  return <figure className={`record ${compact ? 'record-compact' : ''}`} data-state={state} data-record-signature={projectRecordSignature(String(seed),layers)} data-resonance-engine="webgl-particles" aria-label={label || `공명 레코드, ${layerCount}개 Track 활성`}>
+    <canvas ref={materialRef} className="record-material" aria-hidden="true" />
+    <canvas ref={particleRef} className="record-particles" aria-hidden="true" />
+    {state === 'processing' && <div className="record-processing">MIX</div>}
+    {rendererError && <div className="record-error" role="status">{rendererError}</div>}
+  </figure>
+}
+
+function RecordingInflow({ active, partIndex, level, seed }) {
+  const canvasRef = useRef(null)
+  const levelRef = useRef(level)
+  useEffect(() => { levelRef.current = level }, [level])
+  useEffect(() => {
+    if (!active || !canvasRef.current) return
+    const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches === true
+    try {
+      return createRecordingInflowRenderer({ canvas:canvasRef.current, partIndex, seed, levelRef, reducedMotion })
+    } catch (error) {
+      console.error('Recording inflow WebGL unavailable', error)
+    }
+  }, [active, partIndex, seed])
+  if (!active) return null
+  return <canvas ref={canvasRef} className="record-inflow" data-live-input="microphone" aria-hidden="true" />
 }
 
 function PartRow({ part, action, actionLabel, included, onToggle, onPlay, onParticipant, urgent = false }) {
@@ -838,7 +940,7 @@ function Recorder({ go, submit, partId, projectTracks, layers, project = PROJECT
     <TopBar title={status==='review'?'REVIEW':`${currentPart.name.toUpperCase()} · RECORDING`} back={leave} meta={status === 'recording' ? `REC ${fmt(seconds)}` : 'ORIGINAL KEY'}/>
     <main>
       {status==='ready'&&<div className="recording-heading"><p className="kicker">내 Part 녹음</p><p>Guide는 듣기용이에요. 녹음에는 내 목소리만 저장돼요.</p></div>}
-      <div className="recording-visual"><ResonanceRecord layers={status==='review'?reviewLayers:layers} activePartIndex={currentIndex} state={status === 'recording' ? 'recording' : status==='paused'?'paused':'rest'} level={level} seed={project.seed} compact /></div>
+      <div className="recording-visual"><ResonanceRecord layers={status==='review'?reviewLayers:layers} activePartIndex={currentIndex} state={status === 'recording' ? 'recording' : status==='paused'?'paused':'rest'} level={level} seed={project.seed} compact /><RecordingInflow active={status==='recording'} partIndex={currentIndex} level={level} seed={project.seed}/></div>
       <div className="lyrics" aria-live="polite">{lyrics.map((line,index)=><span key={line} className={index===lyricIndex?'active':''}>{line}</span>)}</div>
       <div className="recording-timeline" aria-label="녹음 시간"><div><span>RECORD TIME</span><b>{fmt(seconds)} / {fmt(recordingWindow)}</b></div><div className="time-progress"><span style={{width:`${Math.min(100,seconds/recordingWindow*100)}%`}}/></div></div>
       <div className="meter-row"><span>MIC</span><div className={`input-meter ${peak>.9?'clip':''}`} aria-label="마이크 입력 볼륨"><span style={{width:`${Math.max(2,level*100)}%`}}/><i style={{left:`${Math.min(98,peak*100)}%`}}/></div><b>{peak>.9?'CLIP':level>.08?'GOOD':'LOW'}</b></div>{noiseFloor>0&&<p className={`noise-status ${noiseFloor>.08?'warning':''}`}>주변 소음 · {noiseFloor>.08?'높음 — Review에서 다시 녹음을 선택할 수 있어요.':'양호'} ({Math.round(noiseFloor*100)}%)</p>}
@@ -953,7 +1055,7 @@ function Complete({ go, mix, layers, projectTracks, projectLiked, toggleProjectL
     <TopBar back={() => go('workspace')} meta={`${String(TOTAL_PARTS).padStart(2,'0')}/${String(TOTAL_PARTS).padStart(2,'0')} · COMPLETE`} />
     <main>
       <div className="complete-title"><p>함께 완성한 곡</p><h1>A Thousand Years</h1><span className="complete-badge">완성</span></div>
-      <div className="complete-record"><ResonanceRecord layers={layers} state={playing?'playing':'complete'} seed={PROJECT_SEED}/><div className="sleeve"><span>IEUM RECORD 0048</span><strong>Four voices<br/>one song</strong></div></div>
+      <div className="complete-record"><ResonanceRecord layers={layers} state={playing?'playing':'complete'} seed={PROJECT_SEED}/></div>
       <Player source={mix?.url} playing={playing} setPlaying={setPlaying}/>
       <p className="final-player-label">{hasPlayed?'다시 재생':'완성곡 재생'}</p>
       <section className="credits"><div className="section-head"><h2>함께한 목소리</h2><span>Credits</span></div><p>제출된 독립 Track과 참여자 정보로 만든 크레딧이에요.</p>{PARTS.map(part=>{const track=projectTracks[part.id];const participant=track?.participant||part.participant;const participantId=track?.participantId||part.participantId||personFromName(participant)?.id;return <PartRow key={part.id} part={{...part,participantId,participant,status:'submitted',duration:fmt(track?.duration||mix?.duration||18),demo:track?.demo,disclosure:track?.disclosure}} onParticipant={participantId&&participantId!==CURRENT_USER_ID?()=>openVocalProfile(participantId):undefined}/>})}</section>
@@ -1298,9 +1400,12 @@ export default function App() {
         loadProjectTracks(PROFILE_PROJECT_ID),
         fetch('/demo-stems/manifest.json').then(response=>response.ok?response.json():Promise.reject(new Error('데모 Track manifest 없음')))
       ])
-      const stored = projectStored
+      const stored = await Promise.all(projectStored
         .filter(track => ['live-microphone-recording','local-formant-singing-demo'].includes(track.origin) && track.blob && track.features)
-        .map(track => ({...track,participantId:track.participantId || personFromName(track.participant)?.id || null,layer:buildVoiceLayer(PROJECT_SEED,track.partId,track.features)}))
+        .map(async track => ({
+          ...await refreshTrackAnalysis(track,PROJECT_SEED),
+          participantId:track.participantId || personFromName(track.participant)?.id || null
+        })))
       for (const entry of demoManifest.tracks.filter(item=>INITIAL_DEMO_PARTS.has(item.partId))) {
         if (stored.some(track=>track.partId===entry.partId && track.origin==='local-formant-singing-demo')) continue
         const demoTrack = await loadDisclosedDemoTrack(entry)
@@ -1318,7 +1423,9 @@ export default function App() {
       if (mixRecord) { setMix({...mixRecord,url:URL.createObjectURL(mixRecord.blob)}); setMixStatus('complete'); setMixProgress(100) }
       const createdTrackEntries = await Promise.all(createdProjects.map(async project=>{
         const records = await loadProjectTracks(project.id)
-        const tracks = records.filter(track=>!['auto-mix','temporary-recording'].includes(track.kind)&&track.blob&&track.features).map(track=>({...track,layer:buildVoiceLayer(project.seed,track.partId,track.features),url:URL.createObjectURL(track.blob)}))
+        const tracks = await Promise.all(records
+          .filter(track=>!['auto-mix','temporary-recording'].includes(track.kind)&&track.blob&&track.features)
+          .map(async track=>{const refreshed=await refreshTrackAnalysis(track,project.seed);return {...refreshed,url:URL.createObjectURL(refreshed.blob)}}))
         const drafts=records.filter(track=>track.kind==='temporary-recording'&&track.blob)
         if(drafts.length)setDraftKeys(current=>({...current,...Object.fromEntries(drafts.map(item=>[`${item.projectId}:${item.partId}`,true]))}))
         return [project.id,Object.fromEntries(tracks.map(track=>[track.partId,track]))]

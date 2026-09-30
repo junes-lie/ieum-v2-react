@@ -13,6 +13,7 @@ const browser = await chromium.launch({
 })
 const context = await browser.newContext({viewport:{width:390,height:844},locale:'ko-KR',permissions:['microphone']})
 const page = await context.newPage()
+const BASE_URL = process.env.IEUM_BASE_URL || 'http://127.0.0.1:4187/'
 const checks=[]
 const errors=[]
 const check=(name,pass,detail='')=>checks.push({name,pass:Boolean(pass),detail})
@@ -34,7 +35,7 @@ const visibleState=()=>page.evaluate(()=>{
   }
 })
 
-await page.goto('http://127.0.0.1:4187/',{waitUntil:'networkidle'})
+await page.goto(BASE_URL,{waitUntil:'networkidle'})
 await page.waitForFunction(()=>Object.keys(window.__IEUM_V2__?.state?.projectTracks||{}).length===2,null,{timeout:30000})
 const initial=await visibleState()
 check('첫 진입은 같은 4 Part 프로젝트의 제출 Track 2개',initial.trackCount===2&&!initial.tracks.tenor&&!initial.tracks.bass,initial)
@@ -74,7 +75,7 @@ await page.waitForFunction(()=>document.querySelector('.workspace-screen .top-me
 check('새 프로젝트 Review 제출 후 작업실에 실제 Track 1개 누적',await page.locator('.workspace-screen').isVisible()&&(await page.locator('.top-meta').innerText()).includes('01/02'))
 check('첫 Track부터 작업실 안에서 현재 Mix와 Track Row 제공',await page.locator('.workspace-screen #current-mix').isVisible()&&await page.locator('#current-mix .row-track-play').count()===1)
 check('통합 현재 Mix에서도 하단 내비게이션 유지',await page.locator('.bottom-nav').isVisible())
-await page.goto('http://127.0.0.1:4187/',{waitUntil:'networkidle'})
+await page.goto(BASE_URL,{waitUntil:'networkidle'})
 await page.waitForFunction(()=>window.__IEUM_V2__?.state?.screen==='home',null,{timeout:10000})
 
 await page.getByRole('button',{name:'컬렉션',exact:true}).click()
@@ -168,6 +169,9 @@ check('Recorder에서 하단 내비게이션 숨김',await page.locator('.bottom
 check('Backing + 기존 제출 2 Track을 독립 Guide로 표시',await page.locator('.guide-panel label').count()===3)
 await page.locator('[data-action="record-start"]').click()
 await page.waitForFunction(()=>window.__IEUM_V2__?.audioRuntime?.recorder?.state==='recording',null,{timeout:8000})
+let inflowVisible=false
+try { await page.waitForSelector('.record-inflow[data-live-input="microphone"][data-renderer="webgl-inflow"]',{timeout:3000}); inflowVisible=true } catch {}
+check('녹음 중 마이크 입력 WebGL 유입이 Record 영역에 연결',inflowVisible)
 await page.waitForTimeout(3600)
 await page.locator('[data-action="record-stop"]').click()
 await page.waitForSelector('[data-action="record-submit"]',{timeout:10000})
@@ -214,6 +218,15 @@ await page.waitForSelector('.complete-screen',{timeout:10000})
 check('완성곡 Credits 네 Track',await page.locator('.credits .part-row').count()===4)
 check('완성곡에서 하단 내비게이션 복귀',await page.locator('.bottom-nav').isVisible())
 check('LOCAL DEMO와 사용자 Track이 Credits에서 구분됨',(await page.locator('.credits').innerText()).includes('LOCAL DEMO')&&(await page.locator('.credits').innerText()).includes('JISUN'))
+const completeRecord=page.locator('.complete-screen .record')
+const completeBefore=await completeRecord.screenshot()
+await page.locator('.complete-screen .audio-player button').click()
+await page.waitForTimeout(900)
+const completePlaying=await completeRecord.screenshot()
+const playState=await completeRecord.getAttribute('data-state')
+await page.locator('.complete-screen .audio-player button').click()
+const pauseState=await completeRecord.getAttribute('data-state')
+check('완성곡 실제 재생·일시정지가 Record 내부 흐름과 연결',playState==='playing'&&pauseState==='complete'&&!completeBefore.equals(completePlaying),{playState,pauseState,frameChanged:!completeBefore.equals(completePlaying)})
 await page.screenshot({path:path.join(here,'record-4-of-4-complete.png'),fullPage:true})
 await page.locator('[data-action="back"]').click()
 await page.waitForTimeout(1600)
