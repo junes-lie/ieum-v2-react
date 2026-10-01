@@ -125,9 +125,9 @@ function buildParticles({ slots, projectSeed, mobile }) {
         const phase=layerPhase+pathIndex*.74+(random()-.5)*.12
         const speed=.0038+drift*.004+random()*.0018
         const core=1-Math.min(1,Math.abs(laneUnit))
-        const highlight=random()<.035?1.22:1
-        const alpha=(.026+core*.052+random()*.010)*layerBlend*(.96-articulation*.58)
-        const brightness=(.98+core*.30)*highlight
+        const highlight=random()<.12?1.55:1
+        const alpha=(.020+core*.048+random()*.012)*layerBlend*(.96-articulation*.58)
+        const brightness=(.92+core*.38)*highlight
         const micro=(.28+random()*.42)*turbulence+pitchWobble*(.48+random()*.44)
         for(let segment=0;segment<segmentCount;segment++){
           const t0=segment/segmentCount
@@ -161,11 +161,11 @@ function buildParticles({ slots, projectSeed, mobile }) {
       const normal = edge * spread * (1.65 + random() * 0.8)
       const speed = 0.0048 + drift * 0.006 + random() * 0.0038
       const phase = layerPhase + (random() - .5) * .24
-      const size = 0.40 + random() * 0.40 + energy * 0.08
+      const size = 0.44 + random() * 0.58 + energy * 0.10
       const core = 1 - Math.min(1, Math.abs(edge) * 1.45)
-      const highlight = random() < .014 ? 1.24 : 1
-      const alpha = (0.052 + random() * 0.105) * (0.76 + energy * 0.22) * (0.76 + core * .42) * layerBlend
-      const brightness = (0.94 + random() * 0.34 + core * .18) * highlight
+      const highlight = random() < .055 ? 1.65 : 1
+      const alpha = (0.038 + random() * 0.14) * (0.74 + energy * 0.24) * (0.72 + core * .48) * layerBlend
+      const brightness = (0.82 + random() * 0.70 + core * .22) * highlight
       const micro = (0.35 + random() * 0.55) * turbulence + pitchWobble * (0.45 + random() * 0.55)
       const particle = [pathIndex, pathPhase, normal, speed, phase, size, alpha, brightness, partIndex, micro]
       grains.push(...particle, 0)
@@ -289,7 +289,7 @@ void main(){
   vBrightness=aBrightness*(.78+focus*.72)*(1.0+live*uLevel*0.28);
   vAngle=atan(tangent.y,tangent.x);
   vPart=aPart;
-  gl_PointSize=(aSize*2.10+live*uLevel*0.34)*uPixelRatio;
+  gl_PointSize=(aSize*2.55+live*uLevel*0.45)*uPixelRatio;
   gl_Position=vec4(position,0.0,1.0);
 }`
 
@@ -311,7 +311,7 @@ void main(){
   if(uPointMode>.5){
     float radius=length(gl_PointCoord-.5);
     if(radius>.5)discard;
-    alpha*=1.-smoothstep(.38,.50,radius);
+    alpha*=1.-smoothstep(.30,.50,radius);
   }
   if(alpha<0.012)discard;
   gl_FragColor=vec4(colorFor(vPart)*vBrightness*alpha,alpha);
@@ -335,17 +335,17 @@ function drawMaterial(canvas) {
   ctx.arc(center, center, radius, 0, Math.PI * 2)
   ctx.clip()
   const vinyl = ctx.createRadialGradient(center * .72, center * .68, 0, center, center, radius)
-  vinyl.addColorStop(0, '#33271e')
-  vinyl.addColorStop(.18, '#1d1611')
-  vinyl.addColorStop(.70, '#0d0a08')
-  vinyl.addColorStop(1, '#030303')
+  vinyl.addColorStop(0, '#241c16')
+  vinyl.addColorStop(.18, '#15100d')
+  vinyl.addColorStop(.70, '#090706')
+  vinyl.addColorStop(1, '#020202')
   ctx.fillStyle = vinyl
   ctx.fillRect(0, 0, pixels, pixels)
   for (let groove = 0; groove < 128; groove++) {
     const r = radius * (.225 + groove * .00588)
     ctx.beginPath()
     ctx.arc(center, center, r, 0, Math.PI * 2)
-    ctx.strokeStyle = `rgba(218,185,147,${groove % 9 === 0 ? .052 : .016})`
+    ctx.strokeStyle = `rgba(205,174,139,${groove % 9 === 0 ? .034 : .010})`
     ctx.lineWidth = Math.max(.45, ratio * .28)
     ctx.stroke()
   }
@@ -356,16 +356,6 @@ function drawMaterial(canvas) {
   sheen.addColorStop(1, 'rgba(255,235,205,0)')
   ctx.fillStyle = sheen
   ctx.fillRect(0, 0, pixels, pixels)
-  ctx.beginPath()
-  ctx.arc(center, center, radius - ratio * .7, 0, Math.PI * 2)
-  ctx.strokeStyle = 'rgba(224,199,169,.24)'
-  ctx.lineWidth = Math.max(1, ratio * .75)
-  ctx.stroke()
-  ctx.beginPath()
-  ctx.arc(center, center, radius - ratio * 2.6, 0, Math.PI * 2)
-  ctx.strokeStyle = 'rgba(0,0,0,.78)'
-  ctx.lineWidth = Math.max(1, ratio * 1.1)
-  ctx.stroke()
   const hubRadius = radius * .215
   const hub = ctx.createRadialGradient(center-hubRadius*.28, center-hubRadius*.3, 0, center, center, hubRadius)
   hub.addColorStop(0, '#68503b')
