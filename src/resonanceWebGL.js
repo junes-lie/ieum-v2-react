@@ -356,6 +356,18 @@ function drawMaterial(canvas) {
   sheen.addColorStop(1, 'rgba(255,235,205,0)')
   ctx.fillStyle = sheen
   ctx.fillRect(0, 0, pixels, pixels)
+  // Keep the physical vinyl edge legible without brightening or altering the
+  // voice particles above it. Two restrained rings separate material from UI.
+  ctx.beginPath()
+  ctx.arc(center, center, radius - ratio * .7, 0, Math.PI * 2)
+  ctx.strokeStyle = 'rgba(225,205,181,.20)'
+  ctx.lineWidth = Math.max(.8, ratio * .62)
+  ctx.stroke()
+  ctx.beginPath()
+  ctx.arc(center, center, radius - ratio * 2.4, 0, Math.PI * 2)
+  ctx.strokeStyle = 'rgba(0,0,0,.68)'
+  ctx.lineWidth = Math.max(.8, ratio * .82)
+  ctx.stroke()
   const hubRadius = radius * .215
   const hub = ctx.createRadialGradient(center-hubRadius*.28, center-hubRadius*.3, 0, center, center, hubRadius)
   hub.addColorStop(0, '#68503b')
