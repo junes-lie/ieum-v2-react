@@ -1,3 +1,13 @@
+## 2026-10-08 기능 후속 — 샘플 이탈/폐기·단일 프로젝트 생성·Complete Gate
+
+디자인 보류를 유지하고 사용자 지정 Notion 화면명세 VP04/VP05/N03/N04/F01–F03 및 PRD 9 Complete Gate를 확인했다. 실제 production 0a93f1c에서 샘플 녹음 Back에 확인창이 없음(0 != 1), 동시 생성으로 프로젝트2개(2 != 1), 최종 확인 Back이 설정을 유지하지 않음(0 != 1)을 재현했다. 기존 RecordingConfirmation을 VoiceSetup에 연결하여 녹음 이탈 취소는 같은 녹음을 계속하고 확인은 정상 Stop→Review로 연결한다. 다시 부르기와 Take가 있는 다른 곡 선택은 확인 후 후보 Take만 폐기한다. 취소 시 같은 Take/곡 정보를 보존하고 기존 프로필/Project Track은 변경하지 않는다. 샘플 시작/정지에는 즉시 ref guard와 busy 상태를 연결해 중복 시작·정지/타이머 누적을 막았다. CSS/Record renderer/motion은 변경하지 않았다.
+
+CreateProject는 동시 최종 확인을 즉시 차단하고 프로젝트1개만 생성한다. 최종 확인 Back은 입력 설정을 보존하여 수정하게 한다. 생성 전에는 프로젝트/Track을 추가하지 않고 생성 후 나Assigned·나머지OPEN·0/N을 유지한다. Key 안내는 기존 실제 첫 녹음 시작 시 확정 동작과 맞춘다.
+
+Complete Gate는 알려진 tessitura/comfortableRange가 서로 맞지 않아도 eligible=true이던 오류를 실제 Node 계약에서 재현했다(true != false). 알려진 주요 음역의 불가능 조건을 Gate 실패로 반영한다. 메타데이터가 없는 경우의 기존 표시/계약과 음역 여유/설명은 보존하며 임의 곡/음역/추천 점수를 추가하지 않는다.
+
+로컬 qa:profile은 정상 녹음 종료·이탈/폐기/곡변경 취소와 기존 Take/프로필 보존·타이머1개를 확인했다. qa:navigation은 2/3/4 Part의 최종 확인 전 미생성·Back 선택값 보존·동시 클릭 단일 생성·배정/OPEN/0Track·reload를 확인했다. 유지 QA를 확장했으며 실제 마이크/음질/공유 서비스 완료와 구분한다. 전체 단계3/4/5 완료를 선언하지 않는다.
+
 ## 2026-10-08 기능 후속 — R07 동시 제출 차단
 
 기존 production db8143e에서 같은 시점 제출 버튼을 두 번 클릭하면 Track 저장 시도가 2회 발생하는 오류를 실제 재현했다(2 != 1). Recorder에 즉시 적용되는 제출 ref guard를 추가해 첫 요청부터 중복 실행을 차단한다. 실패한 경우 잠금을 해제하여 기존 Review/원본에서 재시도하며 성공 이후까지 잠금을 유지한다. UI의 기존 제출 중 비활성화·성공 후 workspace/Mix/Complete 흐름을 보존한다. 디자인은 변경하지 않았다.

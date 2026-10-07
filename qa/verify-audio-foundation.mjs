@@ -7,6 +7,8 @@ assert.equal(evaluatePartFit({rangeData:{lowMidi:48,highMidi:67},part:{range:'C3
 assert.equal(evaluatePartFit({rangeData:{lowMidi:48,highMidi:67},part:{}}).status,'unavailable')
 assert.equal(evaluatePartFit({part:{range:'C3–G4'}}).status,'profile-required')
 assert.equal(evaluatePartFit({rangeData:{lowMidi:48,highMidi:67,comfortableRange:{lowMidi:52,highMidi:65}},part:{range:'C3–G4',tessitura:'D3–F4'}}).tessituraFit,false)
+assert.equal(evaluatePartFit({rangeData:{lowMidi:48,highMidi:67,comfortableRange:{lowMidi:52,highMidi:65}},part:{range:'C3–G4',tessitura:'D3–F4'}}).eligible,false,'A known incompatible tessitura must fail the Complete Gate')
+assert.equal(evaluatePartFit({rangeData:{lowMidi:48,highMidi:67,comfortableRange:{lowMidi:50,highMidi:65}},part:{range:'C3–G4',tessitura:'D3–F4'}}).eligible,true)
 assert.equal(evaluatePartFit({rangeData:{lowMidi:48,highMidi:67},part:{range:'C3–G4'}}).tessituraFit,null)
 
 globalThis.window = {AudioContext:class {}}

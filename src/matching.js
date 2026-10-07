@@ -29,7 +29,8 @@ export function evaluatePartFit({rangeData,part,transposeSemitones=0}) {
   const comfortableRange = readRange(rangeData.comfortableRange) || measured
   const tessituraFit = tessitura ? comfortableRange.lowMidi<=tessitura.lowMidi+transposeSemitones && comfortableRange.highMidi>=tessitura.highMidi+transposeSemitones : null
   if (tessituraFit!==null) reasons.push(tessituraFit?'주로 부르는 구간도 측정된 편한 음역 안에 있어요.':'주로 부르는 구간은 측정된 편한 음역과 일부 겹치지 않아요.')
-  return {status:eligible?'eligible':'ineligible',eligible,lowMargin,highMargin,requiredRange,tessituraFit,reasons}
+  const feasible = eligible && tessituraFit !== false
+  return {status:feasible?'eligible':'ineligible',eligible:feasible,lowMargin,highMargin,requiredRange,tessituraFit,reasons}
 }
 
 export const rangeGate = evaluatePartFit
