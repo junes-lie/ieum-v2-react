@@ -1,4 +1,5 @@
 import { createRequire } from 'node:module'
+import assert from 'node:assert/strict'
 import { createHash } from 'node:crypto'
 import fs from 'node:fs/promises'
 import path from 'node:path'
@@ -14,7 +15,7 @@ const errors=[]
 page.on('console', message => { if (message.type()==='error') errors.push(message.text()) })
 page.on('pageerror', error => errors.push(error.message))
 
-await page.goto('http://127.0.0.1:4191/#workspace', { waitUntil:'domcontentloaded' })
+await page.goto(process.env.IEUM_QA_URL || 'http://127.0.0.1:4191/?design=figma', { waitUntil:'domcontentloaded' })
 await page.waitForFunction(() => Object.keys(window.__IEUM_V2__?.state?.projectTracks || {}).length === 2, null, { timeout:30000 })
 await page.evaluate(() => { location.hash='#workspace' })
 await page.waitForSelector('.workspace-screen .record[data-resonance-engine="webgl-particles"]')
@@ -49,3 +50,7 @@ const result={
 await fs.writeFile(path.join(here,'resonance-motion-results.json'),JSON.stringify(result,null,2))
 console.log(JSON.stringify(result,null,2))
 await browser.close()
+assert.equal(result.runtime.webgl,true,'Actual WebGL context must initialize')
+assert.ok(result.runtime.particleCount>0,'Actual Record must contain particles')
+assert.equal(result.frameHashesDistinct,true,'Actual moving Record frames must change')
+assert.deepEqual(errors,[],'Actual app must not emit runtime or console errors')

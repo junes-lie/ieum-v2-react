@@ -2,6 +2,14 @@
 
 ## 2026-10-08 실행 계획 교정 — 현재 적용 기준
 
+### 단계 1 P0 완료 기준 대조 — 2026-10-08 후속 실행
+
+현재 제공 PRD의 조건은 ‘동일 음원 입력 시 일관된 결과’다. 동일 가수의 다른 모음/다른 Take를 100% 식별하는 분류기 기준은 원문에 없으며 필수 gate로 추가하지 않는다. 별도 robustness 시험에서 WavLM/BYOL/contrastive가 실패한 사실은 그대로 보관하고 정확한 가수 식별이나 궁합 점수로 채택하지 않는다. 제품 요구를 기본 FFT 애니메이션으로 축소하지 않는다.
+
+단계 1의 기술 검증 범위는 실제 공개 가창 입력→실제 음색 모델 embedding→실제 생성 모델 입력→AI Layer→2–4개 결합의 실현 가능성, 같은 입력/seed 재현 및 계보, 기존 앱의 project/part/user 데이터 전달이다. 실제 서비스 추론 API/인증/공유 실행 환경 연결과 사용자 음색 자기 인식·모바일 성능 인수까지 끝낸다는 의미가 아니다. 실제 Record 표시/시각·motion 연결은 단계 2, 실제 서비스 연결은 단계 5에서 검증하고 전체 AI 요구는 단계 6 인수 전까지 미완료로 유지한다.
+
+로컬 기술 검증은 통과했다. 공식 VocalSet 4명 가창, MIT singer-identity BYOL의 1000차원 음색 embedding과 SD-Turbo 실제 weight를 CPU에서 실행했다. 고정 seed Gaussian projection으로 embedding을 초기 생성 latent에 연결하고 실제 VAE로 2–4 Layer를 결합했다. 이는 학습된 audio-image adapter나 가수 식별 보장이 아니다. 같은 입력 반복/다른 입력 구분/원본 Layer 보존 및 실제 파일 계보, 새 2/3/4 Part 프로젝트 임시본 제출/재로드 계약, 기존 WebGL의 실제 5개 시간 프레임 변화가 검증됐다. 배포 전 build/전체 QA와 diff를 마지막 확인하며, Git Integration READY/production 확인 후 단계 1 기술 검증 마감을 기록한다.
+
 제품 범위나 UX는 변경하지 않는다. 사용자 지정 현재 Notion 6개 문서, 현재 Figma Desktop 원본, 실제 코드와 검증 증거를 기준으로 단계 의존성과 검증 시점만 바로잡는다. 아래 기준이 이 문서의 과거 계획 수립/배포 금지 및 과도한 단계 0 gate보다 우선한다.
 
 ### 단계별 증거와 완료 gate

@@ -38,8 +38,22 @@ try {
   assert.ok(complete.includes('E minor'))
   assert.ok(complete.includes('blob:qa'))
   assert.ok(!complete.includes('A Thousand Years'))
+  for (const count of [2,4]) {
+    const dynamicParts=Array.from({length:count},(_,index)=>({id:`free-${count}-${index}`,name:`Voice ${index+1}`,color:'#3b82f6',status:index?'open':'ready'}))
+    const dynamicProject={id:`qa-project-${count}`,seed:`qa-seed-${count}`,parts:dynamicParts,totalParts:count,partCount:count,key:'F minor'}
+    const dynamicCommon={...common,project:dynamicProject,parts:dynamicParts,layers:dynamicParts.map(()=>null)}
+    const workspaceMarkup=renderToStaticMarkup(React.createElement(Workspace,{...dynamicCommon,isCreated:true,ownerPartId:dynamicParts[0].id,findVocal:noop,recordPart:noop}))
+    assert.ok(workspaceMarkup.includes(`0/${count}`))
+    const recorderMarkup=renderToStaticMarkup(React.createElement(Recorder,{...dynamicCommon,partId:dynamicParts[count-1].id,submit:noop}))
+    assert.ok(recorderMarkup.includes(`Voice ${count} 녹음`))
+    const dynamicTracks=Object.fromEntries(dynamicParts.map((part,index)=>[part.id,{id:`${dynamicProject.id}:${part.id}`,projectId:dynamicProject.id,partId:part.id,participantId:`qa-user-${index}`,participant:`QA-SINGER-${count}-${index}`}]))
+    const completeMarkup=renderToStaticMarkup(React.createElement(Complete,{...dynamicCommon,projectTracks:dynamicTracks,mix:{url:`blob:qa-${count}`,duration:10,createdAt:'2026-10-08T00:00:00Z'}}))
+    assert.ok(completeMarkup.includes(`QA-SINGER-${count}-${count-1}`))
+    assert.ok(completeMarkup.includes('F minor'))
+    assert.ok(completeMarkup.includes(`blob:qa-${count}`))
+  }
   const main=await readFile(new URL('../src/main.jsx',import.meta.url),'utf8')
   assert.ok(!main.includes('FigmaProject'))
   assert.equal((main.match(/createRoot/g)||[]).length,2)
-  console.log('Single App Node rendering: entry, custom 3-Part Workspace/Recorder/Complete, dynamic credits/key/song, native final audio passed. No visual or interactive browser claim.')
+  console.log('Single App Node rendering: entry, custom 2/3/4-Part Workspace/Recorder/Complete, dynamic credits/key/song, native final audio passed. No visual or interactive browser claim.')
 } finally { await Promise.all([unlink(temp).catch(()=>{}),unlink(iconsTemp).catch(()=>{})]) }

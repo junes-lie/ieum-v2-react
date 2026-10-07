@@ -35,6 +35,7 @@ const click=async selector=>{const element=document.querySelector(selector);asse
 const state=()=>window.__IEUM_V2__.state
 const check=(name)=>console.log('PASS '+name)
 const errors=[]
+globalThis.__qaRecordCalls=[]
 const originalError=console.error
 console.error=(...args)=>{errors.push(args.map(String).join(' '));originalError(...args)}
 try{
@@ -42,8 +43,8 @@ try{
  const icons=await readFile(new URL('../src/Icons.jsx',import.meta.url),'utf8')
  await writeFile(iconsTemp,(await transformWithOxc(icons,'Icons.jsx',{jsx:{runtime:'classic'}})).code)
  const code=(await transformWithOxc(source,'App.jsx',{jsx:{runtime:'classic'}})).code.replace('./Icons.jsx','./.qa-user-journey-icons.mjs').replace("import { createRecordingInflowRenderer, createResonanceRenderer } from './resonanceWebGL.js'",'const createRecordingInflowRenderer=()=>()=>{}; const createResonanceRenderer=()=>({dispose(){}})')
- await writeFile(appTemp,code)
- const {default:App}=await import(appTemp.href)
+ await writeFile(appTemp,code.replace(/createResonanceRenderer\s*=\s*\(\)\s*=>\s*\(\{\s*dispose\(\)\s*\{\s*\}\s*\}\)/g, 'createResonanceRenderer=options=>{globalThis.__qaRecordCalls.push(options);return {dispose(){}}}')+'\nexport {ResonanceRecord};')
+ const {default:App,ResonanceRecord}=await import(appTemp.href)
  localStorage.setItem('ieum-v2:user-state:v7',JSON.stringify({joined:true,joinedPart:'tenor',invited:true,invitedVocalId:'luna',projectLikes:[{projectId}],songSaves:[{songId:'a-thousand-years'}],vocalSaves:[{vocalId:'luna'}]}))
  await saveTrack(track('soprano'));await saveTrack(track('alto'))
  await saveTrack({id:profileId+':range',projectId:profileId,kind:'voice-range',range:'C3–G4',rangeData:{lowMidi:48,highMidi:67}})
@@ -117,6 +118,63 @@ try{
  assert.equal(document.querySelector('[data-action="record-start"]'),null)
  assert.equal(await (await loadTrack(legacyDraftId)).blob.text(),await blob.text())
  check('Ownerless legacy draft restores into Review without requiring a new recording or losing the original')
+ await act(async()=>root.unmount())
+ root=createRoot(container)
+ await act(async()=>root.render(React.createElement(ResonanceRecord,{parts:[{id:'bass'},{id:'tenor'}],layers:[null,null],seed:'qa-reordered-parts',activePartIndex:0,state:'recording'})))
+ const call=globalThis.__qaRecordCalls.at(-1)
+ assert.equal(call.activePartIndex,3,'Recording reaction must use the Bass slot, not project array index zero')
+ assert.equal(call.slots[3].partId,'bass')
+ assert.equal(call.slots[0],null,'Reordered Bass recording must not invent a Soprano layer')
+ check('Reordered project Part drives the matching existing Record color/identity slot')
+ const tenorLayer=buildVoiceLayer('qa-reordered-parts','tenor',features)
+ const bassLayer=buildVoiceLayer('qa-reordered-parts','bass',features)
+ await act(async()=>root.render(React.createElement(ResonanceRecord,{parts:[{id:'tenor'},{id:'bass'},{id:'soprano'}],layers:[tenorLayer,bassLayer,null],seed:'qa-reordered-parts',state:'rest'})))
+ const restoredCall=globalThis.__qaRecordCalls.at(-1)
+ assert.equal(restoredCall.slots[2].signature,tenorLayer.signature,'Empty project Part must not erase an existing mapped Tenor layer')
+ assert.equal(restoredCall.slots[3].signature,bassLayer.signature)
+ assert.equal(restoredCall.slots[0],null)
+ await act(async()=>root.render(React.createElement(ResonanceRecord,{parts:[{id:'free-lead'},{id:'soprano'}],layers:[buildVoiceLayer('qa-free-parts','free-lead',features),buildVoiceLayer('qa-free-parts','soprano',features)],seed:'qa-free-parts',state:'rest'})))
+ const freeCall=globalThis.__qaRecordCalls.at(-1)
+ assert.equal(freeCall.slots[0].partId,'soprano')
+ assert.equal(freeCall.slots[1].partId,'free-lead','Free Part must not collide with reserved Soprano color slot')
+ check('Empty/reordered/free project Parts preserve existing Layer signatures and unique slots')
+ for (const count of [2,3,4]) {
+  await act(async()=>root.unmount())
+  const customId=`qa-owned-project-${count}`
+  const customSeed=`qa-owned-seed-${count}`
+  const customParts=Array.from({length:count},(_,index)=>({id:`free-${index}`,name:`Voice ${index+1}`,color:'#3b82f6',status:index?'open':'ready',participantId:index?null:'jisun',participant:index?null:'JISUN'}))
+  const customProject={id:customId,seed:customSeed,songId:'a-thousand-years',title:'QA Project',name:'QA Group',key:'E minor',keyLocked:true,partCount:count,totalParts:count,parts:customParts,ownerPartId:'free-0',status:'RECORDING',progress:0,createdAt:'2026-10-08T00:00:00Z'}
+  localStorage.setItem('ieum-v2:user-state:v7',JSON.stringify({joined:true,joinedPart:'tenor',createdProjects:[customProject],activeCreatedProjectId:customId}))
+  const customDraftId=`jisun:${customId}:free-0:temporary-recording`
+  await saveTrack({id:customDraftId,projectId:customId,partId:'free-0',kind:'temporary-recording',userId:'jisun',blob,features,duration:7})
+  root=createRoot(container);await act(async()=>root.render(React.createElement(App)));await settle();await settle()
+  assert.equal(state().activeProject.id,customId)
+  assert.equal(state().activeProject.parts.length,count)
+  await click('[data-action="record-part"]')
+  assert.equal(state().screen,'record',document.body.textContent)
+  assert.ok(document.querySelector('[data-action="record-submit"]'),'Owned project draft must restore to Review')
+  assert.equal(globalThis.__qaRecordCalls.at(-1).projectSeed,customSeed)
+  assert.equal(globalThis.__qaRecordCalls.at(-1).slots[0].partId,'free-0')
+  await click('[data-action="record-submit"]')
+  await settle()
+  const submitted=await loadTrack(`${customId}:free-0`)
+  assert.equal(submitted.projectId,customId)
+  assert.equal(submitted.projectSeed,customSeed)
+  assert.equal(submitted.partId,'free-0')
+  assert.equal(submitted.partIndex,0)
+  assert.equal(submitted.participantId,'jisun')
+  assert.equal(submitted.layer.projectSeed,customSeed)
+  assert.equal(await submitted.blob.text(),await blob.text())
+  assert.equal(await loadTrack(customDraftId),null)
+  assert.equal(state().activeProject.keyLocked,true)
+  assert.equal(Object.keys(state().activeTracks).length,1)
+  await act(async()=>root.unmount())
+  root=createRoot(container);await act(async()=>root.render(React.createElement(App)));await settle();await settle()
+  assert.equal(state().activeTracks['free-0'].layer.signature,submitted.layer.signature)
+  assert.equal(state().activeProject.keyLocked,true)
+  await clearProjectTracks(customId)
+  check(`${count}-Part owned project preserves project/part/user/seed/Blob and Record layer through draft submit and reload`)
+ }
  assert.deepEqual(errors,[],'Unexpected App console errors')
  console.log('Node integration passed. No claim of visual fidelity, GPU rendering, microphone capture, audible playback, real AI/backend or physical mobile verification.')
 }finally{

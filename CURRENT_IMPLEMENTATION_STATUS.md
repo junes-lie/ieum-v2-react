@@ -2,9 +2,17 @@
 
 ## 현재 적용 판정 — 2026-10-08 계획 교정
 
+현재 마감 범위: 단계 0 기준 보존 완료. 단계 1은 실제 가창 4명→실제 음색 embedding→실제 생성 모델→2–4 Layer 결합과 기존 앱 데이터 계약의 로컬 기술 검증을 통과했으며 Git 자동배포 검증을 진행한다. 아래의 단계 1 미완료 문구는 이번 최종 P0 실행 이전 기록이다. production AI/서버 연결, Figma 시각 및 실제 마이크·기기 인수는 계속 미완료다.
+
+실제 코드 수정은 Part 순서와 Record 색상 슬롯의 연결 및 null Part에 의한 기존 Layer 소실 방지다. 재정렬/free Part 회귀, 새 2/3/4 Part의 임시본 제출·재로드에서 원본 Blob/user/part/seed/Layer/keyLocked 보존을 확인했다. 실제 WebGL 5개 시간 프레임 변화/console error 0도 확인했다. 자세한 실제 모델·결과·실패 한계는 docs/P0_AI_FEASIBILITY.md에 기록했다.
+
+추가 검증: 실제 SD-Turbo 생성 Layer 4개 및 모델 latent의 2/3/4개 결합→실제 VAE 출력 성공. 입력·모델·출력 계보 QA와 기존 Record signature의 보존/재로드 검사 통과. 자유 Part ID의 2/3/4 Part 화면 데이터 전달 Node QA도 통과했다. 실제 사람은 공개 말소리 두 녹음이며 가창/독립 Take 검증이 아니다. AI 결과를 기존 motion renderer에 연결한 상태는 아니고, 단계 1 전체 gate는 계속 미완료다. 아래의 ‘2–4 AI Layer 합성 미검증’은 이번 latent 시험 이전 기록이다.
+
+추가 P0 실행: 실제 WavLM speaker 모델의 동일 입력 반복 및 같은 녹음 두 구간/다른 녹음 비교 검사도 통과했다. qa/verify-ai-voice-layer.py와 qa/verify-ai-speaker.py가 재사용 가능한 로컬 검증 코드다. 모델 캐시·음성·생성 이미지·JSON은 Git 밖의 격리 환경에 유지한다. 이 부분 검증은 아직 미커밋이며 단계 1 전체 gate 완료 시 검토한다.
+
 단계 0의 기준 보존 gate는 보존/연결표, 현재 제품 문서 대조, 격리된 복원 및 원본 보존 QA, build와 production 배포 확인으로 충족했다. 실제 사용자 DB/마이크/새 전체 Mix/시각 인수는 검증되지 않았고 해당 기능 단계 3 및 종합 단계 6에 남긴다. 전체 제품 또는 녹음 기능 완료를 뜻하지 않는다. 아래 과거 단계 0 보류 문구 대신 구현계획의 2026-10-08 교정 기준을 적용한다.
 
-단계 1은 [P0 사전 조사](docs/P0_AI_FEASIBILITY.md)만 진행했다. 실제 AI 모델/weight/음성 입력/실행 환경과 추론 결과는 미확보다. 단계 1 완료 및 단계 2 신규 구현은 승인하지 않는다. 단계 2–5 기존 부분 코드는 보존한다.
+단계 1은 [P0 실제 추론 검증](docs/P0_AI_FEASIBILITY.md)까지 진행했다. 격리된 CPU 환경에서 실제 SD-Turbo weight를 실행했고 기존 분석 모듈에 연결한 공개 음성 두 개로 동일 입력/seed 픽셀 재현과 다른 입력의 출력 차이를 확인했다. 생성은 약11초/회였다. 실제 가창 음색 정확도, 2–4 AI Layer 합성, 전체 데이터 계약과 production AI 연결은 미검증이다. 단계 1 전체 완료 및 단계 2 신규 구현은 승인하지 않는다. 기존 부분 코드는 보존한다.
 
 배포: 코드 보존 수정 6a3df11 및 작업 흐름 cc9037a는 GitHub main과 일치, Git Integration deployment dpl_9GJorkqbrnHg8CtzTt8zUgAEi3bg READY를 확인했다. production HTTP200 및 JS/CSS SHA256이 검증 build와 일치한다. 이하 과거 ‘이번 자동배포 확인 전’ 문구는 당시 기록이다.
 
