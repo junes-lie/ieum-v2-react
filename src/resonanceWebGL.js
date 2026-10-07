@@ -548,7 +548,7 @@ export function createResonanceRenderer({ canvas, materialCanvas, slots, project
     timeline.angularRate=initialRate+(targetRate-initialRate)*transition
     if(!fixedTime){
       timeline.elapsed+=delta
-      timeline.flowTime+=delta*(targetRate===0?motion:timeline.angularRate/(Math.PI*2/30)*.28)
+      timeline.flowTime+=delta*(targetRate===0?motion:timeline.angularRate/(Math.PI*2/90)*.28)
       timeline.rotation+=delta*timeline.angularRate
     }
     const elapsed=fixedTime?captureTime:timeline.elapsed
