@@ -411,18 +411,15 @@ function drawMaterial(canvas, rotation = 0) {
   sheen.addColorStop(1, 'rgba(255,235,205,0)')
   ctx.fillStyle = sheen
   ctx.fillRect(0, 0, pixels, pixels)
-  // Directional reflections reveal the vinyl as a surface rather than a
-  // black disk. They stay broad and low-contrast beneath the voice layers.
-  const reflection = ctx.createLinearGradient(center * .10, center * .12, center * 1.88, center * 1.82)
-  reflection.addColorStop(0, 'rgba(239,220,195,.15)')
-  reflection.addColorStop(.24, 'rgba(239,220,195,.018)')
-  reflection.addColorStop(.48, 'rgba(239,220,195,0)')
-  reflection.addColorStop(.72, 'rgba(239,220,195,.065)')
-  reflection.addColorStop(1, 'rgba(239,220,195,0)')
+  // Narrow reflected light follows the pressed surface under the voice field.
+  const reflection = ctx.createConicGradient(-Math.PI*.80+Math.sin(rotation)*.045,center,center)
+  for(const [offset,alpha] of [[0,0],[.045,.04],[.075,.32],[.105,.07],[.15,0],[.22,0],[.265,.19],[.30,.04],[.35,0],[.48,0],[.525,.12],[.565,0],[.72,0],[.77,.08],[.82,0],[1,0]]){
+    reflection.addColorStop(offset,`rgba(239,229,214,${alpha})`)
+  }
   ctx.beginPath()
   ctx.arc(center, center, radius * .79, 0, Math.PI * 2)
   ctx.strokeStyle = reflection
-  ctx.lineWidth = radius * .26
+  ctx.lineWidth = radius * .36
   ctx.stroke()
   // Keep the physical vinyl edge legible without brightening or altering the
   // voice particles above it. Two restrained rings separate material from UI.
