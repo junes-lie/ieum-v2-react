@@ -1,3 +1,9 @@
+## 2026-10-08 단계 2 — 기존 녹음 화면의 오류 문맥
+
+현재 사용자 지정 화면명세 R07/R08/R10의 기존 오류 동작을 적용했다. Review의 저장/제출 실패에도 마이크 권한 안내·재시작 버튼을 제공하던 오류를 실제 기존 production에서 주입한 저장 실패로 재현했다(권한 재시작 버튼 1개로 검사 실패). Review는 실제 오류 문구만 표시하며 기존 Take/Review와 녹음 제출 재시도 버튼을 유지한다. 마이크 시작의 권한 거부와 장치 시작 실패도 실제 예외 유형으로 분리해 장치 오류에 권한 설정 안내를 표시하지 않는다. 신규 실패 화면·정책을 추가하지 않는다.
+
+build/기존 QA, Node 실패 원본 보존·재제출 검사 및 격리 브라우저의 NotAllowedError/NotReadableError가 통과했다. 2/3/4 Part 각각 실제 IndexedDB 제출 실패를 주입해 원본 음성 SHA256·제출 수 보존·Review 유지·불필요한 마이크 재시작 없음→재제출 성공→실제 합성 WAV→Complete→프로필 복귀→재접속을 검증했다. 유지 명령은 qa:record-errors와 기존 qa:continuity이다. 합성 음원/API 오류 주입 검사이며 실기기·실제 서버 인수가 아니다. 단계 2 전체 완료 또는 단계 3 진입을 선언하지 않는다.
+
 ## 2026-10-08 단계 2 — 실제 Pretendard 가변 굵기
 
 사용자 교정과 실제 Desktop Figma Credits의 Pretendard SemiBold를 적용한다. 기존 Pretendard-Regular.ttf의 sfnt metadata는 static/weight400인데 CSS가 100–900으로 선언해 브라우저에서 400/500/600/700 한글·영문 글리프의 픽셀이 모두 동일했다. 공식 고정 commit의 실제 가변 WOFF2를 로컬 번들로 연결하고 공식 45–920 범위를 선언했다. 중앙 Credits 이름의 첫 폰트도 Inter가 아닌 Pretendard IEUM으로 직접 지정했다. 03/06/07 내부의 기본 폰트 변수도 Pretendard 우선으로 지정해 기존 변수 참조가 Inter로 되돌아가지 않도록 했다. 범위 밖 화면의 변수와 Instrument Serif/JetBrains Mono는 보존한다. 원본 Regular 파일은 보존하고 공식 라이선스·출처·해시를 함께 보관한다.

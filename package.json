@@ -11,7 +11,8 @@
     "qa:motion": "node qa/verify-resonance-motion.mjs",
     "qa:layout": "node qa/verify-three-screen-layout.mjs",
     "qa:continuity": "node qa/verify-project-screen-continuity.mjs",
-    "qa:fonts": "node qa/verify-pretendard-font.mjs"
+    "qa:fonts": "node qa/verify-pretendard-font.mjs",
+    "qa:record-errors": "node qa/verify-microphone-errors.mjs && node qa/verify-project-screen-continuity.mjs"
   },
   "dependencies": {
     "@fortawesome/free-regular-svg-icons": "^7.3.1",

@@ -930,6 +930,7 @@ function Recorder({ go, submit, onRecordingStart, partId, projectTracks, layers,
   const [draft, setDraft] = useState(null)
   const [reviewPlaying, setReviewPlaying] = useState(false)
   const [error, setError] = useState('')
+  const [permissionDenied,setPermissionDenied] = useState(false)
   const [submitting,setSubmitting] = useState(false)
   const [confirmAction,setConfirmAction] = useState(null)
   const timer = useRef(null)
@@ -942,11 +943,11 @@ function Recorder({ go, submit, onRecordingStart, partId, projectTracks, layers,
   const lyrics = project.lyrics?.map(line=>line.text) || ['함께 녹음을 시작해요', '서로 다른 목소리가', '하나의 노래가 되어', '조용히 이어지는 순간']
   const begin = async () => {
     try {
-      setError(''); await requestMicrophone({ voiceProcessing:(guides.backing || guides.parts.some(Boolean)) ? true : null })
+      setError(''); setPermissionDenied(false); await requestMicrophone({ voiceProcessing:(guides.backing || guides.parts.some(Boolean)) ? true : null })
       inputLevels.current=[]
       await startRecording({ onFrame: frame => { waveformRef.current=frame.waveform;setInputRms(frame.rms || 0);setLevel(frame.level); setPeak(frame.peak); setSeconds(frame.elapsedSec || 0);inputLevels.current.push(frame.level) }, guides, guideTracks, duration:recordingWindow })
       onRecordingStart?.(); setStatus('recording'); setSeconds(0); timer.current = window.setInterval(() => setSeconds(getRecordingTimeline().elapsedSec), 100)
-    } catch (e) { setError(microphoneErrorMessage(e)); setStatus('ready') }
+    } catch (e) { setPermissionDenied(isMicrophonePermissionError(e)); setError(microphoneErrorMessage(e)); setStatus('ready') }
   }
   const pause = () => { pauseRecording(); setStatus('paused'); clearInterval(timer.current) }
   const resume = () => { resumeRecording(); setStatus('recording'); timer.current = window.setInterval(() => setSeconds(getRecordingTimeline().elapsedSec), 100) }
@@ -1006,7 +1007,7 @@ function Recorder({ go, submit, onRecordingStart, partId, projectTracks, layers,
       <div className="recording-timeline" aria-label="녹음 시간"><div><span>RECORD TIME</span><b>{fmt(seconds)} / {fmt(recordingWindow)}</b></div><div className="time-progress"><span style={{width:`${Math.min(100,seconds/recordingWindow*100)}%`}}/></div></div>
       <div className="meter-row"><span>MIC {inputRms>0?`${Math.max(-96,Math.round(20*Math.log10(inputRms)))} dBFS`:"— dBFS"}</span><div className={`input-meter ${peak>.9?'clip':''}`} aria-label="마이크 입력 볼륨"><span style={{width:`${Math.max(2,level*100)}%`}}/><i style={{left:`${Math.min(98,peak*100)}%`}}/></div><b>{peak>.9?'CLIP':level>.08?'GOOD':'LOW'}</b></div>{noiseFloor>0&&<p className={`noise-status ${noiseFloor>.08?'warning':''}`}>주변 소음 · {noiseFloor>.08?'높음 — Review에서 다시 녹음을 선택할 수 있어요.':'양호'} ({Math.round(noiseFloor*100)}%)</p>}
 
-      {error && <MicrophonePermissionNotice error={error} onRetry={begin}/>} 
+      {error && (status==='review'?<div className="permission-error" role="alert"><span>{error}</span></div>:<MicrophonePermissionNotice error={error} onRetry={begin} permissionDenied={permissionDenied}/>)}
       {status === 'review' ? <section className="record-review"><p className="kicker">녹음 확인 · {fmt(draft?.duration)}</p><h2>{draft?.features?.peak > .92 ? '일부 구간이 너무 크게 녹음됐어요.' : noiseFloor>.08?'주변 소음이 함께 녹음됐을 수 있어요.':'제출할 Track을 확인해 주세요.'}</h2><p>{noiseFloor>.08?'다시 녹음을 권하지만 제출을 막지는 않습니다. 제출 후 기본 노이즈 정리를 적용합니다. ':''}{draft?.features ? `에너지 ${Math.round(draft.features.energy*100)} · 밝기 ${Math.round(draft.features.brightness*100)} · 거칠기 ${Math.round(draft.features.roughness*100)} · 특징 ${draft.features.fingerprint}` : '오디오 분석을 완료하지 못했지만 재생 후 제출할 수 있어요.'}</p><Player source={draft?.url} durationHint={draft?.duration} playing={reviewPlaying} setPlaying={setReviewPlaying}/><div className="review-actions"><button className="secondary" data-action="record-retry" disabled={submitting} onClick={()=>setConfirmAction('retry')}>다시 녹음</button><button className="primary" data-action="record-submit" disabled={submitting} onClick={send}>{submitting?'제출 중…':'녹음 제출'}</button></div></section>
       : <div className="recorder-controls">
           {status === 'ready' && <button className="record-btn" data-action="record-start" aria-label="녹음 시작" onClick={begin}><Icon name="mic" size={28}/></button>}

@@ -75,6 +75,8 @@ try{
   assert.equal(await loadTrack(projectId+':tenor'),null)
   assert.equal(await (await loadTrack(draftId)).blob.text(),await blob.text())
   assert.ok(document.body.textContent.includes('QA submit storage failure'))
+  assert.equal(Boolean(document.querySelector('.recording-screen .permission-error button')),false,'Review storage errors must not offer microphone restart')
+  assert.equal(Boolean(document.querySelector('.recording-screen .permission-error ol')),false,'Storage errors must not show permission instructions')
   assert.equal(document.querySelector('[data-action="record-submit"]').disabled,false)
   check('Failed submission keeps Review, original draft and unchanged submitted count; retry remains available')
  } finally { IDBObjectStore.prototype.put=originalPut }

@@ -1,5 +1,8 @@
 import assert from 'node:assert/strict'
 import {createRequire} from 'node:module'
+import {createHash} from 'node:crypto'
+import os from 'node:os'
+import path from 'node:path'
 import {buildVoiceLayer} from '../src/voiceAnalysis.js'
 const require=createRequire('C:/Users/LEE/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright/package.json')
 const {chromium}=require('playwright')
@@ -33,6 +36,30 @@ try{
   assert.equal(await page.locator('.lyrics>span.active').textContent(),'QA current')
   assert.equal(await page.locator('.lyrics>span.active').evaluate(row=>Array.from(row.parentElement.children).indexOf(row)),1)
 
+  await page.evaluate(()=>{
+   const originalPut=IDBObjectStore.prototype.put
+   window.qaFailTrackWrite=true
+   IDBObjectStore.prototype.put=function(value,...args){
+    if(window.qaFailTrackWrite&&value.projectId?.startsWith('qa-screen-')&&value.kind!=='temporary-recording')throw new Error('QA storage failure')
+    return originalPut.call(this,value,...args)
+   }
+  })
+  await page.locator('[data-action="record-submit"]').click()
+  await page.waitForFunction(()=>document.querySelector('[role="alert"]')?.textContent.includes('QA storage failure'))
+  assert.equal(await page.locator('.recording-screen').getAttribute('data-recording-status'),'review')
+  assert.equal(await page.locator('.recording-screen .permission-error button').count(),0,'Storage failure must not offer microphone restart')
+  assert.equal(await page.locator('.recording-screen .permission-error ol').count(),0,'Storage failure must not show permission instructions')
+  await page.screenshot({path:path.join(os.tmpdir(),`ieum-record-errors-${count}.png`),fullPage:true})
+  assert.equal(await page.evaluate(()=>Object.keys(window.__IEUM_V2__.state.activeTracks||{}).length),count-1)
+  const preservedHash=await page.evaluate(async draftId=>{
+   const db=await new Promise((resolve,reject)=>{const r=indexedDB.open('ieum-v2-records',1);r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})
+   const draft=await new Promise((resolve,reject)=>{const tx=db.transaction('tracks','readonly'),r=tx.objectStore('tracks').get(draftId);tx.oncomplete=()=>resolve(r.result);tx.onerror=()=>reject(tx.error)})
+   db.close()
+   return [...new Uint8Array(await crypto.subtle.digest('SHA-256',await draft.blob.arrayBuffer()))].map(b=>b.toString(16).padStart(2,'0')).join('')
+  },`jisun:${id}:${parts[0].id}:temporary-recording`)
+  assert.equal(preservedHash,createHash('sha256').update(wav).digest('hex'),'Failed submit must preserve original audio bytes')
+  assert.equal(await page.locator('[data-action="record-submit"]').isEnabled(),true)
+  await page.evaluate(()=>{window.qaFailTrackWrite=false})
   await page.locator('[data-action="record-submit"]').click()
   await page.waitForSelector('.complete-screen',{timeout:45000})
   const state=await page.evaluate(()=>({id:window.__IEUM_V2__.state.activeProject.id,key:window.__IEUM_V2__.state.activeProject.key,tracks:Object.keys(window.__IEUM_V2__.state.activeTracks||{}).length}))
@@ -52,7 +79,7 @@ try{
   await page.reload();await page.waitForSelector('[data-action="open-complete"]');await page.locator('[data-action="open-complete"]').click();await page.waitForSelector('.complete-screen')
   assert.equal(await page.locator('.record-center-credits button').count(),count)
   assert.deepEqual(errors,[])
-  results.push({count,projectPreserved:true,reviewSubmit:true,actualSyntheticMix:true,creditsProfileReturn:true,reload:true,widths:[360,390,430],errors});await context.close()
+  results.push({count,projectPreserved:true,reviewSubmit:true,failurePreservesSource:true,permissionUISeparated:true,actualSyntheticMix:true,creditsProfileReturn:true,reload:true,widths:[360,390,430],errors});await context.close()
  }
  console.log(JSON.stringify({passed:true,results,limitations:'Isolated synthetic audio; no physical microphone, listening, shared server or visual equivalence acceptance.'},null,2))
 }finally{await browser.close()}
