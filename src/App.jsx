@@ -941,6 +941,7 @@ function Recorder({ go, submit, onRecordingStart, partId, projectTracks, layers,
   const [permissionDenied,setPermissionDenied] = useState(false)
   const [microphoneFailure,setMicrophoneFailure] = useState(false)
   const [submitting,setSubmitting] = useState(false)
+  const submittingRef=useRef(false)
   const [confirmAction,setConfirmAction] = useState(null)
   const timer = useRef(null)
   const inputLevels=useRef([])
@@ -989,10 +990,10 @@ function Recorder({ go, submit, onRecordingStart, partId, projectTracks, layers,
   }
   const confirmLeave = async () => { if(status==='recording'||status==='paused') { if(!await stop()) {setConfirmAction(null);return} } else if(draft) {try{await saveTrack(draft)}catch{setError('저장하지 못했어요. 원본을 유지합니다.');return}} setConfirmAction(null); go('workspace') }
   const send = async () => {
-    if (submitting) return
-    setSubmitting(true); setError('')
+    if (submittingRef.current) return
+    submittingRef.current=true;setSubmitting(true); setError('')
     try { await submit({...draft,noiseFloor},currentPart); onDraftChange?.(false); deleteRecordingDraft({userId:CURRENT_USER_ID,projectId:project.id,partId:currentPart.id}).catch(error=>console.error('Submitted Track preserved; draft cleanup pending',error)) }
-    catch (reason) { setError(reason?.message || '제출하지 못했어요. 원본 녹음은 이 기기에 보관했어요. 다시 시도해 주세요.'); setSubmitting(false) }
+    catch (reason) { setError(reason?.message || '제출하지 못했어요. 원본 녹음은 이 기기에 보관했어요. 다시 시도해 주세요.'); submittingRef.current=false;setSubmitting(false) }
   }
   useEffect(() => {
     let active=true

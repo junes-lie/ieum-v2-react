@@ -38,14 +38,15 @@ try{
 
   await page.evaluate(()=>{
    const originalPut=IDBObjectStore.prototype.put
-   window.qaFailTrackWrite=true
+   window.qaFailTrackWrite=true;window.qaTrackWriteCount=0
    IDBObjectStore.prototype.put=function(value,...args){
-    if(window.qaFailTrackWrite&&value.projectId?.startsWith('qa-screen-')&&value.kind!=='temporary-recording')throw new Error('QA storage failure')
+    if(value.projectId?.startsWith('qa-screen-')&&value.kind!=='temporary-recording'&&value.partId==='free-0'){window.qaTrackWriteCount++;if(window.qaFailTrackWrite)throw new Error('QA storage failure')}
     return originalPut.call(this,value,...args)
    }
   })
-  await page.locator('[data-action="record-submit"]').click()
+  await page.evaluate(()=>{const button=document.querySelector('[data-action="record-submit"]');button.click();button.click()})
   await page.waitForFunction(()=>document.querySelector('[role="alert"]')?.textContent.includes('QA storage failure'))
+  assert.equal(await page.evaluate(()=>window.qaTrackWriteCount),1,'Concurrent submit clicks must attempt one Track write')
   assert.equal(await page.locator('.recording-screen').getAttribute('data-recording-status'),'review')
   assert.equal(await page.locator('.recording-screen .permission-error button').count(),0,'Storage failure must not offer microphone restart')
   assert.equal(await page.locator('.recording-screen .permission-error ol').count(),0,'Storage failure must not show permission instructions')
@@ -60,7 +61,7 @@ try{
   assert.equal(preservedHash,createHash('sha256').update(wav).digest('hex'),'Failed submit must preserve original audio bytes')
   assert.equal(await page.locator('[data-action="record-submit"]').isEnabled(),true)
   await page.evaluate(()=>{window.qaFailTrackWrite=false})
-  await page.locator('[data-action="record-submit"]').click()
+  await page.evaluate(()=>{const button=document.querySelector('[data-action="record-submit"]');button.click();button.click()})
   await page.waitForSelector('.complete-screen',{timeout:45000})
   const state=await page.evaluate(()=>({id:window.__IEUM_V2__.state.activeProject.id,key:window.__IEUM_V2__.state.activeProject.key,tracks:Object.keys(window.__IEUM_V2__.state.activeTracks||{}).length}))
   assert.equal(state.id,id);assert.equal(state.key,'E minor');assert.equal(state.tracks,count)
@@ -76,10 +77,11 @@ try{
   await page.locator('.record-center-credits button').nth(1).click();await page.waitForSelector('.other-vocal-screen')
   await page.locator('[data-action="back"]').click();await page.waitForSelector('.complete-screen')
   assert.equal(await page.evaluate(()=>window.__IEUM_V2__.state.activeProject.id),id)
+  assert.equal(await page.evaluate(()=>window.qaTrackWriteCount),2,'Failed double click plus successful double click must total two writes')
   await page.reload();await page.waitForSelector('[data-action="open-complete"]');await page.locator('[data-action="open-complete"]').click();await page.waitForSelector('.complete-screen')
   assert.equal(await page.locator('.record-center-credits button').count(),count)
   assert.deepEqual(errors,[])
-  results.push({count,projectPreserved:true,reviewSubmit:true,failurePreservesSource:true,permissionUISeparated:true,actualSyntheticMix:true,creditsProfileReturn:true,reload:true,widths:[360,390,430],errors});await context.close()
+  results.push({count,duplicateSubmitBlocked:true,projectPreserved:true,reviewSubmit:true,failurePreservesSource:true,permissionUISeparated:true,actualSyntheticMix:true,creditsProfileReturn:true,reload:true,widths:[360,390,430],errors});await context.close()
  }
  console.log(JSON.stringify({passed:true,results,limitations:'Isolated synthetic audio; no physical microphone, listening, shared server or visual equivalence acceptance.'},null,2))
 }finally{await browser.close()}

@@ -1,3 +1,9 @@
+## 2026-10-08 기능 후속 — R07 동시 제출 차단
+
+기존 production db8143e에서 같은 시점 제출 버튼을 두 번 클릭하면 Track 저장 시도가 2회 발생하는 오류를 실제 재현했다(2 != 1). Recorder에 즉시 적용되는 제출 ref guard를 추가해 첫 요청부터 중복 실행을 차단한다. 실패한 경우 잠금을 해제하여 기존 Review/원본에서 재시도하며 성공 이후까지 잠금을 유지한다. UI의 기존 제출 중 비활성화·성공 후 workspace/Mix/Complete 흐름을 보존한다. 디자인은 변경하지 않았다.
+
+유지 qa:continuity는 2/3/4 Part에서 동시 두 클릭→저장 실패1회·원본 SHA256 보존→동시 두 클릭 재시도→저장 성공1회·실제 합성/완성/재접속을 확인한다. 프로필/보관함 기능 commit db8143e는 Git 자동배포 READY(dpl_DDXkeCGPKgKCyj1jD4t9Lwpbnj5t), HTTP200/배포 asset 해시 일치, Production qa:profile/qa:navigation/기존 qa:record-errors 통과를 확인했다. 기능 전체·실기기·실제 서버 완료를 주장하지 않는다.
+
 ## 2026-10-08 기능 우선 — 단계 4 프로필 저장·편집·복귀
 
 사용자 지정 화면명세 Y01–Y04/VP03–VP06와 유저플로우 UF03/UF12를 확인했다. 실제 기존 production에서 음역 편집 취소가 detail로 이동하는 오류를 재현했다(detail !== my). 최초 등록과 수정의 실제 진입 화면을 기억하고 기존 history를 이용해 복귀하며 편집 모드가 다른 진입에 남지 않도록 했다. 프로필 저장 실패는 마이크 재시작을 제공하지 않고 기존 프로필/새 Take를 보존한다. 프로필·취향 저장의 동시 클릭은 ref guard로 막고 저장 중 해당 조작을 비활성화한다. 최초 등록의 음역/샘플은 단일 IndexedDB transaction으로 저장하여 한쪽 실패 시 둘 다 rollback한다. 음역만 변경하면 샘플은 보존하고 샘플만 교체하면 음역/Project Track은 보존한다. CSS/시각 디자인/Record motion은 수정하지 않았다.
