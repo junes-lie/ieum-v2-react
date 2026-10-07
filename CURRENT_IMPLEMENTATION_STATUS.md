@@ -1,3 +1,9 @@
+## 2026-10-08 단계 2 — 실제 Pretendard 가변 굵기
+
+사용자 교정과 실제 Desktop Figma Credits의 Pretendard SemiBold를 적용한다. 기존 Pretendard-Regular.ttf의 sfnt metadata는 static/weight400인데 CSS가 100–900으로 선언해 브라우저에서 400/500/600/700 한글·영문 글리프의 픽셀이 모두 동일했다. 공식 고정 commit의 실제 가변 WOFF2를 로컬 번들로 연결하고 공식 45–920 범위를 선언했다. 중앙 Credits 이름의 첫 폰트도 Inter가 아닌 Pretendard IEUM으로 직접 지정했다. 원본 Regular 파일은 보존하고 공식 라이선스·출처·해시를 함께 보관한다.
+
+유지 QA verify-pretendard-font는 수정 전 distinct-weight 검사 실패(1/4), 수정 후 실제 글리프 픽셀 4/4를 확인했다. build 및 360/390/430px 세 화면·가사·긴 Credits·확인창 200%·44px 터치·desktop 430×932 검사가 통과했다. 회전·공명·저장 데이터는 변경하지 않았다. 배포된 폰트와 production 결과는 자동배포 뒤 확인한다. 실기기 인수는 미검증이다.
+
 ## 2026-10-08 단계 2 — 중앙 Credits 완성일의 실제 데이터
 
 현재 화면명세의 Final Mix/완성시각 참조와 Desktop Figma 653:49의 날짜 표기를 대조했다. 완성일이 없을 때 오늘 날짜를 넣던 fallback을 제거하고 실제 Mix.createdAt만 YYYY.MM.DD로 표시한다. 누락/유효하지 않은 날짜는 —로 남긴다. time 요소에 실제 ISO datetime을 제공한다. 저장된 원본·Mix.createdAt·완성 상태는 수정하지 않는다.
@@ -6,7 +12,7 @@ build/기존 QA 7개, 완성일 유효/누락/잘못된 값의 Node 렌더 검�
 
 ## 2026-10-08 단계 2 — 가는 공명 결의 밝기 보정
 
-figma-desktop MCP의 653:49 `07 · 완성곡 · Editable`에서 get_design_context와 get_screenshot을 실제 성공 호출하고 구조·원본 screenshot·기존 React 전후 렌더를 대조했다. 기존 filament의 RGB 밝기 계수만 1.0에서 1.55로 보정했다. 입자 밝기/수, 경로/색상/분포/투명도, 저장 Layer, AI 필드, 회전/내부 흐름/반사광 각도는 변경하지 않았다. 새 발광 레이어나 정적 Record를 추가하지 않았다. 원본 Credits 구조에 따라 Part는 12/16px Mono 대문자·0.48px 자간, 참여자 이름은 Sans SemiBold로 보정했다. 기존 Part 색상·이름 데이터·44px 터치 및 긴 이름 줄바꿈은 유지한다.
+figma-desktop MCP의 653:49 `07 · 완성곡 · Editable`에서 get_design_context와 get_screenshot을 실제 성공 호출하고 구조·원본 screenshot·기존 React 전후 렌더를 대조했다. 기존 filament의 RGB 밝기 계수만 1.0에서 1.55로 보정했다. 입자 밝기/수, 경로/색상/분포/투명도, 저장 Layer, AI 필드, 회전/내부 흐름/반사광 각도는 변경하지 않았다. 새 발광 레이어나 정적 Record를 추가하지 않았다. 원본 Credits 구조에 따라 Part는 12/16px Mono 대문자·0.48px 자간, 참여자 이름은 Pretendard SemiBold로 보정했다. 기존 Part 색상·이름 데이터·44px 터치 및 긴 이름 줄바꿈은 유지한다.
 
 production build/기존 QA 7개 및 360/390/430px 세 화면·desktop 430×932 렌더 검사가 통과했다. 실제 P0 출력의 0/2/3/4 AI 필드 표시, 고정 시간 재로드 픽셀 재현, 움직임, Complete 진입/안정화와 손상된 출력 거부·음성 원본 보존도 통과했다. 입자 수 45086 유지·console/page error 0이다. 이는 production AI 추론 서비스 연결이나 전체 Figma pixel 일치를 의미하지 않는다. 물리 기기/마이크/청취는 미검증이고 단계 2 전체 완료를 선언하지 않는다.
 

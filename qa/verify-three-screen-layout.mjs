@@ -137,6 +137,7 @@ try{
   assert.match(completionDate.text,/^\d{4}\.\d{2}\.\d{2}$/);assert.ok(Number.isFinite(new Date(completionDate.dateTime).getTime()))
   for(const part of await page.locator('.record-center-credits button small').all()){assert.ok(await part.evaluate(el=>getComputedStyle(el).fontFamily.includes('JetBrains')));assert.equal(await part.evaluate(el=>getComputedStyle(el).textTransform),'uppercase')}
   assert.equal(await page.locator('.record-center-credits button strong').first().evaluate(el=>getComputedStyle(el).fontWeight),'600')
+  assert.ok(await page.locator('.record-center-credits button strong').first().evaluate(el=>getComputedStyle(el).fontFamily.split(',')[0].includes('Pretendard IEUM')))
   const creditGeometry=await page.locator('.record-center-credits button').evaluateAll(buttons=>buttons.map(button=>{
    const name=button.querySelector('strong');name.textContent='함께노래하는참여자'
    const box=button.getBoundingClientRect(),text=name.getBoundingClientRect()
