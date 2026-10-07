@@ -197,6 +197,13 @@ check('실제 Track 제출 시 Record signature가 바뀌고 기존 Layer는 유
 check('Review 제출 후 작업실에서 제출 상태와 통합 Mix 확인',await page.locator('.workspace-screen').isVisible()&&(await page.locator('.top-meta').innerText()).includes('03/04')&&await page.locator('#current-mix').isVisible())
 check('별도 Multitrack 화면 없이 작업실 하단 내비게이션 유지',await page.locator('.multitrack-screen').count()===0&&await page.locator('.bottom-nav').isVisible())
 await page.screenshot({path:path.join(here,'record-3-of-4.png'),fullPage:true})
+const threeTrackRecord=page.locator('.workspace-screen .record').first()
+const threeTrackFrames=[]
+for (const [index,delay] of [0,5000,5000].entries()) {
+  if(delay) await page.waitForTimeout(delay)
+  threeTrackFrames.push(await threeTrackRecord.screenshot({path:path.join(here,`record-3-of-4-motion-${index*5}s.png`)}))
+}
+check('03/04 Record 입자가 10초 동안 정지 화면 반복이 아닌 내부 흐름으로 변화',!threeTrackFrames[0].equals(threeTrackFrames[1])&&!threeTrackFrames[1].equals(threeTrackFrames[2]))
 await page.locator('[data-part="bass"] .row-action').click()
 await page.locator('[data-action="candidate"]').first().click()
 await page.locator('[data-action="invite"]').click()

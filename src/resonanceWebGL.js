@@ -102,19 +102,21 @@ function buildParticles({ slots, projectSeed, mobile }) {
     const energy = Math.max(0.08, Math.min(1, layerValue(layer, 'opacity', 0.32) * 2.25))
     const countWidth = activeCount >= 4 ? .82 : activeCount === 3 ? .92 : 1
     const sourceSpread = Math.max(.075, Math.min(.25, layerValue(layer, 'spread', 0.10)))
-    const spread = (.060 + ((sourceSpread - .075) / .175) * .220) * countWidth
+    const spread = (.055 + ((sourceSpread - .075) / .175) * .150) * countWidth
     const turbulence = Math.max(0.2, Math.min(1.5, layerValue(layer, 'turbulence', 0.65)))
     const drift = Math.max(0.08, Math.min(0.65, layerValue(layer, 'drift', 0.24)))
     const continuity = Math.max(0, Math.min(1, layerValue(layer, 'continuity', .68)))
     const articulation = Math.max(0, Math.min(1, layerValue(layer, 'articulation', .28)))
     const pitchWobble = Math.max(0, Math.min(1, layerValue(layer, 'pitchWobble', .24)))
     const particleDensity = Math.max(.72, Math.min(1.28, .72 + (layerValue(layer, 'particleCount', 78) - 42) / 83 * .56))
+    const layerWeight = partIndex === 2 ? .92 : 1
+    const layerBrightness = partIndex === 2 ? .90 : 1
     const layerPhase = layerValue(layer, 'phase', partIndex * 1.47)
     const layerSeed = hashSeed(`${projectSeed}:${layer.signature || layer.seed || partIndex}`)
     const random = randomFrom(layerSeed)
     // Continuous micro-filaments establish the ribbon first. Their lanes,
     // phases and spacing are persistent, but never perfectly parallel.
-    const strandCount = mobile ? 7 : 9
+    const strandCount = mobile ? 5 : 6
     const segmentCount = mobile ? 168 : 216
     const layerStrandCount = Math.max(4, Math.round(strandCount * (.72 + continuity * .35)))
     for (let pathIndex=0; pathIndex<FLOW_PATH_COUNT; pathIndex++) {
@@ -125,9 +127,9 @@ function buildParticles({ slots, projectSeed, mobile }) {
         const phase=layerPhase+pathIndex*.74+(random()-.5)*.12
         const speed=.0038+drift*.004+random()*.0018
         const core=1-Math.min(1,Math.abs(laneUnit))
-        const highlight=random()<.12?1.55:1
-        const alpha=(.020+core*.048+random()*.012)*layerBlend*(.96-articulation*.58)
-        const brightness=(.92+core*.38)*highlight
+        const highlight=random()<(partIndex===2?.018:.045)?1.24:1
+        const alpha=(.020+core*.042+random()*.010)*layerBlend*(.96-articulation*.58)*layerWeight
+        const brightness=(.96+core*.26)*highlight*layerBrightness
         const micro=(.28+random()*.42)*turbulence+pitchWobble*(.48+random()*.44)
         for(let segment=0;segment<segmentCount;segment++){
           const t0=segment/segmentCount
@@ -142,33 +144,43 @@ function buildParticles({ slots, projectSeed, mobile }) {
     // Freely travelling grains sit above the filaments and keep the ribbon
     // from reading as vector outlines or topographic contour copies.
     const density = mobile ? 5200 : 7600
-    const count = Math.round(density * particleDensity * (0.82 + energy * 0.30))
+    const count = Math.round(density * particleDensity * (0.82 + energy * 0.30) * layerWeight)
     for (let index = 0; index < count; index++) {
       const pathIndex = index % FLOW_PATH_COUNT
       // Stable, slightly irregular lanes create a readable grain along the
       // tangent. Sparse particles are allowed beyond the ribbon edge.
-      const laneCount = 41
+      const laneCount = 53
       const laneIndex = Math.floor(index / FLOW_PATH_COUNT) % laneCount
       const laneUnit = laneIndex / (laneCount - 1) * 2 - 1
-      const laneCurve = Math.sign(laneUnit) * Math.pow(Math.abs(laneUnit), 1.22)
+      const laneCurve = Math.sign(laneUnit) * Math.pow(Math.abs(laneUnit), 1.52)
       const laneJitter = (random() - .5) * .065
-      const edge = random() < 0.065 ? (random() - .5) * 1.82 : (laneCurve + laneJitter) * .52
+      const edge = random() < 0.022 ? (random() - .5) * 1.42 : (laneCurve + laneJitter) * .53
       const rawPhase = random()
       const groupCount = 4 + Math.floor(random() * 3)
       const groupCenter = (Math.floor(rawPhase * groupCount) + .5) / groupCount
       const clusteredPhase = groupCenter + (random() - .5) * (.025 + continuity * .11)
       const pathPhase = ((rawPhase * (1 - articulation) + clusteredPhase * articulation) % 1 + 1) % 1
-      const normal = edge * spread * (1.65 + random() * 0.8)
+      const normal = edge * spread * (1.48 + random() * 0.56)
       const speed = 0.0048 + drift * 0.006 + random() * 0.0038
       const phase = layerPhase + (random() - .5) * .24
       const size = 0.44 + random() * 0.58 + energy * 0.10
       const core = 1 - Math.min(1, Math.abs(edge) * 1.45)
-      const highlight = random() < .055 ? 1.65 : 1
-      const alpha = (0.038 + random() * 0.14) * (0.74 + energy * 0.24) * (0.72 + core * .48) * layerBlend
-      const brightness = (0.82 + random() * 0.70 + core * .22) * highlight
+      const highlight = random() < (partIndex === 2 ? .010 : .032) ? (partIndex === 2 ? 1.18 : 1.38) : 1
+      const alpha = (0.052 + random() * 0.135) * (0.74 + energy * 0.24) * (0.74 + core * .44) * layerBlend * layerWeight
+      const brightness = (0.88 + random() * 0.42 + core * .18) * highlight * layerBrightness
       const micro = (0.35 + random() * 0.55) * turbulence + pitchWobble * (0.45 + random() * 0.55)
       const particle = [pathIndex, pathPhase, normal, speed, phase, size, alpha, brightness, partIndex, micro]
       grains.push(...particle, 0)
+      // A small subset receives a short tangent-aligned trace. Long connected
+      // contours stay rare, so points remain the primary material.
+      if (random() < .036) {
+        const trailAlpha = alpha * .48
+        const trailBrightness = brightness * .92
+        filaments.push(
+          pathIndex,pathPhase,normal,speed,phase,size,trailAlpha,trailBrightness,partIndex,micro,-1.15,
+          pathIndex,pathPhase,normal,speed,phase,size,trailAlpha,trailBrightness,partIndex,micro,1.15
+        )
+      }
     }
   })
   return {
@@ -223,30 +235,30 @@ vec2 flowBase(float part,float path,float t){
   float radius=.65;
   if(part<.5){
     warpedAngle+=.100*sin(angle-.35)+.045*sin(angle*2.+1.15);
-    radius=.625
-      +.115*sin(angle*2.+.35+path*.12)
-      +.060*sin(angle*3.-1.05)
-      +.025*sin(angle+1.00);
+    radius=.590
+      +.150*sin(angle*2.+.28+path*.16)
+      +.072*sin(angle*3.-1.10)
+      +.036*sin(angle+1.00);
   }else if(part<1.5){
     warpedAngle+=.115*sin(angle+1.15)-.050*sin(angle*2.-.55);
-    radius=.615
-      +.125*sin(angle*2.+2.00+path*.14)
-      +.070*sin(angle*3.+.45)
-      -.028*sin(angle-.65);
+    radius=.585
+      +.142*sin(angle*2.+2.04+path*.18)
+      +.084*sin(angle*3.+.42)
+      -.040*sin(angle-.68);
   }else if(part<2.5){
     warpedAngle+=.090*sin(angle-1.62)+.055*sin(angle*2.+.28);
-    radius=.630
-      +.108*sin(angle*2.-.72+path*.11)
-      +.064*sin(angle*3.+1.18)
-      +.026*cos(angle+.42);
+    radius=.595
+      +.132*sin(angle*2.-.78+path*.20)
+      +.076*sin(angle*3.+1.22)
+      +.044*cos(angle+.38);
   }else{
     warpedAngle+=.108*sin(angle+2.28)-.048*sin(angle*2.+.76);
-    radius=.620
-      +.120*sin(angle*2.+2.52+path*.13)
-      +.066*sin(angle*3.-.52)
-      -.024*cos(angle-.84);
+    radius=.592
+      +.138*sin(angle*2.+2.56+path*.17)
+      +.078*sin(angle*3.-.48)
+      -.038*cos(angle-.82);
   }
-  radius+=(path-.5)*.030;
+  radius+=(path-.5)*(.034+.020*sin(angle+part*1.31));
   return vec2(cos(warpedAngle),sin(warpedAngle))*radius;
 }
 vec2 pointAt(float part,float path,float t){
@@ -264,29 +276,29 @@ void main(){
   vec2 normal=vec2(-tangent.y,tangent.x);
   float focusDrift=.010*sin(uTime*.18+aPhase*1.37+aPath*.61);
   float focusT=fract(t+aPhase*.052+aPath*.033+focusDrift);
-  float focusA=pow(.5+.5*cos((focusT-.13)*6.28318530718),10.);
-  float focusB=pow(.5+.5*cos((focusT-.47)*6.28318530718),14.);
-  float focusC=pow(.5+.5*cos((focusT-.78)*6.28318530718),9.);
-  float focus=clamp(max(focusA,max(focusB,focusC)),0.,1.);
+  float creamMask=step(1.5,aPart)*(1.0-step(2.5,aPart));
+  float focusA=pow(.5+.5*cos((focusT-.17)*6.28318530718),mix(3.4,2.0,creamMask));
+  float focusB=pow(.5+.5*cos((focusT-.61)*6.28318530718),mix(4.6,2.7,creamMask));
+  float focus=clamp(max(focusA,focusB),0.,1.);
   float opening=.5+.5*sin(t*6.28318530718+aPhase*.70);
-  float widthShape=(.10+1.28*pow(opening,1.65))
-    *(.86+.14*sin(t*12.56637061436+aPhase*.23))
-    *(.48+.92*focus)
-    *(1.+focus*.12*sin(uTime*.42+aPart*1.19+aPath*.73));
+  float widthShape=(.20+1.16*pow(opening,1.48))
+    *(.84+.16*sin(t*12.56637061436+aPhase*.23))
+    *(.66+.72*focus)
+    *(1.+focus*.09*sin(uTime*.37+aPart*1.19+aPath*.73));
   float lanePhase=aNormal*118.;
   float braid=(
     sin(t*18.8495559215+lanePhase+aPhase)*.0105
     +sin(t*31.4159265359-lanePhase*.58+aPhase*.43)*.0065
-  )*(.30+.95*focus);
+  )*(.38+.72*focus);
   float grain=(sin(t*49.0+aPhase)+0.45*sin(t*91.0-aPhase*1.7))*0.0065*aMicro;
   float live=1.0-step(0.25,abs(aPart-uActivePart));
   float liveWave=live*uLevel*sin(t*34.0+uTime*6.0+aPhase)*0.010;
   vec2 position=center+normal*(aNormal*widthShape+braid+grain+liveWave);
   float radius=length(position);
-  float hubFade=smoothstep(0.245,0.305,radius);
-  float rimFade=1.0-smoothstep(0.91,0.985,radius);
-  vAlpha=aAlpha*(.16+focus*2.12)*hubFade*rimFade;
-  vBrightness=aBrightness*(.78+focus*.72)*(1.0+live*uLevel*0.28);
+  float hubFade=smoothstep(0.275,0.335,radius);
+  float rimFade=1.0-smoothstep(0.90,0.972,radius);
+  vAlpha=aAlpha*(.34+focus*1.55)*hubFade*rimFade;
+  vBrightness=aBrightness*(.92+focus*.44)*(1.0+live*uLevel*0.24);
   vAngle=atan(tangent.y,tangent.x);
   vPart=aPart;
   gl_PointSize=(aSize*2.55+live*uLevel*0.45)*uPixelRatio;
@@ -303,7 +315,7 @@ varying float vPart;
 vec3 colorFor(float part){
   if(part<0.5)return vec3(0.24,0.55,1.0);
   if(part<1.5)return vec3(1.0,0.42,0.35);
-  if(part<2.5)return vec3(0.95,0.80,0.62);
+  if(part<2.5)return vec3(0.90,0.76,0.58);
   return vec3(0.25,0.78,0.74);
 }
 void main(){
@@ -341,18 +353,18 @@ function drawMaterial(canvas) {
   vinyl.addColorStop(1, '#020202')
   ctx.fillStyle = vinyl
   ctx.fillRect(0, 0, pixels, pixels)
-  for (let groove = 0; groove < 128; groove++) {
-    const r = radius * (.225 + groove * .00588)
+  for (let groove = 0; groove < 164; groove++) {
+    const r = radius * (.225 + groove * .00458)
     ctx.beginPath()
     ctx.arc(center, center, r, 0, Math.PI * 2)
-    ctx.strokeStyle = `rgba(205,174,139,${groove % 9 === 0 ? .034 : .010})`
+    ctx.strokeStyle = `rgba(205,174,139,${groove % 11 === 0 ? .046 : .013})`
     ctx.lineWidth = Math.max(.45, ratio * .28)
     ctx.stroke()
   }
   const sheen = ctx.createLinearGradient(center * .16, center * .14, center * 1.72, center * 1.78)
-  sheen.addColorStop(0, 'rgba(255,235,205,.055)')
+  sheen.addColorStop(0, 'rgba(255,235,205,.065)')
   sheen.addColorStop(.36, 'rgba(255,235,205,0)')
-  sheen.addColorStop(.53, 'rgba(255,235,205,.026)')
+  sheen.addColorStop(.53, 'rgba(255,235,205,.032)')
   sheen.addColorStop(1, 'rgba(255,235,205,0)')
   ctx.fillStyle = sheen
   ctx.fillRect(0, 0, pixels, pixels)
@@ -374,12 +386,13 @@ function drawMaterial(canvas) {
   hub.addColorStop(.34, '#3b2c21')
   hub.addColorStop(1, '#0c0907')
   ctx.beginPath(); ctx.arc(center, center, hubRadius, 0, Math.PI*2); ctx.fillStyle=hub; ctx.fill()
-  ctx.strokeStyle='rgba(205,164,116,.42)'; ctx.lineWidth=ratio; ctx.stroke()
+  ctx.strokeStyle='rgba(205,164,116,.52)'; ctx.lineWidth=ratio; ctx.stroke()
   for(let ring=1;ring<10;ring++){
     ctx.beginPath();ctx.arc(center,center,hubRadius*(ring/10),0,Math.PI*2)
-    ctx.strokeStyle='rgba(221,183,137,.045)';ctx.lineWidth=Math.max(.45,ratio*.26);ctx.stroke()
+    ctx.strokeStyle='rgba(221,183,137,.060)';ctx.lineWidth=Math.max(.45,ratio*.26);ctx.stroke()
   }
   ctx.beginPath();ctx.arc(center,center,radius*.034,0,Math.PI*2);ctx.fillStyle='#020202';ctx.fill()
+  ctx.strokeStyle='rgba(225,198,164,.24)';ctx.lineWidth=Math.max(.5,ratio*.34);ctx.stroke()
   ctx.restore()
 }
 
