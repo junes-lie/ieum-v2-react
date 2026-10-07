@@ -51,3 +51,9 @@ React/Vite만 설치되어 있으며 `api/`는 비어 있다. 서버 인증·공
 AI Voice Layer는 FFT 수식과 다르다. 모델·가중치·추론 런타임·모바일 비용·같은 음성 재현성과 다른 음성 구별이 아직 검증되지 않았다. 제공곡/가사/반주 타임코드와 실제 iOS·Android 마이크/Guide 지연 역시 별도 검증이 필요하다.
 
 검증: `node qa/verify-project-service.mjs`. 테스트는 주입한 HTTP stub으로 인증 누락·주소 검증·충돌·중복 방지 키·로컬 저장 오류 전파를 확인한다. 실제 서버 연결 증거로 사용하지 않는다.
+
+## 2026-10-08 읽기 전용 실제 연결 확인
+
+Vercel project `prj_eowHNSo22vKNulK4a2LFYzQnAYj1`의 Git 연결은 github/ieum-v2-react, productionBranch main이다. 환경변수 목록 API의 결과는 0개였다. 값은 출력하거나 변경하지 않았다. 저장소 api에는 구현 파일이 없고 .env.example은 주석만 있다. `.vercel/project.json`은 현재 저장소에 없다. 이 사실만으로 외부 계정 자체가 없다고 판단하지 않는다. 인증/DB/파일 저장/AI 서버 endpoint의 실제 제공 환경은 아직 확인되지 않았다. 계정 생성·서비스 설치·원격 설정 변경은 수행하지 않았다.
+
+P0 실제 모델 기술 검증과 기존 Record의 검증된 출력 표시 연결은 현재 상태 문서에 기록되어 있다. 이 문서의 과거 ‘모델 미검증’ 표현은 그 기술 검증 이전 상태이며, 실제 production 추론 서비스 연결은 계속 미완료다.
