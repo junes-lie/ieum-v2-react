@@ -900,14 +900,16 @@ function Finder({ go, invite, invitedVocalIds = [], part, vocalSaves, toggleVoca
   const [sort, setSort] = useState('종합 추천순')
   const [filterOpen,setFilterOpen] = useState(false)
   const [roleOnly,setRoleOnly] = useState(false)
-  const keyBySort = {'종합 추천순':'range','음역 적합순':'range','음색 조화순':'timbre','역할 보완순':'role','곡 취향 유사순':'taste'}
+  const keyBySort = {'종합 추천순':'overall','음역 적합순':'range','음색 조화순':'timbre','역할 보완순':'role','곡 취향 유사순':'taste'}
   const partName = part?.name || 'Bass'
   const roleHints = {Soprano:['Upper harmony','Main'],Alto:['Support','Middle harmony'],Tenor:['Middle harmony','Support'],Bass:['Bass foundation','Low harmony']}
   const preferredRoles = roleHints[partName] || []
   const score = (candidate,key) => {
     const preferred = candidate.roles?.some(role=>preferredRoles.includes(role))
     const fit=evaluatePartFit({rangeData:candidate,part})
-    const base=key==="range"?Math.min(fit.lowMargin||0,fit.highMargin||0):key==="role"?(preferred?1:0):0
+    const margin=Math.min(fit.lowMargin||0,fit.highMargin||0)
+    if(key==="range")return margin
+    const base=key==="overall"?margin:key==="role"?(preferred?1:0):0
     return (preferred ? 100 : 0) + base
   }
   const candidates = PEOPLE.filter(candidate=>!candidate.isSelf)
