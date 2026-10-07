@@ -1,6 +1,6 @@
 ## 2026-10-08 단계 2 — 실제 Pretendard 가변 굵기
 
-사용자 교정과 실제 Desktop Figma Credits의 Pretendard SemiBold를 적용한다. 기존 Pretendard-Regular.ttf의 sfnt metadata는 static/weight400인데 CSS가 100–900으로 선언해 브라우저에서 400/500/600/700 한글·영문 글리프의 픽셀이 모두 동일했다. 공식 고정 commit의 실제 가변 WOFF2를 로컬 번들로 연결하고 공식 45–920 범위를 선언했다. 중앙 Credits 이름의 첫 폰트도 Inter가 아닌 Pretendard IEUM으로 직접 지정했다. 원본 Regular 파일은 보존하고 공식 라이선스·출처·해시를 함께 보관한다.
+사용자 교정과 실제 Desktop Figma Credits의 Pretendard SemiBold를 적용한다. 기존 Pretendard-Regular.ttf의 sfnt metadata는 static/weight400인데 CSS가 100–900으로 선언해 브라우저에서 400/500/600/700 한글·영문 글리프의 픽셀이 모두 동일했다. 공식 고정 commit의 실제 가변 WOFF2를 로컬 번들로 연결하고 공식 45–920 범위를 선언했다. 중앙 Credits 이름의 첫 폰트도 Inter가 아닌 Pretendard IEUM으로 직접 지정했다. 03/06/07 내부의 기본 폰트 변수도 Pretendard 우선으로 지정해 기존 변수 참조가 Inter로 되돌아가지 않도록 했다. 범위 밖 화면의 변수와 Instrument Serif/JetBrains Mono는 보존한다. 원본 Regular 파일은 보존하고 공식 라이선스·출처·해시를 함께 보관한다.
 
 유지 QA verify-pretendard-font는 수정 전 distinct-weight 검사 실패(1/4), 수정 후 실제 글리프 픽셀 4/4를 확인했다. build 및 360/390/430px 세 화면·가사·긴 Credits·확인창 200%·44px 터치·desktop 430×932 검사가 통과했다. 회전·공명·저장 데이터는 변경하지 않았다. 배포된 폰트와 production 결과는 자동배포 뒤 확인한다. 실기기 인수는 미검증이다.
 

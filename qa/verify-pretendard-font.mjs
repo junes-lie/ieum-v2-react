@@ -7,6 +7,7 @@ try {
  const context=await browser.newContext({viewport:{width:390,height:844}}),page=await context.newPage()
  await page.goto(process.env.IEUM_QA_URL||'http://127.0.0.1:4191/?design=figma')
  await page.waitForSelector('.workspace-screen')
+ for(const element of await page.locator('.workspace-screen,.track-person span,.track-person button,.track-status').all()){assert.ok(await element.evaluate(el=>getComputedStyle(el).fontFamily.split(',')[0].includes('Pretendard IEUM')),'Workspace body and Track participant/status must prefer Pretendard')}
  const weights=await page.evaluate(async()=>{
   const canvas=document.createElement('canvas');canvas.width=900;canvas.height=100
   const ctx=canvas.getContext('2d'),results=[]

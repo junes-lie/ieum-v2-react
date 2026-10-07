@@ -126,7 +126,7 @@ html,body{background:#41403c}body{height:auto;overflow-y:auto;background:#41403c
 .bottom-nav button.active:after{content:'';position:absolute;inset:-12px 7.75px;width:auto;height:76px;filter:blur(5px);background:linear-gradient(180deg,rgba(255,245,222,.16),rgba(255,245,222,.105) 30%,rgba(255,245,222,.05) 60%,transparent 90%);pointer-events:none}
 
 /* Desktop MCP 653:47/48/49, 2026-10-08: existing screens and live canvases. */
-.workspace-screen,.recording-screen,.complete-screen{font-family:'Pretendard IEUM',var(--sans);overflow-x:clip}
+.workspace-screen,.recording-screen,.complete-screen{--sans:'Pretendard IEUM','Pretendard','Noto Sans KR',sans-serif;font-family:var(--sans);overflow-x:clip}
 .workspace-screen .topbar{height:88px;padding-top:32px;grid-template-columns:44px 1fr 44px;gap:10px}
 .workspace-screen .topbar-center{text-align:left;font-size:18px;font-weight:600}
 .workspace-screen main{padding-top:23px}
