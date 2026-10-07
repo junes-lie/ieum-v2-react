@@ -97,3 +97,19 @@ export async function deleteRecordingDraft({userId, projectId, partId}) {
     }
   }) } finally { db.close() }
 }
+
+// Profile range and sample must commit together before the UI accepts registration.
+export async function saveTracks(tracks) {
+  if (!Array.isArray(tracks) || !tracks.length || tracks.some(track=>!track?.id || !track.projectId)) throw new Error('저장할 녹음의 ID와 프로젝트가 필요해요.')
+  const db = await openDatabase()
+  try { await new Promise((resolve,reject)=>{
+    const tx = db.transaction(STORE,'readwrite')
+    let failure
+    tx.oncomplete = resolve
+    tx.onerror = () => reject(failure || tx.error)
+    tx.onabort = () => reject(failure || tx.error || new Error('프로필 저장이 취소됐어요. 원본을 유지하고 다시 시도해 주세요.'))
+    try { const store=tx.objectStore(STORE); tracks.forEach(track=>store.put(track)) }
+    catch(error) { failure=error;tx.abort() }
+  }) } finally { db.close() }
+  return tracks
+}
