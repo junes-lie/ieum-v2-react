@@ -29,6 +29,7 @@ import { clearProjectTracks, deleteTrack, loadProjectTracks, loadTrack, saveTrac
 import { createProjectModel, resolveRecordPartSlots, SUPPORTED_PART_COUNTS } from './projectModel.js'
 import { CURRENT_USER_ID, PEOPLE, PERSON_BY_ID, SAMPLE_SONGS, personFromName } from './catalog.js'
 import { createRecordingInflowRenderer, createResonanceRenderer } from './resonanceWebGL.js'
+import { loadAiVoiceFields } from './aiVoiceLayer.js'
 
 const PART_CATALOG = [
   { id: 'soprano', name: 'Soprano', ko: '소프라노', color: '#3b82f6', range: 'C4–F5', participantId:'yoonseul', participant: '윤슬', status: 'accepted', duration: null },
@@ -420,11 +421,24 @@ void main(){
   </figure>
 }
 
-function ResonanceRecord({ active = [true, false, true, false], layers = [], parts = PARTS, activePartIndex = 1, state = 'rest', level = 0, seed = PROJECT_SEED, label, compact = false }) {
+function ResonanceRecord({ active = [true, false, true, false], layers = [], parts = PARTS, tracks, projectId = PROJECT_ID, activePartIndex = 1, state = 'rest', level = 0, seed = PROJECT_SEED, label, compact = false }) {
   const materialRef = useRef(null)
   const particleRef = useRef(null)
   const levelRef = useRef(level)
   const [rendererError, setRendererError] = useState('')
+  const [aiFields,setAiFields]=useState([])
+  const [aiError,setAiError]=useState('')
+  const partIds=parts.map(part=>part.id).join(':')
+  useEffect(()=>{
+    let current=true
+    setAiFields([]);setAiError('')
+    if(Object.values(tracks || {}).some(track=>track.aiVoiceLayer)){
+      loadAiVoiceFields(tracks,String(seed),parts.map(part=>part.id),projectId)
+        .then(fields=>{if(current)setAiFields(fields)})
+        .catch(error=>{if(current)setAiError(error.message)})
+    }
+    return()=>{current=false}
+  },[tracks,seed,projectId,partIds])
   useEffect(() => { levelRef.current = level }, [level])
 
   const numericSeed = typeof seed === 'number' ? seed : [...String(seed)].reduce((sum,char,index)=>sum+char.charCodeAt(0)*(index+17),0)
@@ -474,7 +488,8 @@ function ResonanceRecord({ active = [true, false, true, false], layers = [], par
         state,
         activePartIndex:recordingSlot,
         levelRef,
-        reducedMotion
+        reducedMotion,
+        aiFields:partSlots.reduce((fields,slot,index)=>{fields[slot]=aiFields.find(field=>field.projectId===projectId && field.projectSeed===String(seed) && field.partId===parts[index].id);return fields},[])
       })
       setRendererError('')
     } catch (error) {
@@ -482,7 +497,7 @@ function ResonanceRecord({ active = [true, false, true, false], layers = [], par
       setRendererError('WEBGL UNAVAILABLE')
     }
     return () => renderer?.dispose()
-  }, [slotSignature, recordingSlot, state, seed])
+  }, [slotSignature, recordingSlot, state, seed, projectId, partIds, aiFields])
 
   const layerCount = layers.length ? layers.filter(Boolean).length : active.filter(Boolean).length
   return <figure className={`record ${compact ? 'record-compact' : ''}`} data-state={state} data-record-signature={projectRecordSignature(String(seed),layers)} data-resonance-engine="webgl-particles" aria-label={label || `공명 레코드, ${layerCount}개 Track 활성`}>
@@ -490,6 +505,7 @@ function ResonanceRecord({ active = [true, false, true, false], layers = [], par
     <canvas ref={particleRef} className="record-particles" aria-hidden="true" />
     {state === 'processing' && <div className="record-processing">MIX</div>}
     {rendererError && <div className="record-error" role="status">{rendererError}</div>}
+    {aiError && <div className="record-error" role="status">{aiError}</div>}
   </figure>
 }
 
@@ -800,7 +816,7 @@ function Workspace({ go, project = PROJECT, song, isCreated = false, ownerPartId
     <main>
       <div className="title-row"><div><h1>{song?.title || project.name}</h1><p className="workspace-project-name">{project.name}</p></div></div>
       {completionDelayed&&<section className="completion-delay-banner" role="status" data-state="completion-delayed"><strong>내 녹음을 이어갈 차례예요.</strong><p>마지막 유효 활동 후 7일이 지났습니다. 미완료된 내 Part를 제출하면 프로젝트가 다시 진행돼요.</p></section>}
-      <ResonanceRecord parts={projectParts} layers={layers} state={mixStatus==='processing'?'processing':mixPlaying?'playing':'rest'} seed={project.seed}/>
+      <ResonanceRecord parts={projectParts} tracks={projectTracks} projectId={project.id} layers={layers} state={mixStatus==='processing'?'processing':mixPlaying?'playing':'rest'} seed={project.seed}/>
 
       {isCreated && invitedParts.map(part=><section className="invite-status" data-invite-state={part.invitationStatus} key={part.id}><span>{part.invitationStatus==='accepted'?`${part.participant} · ${part.name} 참여 확정`:`${part.name} · ${(part.invitations||[]).filter(item=>item.status==='sent').length}명 수락 대기`}</span><b>{part.invitationStatus==='accepted'?'TRACK WAIT':'ACCEPT WAIT'}</b></section>)}
       {!isCreated && invited && !candidateAccepted && <section className="invite-status" data-invite-state="sent"><span>{invitedPerson.name}에게 Bass 초대 보냄</span><b>ACCEPT WAIT</b></section>}
@@ -962,7 +978,7 @@ function Recorder({ go, submit, onRecordingStart, partId, projectTracks, layers,
         <div className="guide-track-chips">{guideTracks.map(track=>{const part=parts.find(item=>item.id===track.partId);const actualIndex=parts.findIndex(item=>item.id===track.partId);return <label className={guides.parts[actualIndex]?'selected':''} key={track.id}><input aria-label={`${track.participant} · ${part?.name} 함께 듣기`} type="checkbox" checked={Boolean(guides.parts[actualIndex])} onChange={e=>{const nextParts=[...guides.parts];nextParts[actualIndex]=e.target.checked;setGuides({...guides,parts:nextParts})}}/><span>{track.participant} · {part?.name}</span></label>})}</div>
         <p className="guide-device-note">Guide는 듣기용이며 녹음에는 내 입력만 저장합니다. 이어폰 없이 녹음하면 스피커 소리가 마이크에 들어갈 수 있어요.</p>
       </section>
-      <div className="recording-visual"><ResonanceRecord parts={parts} layers={status==='review'?reviewLayers:layers} activePartIndex={currentIndex} state={status === 'recording' ? 'recording' : status==='paused'?'paused':'rest'} level={level} seed={project.seed} compact /><RecordingInflow active={status==='recording'} partIndex={0} level={level} seed={project.seed} waveformRef={waveformRef}/></div>
+      <div className="recording-visual"><ResonanceRecord parts={parts} tracks={projectTracks} projectId={project.id} layers={status==='review'?reviewLayers:layers} activePartIndex={currentIndex} state={status === 'recording' ? 'recording' : status==='paused'?'paused':'rest'} level={level} seed={project.seed} compact /><RecordingInflow active={status==='recording'} partIndex={0} level={level} seed={project.seed} waveformRef={waveformRef}/></div>
       {!project.lyrics?.length&&<p className="lyric-source-note">연습 안내 문구 · 실제 곡 가사와 반주가 아직 등록되지 않았어요.</p>}
       <div className="lyrics" aria-live="polite">{lyrics.map((line,index)=><span key={line} className={index===lyricIndex?'active':''}>{line}</span>)}</div>
       <div className="recording-timeline" aria-label="녹음 시간"><div><span>RECORD TIME</span><b>{fmt(seconds)} / {fmt(recordingWindow)}</b></div><div className="time-progress"><span style={{width:`${Math.min(100,seconds/recordingWindow*100)}%`}}/></div></div>
@@ -1056,7 +1072,7 @@ function Multitrack({ go, project = PROJECT, parts = PARTS, ownerPartId = USER_P
   return <div className="screen multitrack-screen">
     <TopBar title="MULTITRACK" back={() => go('workspace')} action={projectLiked?'♥ LIKED':'♡ LIKE'} onAction={toggleProjectLike}/>
     <main>
-      <div className="multitrack-hero"><ResonanceRecord parts={project.parts} layers={layers} seed={project.seed} state={mixStatus==='processing'?'processing':playing?'playing':'rest'} compact/><div><p className="kicker">Current mix</p><h1>{mixStatus==='processing'?'Auto Mix 중…':mixStatus==='complete'?'모든 목소리가 연결됐어요.':'지금까지의 목소리'}</h1><p>{mixStatus==='processing'?`정렬 · 밸런스 · EQ · Compressor · Limiter ${progress}%`:'포함된 실제 Track을 함께 들을 수 있어요.'}</p><small>실제 오디오 특징 기반 Layer · 생성형 AI 미적용</small></div></div>
+      <div className="multitrack-hero"><ResonanceRecord parts={project.parts} tracks={projectTracks} projectId={project.id} layers={layers} seed={project.seed} state={mixStatus==='processing'?'processing':playing?'playing':'rest'} compact/><div><p className="kicker">Current mix</p><h1>{mixStatus==='processing'?'Auto Mix 중…':mixStatus==='complete'?'모든 목소리가 연결됐어요.':'지금까지의 목소리'}</h1><p>{mixStatus==='processing'?`정렬 · 밸런스 · EQ · Compressor · Limiter ${progress}%`:'포함된 실제 Track을 함께 들을 수 있어요.'}</p><small>실제 오디오 특징 기반 Layer · 생성형 AI 미적용</small></div></div>
       {selectedTrack && <div className="listening-context"><span>개별 Track</span><b>{selectedTrack.participant} · {parts.find(part=>part.id===selectedTrack.partId)?.name}</b><button onClick={()=>{setPlaying(false);setSelectedTrackId(null)}}>현재 믹스로</button></div>}
       <Player source={selectedTrack?.url || mix?.url} durationHint={selectedTrack?.duration} playing={playing} setPlaying={setPlaying}/>
       <section className="track-list"><div className="section-head"><h2>Tracks</h2><span>Tap name to listen · Toggle include</span></div><div className="backing-row"><span>Backing track</span><button className={`include-toggle ${included.backing?'on':''}`} onClick={()=>setIncluded({...included,backing:!included.backing})}><span/></button></div>{tracks.map((part,index)=><PartRow key={part.id} part={part} included={part.status==='submitted'&&included.parts[index]} onPlay={part.status==='submitted'?()=>{setPlaying(false);setSelectedTrackId(part.id);window.setTimeout(()=>setPlaying(true),0)}:undefined} onParticipant={part.participantId&&part.participantId!==CURRENT_USER_ID?()=>openVocalProfile(part.participantId):undefined} onToggle={part.status==='submitted'?()=>{const parts=[...included.parts];parts[index]=!parts[index];setIncluded({...included,parts})}:undefined}/>)}</section>
@@ -1086,7 +1102,7 @@ function Complete({ go, mix, layers, projectTracks, project = PROJECT, song, pro
     <TopBar figmaHeader title="완성곡" back={() => go('workspace')} meta={`${String(project.parts.length).padStart(2,'0')}/${String(project.parts.length).padStart(2,'0')} · COMPLETE`} />
     <main>
       <div className="complete-title"><h1>{song?.title || '함께 완성한 곡'}</h1><p>{project.name}</p><span className="complete-badge">완성</span></div>
-      <div className="complete-record"><ResonanceRecord parts={project.parts} layers={layers} state={playing?'playing':'complete'} seed={project.seed}/><div className="record-center-credits" aria-label="함께한 목소리"><span>CREDITS</span><div>{project.parts.map(part=>{const track=projectTracks[part.id];const personId=track?.participantId;return <button key={part.id} disabled={!personId||personId===CURRENT_USER_ID} onClick={()=>openVocalProfile(personId)}><small style={{color:part.color}}>{part.name}</small><strong>{track?.participant || '—'}</strong></button>})}</div><small>{project.key || 'C major'}</small><time>{new Date(mix?.createdAt||Date.now()).toLocaleDateString('ko-KR')}</time></div></div>
+      <div className="complete-record"><ResonanceRecord parts={project.parts} tracks={projectTracks} projectId={project.id} layers={layers} state={playing?'playing':'complete'} seed={project.seed}/><div className="record-center-credits" aria-label="함께한 목소리"><span>CREDITS</span><div>{project.parts.map(part=>{const track=projectTracks[part.id];const personId=track?.participantId;return <button key={part.id} disabled={!personId||personId===CURRENT_USER_ID} onClick={()=>openVocalProfile(personId)}><small style={{color:part.color}}>{part.name}</small><strong>{track?.participant || '—'}</strong></button>})}</div><small>{project.key || 'C major'}</small><time>{new Date(mix?.createdAt||Date.now()).toLocaleDateString('ko-KR')}</time></div></div>
       <Player source={mix?.url} durationHint={mix?.duration} playing={playing} setPlaying={setPlaying}/>
       <p className="final-player-label">{hasPlayed?'다시 재생':'완성곡 재생'}</p>
 

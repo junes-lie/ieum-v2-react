@@ -1,6 +1,11 @@
-## 2026-10-08 단계 1 기술 검증 배포 확인
+## 2026-10-08 단계 2 — 실제 AI 출력의 기존 Record 연결
 
-단계 0 기준 보존 완료. 단계 1 P0 기술 검증 및 project/part/user 계약 수정은 `94b29c6827d803b50340807cf6e27dfc7a8d7a39`로 main에 push했다. GitHub main과 로컬 HEAD가 일치하고 Vercel Git Integration `dpl_4GBV67mFGs5vW196vMwhzBwiaNuC`가 같은 commit으로 production READY다. Production HTTP 200 및 JS `index-Db1cBIdN.js`/CSS `index-BteeLf2-.css` SHA256이 로컬 검증 build와 일치했다. 실제 서비스 AI 연결, 음색 식별 정확도, Figma 시각 완성, 실기기 인수는 완료가 아니다. 다음 실행은 단계 2 기존 03/06/07 시각 통합이다.
+03/06/07 기존 화면 통합은 eba083c로 Git Integration production READY까지 확인했다. 이번 변경은 실제 생성 결과를 받아 기존 움직이는 Record에 연결하는 표시 경로다. Track 원본 SHA256, 생성 PNG SHA256, project/part/participant/seed 및 모델 revision 계약을 검사하고, 512×512 생성 필드를 전체 평면에서 결합해 기존 입자의 밝기에 반영한다. 기존 SATB 색상·입자 구조·움직임은 유지한다. 학습된 motion 모델이나 서버 추론 연결은 아니다.
+
+실제 P0 VocalSet/BYOL/SD-Turbo 출력으로 0/2/3/4 필드의 WebGL 업로드, 출력 차이, 고정 시간 재로드 픽셀 재현, 실제 움직임을 검증했다. 네 조건 모두 입자 45086개를 유지했고 console/page error는 0이었다. 손상된 출력 해시는 화면에서 거부되며 원본 음성 해시는 보존됐다. build, 유지 QA 7개, 원본/출력 계약 QA, 360/390/430px 3화면 및 430×932 desktop frame QA를 통과했다. 모델·음성·이미지·JSON은 Git 밖에 보존한다.
+
+단계 2 전체 완료는 아니다. 현재 Figma 653:46에 Desktop get_design_context/get_screenshot 성공을 재확인했으나 Record 소재의 시각적 일치와 실제 모바일 인수는 미완료다. 실제 서비스 추론 API·인증·다중 사용자 연결은 단계 5에 남아 있다. 배포 결과는 docs/GIT_SYNC_VERIFICATION.md에 실제 확인 후 기록한다.
+
 ## 2026-10-08 단계 1 기술 검증 배포 확인
 
 단계 0 기준 보존 완료. 단계 1 P0 기술 검증 및 project/part/user 계약 수정은 `94b29c6827d803b50340807cf6e27dfc7a8d7a39`로 main에 push했다. GitHub main과 로컬 HEAD가 일치하고 Vercel Git Integration `dpl_4GBV67mFGs5vW196vMwhzBwiaNuC`가 같은 commit으로 production READY다. Production HTTP 200 및 JS `index-Db1cBIdN.js`/CSS `index-BteeLf2-.css` SHA256이 로컬 검증 build와 일치했다. 실제 서비스 AI 연결, 음색 식별 정확도, Figma 시각 완성, 실기기 인수는 완료가 아니다. 다음 실행은 단계 2 기존 03/06/07 시각 통합이다.

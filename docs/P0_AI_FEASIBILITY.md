@@ -86,3 +86,9 @@ qa/verify-ai-lineage.mjs가 실제 입력 SHA/분석 fingerprint/모델 revision
 4. 모델/입력/설정/출력 lineage와 project/part/user 계약을 검증한다. 성공 전 단계 2 신규 구현으로 넘어가지 않는다.
 
 최초 환경 조사 이후 위 실행 환경과 결과를 확보했다. 아래 미설치/자료 미확보 기록은 조사 시작 당시 기준이다. 계산식 축소나 production AI 서비스 채택을 임의로 확정하지 않는다.
+
+## 실제 생성 파일의 앱 표시 경로 — 2026-10-08
+
+`src/aiVoiceLayer.js`는 추론 엔진이 아니라 받은 파일의 계약·해시·크기를 검사하는 경계다. 메타데이터만으로 모델 실행 사실을 인증하지 않는다. production 서버는 실제 추론과 사용자 권한을 별도로 보장해야 한다. `track.aiVoiceLayer`는 원본 `blob` 및 기존 `layer`와 분리해 저장하며 재분석에도 보존한다.
+
+실행: `node qa/verify-ai-artifact.mjs ../.ieum-p0-runtime/results/ai-singing-voice-layer-report.json`, `node qa/verify-ai-motion.mjs ../.ieum-p0-runtime/results/ai-singing-voice-layer-report.json`. 입력 경로는 실제 P0 보고서가 있는 위치로 지정한다. 후자는 기존 로컬 앱 4191과 번들 Playwright/Edge를 사용해 격리된 DB에 실제 모델 파일을 제공한다. 임의 생성 fixture나 Figma 이미지로 AI를 대신하지 않는다. 2/3/4 전체 생성 평면의 luminance로 기존 입자 밝기를 조절하며 정적 Record 이미지를 표시하지 않는다. 생성형 AI 자체의 production 연결이나 Figma pixel equivalence 검증은 아니다.

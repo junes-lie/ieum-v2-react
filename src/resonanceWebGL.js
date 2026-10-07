@@ -212,6 +212,7 @@ uniform float uMotion;
 uniform float uLevel;
 uniform float uActivePart;
 uniform float uPixelRatio;
+varying vec2 vFieldUV;
 uniform float uSoloPart;
 uniform float uConcentration;
 varying float vAlpha;
@@ -313,12 +314,19 @@ void main(){
   vPart=aPart;
   gl_PointSize=(aSize*2.55+live*uLevel*0.45)*uPixelRatio;
   gl_Position=vec4(position,0.0,1.0);
+  vFieldUV=vec2(position.x,-position.y)*.5+.5;
 }`
 
 const FRAGMENT_SHADER = `
 precision mediump float;
 uniform float uPointMode;
 uniform float uSoloPart;
+uniform sampler2D uField0;
+uniform sampler2D uField1;
+uniform sampler2D uField2;
+uniform sampler2D uField3;
+uniform vec4 uFieldEnabled;
+varying vec2 vFieldUV;
 varying float vAlpha;
 varying float vBrightness;
 varying float vAngle;
@@ -338,7 +346,16 @@ void main(){
     alpha*=1.-smoothstep(.30,.50,radius);
   }
   if(alpha<0.008)discard;
-  gl_FragColor=vec4(colorFor(vPart)*vBrightness*alpha,alpha);
+  float fieldCount=dot(uFieldEnabled,vec4(1.));
+  float fieldGain=1.;
+  if(fieldCount>0.){
+    vec3 generated=(texture2D(uField0,vFieldUV).rgb*uFieldEnabled.x
+      +texture2D(uField1,vFieldUV).rgb*uFieldEnabled.y
+      +texture2D(uField2,vFieldUV).rgb*uFieldEnabled.z
+      +texture2D(uField3,vFieldUV).rgb*uFieldEnabled.w)/fieldCount;
+    fieldGain=.8+dot(generated,vec3(.2126,.7152,.0722))*.8;
+  }
+  gl_FragColor=vec4(colorFor(vPart)*vBrightness*fieldGain*alpha,alpha);
 }`
 
 function drawMaterial(canvas) {
@@ -420,7 +437,7 @@ function drawMaterial(canvas) {
   ctx.restore()
 }
 
-export function createResonanceRenderer({ canvas, materialCanvas, slots, projectSeed, state, activePartIndex, levelRef, reducedMotion }) {
+export function createResonanceRenderer({ canvas, materialCanvas, slots, projectSeed, state, activePartIndex, levelRef, reducedMotion, aiFields = [] }) {
   const gl = canvas.getContext('webgl', {
     alpha: true,
     antialias: true,
@@ -456,6 +473,24 @@ export function createResonanceRenderer({ canvas, materialCanvas, slots, project
   const soloPartLocation = gl.getUniformLocation(program, 'uSoloPart')
   const concentrationLocation = gl.getUniformLocation(program, 'uConcentration')
   gl.uniform1f(activeLocation, state === 'recording' ? activePartIndex : -10)
+  const textures=[]
+  const fieldEnabled=new Float32Array(4)
+  for(let index=0;index<4;index++){
+    const texture=gl.createTexture()
+    textures.push(texture)
+    gl.activeTexture(gl.TEXTURE0+index)
+    gl.bindTexture(gl.TEXTURE_2D,texture)
+    gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR)
+    gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR)
+    gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE)
+    gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE)
+    if(aiFields[index]){
+      gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,aiFields[index].image)
+      fieldEnabled[index]=1
+    }else gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,1,1,0,gl.RGBA,gl.UNSIGNED_BYTE,new Uint8Array([255,255,255,255]))
+    gl.uniform1i(gl.getUniformLocation(program,`uField${index}`),index)
+  }
+  gl.uniform4fv(gl.getUniformLocation(program,'uFieldEnabled'),fieldEnabled)
   gl.enable(gl.BLEND)
   gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA)
 
@@ -511,6 +546,7 @@ export function createResonanceRenderer({ canvas, materialCanvas, slots, project
   raf = requestAnimationFrame(draw)
   canvas.dataset.renderer = 'webgl-particles'
   canvas.dataset.particleCount = String(particleCount)
+  canvas.dataset.aiLayerCount = String(fieldEnabled.reduce((sum,value)=>sum+value,0))
 
   return {
     particleCount,
@@ -519,6 +555,7 @@ export function createResonanceRenderer({ canvas, materialCanvas, slots, project
       observer.disconnect()
       cancelAnimationFrame(raf)
       gl.deleteBuffer(buffer)
+      textures.forEach(texture=>gl.deleteTexture(texture))
       gl.deleteProgram(program)
     }
   }
