@@ -514,7 +514,7 @@ export function createResonanceRenderer({ canvas, materialCanvas, slots, project
   let disposed = false
   const startedAt = performance.now()
   let previousFrame = startedAt
-  const rotationRates={rest:Math.PI*2/30,playing:Math.PI*2/24,recording:Math.PI*2/30,paused:0,processing:0,complete:Math.PI*2/36}
+  const rotationRates={rest:Math.PI*2/90,playing:Math.PI*2/72,recording:Math.PI*2/90,paused:0,processing:0,complete:Math.PI*2/108}
   const targetRate=reducedMotion?0:(rotationRates[state] ?? rotationRates.rest)
   const initialRate=reducedMotion?0:(timeline.angularRate ?? targetRate)
   timeline.elapsed ??= 0

@@ -17,7 +17,7 @@ try{
  await page.waitForTimeout(800)
  const first=await sample();await page.waitForTimeout(1000);const second=await sample()
  const measuredRate=(second.rotation-first.rotation)/((second.time-first.time)/1000)
- assert.ok(Math.abs(measuredRate-Math.PI*2/30)<.035,'Rest must rotate in approximately 30 seconds')
+ assert.ok(Math.abs(measuredRate-Math.PI*2/90)<.01,'Rest must rotate in approximately 90 seconds')
  await page.locator('[data-action="record-part"]').click();await page.locator('[data-action="record-start"]').click();await page.waitForSelector('[data-action="record-pause"]');await page.waitForTimeout(800)
  const moving=await sample();await page.locator('[data-action="record-pause"]').click();const immediate=await sample()
  assert.ok(Math.abs(immediate.rotation-moving.rotation)<.12,'Pause must preserve current rotation, not jump to zero')
