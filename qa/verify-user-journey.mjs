@@ -1,279 +1,91 @@
-import { createRequire } from 'node:module'
-import fs from 'node:fs/promises'
-import path from 'node:path'
-import { fileURLToPath } from 'node:url'
+import assert from 'node:assert/strict'
+import {readFile,writeFile,unlink} from 'node:fs/promises'
+import {Window} from 'happy-dom'
+import {indexedDB} from 'fake-indexeddb'
+import {transformWithOxc} from 'vite'
+import React,{act} from 'react'
+import {createRoot} from 'react-dom/client'
+import {saveTrack,loadTrack,clearProjectTracks} from '../src/trackStore.js'
+import {buildVoiceLayer} from '../src/voiceAnalysis.js'
 
-const here = path.dirname(fileURLToPath(import.meta.url))
-const require = createRequire('C:\\Users\\LEE\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\node\\node_modules\\playwright\\package.json')
-const { chromium } = require('playwright')
-const browser = await chromium.launch({
-  headless:true,
-  executablePath:'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',
-  args:['--use-fake-ui-for-media-stream','--use-fake-device-for-media-stream','--autoplay-policy=no-user-gesture-required']
-})
-const context = await browser.newContext({viewport:{width:390,height:844},locale:'ko-KR',permissions:['microphone']})
-const page = await context.newPage()
-const BASE_URL = process.env.IEUM_BASE_URL || 'http://127.0.0.1:4187/'
-const checks=[]
+// Isolated Node DOM and in-memory IndexedDB only. Never opens a browser or the user's DB.
+// GPU renderers and current-mix preview are test-only stubs; microphone is never invoked.
+// Media playback and microphone hardware are deliberately outside this test.
+const window=new Window({url:'http://localhost/?design=figma'})
+for(const key of ['window','document','navigator','location','localStorage','sessionStorage','HTMLElement','Event','PopStateEvent','Image','ResizeObserver'])Object.defineProperty(globalThis,key,{value:key==='window'?window:window[key],configurable:true,writable:true})
+globalThis.indexedDB=indexedDB
+globalThis.IS_REACT_ACT_ENVIRONMENT=true
+globalThis.requestAnimationFrame=callback=>setTimeout(()=>callback(performance.now()),0)
+globalThis.cancelAnimationFrame=clearTimeout
+window.scrollTo=()=>{}
+window.AudioContext=class{}
+window.HTMLMediaElement.prototype.play=async()=>{}
+window.HTMLMediaElement.prototype.pause=()=>{}
+globalThis.fetch=async url=>{assert.equal(url,'/demo-stems/manifest.json');return {ok:true,json:async()=>({tracks:[]})}}
+const appTemp=new URL('../src/.qa-user-journey-app.mjs',import.meta.url)
+const iconsTemp=new URL('../src/.qa-user-journey-icons.mjs',import.meta.url)
+const projectId='ieum-thousand-years-v7',seed='ieum:thousand-years:original-c:0048',profileId='ieum-v2:voice-profile:v7'
+const blob=new Blob(['isolated synthetic recording bytes'],{type:'audio/wav'})
+const features={version:'ieum-basic-voice-v3',fingerprint:'qa-preserved',brightness:.5,low:.33,dynamicRange:.4,spectralFlux:.2,roughness:.3,energy:.5,activeRatio:.8,articulation:.2,pitchVariation:.1,envelope:[.2,.7,.4]}
+const track=partId=>({id:projectId+':'+partId,projectId,projectSeed:seed,partId,participantId:partId==='tenor'?'jisun':partId,participant:partId,blob,features,layer:buildVoiceLayer(seed,partId,features),duration:7,origin:'live-microphone-recording'})
+const draftId='jisun:'+projectId+':tenor:temporary-recording'
+let root
+const settle=async()=>{await act(async()=>{await new Promise(resolve=>setTimeout(resolve,35))})}
+const click=async selector=>{const element=document.querySelector(selector);assert.ok(element,'Missing action '+selector);await act(async()=>element.click());await settle()}
+const state=()=>window.__IEUM_V2__.state
+const check=(name)=>console.log('PASS '+name)
 const errors=[]
-const check=(name,pass,detail='')=>checks.push({name,pass:Boolean(pass),detail})
-page.on('console',message=>{if(message.type()==='error') errors.push(`console: ${message.text()} ${JSON.stringify(message.location())}`)})
-page.on('pageerror',error=>errors.push(`page: ${error.message}`))
-page.on('response',response=>{if(response.status()>=400) errors.push(`http ${response.status()}: ${response.url()}`)})
-
-const visibleState=()=>page.evaluate(()=>{
-  const state=window.__IEUM_V2__?.state
-  return {
-    screen:state?.screen,
-    joined:state?.joined,
-    invited:state?.invited,
-    candidateAccepted:state?.candidateAccepted,
-    recordSignature:state?.recordSignature,
-    mix:state?.mix ? { bytes:state.mix.blob?.size||state.mix.bytes||0, duration:state.mix.duration, origin:state.mix.origin, processing:state.mix.processing } : null,
-    trackCount:Object.keys(state?.projectTracks||{}).length,
-    tracks:Object.fromEntries(Object.entries(state?.projectTracks||{}).map(([id,track])=>[id,{origin:track.origin,demo:track.demo,bytes:track.blob?.size||0,fingerprint:track.features?.fingerprint,layer:track.layer?.signature,participant:track.participant}]))
-  }
-})
-
-await page.goto(BASE_URL,{waitUntil:'networkidle'})
-await page.waitForFunction(()=>Object.keys(window.__IEUM_V2__?.state?.projectTracks||{}).length===2,null,{timeout:30000})
-const initial=await visibleState()
-check('첫 진입은 같은 4 Part 프로젝트의 제출 Track 2개',initial.trackCount===2&&!initial.tracks.tenor&&!initial.tracks.bass,initial)
-check('두 Track 출처를 합성 데모로 공개',Object.values(initial.tracks).every(track=>track.origin==='local-formant-singing-demo'&&track.demo&&track.bytes>0),initial.tracks)
-check('두 Track 모두 실제 Blob·분석·Layer 보유',Object.values(initial.tracks).every(track=>track.fingerprint&&track.layer),initial.tracks)
-check('홈에 02/04가 표시됨',(await page.locator('.demo-count').innerText()).includes('02'))
-
-await page.getByRole('button',{name:/City of Stars · Night Duet/}).first().click()
-check('모든 곡 상세에 해당 곡 프로젝트 생성 CTA',await page.locator('[data-action="create-project-for-song"]').isVisible())
-await page.locator('[data-action="create-project-for-song"]').click()
-check('곡 상세에서 시작하면 그 곡을 유지하고 Part·Key 단계로 진입',(await page.locator('.topbar-center').innerText())==='NEW PROJECT'&&(await page.locator('.top-meta').innerText())==='02/03')
-await page.getByRole('button',{name:/2 PARTS/}).click()
-await page.locator('.part-choice-grid button').filter({hasText:'Alto'}).click()
-await page.getByRole('button',{name:'프로젝트 확인'}).click()
-check('생성 전 내 Part와 초기 진행률을 함께 확인',await page.getByText('Alto',{exact:true}).isVisible()&&await page.locator('.measurement-proof dd').filter({hasText:'0/2'}).isVisible())
-await page.locator('[data-action="confirm-project-create"]').click()
-check('새 프로젝트도 기존과 동일한 작업실 route·화면 사용',(await page.evaluate(()=>location.hash))==='#workspace'&&await page.locator('.workspace-screen:not(.created-workspace-screen)').isVisible()&&await page.locator('.song-identity,.project-carousel').count()===0)
-check('새 프로젝트 작업실은 00/02, 내 Part 확정, 제출 Track 없음',(await page.locator('.top-meta').innerText()).includes('00/02')&&await page.locator('.part-list .part-row').count()===2&&await page.locator('.part-list .row-state').filter({hasText:'MY PART'}).count()===1&&await page.locator('.part-list .row-state').filter({hasText:'OPEN'}).count()===1)
-check('새 프로젝트 Record는 0 Track',(await page.locator('.record').first().getAttribute('aria-label')).includes('0개 Track'))
-check('새 프로젝트 작업실은 해당 프로젝트 Part만 표시',await page.locator('.part-list .part-row').count()===2&&await page.getByText('이 곡의 프로젝트').count()===0)
-check('작업실은 중복 없이 Primary CTA 하나와 OPEN Part 행 액션만 제공',await page.locator('.workspace-actions .primary').count()===1&&await page.locator('[data-action="find-vocal"]').count()===0&&await page.locator('.part-list .part-row').first().getByRole('button',{name:'보컬 찾기'}).isVisible())
-await page.locator('.part-list .part-row').first().getByRole('button',{name:'보컬 찾기'}).click()
-check('새 프로젝트 남은 Part가 전체 Vocal Finder에 연결',(await page.locator('.topbar-center').innerText()).includes('VOCAL FINDER')&&await page.locator('[data-action="candidate"]').count()===10)
-await page.locator('[data-action="candidate"]').first().click()
-await page.locator('[data-action="invite"]').click()
-check('새 프로젝트 초대 전송 뒤 같은 작업실로 복귀',await page.locator('.workspace-screen').isVisible()&&await page.locator('[data-invite-state="sent"]').isVisible())
-await page.waitForSelector('[data-invite-state="accepted"]',{timeout:5000})
-check('새 프로젝트 초대 수락은 진행률을 올리지 않음',(await page.locator('.top-meta').innerText()).includes('00/02')&&await page.locator('[data-invite-state="accepted"]').isVisible())
-await page.locator('[data-action="record-part"]').click()
-check('새 프로젝트 내 Part가 동일 Recorder에 연결',await page.locator('.recording-screen').isVisible())
-await page.locator('[data-action="record-start"]').click()
-await page.waitForTimeout(3300)
-await page.locator('[data-action="record-stop"]').click()
-await page.waitForSelector('[data-action="record-submit"]',{timeout:10000})
-await page.locator('[data-action="record-submit"]').click()
-await page.waitForFunction(()=>document.querySelector('.workspace-screen .top-meta')?.textContent?.includes('01/02'),null,{timeout:10000})
-check('새 프로젝트 Review 제출 후 작업실에 실제 Track 1개 누적',await page.locator('.workspace-screen').isVisible()&&(await page.locator('.top-meta').innerText()).includes('01/02'))
-check('첫 Track부터 작업실 안에서 현재 Mix와 Track Row 제공',await page.locator('.workspace-screen #current-mix').isVisible()&&await page.locator('#current-mix .row-track-play').count()===1)
-check('통합 현재 Mix에서도 하단 내비게이션 유지',await page.locator('.bottom-nav').isVisible())
-await page.goto(BASE_URL,{waitUntil:'networkidle'})
-await page.waitForFunction(()=>window.__IEUM_V2__?.state?.screen==='home',null,{timeout:10000})
-
-await page.getByRole('button',{name:'컬렉션',exact:true}).click()
-check('컬렉션은 프로젝트·보컬·곡 세 객체 탭',await page.getByRole('tab').count()===3)
-check('초기 프로젝트 Like 컬렉션은 비어 있음',await page.locator('.collection-empty').isVisible()&&await page.getByText('Like한 프로젝트가 없어요.').isVisible())
-await page.getByRole('tab',{name:/보컬/}).click()
-check('초기 보컬 Save 컬렉션은 비어 있음',await page.getByText('저장한 보컬이 없어요.').isVisible())
-await page.getByRole('tab',{name:/곡/}).click()
-check('초기 곡 Save 컬렉션은 비어 있음',await page.getByText('저장한 곡이 없어요.').isVisible())
-await page.locator('[data-action="browse-collection"]').click()
-check('곡 둘러보기는 여러 Song Object 목록',await page.locator('[data-action="browse-song"]').count()===4)
-await page.locator('[data-action="browse-song"]').filter({hasText:'A Thousand Years'}).click()
-check('Song 선택 시 통합 Song / Project Detail 진입',await page.locator('.song-identity').isVisible()&&await page.locator('.project-carousel').isVisible())
-check('같은 곡의 Project Carousel 제공',await page.locator('.project-carousel>button').count()===2)
-await page.getByRole('button',{name:/Warm Duet/}).click()
-check('Project 선택 시 Part 구성이 해당 프로젝트 기준으로 교체',await page.locator('.part-list .part-row').count()===2&&(await page.locator('.top-meta').innerText()).includes('01/02'))
-await page.getByRole('button',{name:/Original C · Quartet/}).click()
-check('상세의 현재 데모 Track 출처와 비보컬 성격 표시',await page.getByText(/흐름 검증용 로컬 합성 Stem/).isVisible())
-check('다른 참여자 Part에 녹음 버튼 없음',await page.locator('[data-part="soprano"] .row-action,[data-part="alto"] .row-action,[data-part="bass"] .row-action').count()===0)
-await page.locator('[data-action="toggle-song-save"]').click()
-await page.getByRole('button',{name:'컬렉션',exact:true}).click()
-await page.getByRole('tab',{name:/곡/}).click()
-check('상세 북마크는 곡 Save로만 저장',await page.locator('.song-collection-row').isVisible()&&await page.getByRole('tab',{name:/프로젝트0/}).isVisible())
-await page.reload({waitUntil:'networkidle'})
-await page.waitForFunction(()=>Object.keys(window.__IEUM_V2__?.state?.projectTracks||{}).length===2,null,{timeout:30000})
-await page.getByRole('button',{name:'컬렉션',exact:true}).click()
-await page.getByRole('tab',{name:/곡/}).click()
-check('새로고침 뒤 곡 Save 유지',await page.locator('.song-collection-row').isVisible())
-await page.locator('[data-action="open-song-save"]').click()
-check('저장 곡은 Song Object와 Project Carousel이 있는 통합 상세로 이동',(await page.locator('.song-identity h1').innerText())==='A Thousand Years'&&await page.locator('.project-carousel').isVisible())
-await page.locator('[data-action="voice-setup"]').click()
-await page.locator('[data-action="range-start"]').click()
-await page.waitForSelector('[data-action="range-finish"]',{timeout:8000})
-await page.waitForTimeout(6500)
-check('음역 측정은 자동 통과하지 않음',await page.locator('[data-action="range-finish"]').isVisible()&&await page.locator('[data-action="sample-next"]').count()===0)
-await page.locator('[data-action="range-finish"]').click()
-await page.waitForSelector('[data-action="sample-next"]',{timeout:8000})
-check('음역 결과에 Voice Identity/Record를 표시하지 않음',await page.locator('.result-block .voice-identity,.result-block .record').count()===0)
-await page.locator('[data-action="sample-next"]').click()
-check('Voice Sample은 별도 Sample Song 선택 단계',await page.getByText(/VP03 · 내 음역에 맞는 세 곡/).isVisible()&&await page.locator('.sample-song-list button').count()===3)
-await page.getByRole('button',{name:/Sample Song A 녹음하기/}).click()
-check('선택한 Sample Song을 별도 프로필 오디오로 녹음',await page.getByText(/Separate profile audio/).isVisible())
-await page.locator('[data-action="sample-start"]').click()
-await page.waitForTimeout(3600)
-await page.locator('[data-action="sample-stop"]').click()
-await page.waitForSelector('[data-action="voice-complete"]',{timeout:10000})
-check('Voice Sample Review는 커스텀 플레이어',await page.locator('.sample-stage .audio-player').isVisible()&&await page.locator('audio[controls]').count()===0)
-check('Voice Identity 생성형 AI 미검증을 명시',await page.getByText('생성형 AI 미검증').isVisible())
-await page.locator('[data-action="voice-complete"]').click()
-await page.locator('[data-action="profile-finish"]').click()
-await page.waitForSelector('[data-action="join-part"]',{timeout:10000})
-
-const profileRecords=await page.evaluate(async()=>{
-  const request=indexedDB.open('ieum-v2-records')
-  const db=await new Promise((resolve,reject)=>{request.onsuccess=()=>resolve(request.result);request.onerror=()=>reject(request.error)})
-  const all=await new Promise((resolve,reject)=>{const q=db.transaction('tracks','readonly').objectStore('tracks').getAll();q.onsuccess=()=>resolve(q.result);q.onerror=()=>reject(q.error)})
-  db.close()
-  return all.filter(item=>item.projectId==='ieum-v2:voice-profile:v7').map(item=>({id:item.id,kind:item.kind,bytes:item.blob?.size||0,origin:item.origin}))
-})
-check('Voice Range와 Voice Sample이 별도 저장 데이터',profileRecords.some(item=>item.kind==='voice-range'&&item.bytes===0)&&profileRecords.some(item=>item.kind==='voice-sample'&&item.bytes>0),profileRecords)
-
-await page.locator('[data-action="join-part"]').click()
-check('참여 확정 후에도 진행률은 제출 기준 2/4',await page.locator('.top-meta').innerText()==='02/04 · PARTS')
-check('내 Tenor에만 녹음 CTA, Bass에는 보컬 찾기만 제공',await page.locator('[data-action="record-part"]').isVisible()&&await page.locator('[data-part="soprano"] .row-action,[data-part="alto"] .row-action').count()===0&&(await page.locator('[data-part="bass"] .row-action').innerText())==='보컬 찾기')
-await page.screenshot({path:path.join(here,'record-2-of-4.png'),fullPage:true})
-await page.evaluate(()=>{
-  const key='ieum-v2:user-state:v7'
-  const state=JSON.parse(localStorage.getItem(key)||'{}')
-  state.projectActivity={...(state.projectActivity||{}),'ieum-thousand-years-v7':new Date(Date.now()-8*24*60*60*1000).toISOString()}
-  localStorage.setItem(key,JSON.stringify(state))
-})
-await page.reload({waitUntil:'networkidle'})
-await page.getByRole('button',{name:'프로젝트',exact:true}).click()
-check('7일간 내 Part 미완료 시 Projects 카드에 녹음 필요 배지',await page.locator('.completion-delay-badge').isVisible())
-await page.locator('[data-action="resume-project"]').click()
-check('지연 카드에서 작업실 진입 시 배너와 내 Part 강조',await page.locator('[data-state="completion-delayed"]').isVisible()&&await page.locator('[data-part="tenor"].part-row-urgent').isVisible())
-await page.locator('[data-action="toggle-project-like"]').click()
-await page.locator('[data-part="bass"] .row-action').click()
-await page.locator('.candidate-save').first().click()
-await page.getByRole('button',{name:'컬렉션',exact:true}).click()
-check('프로젝트 Like는 프로젝트 탭에 02/04로 저장',await page.locator('.collection-card').isVisible()&&(await page.locator('.collection-card').innerText()).includes('02/04'))
-await page.getByRole('tab',{name:/보컬/}).click()
-check('Vocal Finder의 별 저장은 보컬 탭에 표시',await page.locator('.vocal-collection-row').count()===1&&await page.getByText('Luna',{exact:true}).isVisible())
-await page.locator('.vocal-collection-open').click()
-check('저장 보컬은 전체 Vocal Profile로 이동',await page.locator('.candidate-screen').isVisible()&&await page.locator('[data-action="toggle-vocal-save"]').getAttribute('aria-pressed')==='true')
-await page.getByRole('button',{name:'프로젝트',exact:true}).click()
-check('참여 확정 뒤 My Projects에 자동 수집',await page.locator('.saved-card').first().isVisible()&&(await page.locator('.saved-card').first().innerText()).includes('2/4 Tracks'))
-await page.locator('[data-action="resume-project"]').click()
-await page.locator('[data-action="record-part"]').click()
-check('Recorder에서 하단 내비게이션 숨김',await page.locator('.bottom-nav').count()===0)
-check('Backing + 기존 제출 2 Track을 독립 Guide로 표시',await page.locator('.guide-panel label').count()===3)
-await page.locator('[data-action="record-start"]').click()
-await page.waitForFunction(()=>window.__IEUM_V2__?.audioRuntime?.recorder?.state==='recording',null,{timeout:8000})
-let inflowVisible=false
-try { await page.waitForSelector('.record-inflow[data-live-input="microphone"][data-renderer="webgl-inflow"]',{timeout:3000}); inflowVisible=true } catch {}
-check('녹음 중 마이크 입력 WebGL 유입이 Record 영역에 연결',inflowVisible)
-await page.waitForTimeout(3600)
-await page.locator('[data-action="record-stop"]').click()
-await page.waitForSelector('[data-action="record-submit"]',{timeout:10000})
-check('프로젝트 Review도 커스텀 플레이어',await page.locator('.record-review .audio-player').isVisible()&&await page.locator('audio[controls]').count()===0)
-const reviewSignature=await page.locator('.recording-visual .record').getAttribute('data-record-signature')
-check('Stop 분석값이 Review의 Resonance Record Layer에 즉시 반영',reviewSignature!==initial.recordSignature,{before:initial.recordSignature,review:reviewSignature})
-const beforeSubmit=await visibleState()
-check('Review 전에는 Track/진행률이 증가하지 않음',beforeSubmit.trackCount===2,beforeSubmit)
-await page.locator('[data-action="back"]').click()
-check('Review 이탈 뒤 작업실 CTA가 임시 녹음을 구분',await page.locator('[data-action="record-part"]').innerText()==='녹음 이어서 확인하기')
-await page.locator('[data-action="record-part"]').click()
-await page.waitForSelector('[data-action="record-submit"]',{timeout:10000})
-check('임시 Take를 다시 열면 Review와 동일 Layer 복원',(await page.locator('.recording-visual .record').getAttribute('data-record-signature'))===reviewSignature)
-await page.locator('[data-action="record-retry"]').click()
-check('다시 녹음 전에 현재 Take 폐기 확인',await page.locator('[role="dialog"]').isVisible()&&await page.locator('[data-action="confirm-retry"]').isVisible())
-await page.getByRole('button',{name:'취소'}).click()
-check('재녹음 취소 시 Review 원본과 Layer 유지',await page.locator('[data-action="record-submit"]').isVisible()&&(await page.locator('.recording-visual .record').getAttribute('data-record-signature'))===reviewSignature)
-await page.locator('[data-action="record-submit"]').click()
-await page.waitForFunction(()=>window.__IEUM_V2__?.state?.screen==='workspace',null,{timeout:10000})
-const afterSubmit=await visibleState()
-check('내 Review 제출 후에만 2/4에서 3/4',afterSubmit.trackCount===3&&afterSubmit.tracks.tenor?.origin==='live-microphone-recording'&&!afterSubmit.tracks.bass,afterSubmit)
-check('실제 Track 제출 시 Record signature가 바뀌고 기존 Layer는 유지',afterSubmit.recordSignature!==initial.recordSignature&&afterSubmit.tracks.soprano.layer===initial.tracks.soprano.layer&&afterSubmit.tracks.alto.layer===initial.tracks.alto.layer,{before:initial.recordSignature,after:afterSubmit.recordSignature})
-check('Review 제출 후 작업실에서 제출 상태와 통합 Mix 확인',await page.locator('.workspace-screen').isVisible()&&(await page.locator('.top-meta').innerText()).includes('03/04')&&await page.locator('#current-mix').isVisible())
-check('별도 Multitrack 화면 없이 작업실 하단 내비게이션 유지',await page.locator('.multitrack-screen').count()===0&&await page.locator('.bottom-nav').isVisible())
-await page.screenshot({path:path.join(here,'record-3-of-4.png'),fullPage:true})
-const threeTrackRecord=page.locator('.workspace-screen .record').first()
-const threeTrackFrames=[]
-for (const [index,delay] of [0,5000,5000].entries()) {
-  if(delay) await page.waitForTimeout(delay)
-  threeTrackFrames.push(await threeTrackRecord.screenshot({path:path.join(here,`record-3-of-4-motion-${index*5}s.png`)}))
+const originalError=console.error
+console.error=(...args)=>{errors.push(args.map(String).join(' '));originalError(...args)}
+try{
+ const source=(await readFile(new URL('../src/App.jsx',import.meta.url),'utf8')).replace(/import \{ createRecordingInflowRenderer, createResonanceRenderer \} from ['"]\.\/resonanceWebGL\.js['"]/,'const createRecordingInflowRenderer=()=>()=>{}; const createResonanceRenderer=()=>({dispose(){}})').replace('  createPreviewMix,','  createPreviewMix as realCreatePreviewMix,')+'\nconst createPreviewMix=async()=>({blob:new Blob([\"QA preview\"]),url:URL.createObjectURL(new Blob([\"QA preview\"])),duration:7});'
+ const icons=await readFile(new URL('../src/Icons.jsx',import.meta.url),'utf8')
+ await writeFile(iconsTemp,(await transformWithOxc(icons,'Icons.jsx',{jsx:{runtime:'classic'}})).code)
+ const code=(await transformWithOxc(source,'App.jsx',{jsx:{runtime:'classic'}})).code.replace('./Icons.jsx','./.qa-user-journey-icons.mjs').replace("import { createRecordingInflowRenderer, createResonanceRenderer } from './resonanceWebGL.js'",'const createRecordingInflowRenderer=()=>()=>{}; const createResonanceRenderer=()=>({dispose(){}})')
+ await writeFile(appTemp,code)
+ const {default:App}=await import(appTemp.href)
+ localStorage.setItem('ieum-v2:user-state:v7',JSON.stringify({joined:true,joinedPart:'tenor',invited:true,invitedVocalId:'luna',projectLikes:[{projectId}],songSaves:[{songId:'a-thousand-years'}],vocalSaves:[{vocalId:'luna'}]}))
+ await saveTrack(track('soprano'));await saveTrack(track('alto'))
+ await saveTrack({id:profileId+':range',projectId:profileId,kind:'voice-range',range:'C3–G4',rangeData:{lowMidi:48,highMidi:67}})
+ await saveTrack({id:profileId+':sample',projectId:profileId,kind:'voice-sample',blob,duration:7,songLabel:'QA personal sample',features})
+ await saveTrack({id:draftId,projectId,partId:'tenor',kind:'temporary-recording',userId:'jisun',blob,features,duration:7,guides:{backing:false,parts:[false,false,false,false]}})
+ const container=document.createElement('div');document.body.append(container);root=createRoot(container)
+ await act(async()=>root.render(React.createElement(App)));await settle();await settle()
+ assert.equal(state().screen,'workspace');assert.equal(Object.keys(state().projectTracks).length,2);assert.equal(state().candidateAccepted,false)
+ assert.equal(state().projectTracks.soprano.layer.signature,track('soprano').layer.signature)
+ assert.equal(await state().projectTracks.soprano.blob.text(),await blob.text())
+ check('App bootstrap restores submitted Blob, project seed and exact deterministic Layer; pending invitation does not create a Track')
+ assert.equal(state().profile.sampleSong,'QA personal sample');assert.equal(state().profile.rangeData.lowMidi,48);assert.equal(state().songSaves.length,1)
+ check('Profile range, personal sample and collection restore from isolated persistence')
+ await click('[data-action="record-part"]');assert.equal(state().screen,'record');assert.ok(document.querySelector('[data-action="record-submit"]'));assert.ok(!document.querySelector('[data-action="record-start"]'))
+ assert.equal(await (await loadTrack(draftId)).blob.text(),await blob.text())
+ check('Recorder restores saved draft into Review without microphone access or replacement')
+ await click('[data-action="record-submit"]');assert.equal(state().screen,'workspace');assert.equal(Object.keys(state().projectTracks).length,3)
+ await settle();assert.equal(await loadTrack(draftId),null);assert.equal((await loadTrack(projectId+':tenor')).layer.projectSeed,seed)
+ check('Review submission persists owned Track, increases 2/4 to 3/4, deletes only submitted draft and returns to Workspace')
+ await click('[data-nav="user"]');assert.equal(state().screen,'my');assert.ok(document.body.textContent.includes('QA personal sample'))
+ await click('[data-nav="bookmark"]');assert.equal(state().screen,'collection');assert.ok(document.querySelector('[data-action="open-project-like"]'))
+ await click('[data-action="open-project-like"]');assert.equal(state().screen,'workspace')
+ const surface=document.querySelector('.screen');surface.scrollTop=233
+ await click('[data-nav="user"]')
+ const restored={ieumScreen:'workspace',scrollTop:233}
+ await act(async()=>window.dispatchEvent(new window.PopStateEvent('popstate',{state:restored})));await settle()
+ assert.equal(state().screen,'workspace');assert.equal(document.querySelector('.screen').scrollTop,233)
+ check('Core navigation keeps project context and popstate restores mobile frame scroll')
+ await act(async()=>root.unmount())
+ await saveTrack(track('bass'));await saveTrack({id:projectId+':auto-mix',projectId,kind:'auto-mix',blob,duration:7,origin:'qa-saved-mix'})
+ root=createRoot(container);await act(async()=>root.render(React.createElement(App)));await settle();await settle()
+ assert.equal(Object.keys(state().projectTracks).length,4);assert.equal(await state().mix.blob.text(),await blob.text())
+ await click('[data-nav="folder"]');await click('[data-action="resume-project"]');assert.equal(state().screen,'complete')
+ assert.ok(document.querySelector('.complete-screen audio'));assert.ok(document.querySelector('.complete-screen').textContent.includes('Credits'))
+ assert.equal(state().projectTracks.tenor.layer.signature,track('tenor').layer.signature)
+ check('Reload restores 4 submitted Tracks and saved final mix; project resume opens Complete with credits and native audio')
+ assert.deepEqual(errors,[],'Unexpected App console errors')
+ console.log('Node integration passed. No claim of visual fidelity, GPU rendering, microphone capture, audible playback, real AI/backend or physical mobile verification.')
+}finally{
+ console.error=originalError
+ if(root)await act(async()=>root.unmount())
+ await Promise.all([unlink(appTemp).catch(()=>{}),unlink(iconsTemp).catch(()=>{})])
+ await clearProjectTracks(projectId);await clearProjectTracks(profileId)
+ await window.happyDOM.close()
 }
-check('03/04 Record 입자가 10초 동안 정지 화면 반복이 아닌 내부 흐름으로 변화',!threeTrackFrames[0].equals(threeTrackFrames[1])&&!threeTrackFrames[1].equals(threeTrackFrames[2]))
-await page.locator('[data-part="bass"] .row-action').click()
-await page.locator('[data-action="candidate"]').first().click()
-await page.locator('[data-action="invite"]').click()
-await page.waitForSelector('[data-invite-state="sent"]',{timeout:3000})
-const inviteSent=await visibleState()
-check('초대를 보내도 Track과 진행률은 3/4 유지',inviteSent.trackCount===3&&!inviteSent.tracks.bass,inviteSent)
-await page.waitForSelector('[data-invite-state="accepted"]',{timeout:5000})
-const inviteAccepted=await visibleState()
-check('몇 초 뒤 초대 수락만으로는 Track이 생기지 않음',inviteAccepted.trackCount===3&&inviteAccepted.candidateAccepted!==false&&!inviteAccepted.tracks.bass,inviteAccepted)
-await page.waitForFunction(()=>window.__IEUM_V2__?.state?.readyForMix===true&&window.__IEUM_V2__?.state?.screen==='workspace',null,{timeout:10000})
-const afterArrival=await visibleState()
-check('수락 뒤 Bass 데모 Track이 실제 도착할 때 4/4',afterArrival.trackCount===4&&afterArrival.tracks.bass?.origin==='local-formant-singing-demo',afterArrival)
-check('4번째 Track 도착 시 같은 Record가 다시 성장',afterArrival.recordSignature!==afterSubmit.recordSignature&&afterArrival.tracks.tenor.layer===afterSubmit.tracks.tenor.layer,{three:afterSubmit.recordSignature,four:afterArrival.recordSignature})
-check('마지막 Track 도착 후에도 작업실을 강제로 이탈하지 않음',await page.locator('.workspace-screen').isVisible())
-await page.waitForFunction(()=>window.__IEUM_V2__?.state?.mixStatus==='processing'||window.__IEUM_V2__?.state?.mixStatus==='complete',null,{timeout:10000})
-check('화면 이동과 무관하게 Auto Mix 자동 시작',['processing','complete'].includes((await page.evaluate(()=>window.__IEUM_V2__.state.mixStatus))))
-await page.waitForFunction(()=>window.__IEUM_V2__?.state?.mixStatus==='complete'&&window.__IEUM_V2__?.state?.mix?.blob,null,{timeout:30000})
-await page.waitForSelector('.complete-screen',{timeout:10000})
-check('완성곡 Credits 네 Track',await page.locator('.credits .part-row').count()===4)
-check('완성곡에서 하단 내비게이션 복귀',await page.locator('.bottom-nav').isVisible())
-check('LOCAL DEMO와 사용자 Track이 Credits에서 구분됨',(await page.locator('.credits').innerText()).includes('LOCAL DEMO')&&(await page.locator('.credits').innerText()).includes('JISUN'))
-const completeRecord=page.locator('.complete-screen .record')
-const completeBefore=await completeRecord.screenshot()
-await page.locator('.complete-screen .audio-player button').click()
-await page.waitForTimeout(900)
-const completePlaying=await completeRecord.screenshot()
-const playState=await completeRecord.getAttribute('data-state')
-await page.locator('.complete-screen .audio-player button').click()
-const pauseState=await completeRecord.getAttribute('data-state')
-check('완성곡 실제 재생·일시정지가 Record 내부 흐름과 연결',playState==='playing'&&pauseState==='complete'&&!completeBefore.equals(completePlaying),{playState,pauseState,frameChanged:!completeBefore.equals(completePlaying)})
-await page.screenshot({path:path.join(here,'record-4-of-4-complete.png'),fullPage:true})
-await page.locator('[data-action="back"]').click()
-await page.waitForTimeout(1600)
-check('완성곡 Back은 제출 화면이 아닌 작업실에 머묾',await page.locator('.workspace-screen').isVisible()&&await page.locator('.recording-screen').count()===0)
-await page.locator('[data-action="open-complete"]').click()
-await page.getByRole('button',{name:'컬렉션',exact:true}).click()
-check('완성 뒤 프로젝트 Like 항목이 04/04 COMPLETE로 갱신',await page.locator('.collection-card').isVisible()&&(await page.locator('.collection-card').innerText()).includes('COMPLETE · 04/04'))
-await page.reload({waitUntil:'networkidle'})
-await page.waitForFunction(()=>window.__IEUM_V2__?.state?.mix?.blob?.size>0,null,{timeout:30000})
-const persistedComplete=await visibleState()
-await page.getByRole('button',{name:'컬렉션',exact:true}).click()
-check('새로고침 뒤 Auto Mix Blob·Record·프로젝트 Like 상태 유지',(await page.locator('.collection-card').innerText()).includes('완성곡과 Credits 보기')&&persistedComplete.mix?.bytes>44&&persistedComplete.recordSignature===afterArrival.recordSignature,persistedComplete)
-await page.locator('[data-action="open-project-like"]').click()
-check('완성 프로젝트 Like는 재생 가능한 완성곡으로 이동',await page.locator('.complete-screen audio').count()===1&&Boolean(await page.locator('.complete-screen audio').getAttribute('src')))
-await page.getByRole('button',{name:'컬렉션',exact:true}).click()
-await page.getByRole('button',{name:'프로젝트 Like 취소'}).click()
-check('프로젝트 Like만 개별 해제 가능',await page.getByText('Like한 프로젝트가 없어요.').isVisible())
-await page.getByRole('tab',{name:/보컬/}).click()
-check('프로젝트 Like 해제 후에도 Vocal Save 유지',await page.locator('.vocal-collection-row').count()===1)
-await page.getByRole('tab',{name:/곡/}).click()
-check('프로젝트 Like 해제 후에도 Song Save 유지',await page.locator('.song-collection-row').count()===1)
-const myNav=page.getByRole('button',{name:'MY',exact:true})
-if(!await myNav.count()) throw new Error(`완성곡 화면 MY 내비게이션 없음: ${await page.locator('body').innerText()}`)
-await myNav.click()
-await page.waitForSelector('[data-action="reset-demo"]',{timeout:8000})
-check('MY에서 처음부터 검증할 초기화 경로 제공',await page.locator('[data-action="reset-demo"]').isVisible())
-page.once('dialog',dialog=>dialog.accept())
-await page.locator('[data-action="reset-demo"]').click()
-await page.waitForFunction(()=>{
-  const state=window.__IEUM_V2__?.state
-  return state?.screen==='home'&&!state?.joined&&!state?.voiceProfile&&Object.keys(state?.projectTracks||{}).length===2
-},null,{timeout:30000})
-const resetState=await visibleState()
-check('초기화 뒤 사용자 상태와 Tenor Track 제거',resetState.screen==='home'&&!resetState.joined&&!resetState.tracks.tenor,resetState)
-check('초기화 뒤 같은 프로젝트의 공개 데모 2 Track만 재준비',resetState.trackCount===2&&!resetState.tracks.bass&&Object.values(resetState.tracks).every(track=>track.origin==='local-formant-singing-demo'&&track.demo),resetState)
-check('콘솔/HTTP 오류 없음',errors.length===0,errors)
-await page.screenshot({path:path.join(here,'user-journey-complete.png'),fullPage:true})
-
-const result={passed:checks.filter(item=>item.pass).length,total:checks.length,checks,errors,evidence:{browser:'Edge Chromium 390x844',microphone:'Chromium fake media device — 물리 휴대폰/사람 목소리 아님',journey:'화면 버튼 순서로 실행; 내부 함수로 단계 건너뛰지 않음',ai:'Voice Identity/Resonance Record 생성형 AI 미검증 상태 유지'}}
-await fs.writeFile(path.join(here,'user-journey-results.json'),JSON.stringify(result,null,2))
-console.log(JSON.stringify(result,null,2))
-await browser.close()
-if(result.passed!==result.total) process.exitCode=1

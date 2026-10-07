@@ -5,3 +5,39 @@ dist/
 .env.local
 .env.*.local
 npm-debug.log*
+
+# Local QA images/results: retain on disk, exclude from version control.
+/public/resonance-source-reference.png
+/qa/record-2-of-4.png
+/qa/record-3-of-4.png
+/qa/record-4-of-4-complete.png
+/qa/user-journey-complete.png
+/qa/figma-desktop.png
+/qa/figma-mobile-completed.png
+/qa/figma-mobile-recording.png
+/qa/record-3-of-4-all-fixed.png
+/qa/record-3-of-4-blue-solo.png
+/qa/record-3-of-4-coral-solo.png
+/qa/record-3-of-4-cream-solo.png
+/qa/record-3-of-4-distribution-before.png
+/qa/record-3-of-4-motion-0s.png
+/qa/record-3-of-4-motion-10s.png
+/qa/record-3-of-4-motion-5s.png
+/qa/resonance-current-2of4-crop.png
+/qa/resonance-current-4of4-crop.png
+/qa/resonance-layer-comparison.png
+/qa/resonance-motion-00s.png
+/qa/resonance-motion-05s.png
+/qa/resonance-motion-10s.png
+/qa/resonance-motion-2.5s.png
+/qa/resonance-motion-7.5s.png
+/qa/resonance-motion-comparison.png
+/qa/resonance-reference-crop.png
+/qa/user-journey-results.json
+/qa/figma-design-results.json
+/qa/resonance-motion-results.json
+
+# Obsolete local scripts; not imported or run by the current app/QA.
+# Preserve locally for reference. Reassess before adopting either as maintained QA.
+/qa/create-resonance-comparison.mjs
+/qa/verify-figma-design.mjs

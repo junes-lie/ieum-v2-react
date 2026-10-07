@@ -23,7 +23,14 @@ const runtime = {
   microphoneInfo: null,
   recordingGuideState: null,
   activeElapsedSec: 0,
-  activeStartedAt: 0
+  activeStartedAt: 0,
+  playbackGeneration: 0
+}
+
+export function getRecordingTimeline() {
+  const state = runtime.recorder?.state || 'inactive'
+  const active = state === 'recording' ? Math.max(0, context().currentTime - runtime.activeStartedAt) : 0
+  return { elapsedSec: runtime.activeElapsedSec + active, state, syncOffsetSec: runtime.syncOffsetSec }
 }
 
 function context() {
@@ -154,7 +161,8 @@ export function monitorInput(onFrame, { detectPitch = false } = {}) {
       rms,
       pitchFresh,
       midi: pitchHz ? 69 + 12 * Math.log2(pitchHz / 440) : null,
-      waveform: new Float32Array(buffer)
+      waveform: new Float32Array(buffer),
+      elapsedSec: getRecordingTimeline().elapsedSec
     })
     runtime.raf = requestAnimationFrame(tick)
   }
@@ -219,6 +227,7 @@ function scheduleBuffer(ctx, destination, buffer, start, sourceOffsetSec = 0, ga
 }
 
 export function stopGuides() {
+  runtime.playbackGeneration++
   runtime.guideNodes.splice(0).forEach(node => { try { node.stop() } catch {} })
   runtime.playback.splice(0).forEach(node => { try { node.stop() } catch {} })
 }
@@ -232,11 +241,13 @@ function scheduleRecordingGuides(offsetSec = 0) {
   if (state.guides.backing) scheduleBacking(ctx, ctx.destination, start, remaining, .07, offsetSec)
   state.decodedGuides.forEach(({track,buffer}) => {
     const index = Number(track.partIndex)
-    if (state.guides.parts[index]) scheduleBuffer(ctx, ctx.destination, buffer, start, offsetSec + (track.syncOffsetMs || 0) / 1000, .58, (index - 1.5) * .12)
+    const sourceOffset = offsetSec + (track.syncOffsetMs || 0) / 1000
+    if (state.guides.parts[index] && sourceOffset < buffer.duration) scheduleBuffer(ctx, ctx.destination, buffer, start, sourceOffset, .58, (index - 1.5) * .12)
   })
 }
 
-export async function startRecording({ onFrame, guides, guideTracks = [], countIn = 0 }) {
+export async function startRecording({ onFrame, guides = {backing:false,parts:[]}, guideTracks = [], duration = 35 }) {
+  if (runtime.recorder && runtime.recorder.state !== 'inactive') throw new Error('이미 녹음 중이에요.')
   const hasSpeakerGuides = Boolean(guides?.backing || guides?.parts?.some(Boolean))
   const stream = await requestMicrophone({ voiceProcessing:hasSpeakerGuides ? true : null })
   if (!window.MediaRecorder) {
@@ -255,12 +266,11 @@ export async function startRecording({ onFrame, guides, guideTracks = [], countI
   runtime.recorder.start(180)
   runtime.startedAt = performance.now()
   runtime.activeElapsedSec = 0
-  runtime.activeStartedAt = performance.now()
+  runtime.activeStartedAt = ctx.currentTime
   monitorInput(onFrame)
-  const start = ctx.currentTime + Math.max(0.05, countIn)
+  const start = ctx.currentTime + .035
   runtime.syncOffsetSec = Math.max(0, start - ctx.currentTime)
-  const duration = 35
-  runtime.recordingGuideState = { guides, decodedGuides, duration }
+  runtime.recordingGuideState = { guides:{...guides,parts:[...guides.parts]}, decodedGuides, duration:Math.max(.1,duration) }
   if (guides.backing) scheduleBacking(ctx, ctx.destination, start, duration)
   decodedGuides.forEach(({track,buffer}) => {
     const index = Number(track.partIndex)
@@ -272,7 +282,7 @@ export async function startRecording({ onFrame, guides, guideTracks = [], countI
 export function pauseRecording() {
   if (runtime.recorder?.state === 'recording') {
     runtime.recorder.pause()
-    runtime.activeElapsedSec += Math.max(0, (performance.now() - runtime.activeStartedAt) / 1000)
+    runtime.activeElapsedSec += Math.max(0, context().currentTime - runtime.activeStartedAt)
     stopGuides()
   }
 }
@@ -280,15 +290,23 @@ export function pauseRecording() {
 export function resumeRecording() {
   if (runtime.recorder?.state === 'paused') {
     runtime.recorder.resume()
-    runtime.activeStartedAt = performance.now()
+    runtime.activeStartedAt = context().currentTime
     scheduleRecordingGuides(runtime.activeElapsedSec)
   }
+}
+
+export function updateRecordingGuides(guides) {
+  if (!runtime.recordingGuideState) return
+  runtime.recordingGuideState.guides = {...guides,parts:[...guides.parts]}
+  const timeline = getRecordingTimeline()
+  stopGuides()
+  if (timeline.state === 'recording') scheduleRecordingGuides(timeline.elapsedSec)
 }
 
 export async function stopRecording() {
   if (!runtime.recorder || runtime.recorder.state === 'inactive') return null
   const recorder = runtime.recorder
-  if (recorder.state === 'recording') runtime.activeElapsedSec += Math.max(0, (performance.now() - runtime.activeStartedAt) / 1000)
+  if (recorder.state === 'recording') runtime.activeElapsedSec += Math.max(0, context().currentTime - runtime.activeStartedAt)
   await new Promise(resolve => {
     recorder.addEventListener('stop', resolve, { once: true })
     recorder.stop()
@@ -337,18 +355,21 @@ export function cancelRecording() {
 
 export async function playCurrentMix({ included, tracks = [], duration = 18, onEnded }) {
   stopGuides()
+  const generation = runtime.playbackGeneration
   const ctx = context()
   await ctx.resume()
+  const selected = await Promise.all(tracks.filter(track=>included.parts[Number(track.partIndex)] && track.blob).map(async track=>({track,buffer:await decodeBlob(ctx,track.blob)})))
+  if (generation !== runtime.playbackGeneration) return () => {}
+  if (!included.backing && !selected.length) throw new Error('들을 Track을 선택해 주세요.')
   const start = ctx.currentTime + 0.08
   if (included.backing) scheduleBacking(ctx, ctx.destination, start, duration)
-  for (const track of tracks) {
+  for (const {track,buffer} of selected) {
     const index = Number(track.partIndex)
     if (!included.parts[index] || !track.blob) continue
-    const buffer = await decodeBlob(ctx, track.blob)
     scheduleBuffer(ctx, ctx.destination, buffer, start, (track.syncOffsetMs || 0) / 1000, .68, (index - 1.5) * .12)
   }
-  const timer = window.setTimeout(() => onEnded?.(), duration * 1000)
-  return () => { window.clearTimeout(timer); stopGuides() }
+  const timer = window.setTimeout(() => { if (generation === runtime.playbackGeneration) { stopGuides(); onEnded?.() } }, duration * 1000 + 80)
+  return () => { window.clearTimeout(timer); if (generation === runtime.playbackGeneration) stopGuides() }
 }
 
 function writeString(view, offset, string) {
@@ -389,10 +410,18 @@ function cleanAndMeasureBuffer(buffer, reportedNoiseFloor = 0) {
     let dc = 0
     for (let index = 0; index < data.length; index += 16) dc += data[index]
     dc /= Math.max(1,Math.ceil(data.length / 16))
+    // Smooth an RMS envelope rather than shaping every waveform zero crossing.
+    // This suppresses quiet gaps without claiming broadband speech denoising.
+    const attack = Math.exp(-1 / (.005 * buffer.sampleRate))
+    const release = Math.exp(-1 / (.09 * buffer.sampleRate))
+    let envelope = 0, gate = 0
     for (let index = 0; index < data.length; index++) {
       const centered = data[index] - dc
-      const magnitude = Math.abs(centered)
-      const gate = magnitude >= threshold ? 1 : Math.pow(magnitude / threshold,2)
+      const power = centered * centered
+      envelope = envelope * .99 + power * .01
+      const target = Math.sqrt(envelope) >= threshold ? 1 : .08
+      const smoothing = target > gate ? attack : release
+      gate = target + smoothing * (gate-target)
       const cleaned = centered * gate
       data[index] = cleaned
       energy += cleaned * cleaned
@@ -404,20 +433,33 @@ function cleanAndMeasureBuffer(buffer, reportedNoiseFloor = 0) {
 }
 
 export async function createAutoMix({ tracks = [], duration = 18, onProgress }) {
+  return renderTrackMix({tracks,duration,onProgress,backing:true,minTracks:2})
+}
+
+export async function createPreviewMix({tracks=[],duration=18,backing=false,onProgress}={}) {
+  if (!tracks.length && !backing) throw new Error('들을 Track을 선택해 주세요.')
+  return renderTrackMix({tracks,duration,onProgress,backing,minTracks:0})
+}
+
+async function renderTrackMix({tracks,duration,onProgress,backing,minTracks}) {
   if (!OfflineAudioContextClass) throw new Error('이 브라우저는 오프라인 믹싱을 지원하지 않아요.')
+  if (tracks.length < minTracks || tracks.length > 4 || tracks.some(track=>!track?.blob)) throw new Error('선택한 Part의 실제 녹음이 필요해요.')
+  if (new Set(tracks.map(track=>track.partId)).size !== tracks.length) throw new Error('Part별 녹음은 하나씩 필요해요.')
   const rate = 44100
   const decodeContext = new AudioContextClass()
   const decodedTracks = []
-  for (const track of tracks) {
-    if (!track?.blob) continue
+  try { for (const track of tracks) {
     const buffer = await decodeContext.decodeAudioData(await track.blob.arrayBuffer())
     decodedTracks.push({ track, buffer, cleanup:cleanAndMeasureBuffer(buffer,track.noiseFloor) })
-  }
-  await decodeContext.close()
+  } } finally { await decodeContext.close() }
   const actualDuration = Math.max(duration, ...decodedTracks.map(({buffer}) => buffer.duration + .2))
   const offline = new OfflineAudioContextClass(2, Math.ceil(actualDuration * rate), rate)
+  const master = offline.createDynamicsCompressor()
+  master.threshold.value = -3; master.knee.value = 0; master.ratio.value = 20
+  master.attack.value = .001; master.release.value = .12
+  master.connect(offline.destination)
   onProgress?.(18)
-  scheduleBacking(offline, offline.destination, 0, actualDuration, 0.075)
+  if (backing) scheduleBacking(offline, master, 0, actualDuration, 0.075)
   for (const {track,buffer:decoded,cleanup} of decodedTracks) {
     const source = offline.createBufferSource()
     const highpass = offline.createBiquadFilter()
@@ -431,11 +473,12 @@ export async function createAutoMix({ tracks = [], duration = 18, onProgress }) 
     compressor.threshold.value = -22; compressor.knee.value = 18; compressor.ratio.value = 3.2
     limiter.threshold.value = -3; limiter.knee.value = 0; limiter.ratio.value = 16; limiter.attack.value = 0.003
     gain.gain.value = cleanup.gain
-    source.connect(highpass).connect(presence).connect(compressor).connect(gain).connect(limiter).connect(offline.destination)
+    source.connect(highpass).connect(presence).connect(compressor).connect(gain).connect(limiter).connect(master)
     source.start(0, Math.min((track.syncOffsetMs || 0) / 1000, Math.max(0, decoded.duration - 0.01)))
   }
   onProgress?.(54)
   const rendered = await offline.startRendering()
+  const peakProcessing = limitBufferPeak(rendered)
   onProgress?.(88)
   const blob = bufferToWav(rendered)
   const url = URL.createObjectURL(blob)
@@ -443,8 +486,25 @@ export async function createAutoMix({ tracks = [], duration = 18, onProgress }) 
   return {
     blob, url, bytes: blob.size, duration: rendered.duration,
     origin:'offline-audio-context:offset+noise-gate+rms-normalize+eq+compressor+limiter',
-    processing:{ alignment:'recording-guide-offset', noiseGate:true, normalization:'RMS -18.4 dBFS target', eq:'85 Hz HPF + 2.8 kHz presence', compressor:true, limiter:'-3 dB' }
+    processing:{ alignment:'recording-guide-offset', noiseGate:true, noiseReduction:'amplitude gate; not broadband denoising', normalization:'RMS -18.4 dBFS target', eq:'85 Hz HPF + 2.8 kHz presence', compressor:true, limiter:'master -3 dBFS peak ceiling', ...peakProcessing }
   }
+}
+
+export function limitBufferPeak(buffer, ceiling = 10 ** (-3 / 20)) {
+  let peakBefore = 0
+  for (let channel=0;channel<buffer.numberOfChannels;channel++) {
+    const data=buffer.getChannelData(channel)
+    for (let index=0;index<data.length;index++) {
+      if (!Number.isFinite(data[index])) throw new Error('Mix에 유효하지 않은 오디오 값이 있어요.')
+      peakBefore=Math.max(peakBefore,Math.abs(data[index]))
+    }
+  }
+  const masterGain=peakBefore>ceiling?ceiling/peakBefore:1
+  if (masterGain<1) for (let channel=0;channel<buffer.numberOfChannels;channel++) {
+    const data=buffer.getChannelData(channel)
+    for (let index=0;index<data.length;index++) data[index]*=masterGain
+  }
+  return {peakBefore,peakAfter:peakBefore*masterGain,masterGain}
 }
 
 export function stopMicrophone() {

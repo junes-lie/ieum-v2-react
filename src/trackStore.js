@@ -15,58 +15,61 @@ function openDatabase() {
 }
 
 export async function saveTrack(track) {
+  if (!track?.id || !track.projectId) throw new Error('저장할 녹음의 ID와 프로젝트가 필요해요.')
   const db = await openDatabase()
-  await new Promise((resolve, reject) => {
+  try { await new Promise((resolve, reject) => {
     const tx = db.transaction(STORE, 'readwrite')
     tx.objectStore(STORE).put(track)
     tx.oncomplete = resolve
     tx.onerror = () => reject(tx.error)
-  })
-  db.close()
+    tx.onabort = () => reject(tx.error || new Error('녹음 저장이 취소됐어요. 원본을 유지하고 다시 시도해 주세요.'))
+  }) } finally { db.close() }
   return track
 }
 
 export async function loadProjectTracks(projectId) {
   const db = await openDatabase()
-  const tracks = await new Promise((resolve, reject) => {
-    const request = db.transaction(STORE, 'readonly').objectStore(STORE).getAll()
-    request.onsuccess = () => resolve(request.result.filter(track => track.projectId === projectId))
+  try { return await new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE, 'readonly')
+    const request = tx.objectStore(STORE).getAll()
+    tx.oncomplete = () => resolve(request.result.filter(track => track.projectId === projectId))
+    tx.onerror = () => reject(tx.error || request.error)
+    tx.onabort = () => reject(tx.error || request.error || new Error('녹음 목록을 불러오지 못했어요.'))
     request.onerror = () => reject(request.error)
-  })
-  db.close()
-  return tracks
+  }) } finally { db.close() }
 }
 
 export async function loadTrack(id) {
   const db = await openDatabase()
-  const track = await new Promise((resolve, reject) => {
-    const request = db.transaction(STORE, 'readonly').objectStore(STORE).get(id)
-    request.onsuccess = () => resolve(request.result || null)
+  try { return await new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE, 'readonly')
+    const request = tx.objectStore(STORE).get(id)
+    tx.oncomplete = () => resolve(request.result || null)
+    tx.onerror = () => reject(tx.error || request.error)
+    tx.onabort = () => reject(tx.error || request.error || new Error('녹음을 불러오지 못했어요.'))
     request.onerror = () => reject(request.error)
-  })
-  db.close()
-  return track
+  }) } finally { db.close() }
 }
 
 export async function deleteTrack(id) {
   const db = await openDatabase()
-  await new Promise((resolve, reject) => {
+  try { await new Promise((resolve, reject) => {
     const tx = db.transaction(STORE, 'readwrite')
     tx.objectStore(STORE).delete(id)
     tx.oncomplete = resolve
     tx.onerror = () => reject(tx.error)
-  })
-  db.close()
+    tx.onabort = () => reject(tx.error || new Error('녹음 정리를 완료하지 못했어요.'))
+  }) } finally { db.close() }
 }
 
 export async function clearProjectTracks(projectId) {
   const tracks = await loadProjectTracks(projectId)
   const db = await openDatabase()
-  await new Promise((resolve, reject) => {
+  try { await new Promise((resolve, reject) => {
     const tx = db.transaction(STORE, 'readwrite')
     tracks.forEach(track => tx.objectStore(STORE).delete(track.id))
     tx.oncomplete = resolve
     tx.onerror = () => reject(tx.error)
-  })
-  db.close()
+    tx.onabort = () => reject(tx.error || new Error('프로젝트 녹음 정리를 완료하지 못했어요.'))
+  }) } finally { db.close() }
 }
