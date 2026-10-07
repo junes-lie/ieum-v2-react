@@ -1,3 +1,7 @@
+## 2026-10-08 단계 4 후속 — Finder Empty와 조건 초기화
+
+사용자 지정 Notion 화면명세 F01–F03의 Empty 문구·조건 초기화·같은 Project 복귀를 확인했다. production 81e7f69에서 역할 필터로 결과0건이 되면 안내/초기화가 없어 QA가 실패했다(0 != 1). 기존 empty-state/secondary 스타일을 재사용해 명세의 안내와 조건 초기화만 연결했다. 초기화는 필터와 정렬만 되돌리고 참여 배정·Track을 변경하지 않는다. CSS/Record/motion/추천 점수는 변경하지 않았다. 격리된 fixture와 실제 서버/실측 추천 검증을 구분한다.
+
 ## 2026-10-08 기능 후속 — 샘플 이탈/폐기·단일 프로젝트 생성·Complete Gate
 
 디자인 보류를 유지하고 사용자 지정 Notion 화면명세 VP04/VP05/N03/N04/F01–F03 및 PRD 9 Complete Gate를 확인했다. 실제 production 0a93f1c에서 샘플 녹음 Back에 확인창이 없음(0 != 1), 동시 생성으로 프로젝트2개(2 != 1), 최종 확인 Back이 설정을 유지하지 않음(0 != 1)을 재현했다. 기존 RecordingConfirmation을 VoiceSetup에 연결하여 녹음 이탈 취소는 같은 녹음을 계속하고 확인은 정상 Stop→Review로 연결한다. 다시 부르기와 Take가 있는 다른 곡 선택은 확인 후 후보 Take만 폐기한다. 취소 시 같은 Take/곡 정보를 보존하고 기존 프로필/Project Track은 변경하지 않는다. 샘플 시작/정지에는 즉시 ref guard와 busy 상태를 연결해 중복 시작·정지/타이머 누적을 막았다. CSS/Record renderer/motion은 변경하지 않았다.
