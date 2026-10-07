@@ -308,7 +308,7 @@ void main(){
   float hubFade=smoothstep(0.305,0.350,radius);
   float rimFade=1.0-smoothstep(0.91,0.985,radius);
   vAlpha=aAlpha*(.48+focus*1.48)*hubFade*rimFade;
-  vBrightness=aBrightness*(.88+focus*.54)*(1.0+live*uLevel*0.28);
+  vBrightness=aBrightness*(1.35+focus*1.18)*(1.0+live*uLevel*0.28);
   vAngle=atan(tangent.y,tangent.x);
   vPart=aPart;
   gl_PointSize=(aSize*2.55+live*uLevel*0.45)*uPixelRatio;
@@ -337,7 +337,7 @@ void main(){
     if(radius>.5)discard;
     alpha*=1.-smoothstep(.30,.50,radius);
   }
-  if(alpha<0.012)discard;
+  if(alpha<0.008)discard;
   gl_FragColor=vec4(colorFor(vPart)*vBrightness*alpha,alpha);
 }`
 
@@ -524,7 +524,7 @@ export function createResonanceRenderer({ canvas, materialCanvas, slots, project
   }
 }
 
-export function createRecordingInflowRenderer({ canvas, partIndex, seed, levelRef, reducedMotion }) {
+export function createRecordingInflowRenderer({ canvas, partIndex, seed, levelRef, waveformRef, reducedMotion }) {
   const gl = canvas.getContext('webgl', { alpha:true, antialias:true, premultipliedAlpha:true })
   if (!gl) throw new Error('WebGL unavailable')
   const vertex = `
@@ -533,13 +533,15 @@ export function createRecordingInflowRenderer({ canvas, partIndex, seed, levelRe
     uniform float uTime;
     uniform float uLevel;
     uniform float uPixelRatio;
+    uniform float uWave[32];
     varying float vAlpha;
     void main(){
       float t=fract(aParticle.x+uTime*(.075+aParticle.z*.035));
-      float y=-.98+t*1.70;
-      float center=sin(t*5.2+aParticle.z*6.283)*(.025+.035*(1.-t));
-      float spread=(1.-t)*(.22+.10*uLevel);
-      float x=center+aParticle.y*spread;
+      float x=-.98+t*1.96;
+      float measuredWave=uWave[int(min(31.,floor(t*32.)))];
+      float center=sin(t*6.283-uTime*.6)*(.10+.26*t)+measuredWave*.45*(1.-t);
+      float spread=(.04+.32*uLevel)*(1.-t*.65);
+      float y=center+aParticle.y*spread;
       float pulse=.25+.75*uLevel;
       vAlpha=(.12+.66*(1.-abs(aParticle.y)))*pulse*smoothstep(0.,.12,t)*(1.-smoothstep(.88,1.,t));
       gl_PointSize=(1.0+aParticle.z*1.8+uLevel*.6)*uPixelRatio;
@@ -567,6 +569,8 @@ export function createRecordingInflowRenderer({ canvas, partIndex, seed, levelRe
   const buffer=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,buffer);gl.bufferData(gl.ARRAY_BUFFER,data,gl.STATIC_DRAW)
   const particle=gl.getAttribLocation(program,'aParticle');gl.enableVertexAttribArray(particle);gl.vertexAttribPointer(particle,3,gl.FLOAT,false,0,0)
   const timeLocation=gl.getUniformLocation(program,'uTime'),levelLocation=gl.getUniformLocation(program,'uLevel'),ratioLocation=gl.getUniformLocation(program,'uPixelRatio')
+  const waveLocation=gl.getUniformLocation(program,'uWave[0]')
+  const wave=new Float32Array(32)
   gl.uniform3fv(gl.getUniformLocation(program,'uColor'),PALETTE[partIndex] || PALETTE[0])
   gl.enable(gl.BLEND);gl.blendFunc(gl.ONE,gl.ONE_MINUS_SRC_ALPHA)
   let raf=0,disposed=false,started=performance.now()
@@ -576,11 +580,15 @@ export function createRecordingInflowRenderer({ canvas, partIndex, seed, levelRe
     if(width>0&&height>0&&(canvas.width!==width||canvas.height!==height)){canvas.width=width;canvas.height=height;gl.viewport(0,0,width,height)}
     gl.uniform1f(timeLocation,reducedMotion?0:(now-started)*.001)
     gl.uniform1f(levelLocation,Math.max(0,Math.min(1,levelRef.current||0)))
+    const samples=waveformRef?.current
+    for(let index=0;index<wave.length;index++)wave[index]=samples?.[Math.floor(index*(samples.length-1)/(wave.length-1))] || 0
+    gl.uniform1fv(waveLocation,wave)
     gl.uniform1f(ratioLocation,ratio)
     gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT);gl.drawArrays(gl.POINTS,0,720)
     raf=requestAnimationFrame(draw)
   }
   canvas.dataset.renderer='webgl-inflow'
+  canvas.dataset.inputSource='analyser-waveform'
   raf=requestAnimationFrame(draw)
   return()=>{disposed=true;cancelAnimationFrame(raf);gl.deleteBuffer(buffer);gl.deleteProgram(program)}
 }

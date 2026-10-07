@@ -8,7 +8,8 @@
     "build": "vite build",
     "preview": "vite preview --host 127.0.0.1",
     "qa": "node qa/verify-pitch-detector.mjs && node qa/verify-resonance-record.mjs && node qa/verify-audio-foundation.mjs && node qa/verify-track-store.mjs && node qa/verify-project-service.mjs && node qa/verify-single-app-render.mjs && node qa/verify-user-journey.mjs",
-    "qa:motion": "node qa/verify-resonance-motion.mjs"
+    "qa:motion": "node qa/verify-resonance-motion.mjs",
+    "qa:layout": "node qa/verify-three-screen-layout.mjs"
   },
   "dependencies": {
     "@fortawesome/free-regular-svg-icons": "^7.3.1",

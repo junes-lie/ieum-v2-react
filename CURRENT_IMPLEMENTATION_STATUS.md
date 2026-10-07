@@ -1,3 +1,10 @@
+## 2026-10-08 단계 1 기술 검증 배포 확인
+
+단계 0 기준 보존 완료. 단계 1 P0 기술 검증 및 project/part/user 계약 수정은 `94b29c6827d803b50340807cf6e27dfc7a8d7a39`로 main에 push했다. GitHub main과 로컬 HEAD가 일치하고 Vercel Git Integration `dpl_4GBV67mFGs5vW196vMwhzBwiaNuC`가 같은 commit으로 production READY다. Production HTTP 200 및 JS `index-Db1cBIdN.js`/CSS `index-BteeLf2-.css` SHA256이 로컬 검증 build와 일치했다. 실제 서비스 AI 연결, 음색 식별 정확도, Figma 시각 완성, 실기기 인수는 완료가 아니다. 다음 실행은 단계 2 기존 03/06/07 시각 통합이다.
+## 2026-10-08 단계 1 기술 검증 배포 확인
+
+단계 0 기준 보존 완료. 단계 1 P0 기술 검증 및 project/part/user 계약 수정은 `94b29c6827d803b50340807cf6e27dfc7a8d7a39`로 main에 push했다. GitHub main과 로컬 HEAD가 일치하고 Vercel Git Integration `dpl_4GBV67mFGs5vW196vMwhzBwiaNuC`가 같은 commit으로 production READY다. Production HTTP 200 및 JS `index-Db1cBIdN.js`/CSS `index-BteeLf2-.css` SHA256이 로컬 검증 build와 일치했다. 실제 서비스 AI 연결, 음색 식별 정확도, Figma 시각 완성, 실기기 인수는 완료가 아니다. 다음 실행은 단계 2 기존 03/06/07 시각 통합이다.
+
 # IEUM V2 현재 구현 판정
 
 ## 현재 적용 판정 — 2026-10-08 계획 교정
@@ -72,3 +79,11 @@ Node 테스트 성공은 모듈 계약과 수치 처리의 근거다. HTTP 테�
 
 
 높이·하단 내비게이션 보정 배포는 READY(dpl_FwE5HGnfTy8K8RB8JUtHbYKrzgdG), 기존 production alias HTTP 200으로 확인했다. 최종 build 31 modules와 Node 렌더 테스트 성공은 root가 확인했다. 단계 0은 부분 확인·완료 보류 상태다. 실제 마이크 녹음·임시본 복원과 화면/데이터 연결 재현의 검증이 남아 있다. 단계 1에 착수하지 않는다.
+
+## 2026-10-08 단계 2 — 기존 03/06/07 시각 통합 실행
+
+- 실제 Source: figma-desktop MCP에서 653:47 `03 · 작업실 · Editable`, 653:48 `06 · 녹음 · Editable`, 653:49 `07 · 완성곡 · Editable`의 get_design_context/get_screenshot을 각각 성공 호출하고 원본 구조와 screenshot을 확인했다. 초기 짧은 socket timeout과 세션 초기화 오류는 동일 Desktop MCP 재시도로 해소했으며 Remote Figma/Computer Use를 사용하지 않았다.
+- 기존 React의 Workspace/Recorder/Complete를 수정했다. 헤더·실제 프로젝트명/Key/진행률·곡명 타이포·Mix 위계·Guide 반주 독립 스위치/복수 Track chip·중앙 가사·다시 녹음/정지/일시정지 라벨·Record crop·중앙 Credits·완성곡 보조 행동을 연결했다. 별도 앱/정적 Record 대체를 만들지 않았다. 430px desktop frame의 932px 높이 제한을 유지한다.
+- 입력 그래픽은 기존 analyser의 실제 waveform buffer와 RMS를 전달받는다. 입력 입자는 가로 방향으로 움직이고 MIC dBFS는 실제 RMS로 계산한다. 새 생성형 AI를 브라우저에 연결했다는 의미는 아니다. 기존 Record palette/path/입자 수와 저장 Layer를 보존했다.
+- 로컬 검증: production build와 전체 7개 QA 통과. 별도 유지 `qa:layout`에서 360/390/430px 세 화면의 실제 WebGL/가로 overflow/Guide toggle/합성 마이크 pause-resume-Review/저장된 합성 Mix 복원/native audio/탭 표시를 확인했다. desktop 1200×1100에서 frame 430×932 및 내부 scroll을 확인했다. `qa:motion` 실제 10초간 5프레임이 서로 다르고 console error 0이다. QA는 개인 브라우저/DB와 분리됐다. 일회성 결과는 TEMP/기존 ignore에 보관한다.
+- 잔여 차이/미검증: 기존 절차 Record는 Figma 원본의 광택·발광·가는 결과 동일하지 않다. 실제 AI 생성 Layer→motion renderer/서비스 연결, 실제 모바일 touch/safe-area·물리 마이크·청취는 미완료다. layout QA는 Figma pixel 일치나 실제 기기 인수를 대체하지 않는다. 전체 단계 2 완료로 표시하지 않는다. 검증된 시각 통합 수정은 Git 자동배포하여 같은 production에서 확인 가능하게 한다.
