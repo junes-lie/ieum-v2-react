@@ -424,6 +424,7 @@ void main(){
 function ResonanceRecord({ active = [true, false, true, false], layers = [], parts = PARTS, tracks, projectId = PROJECT_ID, activePartIndex = 1, state = 'rest', level = 0, seed = PROJECT_SEED, label, compact = false }) {
   const materialRef = useRef(null)
   const particleRef = useRef(null)
+  const recordTimelineRef = useRef({})
   const levelRef = useRef(level)
   const [rendererError, setRendererError] = useState('')
   const [aiFields,setAiFields]=useState([])
@@ -480,6 +481,8 @@ function ResonanceRecord({ active = [true, false, true, false], layers = [], par
     const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches === true
     let renderer
     try {
+      const timelineKey=`${projectId}:${seed}`
+      if(recordTimelineRef.current.key!==timelineKey)recordTimelineRef.current={key:timelineKey}
       renderer = createResonanceRenderer({
         canvas,
         materialCanvas,
@@ -489,6 +492,7 @@ function ResonanceRecord({ active = [true, false, true, false], layers = [], par
         activePartIndex:recordingSlot,
         levelRef,
         reducedMotion,
+        timeline:recordTimelineRef.current,
         aiFields:partSlots.reduce((fields,slot,index)=>{fields[slot]=aiFields.find(field=>field.projectId===projectId && field.projectSeed===String(seed) && field.partId===parts[index].id);return fields},[])
       })
       setRendererError('')

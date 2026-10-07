@@ -1,3 +1,11 @@
+## 2026-10-08 단계 2 — Record 시간축과 표면 반사
+
+사용자가 현재 Notion 내용으로 지정한 DESIGN_SYSTEM의 8.1/8.4와 현재 Desktop Figma 653:46 구조·스크린샷을 대조했다. 기존 WebGL Record에 Rest 30초·Playing 24초·Complete 36초 회전, 600ms 상태 전환 감속/가속, 5초의 약한 호흡을 연결했다. 프로젝트/seed별 시간축을 React ref로 유지해 같은 컴포넌트의 Pause/Resume·AI 필드 로드 때 각도가 초기화되지 않는다. Processing은 회전 없이 기존 위상 이동을 유지하고 reduced-motion은 정적인 표시를 유지한다. 표면 홈에 낮은 대비의 방향성 반사를 추가했다. Complete 진입은 1.2초 동안 Voice field가 한 번 넓어졌다가 안정되며, 같은 컴포넌트의 AI 로드·재생 상태 전환 때 반복하지 않는다. Record 전체를 정적 이미지로 대체하지 않았다.
+
+재사용 QA `node qa/verify-record-timeline.mjs`는 실제 기존 앱에서 회전 속도, 600ms 후 정지, Pause/Resume 각도 연속성, 실제 호흡 픽셀 변화, reduced-motion 픽셀 불변을 검사한다. 격리 합성 마이크 브라우저에서 통과했고 초기 측정 Rest 주기는 약30.10초였다. build/기존 QA 7개/모바일 3화면·원본 SVG/실제 WebGL/실제 AI 0·2·3·4 필드 재현·원본 보존 QA도 통과했다. 새 QA는 `IEUM_QA_URL`로 배포된 동일 앱을 검사할 수 있다.
+
+이번 범위는 2단계의 motion·재질 보정이다. 모든 Figma 픽셀의 일치, 실제 모바일 성능·청취·터치 인수와 서버 AI 연결은 완료로 표시하지 않는다. 다음 단계 신규 기능을 시작하지 않았다. Git 자동배포와 production 결과는 실제 확인 후 docs/GIT_SYNC_VERIFICATION.md에 기록한다.
+
 ## 2026-10-08 단계 2 — Figma 컴포넌트와 Record 입자 결 보정
 
 현재 Desktop MCP의 653:46 `IEUM · 3화면 · 편집용 프레임`에서 get_design_context/get_screenshot을 재호출해 성공했다. 기존 React의 03/06/07에 원본 재생·하트·공유·다시 녹음·정지·일시정지·마이크 SVG를 native size로 연결했다. 완성곡 중앙 원형 라벨만 원본 금속 재질 자산을 사용하며, Record 자체는 기존 움직이는 WebGL을 유지한다. 곡명 앞 불필요한 38px 여백을 제거하고 시간/seek를 두 줄로 분리했다. MIC 수치를 한 줄로 유지한다. 입자 크기를 줄여 가는 결을 만들면서 밝기를 보정했다. 기존 Part/seed/AI 파일·음성 계보와 곡선·색상 슬롯·입자 수는 보존했다.

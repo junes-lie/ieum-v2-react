@@ -71,6 +71,13 @@ try{
   await page.evaluate(()=>location.hash='#complete')
   await page.waitForSelector('.complete-screen .record-center-credits')
   await page.waitForSelector('.complete-screen .audio-player audio',{state:'attached'})
+  const expansion=await page.locator('.complete-screen .record-particles').evaluate(canvas=>new Promise(resolve=>{
+   const values=[],started=performance.now()
+   const sample=()=>{values.push(Number(canvas.dataset.bloom));if(performance.now()-started>1300)resolve(values);else requestAnimationFrame(sample)}
+   sample()
+  }))
+  assert.ok(Math.max(...expansion)>.005,'Complete must expand once on entry')
+  assert.ok(expansion.at(-1)<.0001,'Complete must settle after its entry expansion')
   await measure('complete')
   assert.equal(await page.locator('.record-center-credits button').count(),4)
   assert.equal(await page.locator('.bottom-nav').count(),1)

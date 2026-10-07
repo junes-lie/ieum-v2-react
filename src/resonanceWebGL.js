@@ -208,7 +208,9 @@ attribute float aPart;
 attribute float aMicro;
 attribute float aHead;
 uniform float uTime;
-uniform float uMotion;
+uniform float uFlowTime;
+uniform float uRotation;
+uniform float uBloom;
 uniform float uLevel;
 uniform float uActivePart;
 uniform float uPixelRatio;
@@ -264,11 +266,11 @@ float pulse(float t,float center,float sharpness){
   return pow(.5+.5*cos((t-center)*6.28318530718),sharpness);
 }
 void main(){
-  float t=fract(aT+uTime*aSpeed*uMotion+aHead*(0.0042+aSize*0.0015));
+  float t=fract(aT+uFlowTime*aSpeed+aHead*(0.0042+aSize*0.0015));
   vec2 center=pointAt(aPart,aPath,t);
   vec2 tangent=tangentAt(aPart,aPath,t);
   vec2 normal=vec2(-tangent.y,tangent.x);
-  float focusDrift=.006*sin(uTime*.18+aPhase*1.37+aPath*.61);
+  float focusDrift=.006*sin(uFlowTime*.18+aPhase*1.37+aPath*.61);
   float focusT=fract(t+aPhase*.010+aPath*.024+focusDrift);
   float focus=0.;
   float finePhase=0.;
@@ -289,7 +291,7 @@ void main(){
   float fine=.5+.5*sin(t*12.56637061436+finePhase+aPath*.74);
   float widthShape=(.16+1.42*focus)
     *(.88+.12*fine)
-    *(1.+focus*.08*sin(uTime*.38+aPart*1.19+aPath*.73));
+    *(1.+focus*.08*sin(uFlowTime*.38+aPart*1.19+aPath*.73));
   float lanePhase=aNormal*118.;
   float braid=(
     sin(t*18.8495559215+lanePhase+aPhase)*.0105
@@ -305,16 +307,19 @@ void main(){
   float distributedNormal=mix(aNormal,concentratedNormal,uConcentration);
   float lateralMotion=mix(1.,.68,uConcentration);
   vec2 position=center+normal*(distributedNormal*widthShape+(braid+grain+liveWave)*lateralMotion);
+  position*=1.+uBloom;
   float radius=length(position);
   float hubFade=smoothstep(0.305,0.350,radius);
   float rimFade=1.0-smoothstep(0.91,0.985,radius);
-  vAlpha=aAlpha*(.48+focus*1.48)*hubFade*rimFade;
+  vAlpha=aAlpha*(.48+focus*1.48)*hubFade*rimFade*(.96+.04*sin(uTime*1.256637));
   vBrightness=aBrightness*(1.35+focus*1.18)*(1.0+live*uLevel*0.28);
-  vAngle=atan(tangent.y,tangent.x);
+  vAngle=atan(tangent.y,tangent.x)-uRotation;
   vPart=aPart;
   gl_PointSize=(aSize*1.35+live*uLevel*0.45)*uPixelRatio;
-  gl_Position=vec4(position,0.0,1.0);
   vFieldUV=vec2(position.x,-position.y)*.5+.5;
+  float rotationCos=cos(uRotation),rotationSin=sin(uRotation);
+  position=mat2(rotationCos,-rotationSin,rotationSin,rotationCos)*position;
+  gl_Position=vec4(position,0.0,1.0);
 }`
 
 const FRAGMENT_SHADER = `
@@ -358,7 +363,7 @@ void main(){
   gl_FragColor=vec4(colorFor(vPart)*vBrightness*fieldGain*mix(1.,2.4,uPointMode)*alpha,alpha);
 }`
 
-function drawMaterial(canvas) {
+function drawMaterial(canvas, rotation = 0) {
   const size = canvas.clientWidth
   if (size < 8) return
   const ratio = Math.min(window.devicePixelRatio || 1, 2)
@@ -382,11 +387,20 @@ function drawMaterial(canvas) {
   vinyl.addColorStop(1, '#020202')
   ctx.fillStyle = vinyl
   ctx.fillRect(0, 0, pixels, pixels)
+  const reflectionAngle=-Math.PI/4+Math.sin(rotation)*.045
+  const reflectionX=Math.cos(reflectionAngle)*radius,reflectionY=Math.sin(reflectionAngle)*radius
+  const grooveSheen=ctx.createLinearGradient(center-reflectionX,center-reflectionY,center+reflectionX,center+reflectionY)
+  grooveSheen.addColorStop(0,'rgba(205,187,162,.12)')
+  grooveSheen.addColorStop(.28,'rgba(205,187,162,.018)')
+  grooveSheen.addColorStop(.50,'rgba(205,187,162,.012)')
+  grooveSheen.addColorStop(.72,'rgba(226,214,194,.07)')
+  grooveSheen.addColorStop(.88,'rgba(226,214,194,.20)')
+  grooveSheen.addColorStop(1,'rgba(205,187,162,.035)')
   for (let groove = 0; groove < 128; groove++) {
     const r = radius * (.225 + groove * .00588)
     ctx.beginPath()
     ctx.arc(center, center, r, 0, Math.PI * 2)
-    ctx.strokeStyle = `rgba(205,174,139,${groove % 9 === 0 ? .034 : .010})`
+    ctx.strokeStyle = grooveSheen
     ctx.lineWidth = Math.max(.45, ratio * .28)
     ctx.stroke()
   }
@@ -437,7 +451,7 @@ function drawMaterial(canvas) {
   ctx.restore()
 }
 
-export function createResonanceRenderer({ canvas, materialCanvas, slots, projectSeed, state, activePartIndex, levelRef, reducedMotion, aiFields = [] }) {
+export function createResonanceRenderer({ canvas, materialCanvas, slots, projectSeed, state, activePartIndex, levelRef, reducedMotion, aiFields = [], timeline = {} }) {
   const gl = canvas.getContext('webgl', {
     alpha: true,
     antialias: true,
@@ -465,7 +479,9 @@ export function createResonanceRenderer({ canvas, materialCanvas, slots, project
     return location
   })
   const timeLocation = gl.getUniformLocation(program, 'uTime')
-  const motionLocation = gl.getUniformLocation(program, 'uMotion')
+  const flowTimeLocation = gl.getUniformLocation(program, 'uFlowTime')
+  const rotationLocation = gl.getUniformLocation(program, 'uRotation')
+  const bloomLocation = gl.getUniformLocation(program, 'uBloom')
   const levelLocation = gl.getUniformLocation(program, 'uLevel')
   const activeLocation = gl.getUniformLocation(program, 'uActivePart')
   const ratioLocation = gl.getUniformLocation(program, 'uPixelRatio')
@@ -497,10 +513,17 @@ export function createResonanceRenderer({ canvas, materialCanvas, slots, project
   let raf = 0
   let disposed = false
   const startedAt = performance.now()
+  let previousFrame = startedAt
+  const rotationRates={rest:Math.PI*2/30,playing:Math.PI*2/24,recording:Math.PI*2/30,paused:0,processing:0,complete:Math.PI*2/36}
+  const targetRate=reducedMotion?0:(rotationRates[state] ?? rotationRates.rest)
+  const initialRate=reducedMotion?0:(timeline.angularRate ?? targetRate)
+  timeline.elapsed ??= 0
+  timeline.flowTime ??= 0
+  timeline.rotation ??= 0
+  if(state==='complete' && timeline.completeStarted===undefined)timeline.completeStarted=timeline.elapsed
   const motionByState = { rest:.28, recording:1.0, paused:0, processing:.62, playing:.92, complete:.22 }
   const motion = reducedMotion ? 0 : (motionByState[state] ?? .28)
   const resize = () => {
-    drawMaterial(materialCanvas)
     const size = canvas.clientWidth
     if (size < 8) return false
     const ratio = Math.min(window.devicePixelRatio || 1, 2)
@@ -518,9 +541,24 @@ export function createResonanceRenderer({ canvas, materialCanvas, slots, project
     const captureTime = Number(debugParams.get('resonanceTime'))
     const soloPart = Number(debugParams.get('resonanceSolo'))
     const concentration = debugParams.get('resonanceDistribution') === 'before' ? 0 : 1
-    const elapsed = debugParams.has('resonanceTime') && Number.isFinite(captureTime)
-      ? captureTime
-      : (now-startedAt)*.001
+    const fixedTime=debugParams.has('resonanceTime') && Number.isFinite(captureTime)
+    const delta=Math.min(.1,Math.max(0,(now-previousFrame)*.001))
+    previousFrame=now
+    const transition=Math.min(1,(now-startedAt)/600)
+    timeline.angularRate=initialRate+(targetRate-initialRate)*transition
+    if(!fixedTime){
+      timeline.elapsed+=delta
+      timeline.flowTime+=delta*(targetRate===0?motion:timeline.angularRate/(Math.PI*2/30)*.28)
+      timeline.rotation+=delta*timeline.angularRate
+    }
+    const elapsed=fixedTime?captureTime:timeline.elapsed
+    const flowTime=fixedTime?captureTime*motion:timeline.flowTime
+    const rotation=fixedTime?captureTime*targetRate:timeline.rotation
+    const bloom=reducedMotion || state!=='complete'?0:.035*Math.sin(Math.PI*Math.min(1,Math.max(0,(elapsed-timeline.completeStarted)/1.2)))
+    drawMaterial(materialCanvas,rotation)
+    canvas.dataset.rotation=String(rotation)
+    canvas.dataset.angularRate=String(timeline.angularRate)
+    canvas.dataset.bloom=String(bloom)
     gl.clearColor(0,0,0,0)
     gl.clear(gl.COLOR_BUFFER_BIT)
     gl.useProgram(program)
@@ -529,8 +567,10 @@ export function createResonanceRenderer({ canvas, materialCanvas, slots, project
       gl.enableVertexAttribArray(location)
       gl.vertexAttribPointer(location,1,gl.FLOAT,false,stride,index*4)
     })
-    gl.uniform1f(timeLocation, elapsed)
-    gl.uniform1f(motionLocation, motion)
+    gl.uniform1f(timeLocation, reducedMotion?0:elapsed)
+    gl.uniform1f(flowTimeLocation,flowTime)
+    gl.uniform1f(rotationLocation,rotation)
+    gl.uniform1f(bloomLocation,bloom)
     gl.uniform1f(levelLocation, Math.max(0, Math.min(1, levelRef.current || 0)))
     gl.uniform1f(ratioLocation,Math.min(window.devicePixelRatio||1,2))
     gl.uniform1f(soloPartLocation, debugParams.has('resonanceSolo') && Number.isFinite(soloPart) ? soloPart : -1)
@@ -539,9 +579,9 @@ export function createResonanceRenderer({ canvas, materialCanvas, slots, project
     gl.drawArrays(gl.LINES,0,particles.filamentVertexCount)
     gl.uniform1f(pointModeLocation,1)
     gl.drawArrays(gl.POINTS,particles.filamentVertexCount,particles.grainVertexCount)
-    if (motion > 0 || state === 'recording') raf = requestAnimationFrame(draw)
+    if (!reducedMotion || state === 'recording') raf = requestAnimationFrame(draw)
   }
-  const observer = new ResizeObserver(() => draw(performance.now()))
+  const observer = new ResizeObserver(() => { cancelAnimationFrame(raf); draw(performance.now()) })
   observer.observe(canvas)
   raf = requestAnimationFrame(draw)
   canvas.dataset.renderer = 'webgl-particles'
