@@ -1109,6 +1109,9 @@ function Complete({ go, mix, layers, projectTracks, project = PROJECT, song, pro
   const [playing,setPlaying] = useState(false)
   const [hasPlayed,setHasPlayed] = useState(false)
   const [shareState,setShareState] = useState('idle')
+  const completedAt = mix?.createdAt ? new Date(mix.createdAt) : null
+  const validCompletionDate = completedAt && Number.isFinite(completedAt.getTime())
+  const completionDate = validCompletionDate ? `${completedAt.getFullYear()}.${String(completedAt.getMonth()+1).padStart(2,'0')}.${String(completedAt.getDate()).padStart(2,'0')}` : '—'
   useEffect(()=>{if(playing)setHasPlayed(true)},[playing])
   const share = async () => {
     if(!project.resultUrl){setShareState('unavailable');return}
@@ -1124,7 +1127,7 @@ function Complete({ go, mix, layers, projectTracks, project = PROJECT, song, pro
     <TopBar figmaHeader title="완성곡" back={() => go('workspace')} meta={`${String(project.parts.length).padStart(2,'0')}/${String(project.parts.length).padStart(2,'0')} · COMPLETE`} />
     <main>
       <div className="complete-title"><h1>{song?.title || '함께 완성한 곡'}</h1><p>{project.name}</p><span className="complete-badge">완성</span></div>
-      <div className="complete-record"><ResonanceRecord parts={project.parts} tracks={projectTracks} projectId={project.id} layers={layers} state={playing?'playing':'complete'} seed={project.seed}/><div className="record-center-credits" style={{backgroundImage:`url("${figmaAssets.imgArtworkCenterLabelCleanCrop}")`}} aria-label="함께한 목소리"><span>CREDITS</span><div>{project.parts.map(part=>{const track=projectTracks[part.id];const personId=track?.participantId;return <button key={part.id} disabled={!personId||personId===CURRENT_USER_ID} onClick={()=>openVocalProfile(personId)}><small style={{color:part.color}}>{part.name}</small><strong>{track?.participant || '—'}</strong></button>})}</div><small>{project.key || 'C major'}</small><time>{new Date(mix?.createdAt||Date.now()).toLocaleDateString('ko-KR')}</time></div></div>
+      <div className="complete-record"><ResonanceRecord parts={project.parts} tracks={projectTracks} projectId={project.id} layers={layers} state={playing?'playing':'complete'} seed={project.seed}/><div className="record-center-credits" style={{backgroundImage:`url("${figmaAssets.imgArtworkCenterLabelCleanCrop}")`}} aria-label="함께한 목소리"><span>CREDITS</span><div>{project.parts.map(part=>{const track=projectTracks[part.id];const personId=track?.participantId;return <button key={part.id} disabled={!personId||personId===CURRENT_USER_ID} onClick={()=>openVocalProfile(personId)}><small style={{color:part.color}}>{part.name}</small><strong>{track?.participant || '—'}</strong></button>})}</div><small>{project.key || 'C major'}</small><time dateTime={validCompletionDate?completedAt.toISOString():undefined}>{completionDate}</time></div></div>
       <Player figma source={mix?.url} durationHint={mix?.duration} playing={playing} setPlaying={setPlaying}/>
       <p className="final-player-label">{hasPlayed?'다시 재생':'완성곡 재생'}</p>
 

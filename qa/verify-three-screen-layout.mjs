@@ -133,6 +133,8 @@ try{
   assert.ok(expansion.at(-1)<.0001,'Complete must settle after its entry expansion')
   await measure('complete')
   assert.equal(await page.locator('.record-center-credits button').count(),4)
+  const completionDate=await page.locator('.record-center-credits time').evaluate(el=>({text:el.textContent,dateTime:el.dateTime}))
+  assert.match(completionDate.text,/^\d{4}\.\d{2}\.\d{2}$/);assert.ok(Number.isFinite(new Date(completionDate.dateTime).getTime()))
   for(const part of await page.locator('.record-center-credits button small').all()){assert.ok(await part.evaluate(el=>getComputedStyle(el).fontFamily.includes('JetBrains')));assert.equal(await part.evaluate(el=>getComputedStyle(el).textTransform),'uppercase')}
   assert.equal(await page.locator('.record-center-credits button strong').first().evaluate(el=>getComputedStyle(el).fontWeight),'600')
   const creditGeometry=await page.locator('.record-center-credits button').evaluateAll(buttons=>buttons.map(button=>{

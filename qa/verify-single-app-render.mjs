@@ -37,6 +37,11 @@ try {
   assert.ok(complete.includes('PERSON-2'))
   assert.ok(complete.includes('E minor'))
   assert.ok(complete.includes('blob:qa'))
+  assert.ok(complete.includes('2026.10.07'))
+  for(const createdAt of [undefined,'invalid-date']){
+    const missingDate=renderToStaticMarkup(React.createElement(Complete,{...common,projectTracks:tracks,mix:{url:'blob:qa',duration:12.25,createdAt}}))
+    assert.ok(missingDate.includes('<time>—</time>'),'Missing or invalid completion metadata must not fabricate today')
+  }
   assert.ok(!complete.includes('A Thousand Years'))
   for (const count of [2,4]) {
     const dynamicParts=Array.from({length:count},(_,index)=>({id:`free-${count}-${index}`,name:`Voice ${index+1}`,color:'#3b82f6',status:index?'open':'ready'}))
