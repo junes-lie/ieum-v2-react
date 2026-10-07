@@ -387,7 +387,7 @@ function drawMaterial(canvas, rotation = 0) {
   vinyl.addColorStop(1, '#020202')
   ctx.fillStyle = vinyl
   ctx.fillRect(0, 0, pixels, pixels)
-  const reflectionAngle=-Math.PI/4+Math.sin(rotation)*.045
+  const reflectionAngle=-Math.PI*3/4
   const reflectionX=Math.cos(reflectionAngle)*radius,reflectionY=Math.sin(reflectionAngle)*radius
   const grooveSheen=ctx.createLinearGradient(center-reflectionX,center-reflectionY,center+reflectionX,center+reflectionY)
   grooveSheen.addColorStop(0,'rgba(205,187,162,.12)')
@@ -411,9 +411,9 @@ function drawMaterial(canvas, rotation = 0) {
   sheen.addColorStop(1, 'rgba(255,235,205,0)')
   ctx.fillStyle = sheen
   ctx.fillRect(0, 0, pixels, pixels)
-  // Narrow reflected light follows the pressed surface under the voice field.
-  const reflection = ctx.createConicGradient(-Math.PI*.80+Math.sin(rotation)*.045,center,center)
-  for(const [offset,alpha] of [[0,0],[.045,.04],[.075,.32],[.105,.07],[.15,0],[.22,0],[.265,.19],[.30,.04],[.35,0],[.48,0],[.525,.12],[.565,0],[.72,0],[.77,.08],[.82,0],[1,0]]){
+  // Match the fixed upper-left/lower-right light axis of the center label.
+  const reflection = ctx.createConicGradient(reflectionAngle-Math.PI*2*.075,center,center)
+  for(const [offset,alpha] of [[0,0],[.045,.04],[.075,.32],[.105,.07],[.15,0],[.50,0],[.545,.04],[.575,.12],[.605,.035],[.65,0],[1,0]]){
     reflection.addColorStop(offset,`rgba(239,229,214,${alpha})`)
   }
   ctx.beginPath()

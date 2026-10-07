@@ -1,6 +1,6 @@
 ## 2026-10-08 단계 2 — 바이닐 표면 반사 보정
 
-figma-desktop MCP의 653:49 `07 · 완성곡 · Editable`에서 get_design_context/get_screenshot을 실제 호출하고 현재 React 렌더와 비교했다. 전체 Record 이미지를 붙이지 않고 기존 Canvas 재질에 좁은 방향성 반사광을 보정했다. 프로젝트/Track/AI 필드·입자·회전 및 내부 흐름 속도는 유지한다.
+figma-desktop MCP의 653:49 `07 · 완성곡 · Editable`에서 get_design_context/get_screenshot을 실제 호출하고 현재 React 렌더와 비교했다. 전체 Record 이미지를 붙이지 않고 기존 Canvas 재질에 좁은 방향성 반사광을 보정했다. 후속 사용자 지시에 따라 홈/표면 반사의 축을 중앙 크레딧 라벨 자산의 좌상단↔우하단 방향에 고정해 각도를 맞췄다. 프로젝트/Track/AI 필드·입자·회전 및 내부 흐름 속도는 유지한다.
 
 build, 360/390/430px 세 화면 layout QA 및 430×932 desktop frame, 실제 timeline QA가 통과했다. 보정 후 실제 렌더를 확인했다. Figma와 공명 곡선/발광의 차이 및 물리 기기 인수는 남아 있으므로 단계 2 전체 완료 또는 단계 3 진입으로 기록하지 않는다.
 
