@@ -23,12 +23,16 @@ try{
    const db=await new Promise((resolve,reject)=>{const r=indexedDB.open('ieum-v2-records',1);r.onupgradeneeded=()=>r.result.createObjectStore('tracks',{keyPath:'id'});r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})
    const blob=new Blob([Uint8Array.from(atob(audio),c=>c.charCodeAt(0))],{type:'audio/wav'})
    await new Promise((resolve,reject)=>{const tx=db.transaction('tracks','readwrite');for(const [i,part] of parts.entries())tx.objectStore('tracks').put({id:i?id+':'+part.id:`jisun:${id}:${part.id}:temporary-recording`,projectId:id,projectSeed:seed,partId:part.id,partIndex:i,participantId:part.participantId,participant:part.participant,userId:'jisun',kind:i?undefined:'temporary-recording',blob,duration:2,features,layer:layers[i],origin:'qa-synthetic-wav',createdAt:new Date().toISOString(),guides:{backing:false,parts:[]}});tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error)});db.close()
-   localStorage.setItem('ieum-v2:user-state:v7',JSON.stringify({joined:true,createdProjects:[{id,seed,songId:'a-thousand-years',title:'QA Project',name:'QA Group',key:'E minor',keyLocked:true,partCount:parts.length,totalParts:parts.length,parts,ownerPartId:parts[0].id,status:'RECORDING',createdAt:new Date().toISOString()}],activeCreatedProjectId:id}))
+   localStorage.setItem('ieum-v2:user-state:v7',JSON.stringify({joined:true,createdProjects:[{id,seed,songId:'a-thousand-years',title:'QA Project',lyrics:[{time:0,text:'QA previous'},{time:1,text:'QA current'},{time:3,text:'QA next'},{time:4,text:'QA outside window'}],name:'QA Group',key:'E minor',keyLocked:true,partCount:parts.length,totalParts:parts.length,parts,ownerPartId:parts[0].id,status:'RECORDING',createdAt:new Date().toISOString()}],activeCreatedProjectId:id}))
   },{id,seed,parts,layers,features,audio:wav.toString('base64')})
   await page.goto(url);await page.waitForFunction(id=>window.__IEUM_V2__?.state?.activeProject?.id===id,id)
   await page.waitForSelector('[data-action="record-part"]')
   await page.locator('[data-action="record-part"]').click();await page.waitForSelector('[data-action="record-submit"]')
   assert.equal(await page.locator('.bottom-nav').count(),0)
+  assert.deepEqual(await page.locator('.lyrics>span').allTextContents(),['QA previous','QA current','QA next'])
+  assert.equal(await page.locator('.lyrics>span.active').textContent(),'QA current')
+  assert.equal(await page.locator('.lyrics>span.active').evaluate(row=>Array.from(row.parentElement.children).indexOf(row)),1)
+
   await page.locator('[data-action="record-submit"]').click()
   await page.waitForSelector('.complete-screen',{timeout:45000})
   const state=await page.evaluate(()=>({id:window.__IEUM_V2__.state.activeProject.id,key:window.__IEUM_V2__.state.activeProject.key,tracks:Object.keys(window.__IEUM_V2__.state.activeTracks||{}).length}))
@@ -37,6 +41,10 @@ try{
   assert.equal(await page.locator('.record-particles[data-renderer="webgl-particles"]').count(),1)
   const audio=page.locator('.complete-screen audio');await audio.evaluate(el=>new Promise((resolve,reject)=>{if(el.readyState>=1)return resolve();el.addEventListener('loadedmetadata',resolve,{once:true});el.addEventListener('error',reject,{once:true})}))
   assert.ok(await audio.evaluate(el=>el.duration>0&&Number.isFinite(el.duration)))
+  const seek=page.getByRole('slider',{name:'재생 위치'})
+  await seek.focus();await seek.press('Home');await seek.press('ArrowRight')
+  assert.ok(await audio.evaluate(el=>el.currentTime>0&&el.currentTime<=el.duration),'Keyboard seek must update actual audio time')
+
   for(const width of [360,390,430]){await page.setViewportSize({width,height:932});assert.equal(await page.evaluate(()=>document.body.scrollWidth),width)}
   await page.locator('.record-center-credits button').nth(1).click();await page.waitForSelector('.other-vocal-screen')
   await page.locator('[data-action="back"]').click();await page.waitForSelector('.complete-screen')

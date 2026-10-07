@@ -29,31 +29,84 @@ try{
    const icons=await page.locator('img[src^="/figma/"]').evaluateAll(images=>images.map(image=>({source:image.getAttribute('src'),loaded:image.complete&&image.naturalWidth>0,natural:image.naturalWidth,width:image.getBoundingClientRect().width})))
    for(const icon of icons){assert.ok(icon.loaded,`Missing Figma icon: ${icon.source}`);assert.ok(Math.abs(icon.width-icon.natural)<1,`Figma icon must retain its native dimensions: ${icon.source}`)}
    for(const player of await page.locator('.figma-player').all()){
-    const layout=await player.evaluate(element=>{const label=element.querySelector('.player-clock').getBoundingClientRect(),seek=element.querySelector('input').getBoundingClientRect();return {labelHeight:label.height,seekTop:seek.top,labelBottom:label.bottom}})
-    assert.equal(layout.labelHeight,16,'Player time must stay on one line')
+    const layout=await player.evaluate(element=>{const label=element.querySelector('.player-clock').getBoundingClientRect(),seek=element.querySelector('input').getBoundingClientRect();return {labelHeight:label.height,seekTop:seek.top,labelBottom:label.bottom,seekHeight:seek.height}})
+    assert.equal(layout.labelHeight,16,'Player time must stay on one line');assert.ok(layout.seekHeight>=44,'Seek must provide a 44px touch height')
     assert.ok(layout.seekTop>=layout.labelBottom,'Seek must sit below the time label')
    }
    results.push({width,screen,...geometry})
   }
   await measure('workspace')
+  const summary=await page.locator('.player-summary').evaluate(row=>{const caption=row.querySelector('.player-caption').getBoundingClientRect(),clock=row.querySelector('.player-clock').getBoundingClientRect();return {overlap:caption.right>clock.left,right:clock.right,rowRight:row.getBoundingClientRect().right}})
+  assert.ok(await page.locator('.player-caption').evaluate(el=>getComputedStyle(el).fontFamily.includes('Pretendard IEUM')),'Mix caption must use the Figma Sans family');assert.ok(!summary.overlap);assert.ok(Math.abs(summary.right-summary.rowRight)<1,'Workspace time must align right beside its caption')
+
+  assert.equal(await page.locator('.workspace-track-row .track-play').first().evaluate(button=>getComputedStyle(button,'::before').width),'32px','Track artwork must stay 32px while touch area is 44px')
+  assert.ok((await page.locator('.track-person strong').first().textContent()).startsWith('01 '))
+  const touchTargets=await page.locator('.workspace-track-row .track-checkbox,.workspace-track-row .track-play,.workspace-track-row .row-action').evaluateAll(elements=>elements.map(element=>({width:element.getBoundingClientRect().width,height:element.getBoundingClientRect().height})))
+  assert.ok(touchTargets.length>0);for(const target of touchTargets)assert.ok(target.width>=44&&target.height>=44,'Track controls must provide 44px touch targets')
+
+
+  await page.locator('.workspace-track-row .track-play:not(:disabled)').first().click()
+  await page.waitForSelector('.listening-context')
+  assert.equal(await page.locator('.player-caption').textContent(),'개별 Track 듣기')
+  const returnMix=page.getByRole('button',{name:'현재 Mix로',exact:true})
+  assert.ok(await returnMix.evaluate(button=>button.getBoundingClientRect().height>=44))
+  assert.ok(await page.locator('.listening-context').evaluate(row=>parseFloat(getComputedStyle(row).fontSize)>=12))
+  await returnMix.click();assert.equal(await page.locator('.player-caption').textContent(),'선택 트랙 함께 듣기')
   await page.locator('[data-action="toggle-project-like"]').click()
   await page.locator('[data-action="record-part"]').click()
   await page.waitForSelector('.recording-screen')
   assert.equal(await page.locator('.bottom-nav').count(),0)
   const chips=page.locator('.guide-track-chips input')
   assert.equal(await chips.count(),2)
+  const backing=page.getByRole('checkbox',{name:'Guide 반주',exact:true}),backingEnabled=await backing.isChecked()
+  await backing.focus();await page.keyboard.press('Space');assert.notEqual(await backing.isChecked(),backingEnabled)
+  assert.notEqual(await backing.evaluate(input=>getComputedStyle(input.nextElementSibling).outlineStyle),'none','Hidden backing checkbox must expose visible keyboard focus')
+  await page.keyboard.press('Space');assert.equal(await backing.isChecked(),backingEnabled)
+
   const wasChecked=await chips.first().isChecked()
   await chips.first().click()
   assert.notEqual(await chips.first().isChecked(),wasChecked)
   await page.locator('[data-action="record-start"]').click()
   await page.waitForSelector('[data-action="record-pause"]')
+  const opener=page.getByRole('button',{name:'뒤로',exact:true})
+  await opener.click();const dialog=page.getByRole('dialog');await dialog.waitFor()
+  assert.ok(await dialog.evaluate(el=>el.matches(':modal')),'Native confirmation must block the background')
+  assert.ok(await dialog.evaluate(el=>el.contains(document.activeElement)))
+  for(let i=0;i<5;i++){await page.keyboard.press('Tab');assert.ok(await dialog.evaluate(el=>el.contains(document.activeElement)),'Tab must remain inside confirmation')}
+  await dialog.screenshot({path:path.join(output,`record-confirm-${width}.png`)})
+  const enlarged=await dialog.evaluate(el=>{
+   const texts=Array.from(el.querySelectorAll('p,h2,button')).map(node=>({node,font:parseFloat(getComputedStyle(node).fontSize),line:parseFloat(getComputedStyle(node).lineHeight)}))
+   for(const {node,font,line} of texts){node.style.setProperty('font-size',font*2+'px','important');if(Number.isFinite(line))node.style.setProperty('line-height',line*2+'px','important')}
+   const box=el.getBoundingClientRect();return {width:box.width,height:box.height,overflow:el.scrollWidth>el.clientWidth+1,viewport:innerHeight}
+  })
+  assert.ok(enlarged.width<=width-48&&!enlarged.overflow,'200% confirmation text must not overflow horizontally')
+  assert.ok(enlarged.height<=enlarged.viewport-48,'Confirmation must remain inside viewport or scroll internally')
+  await dialog.screenshot({path:path.join(output,`record-confirm-text-200-${width}.png`)})
+
+  await page.keyboard.press('Escape');await dialog.waitFor({state:'detached'})
+  assert.ok(await opener.evaluate(el=>el===document.activeElement),'Cancel must restore focus to opener')
+  await page.waitForSelector('[data-action="record-pause"]')
+
   await page.waitForSelector('.record-inflow[data-renderer="webgl-inflow"]')
   await measure('recording')
+  const lyricRows=await page.locator('.lyrics>span').evaluateAll(rows=>rows.map(row=>({visible:getComputedStyle(row).display!=='none',height:row.getBoundingClientRect().height,active:row.classList.contains('active')})))
+  assert.equal(lyricRows.length,3);assert.ok(lyricRows.every(row=>row.visible&&row.height>=42));assert.ok(lyricRows[1].active&&!lyricRows[0].active&&!lyricRows[2].active,'Current lyric must remain in the center slot')
+
   await page.locator('[data-action="record-pause"]').click()
   await page.waitForSelector('[data-action="record-resume"]')
+  assert.deepEqual(await page.locator('.recorder-controls .record-control>span').allTextContents(),['다시 녹음','정지','이어서 녹음'])
+  await page.getByRole('button',{name:'다시 녹음',exact:true}).click();await page.getByRole('dialog').waitFor()
+  await page.keyboard.press('Escape');assert.equal(await page.locator('.recording-screen').getAttribute('data-recording-status'),'paused','Cancel must preserve paused Take')
+
   await page.locator('[data-action="record-resume"]').click()
   await page.locator('[data-action="record-stop"]').click()
   await page.waitForSelector('[data-action="record-submit"]')
+  const retainedDuration=await page.locator('.record-review .kicker').textContent()
+  await page.locator('[data-action="record-retry"]').click();await page.getByRole('dialog').waitFor()
+  await page.getByRole('button',{name:'지금 녹음 유지',exact:true}).click()
+  assert.equal(await page.locator('.record-review .kicker').textContent(),retainedDuration,'Cancel retake must preserve Review and Take')
+  await page.waitForSelector('[data-action="record-submit"]')
+
   assert.equal(await page.locator('.bottom-nav').count(),0)
   // Persisted synthetic audio fixture for layout only, never a real user/AI claim.
   await page.evaluate(async()=>{

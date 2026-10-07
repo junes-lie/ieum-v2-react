@@ -1,3 +1,13 @@
+## 2026-10-08 단계 2 — 03/06 실제 조작·가사·접근성 보정
+
+현재 사용자 지정 Notion 화면명세와 Desktop MCP 653:47/653:48의 get_design_context/get_screenshot을 실제 확인했다. 녹음 가사는 현재 구간을 가운데 두고 이전/다음 3칸만 표시하며 과거의 숨김 스타일을 보정했다. 연습 안내를 실제 가사로 표시하지 않는다. 현재 Mix 안내는 Sans로 시간과 같은 줄에 배치하며 처리 중 상태는 유지한다. Track 행의 Track ID가 Part ID를 덮던 실제 개별 재생 오류를 수정했다. 기존 원본·저장 키·seed는 변경하지 않는다.
+
+44px seek/Track 터치 영역, 보이는 Track 재생 원 32px·원본 SVG native size, Part 순서 표시, 반주 Guide 키보드 포커스를 검증했다. Paused도 왼쪽 다시 녹음/가운데 정지/오른쪽 이어서 녹음과 라벨을 유지한다. Paused의 즉시 Take 폐기를 확인 후 폐기로 보정했다. 기존 확인창은 native dialog로 배경 조작 차단, Tab 순환, Escape, 포커스 복귀를 제공하며 명세의 유지 Primary/폐기 Secondary 문구·340px/10px 기준을 적용했다.
+
+build/기존 QA 7개, 360/390/430px 세 화면·원본 asset·44px 조작·현재 Mix 개별 Track/복귀·가사 3줄·Paused·확인창 취소/녹음 유지·확인창 200% 텍스트 검사와 2/3/4 Part Review 제출→실제 합성 WAV→Complete→Credits 프로필/복귀→재로드 QA가 통과했다. 실제 렌더도 확인했다. 회전·내부 흐름·반사광 각도는 보존한다. production 결과는 실제 자동배포 후 별도 확인한다. 확인창 200% 검사만으로 모든 화면의 확대·실제 기기 인수를 완료라고 표시하지 않는다.
+
+단계 2 전체 Figma pixel 일치·실기기 인수와 실제 곡 Guide/서버 추론은 미검증이다. 실제 곡 자료가 없는 상태를 다른 진행 가능한 구현/검증의 중단 사유로 사용하지 않는다.
+
 ## 2026-10-08 단계 2 — 프로젝트별 화면 연속성 검증
 
 유지 QA `npm run qa:continuity`를 추가했다. 실제 기존 앱의 격리 브라우저에서 2/3/4 자유 Part 프로젝트 각각 임시본 Review→직접 제출→기존 자동 Mix→Complete, 프로젝트/Key/Track 유지, 실제 합성 WAV metadata 로드, Credits→타인 프로필→Complete 복귀, 재로드→작업실의 완성곡 듣기로 재진입을 검증했다. 각 프로젝트는 360/390/430px에서 가로 overflow가 없다. 로컬 및 production 모두 통과했고 console/page error 0이다. 새로 합성한 2초 QA WAV로 기존 엔진을 검증했으며, 물리 마이크/청취·실제 협업 검증은 아니다. 앱 화면/제품 정책/회전/흐름을 변경하지 않았다.

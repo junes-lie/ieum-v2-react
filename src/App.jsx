@@ -530,12 +530,12 @@ function RecordingInflow({ active, partIndex, level, seed, waveformRef }) {
   return <canvas ref={canvasRef} className="record-inflow" data-live-input="microphone" aria-hidden="true" />
 }
 
-function PartRow({ part, waveform = false, action, actionLabel, included, onToggle, onPlay, onParticipant, urgent = false }) {
+function PartRow({ part, order = 0, waveform = false, action, actionLabel, included, onToggle, onPlay, onParticipant, urgent = false }) {
   const participantLabel = part.participant ? `${part.participant}${part.demo ? ' · LOCAL DEMO' : ''}` : (part.status === 'open' ? 'Open part' : part.status === 'recruiting' ? 'Vocal finder' : 'Unassigned')
   const stateLabel = part.duration || (part.status === 'submitted' ? 'SUBMITTED' : part.status === 'accepted' ? 'TRACK WAIT' : part.status === 'ready' ? 'MY PART' : part.status === 'open' ? 'OPEN' : part.status === 'recruiting' ? 'FIND' : 'WAIT')
   if(waveform)return <div className="workspace-track-row" data-part={part.id}>
     <label className="track-checkbox"><input type="checkbox" checked={Boolean(included)} disabled={!onToggle} onChange={onToggle} aria-label={part.name+' 현재 Mix 포함'}/></label>
-    <div className="track-person"><strong style={{color:part.color}}>{part.name}</strong>{onParticipant?<button onClick={onParticipant}>{part.participant}</button>:<span>{part.participant || 'OPEN'}</span>}</div>
+    <div className="track-person"><strong>{String(order+1).padStart(2,'0')} {part.name}</strong>{onParticipant?<button onClick={onParticipant}>{part.participant}</button>:<span>{part.participant || 'OPEN'}</span>}</div>
     <svg className="track-envelope" viewBox="0 0 96 24" aria-label={part.name+' 녹음 에너지'}>{part.features?.envelope?.map((value,index)=><line key={index} x1={index*4} x2={index*4} y1={12-Math.max(1,value*11)} y2={12+Math.max(1,value*11)} stroke={part.color} strokeWidth="2"/>)}{!part.features?.envelope&&<line x1="0" x2="96" y1="12" y2="12" stroke="#69635d"/>}</svg>
     <span className="track-status">{onPlay?'제출됨':part.status==='ready'?'녹음 대기':'OPEN'}</span>
     {actionLabel?<button className="row-action" onClick={action}>{actionLabel}</button>:<button className="track-play" disabled={!onPlay} onClick={onPlay} aria-label={part.name+' Track 재생'}><img src={figmaAssets.imgFaFaPlay1} alt="" aria-hidden="true"/></button>}
@@ -898,6 +898,24 @@ function Finder({ go, invite, invitedVocalIds = [], part, vocalSaves, toggleVoca
   </div>
 }
 
+function RecordingConfirmation({ children, onCancel }) {
+  const dialogRef = useRef(null)
+  useEffect(() => {
+    const dialog=dialogRef.current
+    const opener=document.activeElement
+    dialog.showModal()
+    return()=>{if(dialog.open)dialog.close();if(opener?.isConnected)opener.focus()}
+  },[])
+  const trapFocus=event=>{
+    if(event.key!=='Tab')return
+    const buttons=Array.from(event.currentTarget.querySelectorAll('button:not(:disabled)'))
+    const first=buttons[0],last=buttons.at(-1)
+    if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus()}
+    else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus()}
+  }
+  return <dialog ref={dialogRef} className="confirm-modal" aria-labelledby="record-confirm-title" onKeyDown={trapFocus} onCancel={event=>{event.preventDefault();onCancel()}}>{children}</dialog>
+}
+
 function Recorder({ go, submit, onRecordingStart, partId, projectTracks, layers, project = PROJECT, parts = PARTS, onDraftChange }) {
   const recordingWindow = Math.max(18,...Object.values(projectTracks).map(track=>track.duration || 0),project.recordingDuration || 0)
   const currentPart = parts.find(part => part.id === partId) || parts[0]
@@ -984,7 +1002,7 @@ function Recorder({ go, submit, onRecordingStart, partId, projectTracks, layers,
       </section>
       <div className="recording-visual"><ResonanceRecord parts={parts} tracks={projectTracks} projectId={project.id} layers={status==='review'?reviewLayers:layers} activePartIndex={currentIndex} state={status === 'recording' ? 'recording' : status==='paused'?'paused':'rest'} level={level} seed={project.seed} compact /><RecordingInflow active={status==='recording'} partIndex={0} level={level} seed={project.seed} waveformRef={waveformRef}/></div>
       {!project.lyrics?.length&&<p className="lyric-source-note">연습 안내 문구 · 실제 곡 가사와 반주가 아직 등록되지 않았어요.</p>}
-      <div className="lyrics" aria-live="polite">{lyrics.map((line,index)=><span key={line} className={index===lyricIndex?'active':''}>{line}</span>)}</div>
+      <div className="lyrics" aria-live="polite">{[lyricIndex-1,lyricIndex,lyricIndex+1].map(index=><span key={index} className={index===lyricIndex?'active':''} aria-hidden={!lyrics[index]||undefined}>{lyrics[index] || ''}</span>)}</div>
       <div className="recording-timeline" aria-label="녹음 시간"><div><span>RECORD TIME</span><b>{fmt(seconds)} / {fmt(recordingWindow)}</b></div><div className="time-progress"><span style={{width:`${Math.min(100,seconds/recordingWindow*100)}%`}}/></div></div>
       <div className="meter-row"><span>MIC {inputRms>0?`${Math.max(-96,Math.round(20*Math.log10(inputRms)))} dBFS`:"— dBFS"}</span><div className={`input-meter ${peak>.9?'clip':''}`} aria-label="마이크 입력 볼륨"><span style={{width:`${Math.max(2,level*100)}%`}}/><i style={{left:`${Math.min(98,peak*100)}%`}}/></div><b>{peak>.9?'CLIP':level>.08?'GOOD':'LOW'}</b></div>{noiseFloor>0&&<p className={`noise-status ${noiseFloor>.08?'warning':''}`}>주변 소음 · {noiseFloor>.08?'높음 — Review에서 다시 녹음을 선택할 수 있어요.':'양호'} ({Math.round(noiseFloor*100)}%)</p>}
 
@@ -993,14 +1011,14 @@ function Recorder({ go, submit, onRecordingStart, partId, projectTracks, layers,
       : <div className="recorder-controls">
           {status === 'ready' && <button className="record-btn" data-action="record-start" aria-label="녹음 시작" onClick={begin}><Icon name="mic" size={28}/></button>}
           {status === 'recording' && <><div className="record-control"><button className="round-secondary" aria-label="다시 녹음" onClick={()=>setConfirmAction("retry")}><img src={figmaAssets.imgFaFaRotateRight} alt="" aria-hidden="true"/></button><span>다시 녹음</span></div><div className="record-control"><button className="record-btn stop" data-action="record-stop" aria-label="녹음 정지" onClick={stop}><img src={figmaAssets.imgFaFaStop} alt="" aria-hidden="true"/></button><span>정지</span></div><div className="record-control"><button className="round-secondary" data-action="record-pause" aria-label="녹음 일시정지" onClick={pause}><img src={figmaAssets.imgFaFaPause} alt="" aria-hidden="true"/></button><span>일시정지</span></div></>}
-          {status === 'paused' && <><button className="round-secondary" onClick={retry}>다시</button><button className="record-btn" data-action="record-resume" aria-label="녹음 이어서" onClick={resume}><Icon name="mic" size={28}/></button><button className="round-secondary" data-action="record-stop" onClick={stop}>정지</button></>}
+          {status === 'paused' && <><div className="record-control"><button className="round-secondary" aria-label="다시 녹음" onClick={()=>setConfirmAction("retry")}><img src={figmaAssets.imgFaFaRotateRight} alt="" aria-hidden="true"/></button><span>다시 녹음</span></div><div className="record-control"><button className="record-btn stop" data-action="record-stop" aria-label="녹음 정지" onClick={stop}><img src={figmaAssets.imgFaFaStop} alt="" aria-hidden="true"/></button><span>정지</span></div><div className="record-control"><button className="round-secondary" data-action="record-resume" aria-label="녹음 이어서" onClick={resume}><img src={figmaAssets.imgFaFaPlay} alt="" aria-hidden="true"/></button><span>이어서 녹음</span></div></>}
             </div>}
-      {confirmAction && <div className="confirm-backdrop" role="presentation"><section className="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="record-confirm-title"><p className="kicker">CURRENT TAKE</p><h2 id="record-confirm-title">{confirmAction==='retry'?'현재 녹음을 버리고 다시 녹음할까요?':'녹음을 멈추고 임시 저장할까요?'}</h2><p>{confirmAction==='retry'?'다른 참여자의 Track과 Record Layer는 그대로 유지됩니다.':'작업실에서 ‘녹음 이어서 확인하기’로 돌아올 수 있어요.'}</p><div className="review-actions"><button className="secondary" onClick={()=>setConfirmAction(null)}>취소</button><button className="primary" data-action={`confirm-${confirmAction}`} onClick={confirmAction==='retry'?retry:confirmLeave}>{confirmAction==='retry'?'현재 Take 버리기':'멈추고 나가기'}</button></div></section></div>}
+      {confirmAction && <RecordingConfirmation onCancel={()=>setConfirmAction(null)}><p className="kicker">CURRENT TAKE</p><h2 id="record-confirm-title">{confirmAction==='retry'?'지금 녹음을 지우고 다시 부를까요?':'녹음을 끝내고 보관할까요?'}</h2><p>{confirmAction==='retry'?'다른 참여자의 Track과 Record Layer는 그대로 유지됩니다.':'작업실에서 ‘녹음 이어서 확인하기’로 돌아올 수 있어요.'}</p><div className="review-actions"><button className="primary" onClick={()=>setConfirmAction(null)}>{confirmAction==='retry'?'지금 녹음 유지':'계속 녹음'}</button><button className="secondary" data-action={`confirm-${confirmAction}`} onClick={confirmAction==='retry'?retry:confirmLeave}>{confirmAction==='retry'?'지우고 다시 녹음':'녹음 끝내고 나가기'}</button></div></RecordingConfirmation>}
     </main>
   </div>
 }
 
-function Player({ source, playing, setPlaying, duration: durationProp = 18, durationHint, figma = false }) {
+function Player({ source, playing, setPlaying, duration: durationProp = 18, durationHint, figma = false, caption }) {
   const [time, setTime] = useState(0)
   const [mediaDuration, setMediaDuration] = useState(durationHint || durationProp)
   const audioRef = useRef(null)
@@ -1018,7 +1036,7 @@ function Player({ source, playing, setPlaying, duration: durationProp = 18, dura
     setTime(value)
     if (audioRef.current) audioRef.current.currentTime = value
   }
-  return <div className={`audio-player${figma?' figma-player':''}`}><div className="time-row">{figma?<span className="player-clock">{fmt(time)} / {fmt(duration)}</span>:<span>{fmt(time)}</span>}<input aria-label="재생 위치" type="range" min="0" max={duration} step=".1" disabled={!source} value={Math.min(time,duration)} onChange={e=>seek(Number(e.target.value))}/>{!figma&&<span>{fmt(duration)}</span>}</div><button className="play-btn" disabled={!source} aria-label={playing?'일시정지':'재생'} onClick={()=>setPlaying(!playing)}>{figma&&!playing?<img src={figmaAssets.imgFaFaPlay} alt="" aria-hidden="true"/>:<Icon name={playing?'pause':'play'} size={figma?20:26}/>}</button>{source && <audio ref={audioRef} src={source} onLoadedMetadata={e=>Number.isFinite(e.currentTarget.duration)&&setMediaDuration(e.currentTarget.duration)} onTimeUpdate={e=>setTime(e.currentTarget.currentTime)} onEnded={()=>setPlaying(false)} />}</div>
+  return <div className={`audio-player${figma?' figma-player':''}`}><div className="time-row">{figma?caption?<span className="player-summary"><span className="player-caption">{caption}</span><span className="player-clock">{fmt(time)} / {fmt(duration)}</span></span>:<span className="player-clock">{fmt(time)} / {fmt(duration)}</span>:<span>{fmt(time)}</span>}<input aria-label="재생 위치" type="range" min="0" max={duration} step=".1" disabled={!source} value={Math.min(time,duration)} onChange={e=>seek(Number(e.target.value))}/>{!figma&&<span>{fmt(duration)}</span>}</div><button className="play-btn" disabled={!source} aria-label={playing?'일시정지':'재생'} onClick={()=>setPlaying(!playing)}>{figma&&!playing?<img src={figmaAssets.imgFaFaPlay} alt="" aria-hidden="true"/>:<Icon name={playing?'pause':'play'} size={figma?20:26}/>}</button>{source && <audio ref={audioRef} src={source} onLoadedMetadata={e=>Number.isFinite(e.currentTarget.duration)&&setMediaDuration(e.currentTarget.duration)} onTimeUpdate={e=>setTime(e.currentTarget.currentTime)} onEnded={()=>setPlaying(false)} />}</div>
 }
 
 function CurrentMixPanel({ parts, projectTracks, mix, mixStatus, openVocalProfile, onPlayingChange, partAction, completionDelayed }) {
@@ -1028,7 +1046,7 @@ function CurrentMixPanel({ parts, projectTracks, mix, mixStatus, openVocalProfil
   const stopRef=useRef(null)
   const trackArray=Object.values(projectTracks).filter(track=>track.kind!=='temporary-recording')
   const selectedTrack=selectedTrackId?projectTracks[selectedTrackId]:null
-  const rows=parts.map(part=>projectTracks[part.id]?{...part,...projectTracks[part.id],status:'submitted',duration:fmt(projectTracks[part.id].duration)}:part)
+  const rows=parts.map(part=>projectTracks[part.id]?{...part,...projectTracks[part.id],id:part.id,status:'submitted',duration:fmt(projectTracks[part.id].duration)}:part)
   useEffect(()=>onPlayingChange?.(playing),[playing,onPlayingChange])
   const [preview,setPreview]=useState(null)
   const selectedTracks=parts.flatMap((part,index)=>included.parts[index]&&projectTracks[part.id]?[projectTracks[part.id]]:[])
@@ -1048,8 +1066,8 @@ function CurrentMixPanel({ parts, projectTracks, mix, mixStatus, openVocalProfil
   useEffect(()=>()=>{stopRef.current?.();stopGuides()},[])
   const chooseTrack=id=>{setPlaying(false);setSelectedTrackId(id);window.setTimeout(()=>setPlaying(true),0)}
   return <section id="current-mix" className="current-mix" aria-label="현재 Mix와 Track">
-    {trackArray.length>0&&<><div className="current-mix-head"><p className="kicker"><strong>현재 Mix</strong><span>{selectedTracks.length}개 선택</span></p><h2>{mixStatus==='processing'?'곡을 완성하고 있어요.':mixStatus==='complete'?'완성된 목소리':'지금까지의 목소리'}</h2><p>{mixStatus==='processing'?'Track 정렬과 밸런스를 적용하는 중이에요. 이 화면을 나가도 계속됩니다.':'제출된 Track을 하나씩 또는 함께 들을 수 있어요.'}</p></div>{selectedTrack&&<div className="listening-context"><span>개별 Track</span><b>{selectedTrack.participant} · {parts.find(part=>part.id===selectedTrack.partId)?.name}</b><button onClick={()=>{setPlaying(false);setSelectedTrackId(null)}}>현재 Mix로</button></div>}<Player figma source={selectedTrack?.url||preview?.url} durationHint={selectedTrack?.duration||preview?.duration} playing={playing} setPlaying={setPlaying}/></>}
-    <div className="track-list part-list"><div className="section-head"><h2>Parts · Tracks</h2><span>상태 · 재생 · Mix</span></div>{false&&<div className="backing-row"><span>Backing Track</span><button className={`include-toggle ${included.backing?'on':''}`} aria-pressed={included.backing} onClick={()=>setIncluded(value=>({...value,backing:!value.backing}))}><span/></button></div>}{rows.map((part,index)=>{const partCta=partAction?.(part)||{};return <PartRow waveform key={part.id} part={part} action={partCta.action} actionLabel={partCta.label} urgent={completionDelayed&&part.participantId===CURRENT_USER_ID&&part.status==='ready'} included={part.status==='submitted'?included.parts[index]:undefined} onPlay={part.status==='submitted'?()=>chooseTrack(part.id):undefined} onParticipant={part.participantId&&part.participantId!==CURRENT_USER_ID?()=>openVocalProfile(part.participantId):undefined} onToggle={part.status==='submitted'?()=>setIncluded(value=>{const next=[...value.parts];next[index]=!next[index];return {...value,parts:next}}):undefined}/>})}</div>
+    {trackArray.length>0&&<><div className="current-mix-head"><p className="kicker"><strong>현재 Mix</strong><span>{selectedTracks.length}개 선택</span></p>{mixStatus==='processing'&&<h2 role="status">곡을 완성하고 있어요.</h2>}<p>{mixStatus==='processing'?'Track 정렬과 밸런스를 적용하는 중이에요. 이 화면을 나가도 계속됩니다.':'제출된 Track을 하나씩 또는 함께 들을 수 있어요.'}</p></div>{selectedTrack&&<div className="listening-context"><span>개별 Track</span><b>{selectedTrack.participant} · {parts.find(part=>part.id===selectedTrack.partId)?.name}</b><button onClick={()=>{setPlaying(false);setSelectedTrackId(null)}}>현재 Mix로</button></div>}<Player figma caption={selectedTrack?'개별 Track 듣기':'선택 트랙 함께 듣기'} source={selectedTrack?.url||preview?.url} durationHint={selectedTrack?.duration||preview?.duration} playing={playing} setPlaying={setPlaying}/></>}
+    <div className="track-list part-list"><div className="section-head"><h2>Parts · Tracks</h2><span>상태 · 재생 · Mix</span></div>{false&&<div className="backing-row"><span>Backing Track</span><button className={`include-toggle ${included.backing?'on':''}`} aria-pressed={included.backing} onClick={()=>setIncluded(value=>({...value,backing:!value.backing}))}><span/></button></div>}{rows.map((part,index)=>{const partCta=partAction?.(part)||{};return <PartRow waveform order={index} key={part.id} part={part} action={partCta.action} actionLabel={partCta.label} urgent={completionDelayed&&part.participantId===CURRENT_USER_ID&&part.status==='ready'} included={part.status==='submitted'?included.parts[index]:undefined} onPlay={part.status==='submitted'?()=>chooseTrack(part.id):undefined} onParticipant={part.participantId&&part.participantId!==CURRENT_USER_ID?()=>openVocalProfile(part.participantId):undefined} onToggle={part.status==='submitted'?()=>setIncluded(value=>{const next=[...value.parts];next[index]=!next[index];return {...value,parts:next}}):undefined}/>})}</div>
     {mixStatus==='error'&&<p className="mix-error" role="alert">Auto Mix를 완료하지 못했어요. 제출된 원본 Track은 그대로 보관되어 있어요.</p>}
   </section>
 }

@@ -222,3 +222,37 @@ html,body{background:#41403c}body{height:auto;overflow-y:auto;background:#41403c
 .record-center-credits>div{min-width:0}
 .record-center-credits button{min-width:44px}
 .record-center-credits button strong{max-width:100%;overflow-wrap:anywhere;text-align:center}
+
+/* The current lyric remains between its previous and next context lines. */
+.recording-screen .lyrics span{display:block;min-height:42px;flex-shrink:0}
+.recording-screen .lyrics span.active{min-height:56px}
+.backing-guide input:focus-visible+i{outline:2px solid rgba(236,230,220,.72);outline-offset:3px}
+
+/* Preserve the thin seek artwork while providing the required touch height. */
+.screen .figma-player .time-row{grid-template-rows:16px 44px;gap:2px}
+.figma-player .time-row input{height:44px}
+.recording-screen .audio-player input[type=range]{min-height:44px}
+.workspace-track-row .track-checkbox{width:44px}
+.workspace-track-row .track-play,.workspace-track-row .row-action{min-width:44px;min-height:44px}
+
+.figma-player .player-summary{display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:0}
+.workspace-screen .figma-player .time-row .player-caption{font:400 13px/16px 'Pretendard IEUM',var(--sans);min-width:0;color:var(--secondary)}
+.screen .figma-player .player-summary .player-clock{width:auto;flex:none;text-align:right}
+
+.workspace-screen .listening-context{font-size:12px;grid-template-columns:auto minmax(0,1fr) auto}
+.workspace-screen .listening-context b{overflow-wrap:anywhere}
+.workspace-screen .listening-context button{min-width:44px;min-height:44px}
+
+dialog.confirm-modal{width:min(340px,calc(100vw - 48px));max-height:calc(100dvh - 48px);margin:auto;border-radius:10px;overflow:auto;color:var(--primary)}
+dialog.confirm-modal::backdrop{background:rgba(5,4,3,.78)}
+dialog.confirm-modal .review-actions{display:flex;flex-wrap:wrap;gap:8px}
+dialog.confirm-modal .review-actions button{flex:1 1 120px;min-height:52px}
+
+/* Figma Track control is visually 32px inside its 44px hit area. */
+.workspace-track-row{grid-template-columns:34px 84px minmax(32px,1fr) 50px 44px}
+.workspace-track-row .track-checkbox{justify-items:start;padding-left:10px;transform:translateX(-10px)}
+.workspace-track-row .track-checkbox input{width:20px;height:20px;margin:0}
+.workspace-track-row .track-play{position:relative;width:44px;height:44px;border:0;background:none;box-shadow:none}
+.workspace-track-row .track-play::before{content:'';position:absolute;left:6px;top:6px;width:32px;height:32px;box-sizing:border-box;border:1px solid rgba(236,230,220,.68);border-radius:50%;background:linear-gradient(#2c2721,#201c17 38%,#15110e);box-shadow:inset 1px 1px rgba(255,250,242,.18),inset -1px -1px rgba(26,20,15,.38)}
+.workspace-track-row .track-play img{position:relative;z-index:1}
+@media(max-width:389px){.workspace-track-row{grid-template-columns:34px 74px minmax(24px,1fr) 46px 44px;gap:8px}}
