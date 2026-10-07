@@ -80,6 +80,13 @@ try{
   assert.ok(expansion.at(-1)<.0001,'Complete must settle after its entry expansion')
   await measure('complete')
   assert.equal(await page.locator('.record-center-credits button').count(),4)
+  const creditGeometry=await page.locator('.record-center-credits button').evaluateAll(buttons=>buttons.map(button=>{
+   const name=button.querySelector('strong');name.textContent='함께노래하는참여자'
+   const box=button.getBoundingClientRect(),text=name.getBoundingClientRect()
+   return {width:box.width,height:box.height,font:Number.parseFloat(getComputedStyle(name).fontSize),inside:text.left>=box.left-.5&&text.right<=box.right+.5,wrapped:text.height>Number.parseFloat(getComputedStyle(name).fontSize)*1.8,overflow:name.scrollWidth>name.clientWidth+1}
+  }))
+  for(const credit of creditGeometry){assert.ok(credit.width>=44&&credit.height>=44,'Each credit must retain its touch target');assert.ok(credit.font>=12);assert.ok(credit.inside&&!credit.overflow,'Long credit names must remain inside their own Part');assert.ok(credit.wrapped,'Long names must wrap rather than truncate')}
+
   assert.equal(await page.locator('.bottom-nav').count(),1)
   assert.equal(await page.locator('.complete-screen .audio-player audio').count(),1)
   assert.deepEqual(errors,[])

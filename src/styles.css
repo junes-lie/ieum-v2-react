@@ -217,3 +217,8 @@ html,body{background:#41403c}body{height:auto;overflow-y:auto;background:#41403c
 .workspace-actions .primary img{display:block;flex:none;max-width:none}
 .complete-screen .record-center-credits{background-color:transparent;background-size:contain;background-position:center;background-repeat:no-repeat}
 .recording-screen .meter-row>span{width:auto;white-space:nowrap}
+
+/* Keep complete credits readable without truncating participant names. */
+.record-center-credits>div{min-width:0}
+.record-center-credits button{min-width:44px}
+.record-center-credits button strong{max-width:100%;overflow-wrap:anywhere;text-align:center}
