@@ -73,3 +73,27 @@ export async function clearProjectTracks(projectId) {
     tx.onabort = () => reject(tx.error || new Error('프로젝트 녹음 정리를 완료하지 못했어요.'))
   }) } finally { db.close() }
 }
+
+// Remove both current and legacy keys atomically, without touching another owner's Take.
+export async function deleteRecordingDraft({userId, projectId, partId}) {
+  if (!userId || !projectId || !partId) throw new Error('정리할 임시 녹음의 사용자·프로젝트·Part가 필요해요.')
+  const legacyId = `${projectId}:${partId}:temporary-recording`
+  const db = await openDatabase()
+  try { await new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE, 'readwrite')
+    const store = tx.objectStore(STORE)
+    let failure
+    tx.oncomplete = resolve
+    tx.onerror = () => reject(failure || tx.error)
+    tx.onabort = () => reject(failure || tx.error || new Error('임시 녹음 정리를 완료하지 못했어요.'))
+    for (const id of [`${userId}:${legacyId}`, legacyId]) {
+      const request = store.get(id)
+      request.onsuccess = () => {
+        const draft = request.result
+        if (draft && (draft.kind !== 'temporary-recording' || draft.projectId !== projectId || draft.partId !== partId || (draft.userId && draft.userId !== userId))) return
+        try { store.delete(id) }
+        catch (error) { failure = error; tx.abort() }
+      }
+    }
+  }) } finally { db.close() }
+}

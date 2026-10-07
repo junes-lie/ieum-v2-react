@@ -25,7 +25,7 @@ import {
 import { readLocalUserState, writeLocalUserState } from './projectService.js'
 import { evaluatePartFit } from './matching.js'
 import { buildVoiceLayer, projectRecordSignature } from './voiceAnalysis.js'
-import { clearProjectTracks, deleteTrack, loadProjectTracks, loadTrack, saveTrack } from './trackStore.js'
+import { clearProjectTracks, deleteTrack, deleteRecordingDraft, loadProjectTracks, loadTrack, saveTrack } from './trackStore.js'
 import { createProjectModel, resolveRecordPartSlots, SUPPORTED_PART_COUNTS } from './projectModel.js'
 import { CURRENT_USER_ID, PEOPLE, PERSON_BY_ID, SAMPLE_SONGS, personFromName } from './catalog.js'
 import { createRecordingInflowRenderer, createResonanceRenderer } from './resonanceWebGL.js'
@@ -940,8 +940,8 @@ function Recorder({ go, submit, onRecordingStart, partId, projectTracks, layers,
   const [inputRms,setInputRms]=useState(0)
   const legacyDraftId = `${project.id}:${currentPart.id}:temporary-recording`
   const draftId = `${CURRENT_USER_ID}:${legacyDraftId}`
-  const lyricIndex = project.lyrics?.length ? Math.max(0,project.lyrics.findLastIndex(line=>seconds>=line.time)) : Math.min(3, Math.floor(seconds / (recordingWindow/4)))
-  const lyrics = project.lyrics?.map(line=>line.text) || ['함께 녹음을 시작해요', '서로 다른 목소리가', '하나의 노래가 되어', '조용히 이어지는 순간']
+  const lyricIndex = project.lyrics?.length ? Math.max(0,project.lyrics.findLastIndex(line=>seconds>=line.time)) : 0
+  const lyrics = project.lyrics?.length ? project.lyrics.map(line=>line.text) : ['가사 없음']
   const begin = async () => {
     try {
       setError(''); setMicrophoneFailure(false); setPermissionDenied(false); await requestMicrophone({ voiceProcessing:(guides.backing || guides.parts.some(Boolean)) ? true : null })
@@ -967,7 +967,7 @@ function Recorder({ go, submit, onRecordingStart, partId, projectTracks, layers,
   const retry = async () => {
     setError(''); setMicrophoneFailure(false)
     try {
-      await deleteTrack(draftId)
+      await deleteRecordingDraft({userId:CURRENT_USER_ID,projectId:project.id,partId:currentPart.id})
       clearInterval(timer.current); cancelRecording()
       onDraftChange?.(false); setDraft(null); setReviewPlaying(false); setStatus('ready'); setSeconds(0); setLevel(0); setConfirmAction(null)
     } catch {
@@ -983,7 +983,7 @@ function Recorder({ go, submit, onRecordingStart, partId, projectTracks, layers,
   const send = async () => {
     if (submitting) return
     setSubmitting(true); setError('')
-    try { await submit({...draft,noiseFloor},currentPart); onDraftChange?.(false); deleteTrack(draftId).catch(error=>console.error('Submitted Track preserved; draft cleanup pending',error)) }
+    try { await submit({...draft,noiseFloor},currentPart); onDraftChange?.(false); deleteRecordingDraft({userId:CURRENT_USER_ID,projectId:project.id,partId:currentPart.id}).catch(error=>console.error('Submitted Track preserved; draft cleanup pending',error)) }
     catch (reason) { setError(reason?.message || '제출하지 못했어요. 원본 녹음은 이 기기에 보관했어요. 다시 시도해 주세요.'); setSubmitting(false) }
   }
   useEffect(() => {
@@ -1012,7 +1012,7 @@ function Recorder({ go, submit, onRecordingStart, partId, projectTracks, layers,
         <p className="guide-device-note">Guide는 듣기용이며 녹음에는 내 입력만 저장합니다. 이어폰 없이 녹음하면 스피커 소리가 마이크에 들어갈 수 있어요.</p>
       </section>
       <div className="recording-visual"><ResonanceRecord parts={parts} tracks={projectTracks} projectId={project.id} layers={status==='review'?reviewLayers:layers} activePartIndex={currentIndex} state={status === 'recording' ? 'recording' : status==='paused'?'paused':'rest'} level={level} seed={project.seed} compact /><RecordingInflow active={status==='recording'} partIndex={0} level={level} seed={project.seed} waveformRef={waveformRef}/></div>
-      {!project.lyrics?.length&&<p className="lyric-source-note">연습 안내 문구 · 실제 곡 가사와 반주가 아직 등록되지 않았어요.</p>}
+      {!project.lyrics?.length&&<p className="lyric-source-note">실제 곡 가사와 반주가 아직 등록되지 않았어요.</p>}
       <div className="lyrics" aria-live="polite">{[lyricIndex-1,lyricIndex,lyricIndex+1].map(index=><span key={index} className={index===lyricIndex?'active':''} aria-hidden={!lyrics[index]||undefined}>{lyrics[index] || ''}</span>)}</div>
       <div className="recording-timeline" aria-label="녹음 시간"><div><span>RECORD TIME</span><b>{fmt(seconds)} / {fmt(recordingWindow)}</b></div><div className="time-progress"><span style={{width:`${Math.min(100,seconds/recordingWindow*100)}%`}}/></div></div>
       <div className="meter-row"><span>MIC {inputRms>0?`${Math.max(-96,Math.round(20*Math.log10(inputRms)))} dBFS`:"— dBFS"}</span><div className={`input-meter ${peak>.9?'clip':''}`} aria-label="마이크 입력 볼륨"><span style={{width:`${Math.max(2,level*100)}%`}}/><i style={{left:`${Math.min(98,peak*100)}%`}}/></div><b>{peak>.9?'CLIP':level>.08?'GOOD':'LOW'}</b></div>{noiseFloor>0&&<p className={`noise-status ${noiseFloor>.08?'warning':''}`}>주변 소음 · {noiseFloor>.08?'높음 — Review에서 다시 녹음을 선택할 수 있어요.':'양호'} ({Math.round(noiseFloor*100)}%)</p>}
