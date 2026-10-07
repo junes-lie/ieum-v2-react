@@ -1,3 +1,9 @@
+## 2026-10-08 단계 2 — 가는 공명 결의 밝기 보정
+
+figma-desktop MCP의 653:49 `07 · 완성곡 · Editable`에서 get_design_context와 get_screenshot을 실제 성공 호출하고 구조·원본 screenshot·기존 React 전후 렌더를 대조했다. 기존 filament의 RGB 밝기 계수만 1.0에서 1.55로 보정했다. 입자 밝기/수, 경로/색상/분포/투명도, 저장 Layer, AI 필드, 회전/내부 흐름/반사광 각도는 변경하지 않았다. 새 발광 레이어나 정적 Record를 추가하지 않았다. 원본 Credits 구조에 따라 Part는 12/16px Mono 대문자·0.48px 자간, 참여자 이름은 Sans SemiBold로 보정했다. 기존 Part 색상·이름 데이터·44px 터치 및 긴 이름 줄바꿈은 유지한다.
+
+production build/기존 QA 7개 및 360/390/430px 세 화면·desktop 430×932 렌더 검사가 통과했다. 실제 P0 출력의 0/2/3/4 AI 필드 표시, 고정 시간 재로드 픽셀 재현, 움직임, Complete 진입/안정화와 손상된 출력 거부·음성 원본 보존도 통과했다. 입자 수 45086 유지·console/page error 0이다. 이는 production AI 추론 서비스 연결이나 전체 Figma pixel 일치를 의미하지 않는다. 물리 기기/마이크/청취는 미검증이고 단계 2 전체 완료를 선언하지 않는다.
+
 ## 2026-10-08 단계 2 — 실제 재생 경계 회귀 검증
 
 `qa/verify-player-lifecycle.mjs`는 격리 브라우저에서 실제 기존 demo Stem 재생·seek 후 개별 Track/현재 Mix 소스 전환, 모든 Track 제외 시 재생·seek 비활성 및 시간 초기화, 다시 포함하여 재생한 뒤 Recorder 진입 시 이전 audio 정지를 검사한다. 기존 production에서도 통과했으므로 처음 의심한 소스 전환 오류는 재현되지 않았고 앱 코드를 불필요하게 수정하지 않았다. 기존 2/3/4 Part continuity 검증과 함께 실행한다. 자동 QA는 실제 청취/물리 마이크/공유 서버/실기기 인수를 대체하지 않는다. 단계 2 전체 완료 또는 단계 3 진입을 선언하지 않는다.

@@ -360,7 +360,7 @@ void main(){
       +texture2D(uField3,vFieldUV).rgb*uFieldEnabled.w)/fieldCount;
     fieldGain=.8+dot(generated,vec3(.2126,.7152,.0722))*.8;
   }
-  gl_FragColor=vec4(colorFor(vPart)*vBrightness*fieldGain*mix(1.,2.4,uPointMode)*alpha,alpha);
+  gl_FragColor=vec4(colorFor(vPart)*vBrightness*fieldGain*mix(1.55,2.4,uPointMode)*alpha,alpha);
 }`
 
 function drawMaterial(canvas, rotation = 0) {
