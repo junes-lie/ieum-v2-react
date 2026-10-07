@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import {readFile,writeFile,unlink} from 'node:fs/promises'
 import {Window} from 'happy-dom'
-import {indexedDB} from 'fake-indexeddb'
+import {indexedDB,IDBObjectStore} from 'fake-indexeddb'
 import {transformWithOxc} from 'vite'
 import React,{act} from 'react'
 import {createRoot} from 'react-dom/client'
@@ -21,7 +21,7 @@ window.scrollTo=()=>{}
 window.AudioContext=class{}
 window.HTMLMediaElement.prototype.play=async()=>{}
 window.HTMLMediaElement.prototype.pause=()=>{}
-globalThis.fetch=async url=>{assert.equal(url,'/demo-stems/manifest.json');return {ok:true,json:async()=>({tracks:[]})}}
+globalThis.fetch=async url=>{assert.equal(url,'/demo-stems/manifest.json','Existing submitted Tracks must prevent loading replacement demo audio');return {ok:true,json:async()=>({tracks:[{partId:'soprano',file:'/demo-stems/soprano.wav'},{partId:'alto',file:'/demo-stems/alto.wav'}]})}}
 const appTemp=new URL('../src/.qa-user-journey-app.mjs',import.meta.url)
 const iconsTemp=new URL('../src/.qa-user-journey-icons.mjs',import.meta.url)
 const projectId='ieum-thousand-years-v7',seed='ieum:thousand-years:original-c:0048',profileId='ieum-v2:voice-profile:v7'
@@ -54,12 +54,29 @@ try{
  assert.equal(state().screen,'workspace');assert.equal(Object.keys(state().projectTracks).length,2);assert.equal(state().candidateAccepted,false)
  assert.equal(state().projectTracks.soprano.layer.signature,track('soprano').layer.signature)
  assert.equal(await state().projectTracks.soprano.blob.text(),await blob.text())
+ assert.equal((await loadTrack(projectId+':soprano')).origin,'live-microphone-recording')
+ assert.equal(await (await loadTrack(projectId+':soprano')).blob.text(),await blob.text())
  check('App bootstrap restores submitted Blob, project seed and exact deterministic Layer; pending invitation does not create a Track')
  assert.equal(state().profile.sampleSong,'QA personal sample');assert.equal(state().profile.rangeData.lowMidi,48);assert.equal(state().songSaves.length,1)
  check('Profile range, personal sample and collection restore from isolated persistence')
  await click('[data-action="record-part"]');assert.equal(state().screen,'record');assert.ok(document.querySelector('[data-action="record-submit"]'));assert.ok(!document.querySelector('[data-action="record-start"]'))
  assert.equal(await (await loadTrack(draftId)).blob.text(),await blob.text())
  check('Recorder restores saved draft into Review without microphone access or replacement')
+ const originalPut=IDBObjectStore.prototype.put
+ try {
+  IDBObjectStore.prototype.put=function(value,...args){
+   if(value.id===projectId+':tenor')throw new Error('QA submit storage failure')
+   return originalPut.call(this,value,...args)
+  }
+  await click('[data-action="record-submit"]')
+  assert.equal(state().screen,'record')
+  assert.equal(Object.keys(state().projectTracks).length,2)
+  assert.equal(await loadTrack(projectId+':tenor'),null)
+  assert.equal(await (await loadTrack(draftId)).blob.text(),await blob.text())
+  assert.ok(document.body.textContent.includes('QA submit storage failure'))
+  assert.equal(document.querySelector('[data-action="record-submit"]').disabled,false)
+  check('Failed submission keeps Review, original draft and unchanged submitted count; retry remains available')
+ } finally { IDBObjectStore.prototype.put=originalPut }
  await click('[data-action="record-submit"]');assert.equal(state().screen,'workspace');assert.equal(Object.keys(state().projectTracks).length,3)
  await settle();assert.equal(await loadTrack(draftId),null);assert.equal((await loadTrack(projectId+':tenor')).layer.projectSeed,seed)
  check('Review submission persists owned Track, increases 2/4 to 3/4, deletes only submitted draft and returns to Workspace')
@@ -80,6 +97,26 @@ try{
  assert.ok(document.querySelector('.complete-screen audio'));assert.ok(document.querySelector('.complete-screen').textContent.includes('Credits'))
  assert.equal(state().projectTracks.tenor.layer.signature,track('tenor').layer.signature)
  check('Reload restores 4 submitted Tracks and saved final mix; project resume opens Complete with credits and native audio')
+ await act(async()=>root.unmount())
+ await clearProjectTracks(projectId)
+ await saveTrack(track('soprano'));await saveTrack(track('alto'))
+ const legacyDraftId=projectId+':tenor:temporary-recording'
+ await saveTrack({id:legacyDraftId,projectId,partId:'tenor',kind:'temporary-recording',userId:'another-user',blob,features,duration:7})
+ root=createRoot(container);await act(async()=>root.render(React.createElement(App)));await settle();await settle()
+ await click('[data-action="record-part"]')
+ assert.ok(document.querySelector('[data-action="record-start"]'))
+ assert.equal(document.querySelector('[data-action="record-submit"]'),null)
+ assert.equal((await loadTrack(legacyDraftId)).userId,'another-user')
+ assert.equal(await (await loadTrack(legacyDraftId)).blob.text(),await blob.text())
+ check('Legacy draft owned by another user is neither restored as my Take nor deleted')
+ await act(async()=>root.unmount())
+ await saveTrack({id:legacyDraftId,projectId,partId:'tenor',kind:'temporary-recording',blob,features,duration:7})
+ root=createRoot(container);await act(async()=>root.render(React.createElement(App)));await settle();await settle()
+ await click('[data-action="record-part"]')
+ assert.ok(document.querySelector('[data-action="record-submit"]'))
+ assert.equal(document.querySelector('[data-action="record-start"]'),null)
+ assert.equal(await (await loadTrack(legacyDraftId)).blob.text(),await blob.text())
+ check('Ownerless legacy draft restores into Review without requiring a new recording or losing the original')
  assert.deepEqual(errors,[],'Unexpected App console errors')
  console.log('Node integration passed. No claim of visual fidelity, GPU rendering, microphone capture, audible playback, real AI/backend or physical mobile verification.')
 }finally{

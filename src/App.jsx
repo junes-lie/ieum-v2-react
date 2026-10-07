@@ -1450,7 +1450,7 @@ export default function App() {
           participantId:track.participantId || personFromName(track.participant)?.id || null
         })))
       for (const entry of demoManifest.tracks.filter(item=>INITIAL_DEMO_PARTS.has(item.partId))) {
-        if (stored.some(track=>track.partId===entry.partId && track.origin==='local-formant-singing-demo')) continue
+        if (projectStored.some(track=>track.id===`${PROJECT_ID}:${entry.partId}` && track.blob)) continue
         const demoTrack = await loadDisclosedDemoTrack(entry)
         await saveTrack(demoTrack)
         stored.push(demoTrack)

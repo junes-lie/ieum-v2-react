@@ -79,6 +79,43 @@ Vercel은 배포 결과물이다.
 Vercel을 코드 Source of Truth로 사용하지 않는다.
 
 
+## Repository Document Roles
+
+### Active project documents
+
+현재 구현 작업에서 우선 사용하는 repository 문서:
+
+- `AGENTS.md`
+  - Codex 영구 작업 규칙
+
+- `CURRENT_IMPLEMENTATION_STATUS.md`
+  - 현재 구현 상태
+
+- `docs/IMPLEMENTATION_PLAN_2026-10-07.md`
+  - 현재 단계 구현 계획
+
+- `docs/GIT_WORKFLOW.md`
+  - Git / GitHub / Vercel 작업 규칙
+
+- `docs/SERVICE_CONNECTION.md`
+  - 외부 서비스 연결 및 도구 정책
+
+### Historical / reference documents
+
+다음 자료는 현재 제품 요구사항의 Source of Truth가 아니다.
+
+- `REQUIREMENTS_LEDGER_ATOMIC.csv`
+- `REQUIREMENTS_TRACEABILITY.md`
+- 날짜가 지난 execution report
+- verification report
+- audit report
+- 이전 prototype 기준 문서
+
+Historical/reference 문서의 내용이
+현재 Notion, Figma 또는 Active project documents와 충돌하면
+이를 근거로 현재 구현을 변경하지 않는다.
+
+
 # 2. 구현 전 필수 확인
 
 기능 또는 화면 구현 요청을 받으면
