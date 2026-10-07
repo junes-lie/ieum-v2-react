@@ -198,3 +198,22 @@ html,body{background:#41403c}body{height:auto;overflow-y:auto;background:#41403c
 .recording-screen .recording-visual .record-inflow{z-index:3}
 
 .figma-header-icon{width:44px;height:44px;object-fit:contain}
+
+/* Figma 653:46: native-size exported icons and the two-row 62px player. */
+.workspace-screen .topbar .text-action img,.record-control button img,.track-play img,.complete-actions img,.figma-player .play-btn img{display:block;flex:none;max-width:none}
+.complete-title{padding:0}
+.figma-player{grid-template-columns:48px minmax(0,1fr);column-gap:16px;min-height:62px}
+.screen .figma-player .time-row{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:16px 26px;gap:6px;min-width:0;align-content:center}
+.screen .figma-player .time-row .player-clock{width:100%;white-space:nowrap;font:500 12px/16px var(--mono);color:var(--secondary);letter-spacing:.04em}
+.figma-player .time-row input{appearance:none;height:26px;margin:0;background:transparent;cursor:pointer;min-width:0}
+.figma-player input::-webkit-slider-runnable-track{height:2px;background:#8a8278}
+.figma-player input::-moz-range-track{height:2px;background:#8a8278}
+.figma-player input::-webkit-slider-thumb{appearance:none;width:10px;height:10px;border-radius:50%;background:#ece6dc;margin-top:-4px}
+.figma-player input::-moz-range-thumb{width:10px;height:10px;border:0;border-radius:50%;background:#ece6dc}
+.figma-player .play-btn,.workspace-track-row .track-play{background:linear-gradient(#2c2721,#201c17 38%,#15110e);border-color:rgba(236,230,220,.68);box-shadow:inset 1px 1px rgba(255,250,242,.18),inset -1px -1px rgba(26,20,15,.38)}
+.figma-player .play-btn img,.workspace-track-row .track-play img{transform:translateX(1px)}
+.complete-actions .secondary{font:600 16px/24px 'Pretendard IEUM',var(--sans);background:linear-gradient(#2c2721,#201c17 38%,#15110e);border-color:rgba(236,230,220,.68);gap:8px}
+
+.workspace-actions .primary img{display:block;flex:none;max-width:none}
+.complete-screen .record-center-credits{background-color:transparent;background-size:contain;background-position:center;background-repeat:no-repeat}
+.recording-screen .meter-row>span{width:auto;white-space:nowrap}

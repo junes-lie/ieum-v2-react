@@ -312,7 +312,7 @@ void main(){
   vBrightness=aBrightness*(1.35+focus*1.18)*(1.0+live*uLevel*0.28);
   vAngle=atan(tangent.y,tangent.x);
   vPart=aPart;
-  gl_PointSize=(aSize*2.55+live*uLevel*0.45)*uPixelRatio;
+  gl_PointSize=(aSize*1.35+live*uLevel*0.45)*uPixelRatio;
   gl_Position=vec4(position,0.0,1.0);
   vFieldUV=vec2(position.x,-position.y)*.5+.5;
 }`
@@ -355,7 +355,7 @@ void main(){
       +texture2D(uField3,vFieldUV).rgb*uFieldEnabled.w)/fieldCount;
     fieldGain=.8+dot(generated,vec3(.2126,.7152,.0722))*.8;
   }
-  gl_FragColor=vec4(colorFor(vPart)*vBrightness*fieldGain*alpha,alpha);
+  gl_FragColor=vec4(colorFor(vPart)*vBrightness*fieldGain*mix(1.,2.4,uPointMode)*alpha,alpha);
 }`
 
 function drawMaterial(canvas) {

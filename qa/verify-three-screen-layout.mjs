@@ -26,6 +26,13 @@ try{
    assert.equal(geometry.bodyWidth,width,'Artwork must not cause horizontal page overflow')
    assert.equal(geometry.screenWidth,width)
    assert.ok(geometry.record)
+   const icons=await page.locator('img[src^="/figma/"]').evaluateAll(images=>images.map(image=>({source:image.getAttribute('src'),loaded:image.complete&&image.naturalWidth>0,natural:image.naturalWidth,width:image.getBoundingClientRect().width})))
+   for(const icon of icons){assert.ok(icon.loaded,`Missing Figma icon: ${icon.source}`);assert.ok(Math.abs(icon.width-icon.natural)<1,`Figma icon must retain its native dimensions: ${icon.source}`)}
+   for(const player of await page.locator('.figma-player').all()){
+    const layout=await player.evaluate(element=>{const label=element.querySelector('.player-clock').getBoundingClientRect(),seek=element.querySelector('input').getBoundingClientRect();return {labelHeight:label.height,seekTop:seek.top,labelBottom:label.bottom}})
+    assert.equal(layout.labelHeight,16,'Player time must stay on one line')
+    assert.ok(layout.seekTop>=layout.labelBottom,'Seek must sit below the time label')
+   }
    results.push({width,screen,...geometry})
   }
   await measure('workspace')

@@ -1,3 +1,11 @@
+## 2026-10-08 단계 2 — Figma 컴포넌트와 Record 입자 결 보정
+
+현재 Desktop MCP의 653:46 `IEUM · 3화면 · 편집용 프레임`에서 get_design_context/get_screenshot을 재호출해 성공했다. 기존 React의 03/06/07에 원본 재생·하트·공유·다시 녹음·정지·일시정지·마이크 SVG를 native size로 연결했다. 완성곡 중앙 원형 라벨만 원본 금속 재질 자산을 사용하며, Record 자체는 기존 움직이는 WebGL을 유지한다. 곡명 앞 불필요한 38px 여백을 제거하고 시간/seek를 두 줄로 분리했다. MIC 수치를 한 줄로 유지한다. 입자 크기를 줄여 가는 결을 만들면서 밝기를 보정했다. 기존 Part/seed/AI 파일·음성 계보와 곡선·색상 슬롯·입자 수는 보존했다.
+
+build, 유지 QA 7개, 360/390/430px의 3화면 렌더·원본 SVG 로드/크기·시간과 seek 비겹침 검사, 430×932 desktop frame, 실제 WebGL 5개 시간 프레임 및 실제 P0 AI 출력 0/2/3/4개 재현/움직임/손상 출력 거부·원본 음성 보존 QA가 통과했다. 실제 렌더를 현재 Figma와 비교했다. 데이터에 따른 긴 곡명/참여자 텍스트는 유동 높이를 유지한다.
+
+이번 보정이 Figma Record 전체 pixel match나 실제 모바일 인수를 뜻하지 않는다. Record 곡선/광택/입자 밀도의 시각 차이는 남아 있고, 실제 마이크·터치·청취와 서버 추론 연결도 미검증이다. 단계 2 전체 완료를 선언하거나 다음 단계로 건너뛰지 않는다. 자동배포·production 증거는 실제 확인 후 docs/GIT_SYNC_VERIFICATION.md에 기록한다.
+
 ## 2026-10-08 단계 2 — 실제 AI 출력의 기존 Record 연결
 
 03/06/07 기존 화면 통합은 eba083c로 Git Integration production READY까지 확인했다. 이번 변경은 실제 생성 결과를 받아 기존 움직이는 Record에 연결하는 표시 경로다. Track 원본 SHA256, 생성 PNG SHA256, project/part/participant/seed 및 모델 revision 계약을 검사하고, 512×512 생성 필드를 전체 평면에서 결합해 기존 입자의 밝기에 반영한다. 기존 SATB 색상·입자 구조·움직임은 유지한다. 학습된 motion 모델이나 서버 추론 연결은 아니다.
