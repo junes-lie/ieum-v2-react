@@ -41,3 +41,13 @@ npm-debug.log*
 # Preserve locally for reference. Reassess before adopting either as maintained QA.
 /qa/create-resonance-comparison.mjs
 /qa/verify-figma-design.mjs
+
+# Local captures and historical verification reports: preserve on disk.
+/qa/home-390.png
+/qa/complete-390.png
+/qa/results.json
+/qa/resonance-results.json
+/VERIFICATION_REPORT.md
+/docs/EXECUTION_REPORT_2026-10-07.md
+/docs/GIT_SYNC_VERIFICATION.md
+/docs/STAGE_0_AUDIT.md

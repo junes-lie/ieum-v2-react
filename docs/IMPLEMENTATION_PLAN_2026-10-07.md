@@ -157,4 +157,4 @@ Figma Desktop MCP에서 실제 읽은 프레임은 `IEUM · 3화면 · 편집용
 
 현재 작성된 것은 계획이다. 이 문서 추가 외에 앱 코드 수정·데이터 삭제·테스트 실행·배포는 이번 계획 수립 작업에서 진행하지 않았다.
 
-높이·하단 내비게이션 보정 배포는 READY(dpl_FwE5HGnfTy8K8RB8JUtHbYKrzgdG), 기존 production alias HTTP 200으로 확인했다. 최종 build 31 modules와 Node 렌더 테스트 성공은 root가 확인했다. 단계 0 감사 판정은 부분 확인·완료 보류이며 docs/STAGE_0_AUDIT.md를 따른다. 단계 1에 착수하지 않는다.
+높이·하단 내비게이션 보정 배포는 READY(dpl_FwE5HGnfTy8K8RB8JUtHbYKrzgdG), 기존 production alias HTTP 200으로 확인했다. 최종 build 31 modules와 Node 렌더 테스트 성공은 root가 확인했다. 단계 0은 부분 확인·완료 보류 상태다. 실제 마이크 녹음·임시본 복원과 화면/데이터 연결 재현의 검증이 남아 있다. 단계 1에 착수하지 않는다.

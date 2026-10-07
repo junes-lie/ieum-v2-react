@@ -38,11 +38,11 @@
 
 Node 테스트 성공은 모듈 계약과 수치 처리의 근거다. HTTP 테스트의 응답은 stub으로 실제 인증이나 서버 처리 성공의 근거가 아니다. 기존 브라우저 자동 여정은 Node DOM/in-memory IndexedDB 시험으로 교체했고 npm run qa의 7개 suite가 성공했다. App 복원·Review 제출·탭/scroll 복귀·저장된 Complete 복원을 확인하지만 renderer/preview/play와 synthetic 녹음·Mix fixture를 사용하므로 실제 캡처·새 합성·GPU·청취·시각·물리 기기 검증을 대체하지 않는다. 이번 작업에서는 Computer Use 및 브라우저 UI 조작을 수행하지 않는다.
 
-기존의 1,967개 요구사항 원장에 대한 전수 코드/화면/데이터 연결은 완료되지 않았다. 과거 단계 완료 주장을 이 문서에서 되살리지 않는다. 상세 실행 증거와 한계는 `docs/EXECUTION_REPORT_2026-10-07.md`, 남은 구현 단계는 `docs/IMPLEMENTATION_PLAN_2026-10-07.md`에 기록한다.
+기존의 1,967개 요구사항 원장에 대한 전수 코드/화면/데이터 연결은 완료되지 않았다. 과거 단계 완료 주장을 이 문서에서 되살리지 않는다. 검증 근거와 한계는 위 검증 범위에 기록하며, 남은 구현 단계는 `docs/IMPLEMENTATION_PLAN_2026-10-07.md`에 기록한다.
 
 ## 확인된 기존 배포 정보
 
 프로젝트의 origin remote는 `https://github.com/junes-lie/ieum-v2-react`이다. 기존 `https://ieum-v2-react.vercel.app/`에 대한 읽기 요청은 HTTP 200으로 응답했다. 이는 기존 프런트엔드 접근 증거이며 이번 변경 배포, 실제 서버/인증/저장 연결, 마이크 또는 전체 사용자 여정 검증의 증거가 아니다. GitHub의 인증 없는 읽기 요청은 HTTP 404였으므로 저장소가 없다고 판단하지 않는다. 앞선 감사 시점의 기존 URL 읽기 결과다. 이후 사용자가 요청한 높이·내비게이션 보정 배포는 아래 READY 기록으로 확인됐다. 현재 Git 동기화 작업의 commit 기반 자동배포는 아직 확인 전이다.
 
 
-높이·하단 내비게이션 보정 배포는 READY(dpl_FwE5HGnfTy8K8RB8JUtHbYKrzgdG), 기존 production alias HTTP 200으로 확인했다. 최종 build 31 modules와 Node 렌더 테스트 성공은 root가 확인했다. 단계 0 감사 판정은 부분 확인·완료 보류이며 docs/STAGE_0_AUDIT.md를 따른다. 단계 1에 착수하지 않는다.
+높이·하단 내비게이션 보정 배포는 READY(dpl_FwE5HGnfTy8K8RB8JUtHbYKrzgdG), 기존 production alias HTTP 200으로 확인했다. 최종 build 31 modules와 Node 렌더 테스트 성공은 root가 확인했다. 단계 0은 부분 확인·완료 보류 상태다. 실제 마이크 녹음·임시본 복원과 화면/데이터 연결 재현의 검증이 남아 있다. 단계 1에 착수하지 않는다.
