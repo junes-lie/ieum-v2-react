@@ -21,6 +21,7 @@ const runtime = {
   syncOffsetSec: 0,
   playback: [],
   microphoneInfo: null,
+  microphoneGeneration: 0,
   recordingGuideState: null,
   activeElapsedSec: 0,
   activeStartedAt: 0,
@@ -72,7 +73,14 @@ async function configureMicrophoneTrack(track, voiceProcessing) {
   } catch { /* Mobile browsers may keep their own input processing. */ }
 }
 
+function assertMicrophoneSession(generation,stream) {
+  if(generation===runtime.microphoneGeneration)return
+  stream.getTracks().forEach(track=>track.stop())
+  throw new DOMException('이전 마이크 시작 요청이 취소됐어요.','AbortError')
+}
+
 export async function requestMicrophone({ voiceProcessing = null } = {}) {
+  const generation=runtime.microphoneGeneration
   if (!window.isSecureContext) {
     const error = new Error('HTTPS가 아닌 환경에서는 마이크를 사용할 수 없어요.')
     error.name = 'SecurityError'
@@ -84,8 +92,10 @@ export async function requestMicrophone({ voiceProcessing = null } = {}) {
     throw error
   }
   if (runtime.stream?.active) {
-    await configureMicrophoneTrack(runtime.stream.getAudioTracks()[0],voiceProcessing)
-    return runtime.stream
+    const stream=runtime.stream
+    await configureMicrophoneTrack(stream.getAudioTracks()[0],voiceProcessing)
+    assertMicrophoneSession(generation,stream)
+    return stream
   }
   let timedOut = false
   // `audio: true` is intentionally used for the first permission request.
@@ -99,13 +109,17 @@ export async function requestMicrophone({ voiceProcessing = null } = {}) {
     error.name = 'PermissionTimeoutError'
     reject(error)
   }, 8000) })
-  try { runtime.stream = await Promise.race([pending,timeout]) }
-  finally { if (!timedOut) window.clearTimeout(timeoutId) }
+  let stream
   pending.then(stream => { if (timedOut) stream.getTracks().forEach(track=>track.stop()) }).catch(()=>{})
-  const track = runtime.stream.getAudioTracks()[0]
+  try { stream = await Promise.race([pending,timeout]) }
+  finally { if (!timedOut) window.clearTimeout(timeoutId) }
+  assertMicrophoneSession(generation,stream)
+  runtime.stream=stream
+  const track = stream.getAudioTracks()[0]
   // Range/profile sampling prefers an unprocessed signal. Project recording
   // enables voice processing when speaker-played guides could leak back in.
   await configureMicrophoneTrack(track,voiceProcessing)
+  assertMicrophoneSession(generation,stream)
   runtime.microphoneInfo = {
     label: track?.label || '권한이 허용된 마이크',
     settings: track?.getSettings?.() || {},
@@ -115,12 +129,13 @@ export async function requestMicrophone({ voiceProcessing = null } = {}) {
   }
   const ctx = context()
   await ctx.resume()
-  runtime.source = ctx.createMediaStreamSource(runtime.stream)
+  assertMicrophoneSession(generation,stream)
+  runtime.source = ctx.createMediaStreamSource(stream)
   runtime.analyser = ctx.createAnalyser()
   runtime.analyser.fftSize = 4096
   runtime.analyser.smoothingTimeConstant = 0.55
   runtime.source.connect(runtime.analyser)
-  return runtime.stream
+  return stream
 }
 
 export function monitorInput(onFrame, { detectPitch = false } = {}) {
@@ -272,6 +287,7 @@ function scheduleRecordingGuides(offsetSec = 0) {
 
 export async function startRecording({ onFrame, guides = {backing:false,parts:[]}, guideTracks = [], backingBlob = null, duration = 35 }) {
   if (runtime.recorder && runtime.recorder.state !== 'inactive') throw new Error('이미 녹음 중이에요.')
+  const generation=runtime.microphoneGeneration
   const hasSpeakerGuides = Boolean(guides?.backing || guides?.parts?.some(Boolean))
   const stream = await requestMicrophone({ voiceProcessing:hasSpeakerGuides ? true : null })
   if (!window.MediaRecorder) {
@@ -287,9 +303,12 @@ export async function startRecording({ onFrame, guides = {backing:false,parts:[]
     decodedGuides = await Promise.all(guideTracks.filter(track => track?.blob).map(async track => ({ track, buffer: await decodeBlob(ctx, track.blob) })))
     decodedBacking = backingBlob ? await decodeBlob(ctx, backingBlob) : null
   } catch (error) {
-    stopMicrophone()
+    if(runtime.stream===stream)stopMicrophone()
+    else stream.getTracks().forEach(track=>track.stop())
     throw error
   }
+  assertMicrophoneSession(generation,stream)
+  if(runtime.recorder&&runtime.recorder.state!=='inactive')throw new Error('이미 녹음 중이에요.')
   runtime.chunks = []
   const mime = ['audio/webm;codecs=opus','audio/webm','audio/mp4'].find(type => MediaRecorder.isTypeSupported(type)) || ''
   runtime.recorder = new MediaRecorder(stream, mime ? { mimeType: mime } : undefined)
@@ -552,6 +571,7 @@ export function limitBufferPeak(buffer, ceiling = 10 ** (-3 / 20)) {
 }
 
 export function stopMicrophone() {
+  runtime.microphoneGeneration++
   cancelAnimationFrame(runtime.raf)
   runtime.stream?.getTracks().forEach(track => track.stop())
   runtime.stream = null

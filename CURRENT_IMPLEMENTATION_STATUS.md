@@ -1,3 +1,21 @@
+## 2026-10-08 단계 3 — 세 실제 제공 샘플 및 마이크 세션 보호
+
+기존 React Voice Setup에 실제 AI 오디오 세 구간(서로의 빛16초/천천히 함께19초/비가 그친 뒤18초)을 등록했다. 각 구간의 실제 MP3/분리 반주/해시/가사 word time을 연결했다. 세 곡 모두 미리듣기·Guide decode·가사 전환·지정 전체 길이 Take Review·기존 Profile 원본 보존 QA 통과. 첫 구간의 Guide 토글 시간 연속성, 다운로드503/해시 불일치 시 마이크0회, 재시도, 로딩 중 이탈, 늦은 권한 응답 후 이탈도 통과했다.
+
+세 번째는 원곡30.5–48.5초의 검증된18초 구간만 채택했다. 전곡 small0.75/Turbo0.678899는 실패이며 그대로 보존한다. 실제18초 ASR small0.878049/Turbo0.926829 및 word alignment0.878049 통과, cue0/5.76/13.28초, pYIN 추정E3–C♯5다. 범위와 Key는 확정 음악학 데이터가 아니며 원키로 표시한다. 구간 원본/보컬 해시가 실제 export와 동일한 것을 확인했다. 원곡 전체의 가사 성공으로 보고하지 않는다. Source SHA/구간 계보/전곡 실패 점수는 catalog provenance에 함께 기록한다.
+
+이탈→재진입→새 Take 시작→이전 권한 응답 도착에서 새 recorder가 inactive로 바뀌는 오류를 실제 재현했다. 마이크 요청 세션을 검사해 오래된 stream만 종료하고 새 Take와 stream을 보존하도록 최소 보완했다. 재현 QA에서 새 recorder recording/새 track live/오래된 track ended, 기존 Profile 보존을 확인했다. 기존8초 permission timeout 이후 재시도한 경우에도 늦은 이전 stream이 live로 남는 오류를 재현했다. 종료 handler를 timeout 예외 이전에 등록해 이전 track ended/새 recorder recording을 실제 QA로 확인했다. timeout 기준과 기존 UX는 변경하지 않았다. 전체 유지 QA/build/qa:record-errors/qa:profile 통과. 실제 새18초 backing WAV의 pause/resume 동일 offset·토글·비무음 offline mix(RMS0.032933)·decode 실패 마이크 해제도 통과했다. 모두 격리 합성 마이크 QA이며 물리 청취 인수와 구분한다.
+
+이번 묶음의 Git/production 마감 확인은 진행 중이다. 앞서 두 곡 배포72fa7bb의 production 검증은 아래 기록에 있다. 전체 단계3 완료 아님: 프로젝트용 실제 Key/Part/Guide 자료와 물리 마이크·발음/청취/반주 누출·지연 인수가 남는다. 디자인은 보류하며 단계4/5 신규 작업은 하지 않는다.
+
+## 2026-10-08 단계 3 — 두 실제 제공곡 배포 검증
+
+`72fa7bb2bad5530aa3377011462c2c93ef1b49a6`을 main에 commit/push했고 origin/main과 일치한다. Vercel Git Integration이 해당 commit의 Production deployment6927478076을 생성했고 GitHub Vercel status가 success/Deployment has completed다. Production HTTP200 및 검증한 build의 `index-CN9MTd-w.js`/`index-DtsPXy24.css` byte SHA256 일치를 확인했다. Production qa:provided/qa:profile/qa:record-errors가 모두 통과했다. 실제 두 곡 MP3 서버 해시/미리듣기/녹음/Guide/가사/실패·원본 보존 및 격리된2·3·4 Part 연속성 증거이며 물리 마이크·청취 인수는 아니다. 디자인 변경 및 직접 production deploy 없음.
+
+전체 단계3는 미완료다. 세 번째 실제 제공곡, 프로젝트용 실제 Key/Part/Guide 데이터와 물리 마이크·청취 인수가 남는다. 생성 도구의 CPU disk offload 메모리 개선은 작은 실제 모델에서 원본과3회 exact match/저장소0 elements를 확인했으며 실제 세 번째 곡 재시도 중이다. 모델 weights와 실패 생성물은 보존한다. 음악 품질 통과로 해석하지 않는다.
+
+아래는 해당 기능 묶음의 구현/진단 기록이다. 과거 미배포·재시도 상태는 당시 기록이며 최신 배포 상태는 위 항목을 우선한다.
+
 ## 2026-10-08 단계 3 — 실제 제공 샘플 및 Guide 연결
 
 실행 위치는 단계 3이며 디자인은 보류한다. 기존 React Voice Setup에 실제 AI 오리지널 「서로의 빛」16초와 「천천히 함께」19초 지정 구간을 연결했다. 실제 미리듣기/분리 반주, SHA256 검증 후 녹음 시작, Guide 토글, 같은 녹음 Timeline의 가사 전환이 동작한다. 원본 사용자 Sample/음역/Project Track과 저장 키는 보존한다.

@@ -28,9 +28,28 @@ for kind in ['sample','backing']:
 note=lambda midi:['C','C♯','D','E♭','E','F','F♯','G','A♭','A','B♭','B'][midi%12]+str(midi//12-1)
 observed=r['observedRange'];range_label=note(observed['lowMidi'])+'–'+note(observed['highMidi'])
 song={'id':r['id'],'title':r['title'],'key':r['keyLabel'],'range':range_label,'lyric':r['lyrics'][0]['text'],'mood':a.mood,'duration':r['duration'],'audioFile':'/audio/'+a.asset_directory+'/sample.mp3','backingFile':'/audio/'+a.asset_directory+'/backing.mp3','lyrics':r['lyrics'],'provenance':{'model':r['model'],'revision':r['revision'],'license':r['license'],'seed':r['seed'],'sourceSha256':r['sourceSha256'],'sourceStart':r['sourceStart'],'audioSha256':r['files']['sample']['sha256'],'backingSha256':r['files']['backing']['sha256'],'rangeMethod':f"pYIN voiced observations, probability >= 0.75, {observed['frames']} retained frames; estimated {range_label}",'lyricsMethod':f"Whisper-small actual vocal word alignment; automatic similarity {alignment['textSimilarity']}",'listeningReview':'pending; automatic validation is not pronunciation listening acceptance','keyStatus':r['keyStatus']}}
-if g.get('excerptLineage'):song['provenance']['excerptLineage']=g['excerptLineage']
+if g.get('excerptLineage'):
+ lineage=g['excerptLineage']
+ song['provenance']['excerptLineage']={k:lineage[k] for k in ['originalSourceSha256','originalDuration','sourceStart','duration','limits']}
+ song['provenance']['acceptanceScope']='Validated provided excerpt only; not original full-song lyric acceptance'
+ original_dir=Path(lineage['originalGenerationDirectory'])
+ crosschecks=[]
+ for name in ['vocal-validation-report-robust-seek.json','vocal-validation-report-turbo-robust-seek.json']:
+  if (original_dir/name).exists():
+   check=read(original_dir/name)
+   assert check['sourceSha256']==lineage['originalSourceSha256']
+   crosschecks.append({'model':check['asrModel'],'similarity':check['textSimilarity'],'passed':check['lyricAcceptance']})
+ song['provenance']['originalFullSongValidation']=crosschecks
 song['provenance']['generationTask']=g.get('taskType','cover' if g.get('musicCodeModel') else 'text2music')
 song['provenance']['clipValidation']={'model':clip['asrModel'],'revision':clip['asrRevision'],'similarity':clip['textSimilarity'],'timestampsWithinAudio':clip['timestampsWithinAudio'],'passed':clip['lyricAcceptance']}
+crosschecks=[]
+for name in ['vocal-validation-report-robust-seek.json','vocal-validation-report-turbo-robust-seek.json']:
+ path=a.clip_validation.parent/name
+ if path.exists() and path.resolve()!=a.clip_validation.resolve():
+  other=read(path)
+  assert other['sourceSha256']==clip['sourceSha256'] and other['inputSha256']==clip['inputSha256']
+  crosschecks.append({'model':other['asrModel'],'revision':other['asrRevision'],'similarity':other['textSimilarity'],'timestampsWithinAudio':other['timestampsWithinAudio'],'passed':other['lyricAcceptance']})
+if crosschecks:song['provenance']['clipCrosschecks']=crosschecks
 song['lyrics']=[{'time':line['time'],'text':line['text']} for line in clip_alignment['lyrics']]
 song['provenance']['lyricsMethod']=f"{clip_alignment['asrModel']} actual excerpt word alignment; similarity {clip_alignment['textSimilarity']}"
 registry=root/'src/providedSamples.json';songs=read(registry)

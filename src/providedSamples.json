@@ -94,5 +94,81 @@
         "passed": true
       }
     }
+  },
+  {
+    "id": "ieum-ai-rain-v1-sample",
+    "title": "비가 그친 뒤",
+    "key": "원키",
+    "range": "E3–C♯5",
+    "lyric": "작은 창을 열어요",
+    "mood": "부드러운 피아노 팝",
+    "duration": 18,
+    "audioFile": "/audio/ai-rain-v1/sample.mp3",
+    "backingFile": "/audio/ai-rain-v1/backing.mp3",
+    "lyrics": [
+      {
+        "time": 0.0,
+        "text": "작은 창을 열어요"
+      },
+      {
+        "time": 5.76,
+        "text": "너의 소리 들려요"
+      },
+      {
+        "time": 13.28,
+        "text": "너와 나의 노래가"
+      }
+    ],
+    "provenance": {
+      "model": "ACE-Step/Ace-Step1.5",
+      "revision": "19671f406d603126926c1b7e2adc169acbcade22",
+      "license": "MIT",
+      "seed": 65353,
+      "sourceSha256": "fc52c21aa198c4f5b16b617f137cf01ca5594975638ef76c1387da66b61303a1",
+      "sourceStart": 0,
+      "audioSha256": "0f9853330e02f2a64873d47fa2d879f70b0de31b5a7ec740053f9a3a30d1d41f",
+      "backingSha256": "439ae4ddd600f49170c382c556a611219255e6c3aaff57846eb586bea70fbdf5",
+      "rangeMethod": "pYIN voiced observations, probability >= 0.75, 1035 retained frames; estimated E3–C♯5",
+      "lyricsMethod": "openai/whisper-small actual excerpt word alignment; similarity 0.8780487804878049",
+      "listeningReview": "pending; automatic validation is not pronunciation listening acceptance",
+      "keyStatus": "unconfirmed; requested key is not asserted as actual key",
+      "excerptLineage": {
+        "originalSourceSha256": "91c8a06a8569b84b829f04ab131029729ec23097fbb7c6a11dcb8f22866b8d07",
+        "originalDuration": 90.0,
+        "sourceStart": 30.5,
+        "duration": 18.0,
+        "limits": "Excerpt target must pass independent actual ASR and word alignment. Full-song failure remains unchanged."
+      },
+      "acceptanceScope": "Validated provided excerpt only; not original full-song lyric acceptance",
+      "originalFullSongValidation": [
+        {
+          "model": "openai/whisper-small",
+          "similarity": 0.75,
+          "passed": false
+        },
+        {
+          "model": "openai/whisper-large-v3-turbo",
+          "similarity": 0.6788990825688074,
+          "passed": false
+        }
+      ],
+      "generationTask": "text2music",
+      "clipValidation": {
+        "model": "openai/whisper-small",
+        "revision": "973afd24965f72e36ca33b3055d56a652f456b4d",
+        "similarity": 0.8780487804878049,
+        "timestampsWithinAudio": true,
+        "passed": true
+      },
+      "clipCrosschecks": [
+        {
+          "model": "openai/whisper-large-v3-turbo",
+          "revision": "41f01f3fe87f28c78e2fbf8b568835947dd65ed9",
+          "similarity": 0.926829268292683,
+          "timestampsWithinAudio": true,
+          "passed": true
+        }
+      ]
+    }
   }
 ]

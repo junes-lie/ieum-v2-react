@@ -8,6 +8,7 @@ import soundfile as sf
 import torch
 from diffusers import AceStepPipeline,AceStepTransformer1DModel
 from transformers import AutoModel
+from cpu_disk_offload import release_cpu_disk_offload_storage
 parser=argparse.ArgumentParser()
 parser.add_argument('--model-dir',type=Path,required=True)
 parser.add_argument('--output-dir',type=Path,required=True)
@@ -29,6 +30,7 @@ if args.audio_codes:
  assert code_report['requestedDuration']==args.duration
  assert hashlib.sha256(code_report['audioCodes'].encode()).hexdigest()==code_report['codesSha256']
 torch.set_num_threads(4)
+release_cpu_disk_offload_storage()
 args.output_dir.mkdir(parents=True,exist_ok=True)
 print('Loading actual converted ACE-Step weights on CPU',flush=True)
 # Load and offload large components sequentially, avoiding a full FP32 model peak.
@@ -40,6 +42,7 @@ if args.offload_dir:
  assert len(list(offload_dir.glob('group_*.safetensors')))==13,'Only a complete offload cache can be reused'
 transformer.enable_group_offload(onload_device=torch.device('cpu'),offload_device=torch.device('cpu'),offload_type='block_level',num_blocks_per_group=2,offload_to_disk_path=str(offload_dir))
 print('Transformer prepared; loading text encoder separately',flush=True)
+print(f'Actual offloaded transformer storage: {sum(p.numel() for p in transformer.parameters())} tensor elements',flush=True)
 text_encoder=AutoModel.from_pretrained(args.model_dir/'text_encoder',dtype=torch.float32,local_files_only=True,low_cpu_mem_usage=True)
 # ACE-Step accesses the lyric embedding directly after text_encoder.forward.
 # Root-level text disk offload replaces that embedding with empty storage before

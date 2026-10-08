@@ -4,7 +4,7 @@ import {createHash} from 'node:crypto'
 import {createRequire} from 'node:module'
 const samples=JSON.parse(await readFile(new URL('../src/providedSamples.json',import.meta.url),'utf8'))
 const baseUrl=process.env.IEUM_QA_URL||'http://127.0.0.1:4195/'
-assert.ok(samples.length>0)
+assert.equal(samples.length,3,'VP03 provided sample bundle has three actual excerpts')
 assert.equal(new Set(samples.map(song=>song.id)).size,samples.length)
 for(const song of samples){
  assert.equal(song.provenance.clipValidation?.passed,true,'Each installed excerpt needs its own actual ASR validation')
@@ -86,6 +86,51 @@ try{
  await page.reload();await page.waitForFunction(()=>window.__IEUM_V2__?.state?.profile?.sampleSong==='Protected original sample')
  await page.locator('[data-nav="user"]').click();await page.getByRole('button',{name:'다시 등록',exact:true}).click()
  await page.locator('.sample-select-stage > button.primary').click()
+ await page.evaluate(()=>{
+  const get=navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices)
+  let attempts=0
+  navigator.mediaDevices.getUserMedia=async(...args)=>{
+   const number=++attempts
+   if(number===1){window.qaOldMicPending=true;await new Promise(resolve=>{window.qaReleaseOldMic=resolve})}
+   const stream=await get(...args)
+   if(number===1)window.qaOldMicStream=stream;else window.qaNewMicStream=stream
+   return stream
+  }
+ })
+ await page.locator('[data-action="sample-start"]').click();await page.waitForFunction(()=>window.qaOldMicPending)
+ await page.locator('[data-nav="home"]').click()
+ await page.locator('[data-nav="user"]').click();await page.getByRole('button',{name:'다시 등록',exact:true}).click()
+ await page.locator('.sample-select-stage > button.primary').click()
+ await page.locator('[data-action="sample-start"]').click();await page.waitForSelector('[data-action="sample-stop"]')
+ await page.evaluate(()=>window.qaReleaseOldMic())
+ await page.waitForFunction(()=>window.qaOldMicStream?.getTracks().every(track=>track.readyState==='ended'))
+ assert.equal(await page.evaluate(()=>window.__IEUM_V2__.audioRuntime.recorder?.state),'recording','A stale permission response must not cancel the new Take')
+ assert.equal(await page.evaluate(()=>window.qaNewMicStream.getTracks().every(track=>track.readyState==='live')),true)
+ await page.reload();await page.waitForFunction(()=>window.__IEUM_V2__?.state?.profile?.sampleSong==='Protected original sample')
+ await page.locator('[data-nav="user"]').click();await page.getByRole('button',{name:'다시 등록',exact:true}).click()
+ await page.locator('.sample-select-stage > button.primary').click()
+ await page.evaluate(()=>{
+  const get=navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices)
+  let attempts=0
+  navigator.mediaDevices.getUserMedia=async(...args)=>{
+   const number=++attempts
+   if(number===1)await new Promise(resolve=>{window.qaReleaseTimedOutMic=resolve})
+   const stream=await get(...args)
+   if(number===1)window.qaTimedOutMicStream=stream
+   return stream
+  }
+ })
+ await page.locator('[data-action="sample-start"]').click()
+ await page.locator('.permission-error').waitFor()
+ assert.ok((await page.locator('.permission-error').textContent()).includes('마이크 권한 응답이 없습니다'))
+ await page.locator('[data-action="sample-start"]').click();await page.waitForSelector('[data-action="sample-stop"]')
+ await page.evaluate(()=>window.qaReleaseTimedOutMic())
+ await page.waitForFunction(()=>window.qaTimedOutMicStream)
+ assert.equal(await page.evaluate(()=>window.qaTimedOutMicStream.getTracks().every(track=>track.readyState==='ended')),true,'A permission response after timeout must release only its own late stream')
+ assert.equal(await page.evaluate(()=>window.__IEUM_V2__.audioRuntime.recorder?.state),'recording')
+ await page.reload();await page.waitForFunction(()=>window.__IEUM_V2__?.state?.profile?.sampleSong==='Protected original sample')
+ await page.locator('[data-nav="user"]').click();await page.getByRole('button',{name:'다시 등록',exact:true}).click()
+ await page.locator('.sample-select-stage > button.primary').click()
  await page.route('**'+first.backingFile,route=>route.fulfill({status:503,body:'QA backing unavailable'}))
  await page.locator('[data-action="sample-start"]').click()
  await page.getByRole('alert').waitFor()
@@ -118,7 +163,24 @@ try{
  await page.waitForSelector('[data-action="voice-complete"]')
  assert.ok(await page.locator('.sample-stage audio').getAttribute('src'))
  assert.equal(await page.evaluate(()=>window.__IEUM_V2__.state.profile.sampleSong),'Protected original sample')
+ for(let i=1;i<samples.length;i++){
+  await page.reload();await page.waitForFunction(()=>window.__IEUM_V2__?.state?.profile?.sampleSong==='Protected original sample')
+  await page.locator('[data-nav="user"]').click();await page.getByRole('button',{name:'다시 등록',exact:true}).click()
+  await page.locator('.sample-song-list button').nth(i).click()
+  await page.locator('.sample-select-stage > button.primary').click()
+  await page.locator('[data-action="sample-start"]').click();await page.waitForSelector('[data-action="sample-stop"]')
+  const duration=await page.evaluate(()=>window.__IEUM_V2__.audioRuntime.recordingGuideState.decodedBacking.duration)
+  assert.ok(Math.abs(duration-samples[i].duration)<.15)
+  if(samples[i].lyrics.length>1){
+   await page.waitForFunction(time=>{const r=window.__IEUM_V2__.audioRuntime;return r.activeElapsedSec+r.context.currentTime-r.activeStartedAt>time+.2},samples[i].lyrics[1].time)
+   assert.ok((await page.locator('[data-sample-lyric]').textContent()).includes(samples[i].lyrics[1].text))
+  }
+  await page.waitForFunction(duration=>{const r=window.__IEUM_V2__.audioRuntime;return r.activeElapsedSec+r.context.currentTime-r.activeStartedAt>=duration},samples[i].duration)
+  await page.locator('[data-action="sample-stop"]').click();await page.waitForSelector('[data-action="voice-complete"]')
+  assert.ok(await page.locator('.sample-stage audio').getAttribute('src'))
+  assert.equal(await page.evaluate(()=>window.__IEUM_V2__.state.profile.sampleSong),'Protected original sample')
+ }
  assert.deepEqual(errors,[])
- console.log(JSON.stringify({passed:true,samples:samples.length,assetHashes:true,preview:true,leaveDuringLoadingReleasesCapture:true,missingAndMismatchedBackingRejectedBeforeMicrophone:true,retry:true,guideToggle:true,actualBackingDuration:backingDuration,lyricTimeline:true,fullSpecifiedTake:true,recordedTake:true,clockBeforeToggle:before,limits:'Isolated synthetic microphone; pronunciation, acoustic Guide leakage and physical-device acceptance remain pending.'}))
+ console.log(JSON.stringify({passed:true,samples:samples.length,assetHashes:true,preview:true,allProvidedGuides:true,stalePermissionKeepsNewTake:true,leaveDuringLoadingReleasesCapture:true,missingAndMismatchedBackingRejectedBeforeMicrophone:true,retry:true,guideToggle:true,actualBackingDuration:backingDuration,lyricTimeline:true,fullSpecifiedTake:true,recordedTake:true,clockBeforeToggle:before,limits:'Isolated synthetic microphone; pronunciation, acoustic Guide leakage and physical-device acceptance remain pending.'}))
  await context.close()
 }finally{await browser.close()}
