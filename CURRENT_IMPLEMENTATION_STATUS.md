@@ -1,4 +1,4 @@
-## 2026-10-08 단계 3 — 세 실제 제공 샘플 및 마이크 세션 보호
+## 2026-10-08 단계 3 — 세 실제 제공 샘플 및 마이크 세션 보호 배포 검증
 
 기존 React Voice Setup에 실제 AI 오디오 세 구간(서로의 빛16초/천천히 함께19초/비가 그친 뒤18초)을 등록했다. 각 구간의 실제 MP3/분리 반주/해시/가사 word time을 연결했다. 세 곡 모두 미리듣기·Guide decode·가사 전환·지정 전체 길이 Take Review·기존 Profile 원본 보존 QA 통과. 첫 구간의 Guide 토글 시간 연속성, 다운로드503/해시 불일치 시 마이크0회, 재시도, 로딩 중 이탈, 늦은 권한 응답 후 이탈도 통과했다.
 
@@ -6,7 +6,9 @@
 
 이탈→재진입→새 Take 시작→이전 권한 응답 도착에서 새 recorder가 inactive로 바뀌는 오류를 실제 재현했다. 마이크 요청 세션을 검사해 오래된 stream만 종료하고 새 Take와 stream을 보존하도록 최소 보완했다. 재현 QA에서 새 recorder recording/새 track live/오래된 track ended, 기존 Profile 보존을 확인했다. 기존8초 permission timeout 이후 재시도한 경우에도 늦은 이전 stream이 live로 남는 오류를 재현했다. 종료 handler를 timeout 예외 이전에 등록해 이전 track ended/새 recorder recording을 실제 QA로 확인했다. timeout 기준과 기존 UX는 변경하지 않았다. 전체 유지 QA/build/qa:record-errors/qa:profile 통과. 실제 새18초 backing WAV의 pause/resume 동일 offset·토글·비무음 offline mix(RMS0.032933)·decode 실패 마이크 해제도 통과했다. 모두 격리 합성 마이크 QA이며 물리 청취 인수와 구분한다.
 
-이번 묶음의 Git/production 마감 확인은 진행 중이다. 앞서 두 곡 배포72fa7bb의 production 검증은 아래 기록에 있다. 전체 단계3 완료 아님: 프로젝트용 실제 Key/Part/Guide 자료와 물리 마이크·발음/청취/반주 누출·지연 인수가 남는다. 디자인은 보류하며 단계4/5 신규 작업은 하지 않는다.
+이번 기능 묶음은 `a07c101560bb83859fb3ac91ecde112df734910a`로 main commit/push 및 origin/main 일치를 확인했다. Vercel bot의 Production deployment6928306575/해당 commit/status success/Deployment has completed를 확인했다. Production HTTP200과 검증 build `index-DNhOSGRx.js`/`index-DtsPXy24.css` byte SHA256이 일치한다. Production qa:provided(세 곡 및 timeout/reentry)/qa:profile/qa:record-errors가 모두 통과했고, 미리듣기→녹음 전환에서 이전 원곡 audio.paused=true도 확인했다. 직접 Vercel production deploy는 사용하지 않았다. 앞서 두 곡 배포72fa7bb의 기록은 아래에 보존한다. 전체 단계3 완료 아님: 프로젝트용 실제 Key/Part/Guide 자료와 물리 마이크·발음/청취/반주 누출·지연 인수가 남는다. 디자인은 보류하며 단계4/5 신규 작업은 하지 않는다.
+
+실기기 확인은 [Production](https://ieum-v2-react.vercel.app/)의 Voice Setup에서 한 번에 진행한다: 세 곡 미리듣기/가사 발음, Guide 켜기·끄기 후 실제 노래 Take 청취, 녹음·가사 지연과 스피커 반주 누출. 자동 QA의 합성 마이크를 실기기 인수로 대체하지 않는다.
 
 ## 2026-10-08 단계 3 — 두 실제 제공곡 배포 검증
 

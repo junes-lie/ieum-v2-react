@@ -60,7 +60,9 @@ try{
  await page.locator('.sample-song-list button').first().click()
  await page.locator('.sample-select-stage .play-btn').click()
  await page.waitForFunction(()=>document.querySelector('.sample-select-stage audio')?.currentTime>.2)
+ await page.evaluate(()=>{window.qaPreviousPreview=document.querySelector('.sample-select-stage audio')})
  await page.locator('.sample-select-stage > button.primary').click()
+ assert.equal(await page.evaluate(()=>window.qaPreviousPreview.paused),true,'Provided vocal preview must stop before opening microphone recording')
  const first=samples[0]
  let release,requested
  const held=new Promise(resolve=>{release=resolve}),seen=new Promise(resolve=>{requested=resolve})
