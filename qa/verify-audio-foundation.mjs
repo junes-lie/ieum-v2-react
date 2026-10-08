@@ -46,4 +46,24 @@ assert.equal(scheduled.length,1,'Changing paused guides does not restart audio')
 audioRuntime.context.currentTime=150
 resumeRecording()
 assert.ok(Math.abs(scheduled[1].offset-7.1)<1e-9,'Resume preserves project time and guide trim')
-console.log('Audio foundation: range/key gates, missing metadata, 2/3/4-track master peak safety, pause/resume timeline passed.')
+const actualBacking={duration:20}
+audioRuntime.context.createOscillator=()=>{throw new Error('A supplied backing must never be replaced by synthetic tones')}
+audioRuntime.context.createBufferSource=()=>({connect(){return this},start(at,offset){scheduled.push({at,offset,buffer:this.buffer})},stop(){}})
+audioRuntime.recordingGuideState.decodedBacking=actualBacking
+updateRecordingGuides({backing:true,parts:[false]})
+assert.equal(scheduled.at(-1).buffer,actualBacking)
+assert.equal(scheduled.at(-1).offset,7,'Actual backing follows the same elapsed project time')
+pauseRecording()
+const pausedCount=scheduled.length
+updateRecordingGuides({backing:false,parts:[false]})
+updateRecordingGuides({backing:true,parts:[false]})
+assert.equal(scheduled.length,pausedCount,'Paused backing toggles must not start audio')
+audioRuntime.context.currentTime=200
+resumeRecording()
+assert.equal(scheduled.at(-1).buffer,actualBacking)
+assert.equal(scheduled.at(-1).offset,7,'Actual backing resumes at the preserved project time')
+audioRuntime.context.currentTime=220
+const beforeEnd=scheduled.length
+updateRecordingGuides({backing:true,parts:[false]})
+assert.equal(scheduled.length,beforeEnd,'A finished actual backing neither restarts nor falls back to synthetic audio')
+console.log('Audio foundation: range/key gates, missing metadata, 2/3/4-track master peak safety, pause/resume timeline and actual backing continuity passed.')

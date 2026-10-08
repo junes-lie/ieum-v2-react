@@ -16,7 +16,7 @@ try {
  })
  const page=await context.newPage(),errors=[]
  page.on('pageerror',error=>errors.push(error.message))
- await page.goto(process.env.IEUM_QA_URL||'http://127.0.0.1:4191/?design=figma')
+ const url=new URL(process.env.IEUM_QA_URL||'http://127.0.0.1:4191/');url.searchParams.set('design','figma');await page.goto(url.href)
  await page.waitForFunction(()=>Object.keys(window.__IEUM_V2__?.state?.projectTracks||{}).length===2)
  await page.locator('[data-action="record-part"]').click();await page.locator('[data-action="record-start"]').click()
  await page.waitForSelector('[data-action="record-pause"]');await page.waitForTimeout(1100)

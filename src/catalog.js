@@ -1,3 +1,5 @@
+import providedSamples from './providedSamples.json' with { type: 'json' }
+
 export const CURRENT_USER_ID = 'jisun'
 
 export const PEOPLE = [
@@ -51,8 +53,4 @@ export function personFromName(name) {
 
 export const FINDER_CANDIDATES = ['luna', 'min'].map(id => PERSON_BY_ID[id])
 
-export const SAMPLE_SONGS = [
-  { id:'sample-a', title:'Sample Song A', key:'C major', range:'C3–E4', lyric:'A little closer, each day', mood:'잔잔한 긴 호흡' },
-  { id:'sample-b', title:'Sample Song B', key:'D minor', range:'D3–F4', lyric:'Stay with the sound we made', mood:'부드러운 중음 연결' },
-  { id:'sample-c', title:'Sample Song C', key:'B♭ major', range:'B♭2–D4', lyric:'Under the quiet light', mood:'낮은 음의 안정감' }
-]
+export const SAMPLE_SONGS = providedSamples

@@ -1,3 +1,37 @@
+## 2026-10-08 단계 3 — 실제 제공 샘플 및 Guide 연결
+
+실행 위치는 단계 3이며 디자인은 보류한다. 기존 React Voice Setup에 실제 AI 오리지널 「서로의 빛」16초와 「천천히 함께」19초 지정 구간을 연결했다. 실제 미리듣기/분리 반주, SHA256 검증 후 녹음 시작, Guide 토글, 같은 녹음 Timeline의 가사 전환이 동작한다. 원본 사용자 Sample/음역/Project Track과 저장 키는 보존한다.
+
+- 원곡 실제 생성: 90초/48kHz/stereo, seed65349, SHA256 `d5d70b20e830f2336140913714327df9b79bfb0f12de6c9d279b2b188445b4cb`. Whisper-small 가사 gate0.8 및 실제 word alignment 통과. 전곡 Turbo0.791 실패. 실제16초 구간 독립 검증은 Turbo0.893617 및 시간 gate 통과/small0.782609 실패이며 검증 WAV와 실제 export WAV/보컬의 해시도 일치한다. 발음·청취 인수는 미완료다.
+- 샘플: 원곡31.5초부터16초. 실제 구간 Turbo word alignment 추정 가사 cue0/3.84/9.86초(청취 검토 필요), pYIN 관측 추정G3–B4. 요청한 C major를 실제 Key로 주장하지 않고 원키로 표시한다. 원곡/latent/모델/생성 보고서는 격리 runtime에 보존하고 실제 사용 MP3와 재현 script만 repository에 둔다.
+- 앱 QA: 실제 MP3 해시/미리듣기, HTTP503 및 해시 불일치 시 마이크 요청0회, 재시도 후 요청1회, Guide 시간 연속성, 가사 전환, 지정16초 Take Review, 기존 Profile 보존 통과. 로딩 중 이탈 후 마이크 요청1회를 재현해 lifecycle 검사로0회가 되도록 보완했다. 권한 응답 중 이탈한 경우 늦게 열린 QA stream의 모든 track 종료도 확인했다. 전체 유지 QA/build 재통과. 합성 마이크 QA이며 물리 청취·스피커 반주 누출·지연 인수는 아니다.
+- 기존 Profile 실패/재시도/재로드와 2·3·4 Part 프로젝트 제출 실패 시 원본 보존/실제 합성 파일/완료 credits/재로드 회귀 통과. 녹음 오류 QA의 URL에서 design mode가 빠지는 테스트 문제만 보완했다.
+- 추가 두 곡의60초 원본은 가사 gate 실패(천천히 함께0.719, 비가 그친 뒤0.591), 잘라낸 두 번째 곡 후보도0.581로 실패했다. 두 곡의90초 재생성도 분리 보컬 ASR0으로 실패했으며 두 번째 원곡 직접 ASR도0이었다. 실제 설치 pipeline에서 audio_codes 전달 시 text2music→cover 자동 전환 및 기본 강도1.0을 확인했다. 같은 모델/가사/seed에서 코드 조건을 제외한 실제 text2music으로 두 번째 곡을 생성했다. 전곡 small ASR0.933333/word alignment0.924370 및 실제19초 구간 독립 ASR/word alignment1.0을 통과하여 채택했다. SHA256 `7ef11d5e7d574134154c7fddc3022654feec474ac5cba70ed24c606232ca0eb9`, 원곡31.7초부터19초, 실제 구간 cue0/8.2/13.96, pYIN 추정F♯3–E♭4다. 두 곡 전환/미리듣기/지정16초 Take/원본 보존 QA 통과. 세 번째 직접 생성은 C 디스크 부족(os error112)으로 실패하여 기존 파일을 보존하고 여유 있는 D:/IEUM-AI-runtime의 신규 출력 폴더에서 같은 모델로 재시도했으나 가용 RAM 약1.1GB/모델 component 로딩10분 이상을 확인해 미완성 추론을 중지했다. 기존 생성물/캐시는 보존했다. 실제 검증된 두 곡 연결 묶음부터 배포하며 세 번째 곡은 미완료다. 실패 원본·보고서는 보존하며 채택하지 않았다. 제공 샘플3곡 목표는 아직 미완료다.
+
+전체 단계3 완료 아님: 나머지 실제 제공곡 검증, 프로젝트용 실제 Key/Part/Guide 자료, 물리 마이크·청취 인수가 남는다. 단계4/5 신규 작업과 직접 production deploy는 하지 않는다. 현재 음악 변경은 아직 commit/push/배포하지 않았다.
+
+## 2026-10-08 제공곡 진단 — 이전 시점 기록
+
+아래는 이전 시점의 진단 기록이다. 과거의 ‘실행 중’과 완료 표현은 당시 상태이며, 현재 판정은 문서 최상단의 실제 제공 샘플 및 Guide 연결 항목을 우선한다.
+
+- 실제 실패 원인 재현: ACE-Step가 text encoder forward 이후 lyric embedding을 직접 호출하는데 text encoder disk offload가 해당 storage를 비워 가사 입력을 손상시켰다. 같은 weight/input 진단에서 offload 없음은 exact match, offload 이후는 mismatch(max absolute difference 0.1015625)였다. text encoder는 resident로 유지하고 DiT만 block offload하도록 수정했다. native/converted lyric encoder 수치 비교는 relative RMSE 2.54e-6으로 통과했으며 곡 품질 증거로 해석하지 않는다.
+- 수정 후 실제 음악 LM 300 code + ACE-Step 8-step으로 60초/48kHz/stereo WAV를 생성했다. SHA256 `dc43e0725ed2033a0f4a258dd58b8e31028901db4cb8e864bb626c3ef3a55ac5`, RMS0.163286. 전체 ASR 유사도0.155; 실제 분리 보컬의 20초 구간 ASR 유사도0.474, 구간 초과 timestamp로 가사 채택 gate 실패. 실제 한국어 가사 일부는 인식됐으나 전곡 가사/타임코드 완료가 아니다.
+- 실제 UVR ONNX 추론으로 60초 vocal/backing을 분리했다. backing SHA256 `a40cc8f378d72bfbd074bf7e41f204e40f6d3aa52144a6e312bcef3ae92d6656`. stem sum residual0은 신호 보존 증거이며 완벽한 분리 품질을 의미하지 않는다.
+- 기존 audio engine에 선택적 backingBlob을 연결했다. 실제 생성 반주를 headless Web Audio로 decode하고 녹음 시작/일시정지/동일 offset 재개/토글/비무음 offline preview/no synthetic fallback/no live node 누적을 검증했다. 전체 유지 QA와 production build 통과. 마이크는 합성 QA 입력이며 물리 청취가 아니다.
+- 실패곡 원본/latent/분리음/검증 보고서는 repository 밖 격리 runtime에 보존한다. 가사/타임코드/실제 Part 음역 검증 전 commercial demo id나 제공곡 catalog에 등록하지 않았다. App/CSS/사용자 Track 변경 없음.
+
+다음: 보컬 즉시 시작·허밍 제외·90초 조건의 실제 생성 → 보컬/가사 검증 → 실제 타임코드/Part 자료 → 기존 React Guide/가사/Mix 연결 → 단계 관련 QA/build → diff/commit/push → Git 자동배포/production QA. 단계 4/5 신규 작업과 직접 production deploy는 하지 않는다. 현재 음악 변경은 아직 commit/push/배포하지 않았다.
+
+## 2026-10-08 실제 제공곡의 AI 생성 진행 — 과거 시도 기록
+
+45초 재생성도 실제 추론/48kHz 스테레오 WAV 저장에 성공했다(SHA256 `0cb6abb9e324cac785f86b719e61adc4ff103b27343a48bf56d5c46b705af0ca`, RMS0.10627). 그러나 Whisper 인식은 지정 가사와 유사도0.054이며 타임스탬프49.38초가 실제 길이45초를 초과했다. 이 ASR 결과로 가사 정렬을 만들 수 없고 두 출력 모두 아직 제공곡으로 채택하지 않았다. 생성 보고서 절대 경로가 잘못 기록되어 검증이 FileNotFoundError로 실패한 건은 출력 폴더의 실제 WAV를 직접 읽어 동일 해시를 확인하도록 검증 경로를 수정하여 해결했다. 가사 조건의 실제 반영/보컬 품질이 현재 단계3의 미해결 항목이다. 앱 연결·commit/push·배포는 수행하지 않았다.
+
+첫 20초 결과의 Whisper-small 검증에서 WAV 무결성/길이/비무음은 통과했지만 지정 가사와 자동 인식의 유사도가 0.04였다. 인식 문장도 지정 가사가 아니므로 제공곡 채택 gate를 통과하지 못했다. ASR 자체의 오류 가능성과 실제 보컬 품질은 구분한다. 임의 가사 타임코드를 붙이지 않고 원본을 보존하며, 45초/다른 seed의 실제 재생성을 실행한다. 현재 앱 코드/배포는 변경하지 않았다.
+
+실제 ACE-Step 2B Turbo 다운로드·변환 및 원곡 「서로의 빛」 추론이 성공했다. 순차 로딩과 CPU float32 block offload로 8/8 diffusion step을 실행했고, 생성 시간 226.52초, 실제 출력 20초/48kHz/스테레오 WAV, peak 0.89125/RMS 0.08930, SHA256 `2e7c57c8d936c670241a83b18dd5107314eae1b29904fab34c00076f3ff13945`를 생성 보고서에서 확인했다. 출력은 repository 밖 격리 runtime에 보존한다. Whisper-small 실제 가사 검증은 실행 중이다. 가사 일치·실제 타임코드·반주 분리·Part 음역·앱 연결·배포는 아직 완료가 아니다. 아래 다운로드 중/추론 전 표현은 준비 시점 기록이다.
+
+사용자 정정에 따라 실제 곡 자료 요청/외부 자료 대기 판단을 철회했다. 단계 3에서 오리지널 곡과 가사를 조건으로 실제 음악 모델 생성→결과 검증→Guide/가사/Part 데이터 연결을 수행한다. 설치된 CPU PyTorch2.14.1/Diffusers0.41.0에 AceStepPipeline이 존재한다. RAM16GB/조회시가용5.7GB, disk84.1GB를 확인해 공식 2B Turbo 필수 component5.9GB를 선택했다. ACE-Step/Ace-Step1.5의 MIT/revision19671f406d603126926c1b7e2adc169acbcade22를 실제 모델 API로 확인하고 격리 runtime에 다운로드 중이다. 최초 SSL CERTIFICATE_VERIFY_FAILED는 기존 truststore로 OS 인증서를 사용하여 조회 재시도에 성공했다. 생성 script는 준비/구문 확인 상태이며 실제 추론/음질/가사 시간/반주 분리/앱 연결 완료로 표시하지 않는다. 디자인 변경 없음.
+
 ## 2026-10-08 실행 위치 교정 — 단계 3 녹음 세션
 
 단계 0부터 기존 완료 조건/현재 코드/검증 근거를 다시 대조했다. 기준 보존 QA/build와 production 임시본/2·3·4 연속성은 통과했고 실제 P0 출력 계보·파일/사용자 계약도 재통과했다. 추론 재실행이나 서버 완료로 보고하지 않는다. 디자인은 보류하며 실행 위치는 단계 3이다. 앞서 단계 4 부분 수정을 섞은 실행을 단계 완료로 승인하지 않고 현재부터 신규 단계 4/5 작업을 추가하지 않는다.

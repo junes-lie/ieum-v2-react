@@ -20,6 +20,7 @@ import {
   stopMicrophone,
   stopRecording,
   getRecordingTimeline,
+  loadProvidedAudio,
   updateRecordingGuides
 } from './audio.js'
 import { readLocalUserState, writeLocalUserState } from './projectService.js'
@@ -725,10 +726,14 @@ function VoiceSetup({ complete, go, back, existing, editMode }) {
   const [sampleSong,setSampleSong] = useState(SAMPLE_SONGS[0])
   const [sampleStatus, setSampleStatus] = useState('ready')
   const [samplePlaying, setSamplePlaying] = useState(false)
+  const [sampleGuidePlaying,setSampleGuidePlaying]=useState(false)
+  const [sampleGuideEnabled,setSampleGuideEnabled]=useState(true)
+  const [sampleAudioFailure,setSampleAudioFailure]=useState(false)
   const [sampleAction,setSampleAction]=useState(null)
   const [sampleBusy,setSampleBusy]=useState(false)
   const sampleStartingRef=useRef(false)
   const sampleStoppingRef=useRef(false)
+  const sampleLifecycleRef=useRef(0)
   const pendingSampleSong=useRef(null)
   const [error, setError] = useState('')
   const [saving,setSaving]=useState(false)
@@ -785,11 +790,18 @@ function VoiceSetup({ complete, go, back, existing, editMode }) {
   const startSample = async () => {
     if(sampleStartingRef.current)return
     sampleStartingRef.current=true;setSampleBusy(true)
+    const lifecycle=sampleLifecycleRef.current
+    let loadingAudio=true
     try {
-      setError(''); setSaveFailure(false); setPermission('granted'); setSampleStatus('recording'); setSeconds(0)
-      await startRecording({ onFrame:frame=>setLevel(frame.level), guides:{backing:false,parts:[false,false,false,false]}, guideTracks:[], countIn:0 })
-      timer.current = window.setInterval(() => setSeconds(value => value + 1), 1000)
-    } catch (e) { setPermission(isMicrophonePermissionError(e) ? 'denied' : 'error'); setSampleStatus('ready'); setError(microphoneErrorMessage(e)) }
+      setError('');setSaveFailure(false);setSampleAudioFailure(false);setSampleGuidePlaying(false)
+      const backingBlob=await loadProvidedAudio(sampleSong.backingFile,sampleSong.provenance.backingSha256)
+      if(lifecycle!==sampleLifecycleRef.current)return
+      loadingAudio=false
+      await startRecording({onFrame:frame=>{setLevel(frame.level);setSeconds(frame.elapsedSec || 0)},guides:{backing:sampleGuideEnabled,parts:[]},guideTracks:[],backingBlob,duration:sampleSong.duration})
+      if(lifecycle!==sampleLifecycleRef.current){cancelRecording();stopMicrophone();return}
+      setPermission('granted');setSampleStatus('recording');setSeconds(0)
+      timer.current = window.setInterval(() => setSeconds(getRecordingTimeline().elapsedSec),1000)
+    } catch (e) {setSampleStatus('ready');if(loadingAudio){setSampleAudioFailure(true);setError(e.message)}else{setPermission(isMicrophonePermissionError(e)?'denied':'error');setError(microphoneErrorMessage(e))}}
     finally {sampleStartingRef.current=false;setSampleBusy(false)}
   }
   const stopSample = async () => {
@@ -802,19 +814,19 @@ function VoiceSetup({ complete, go, back, existing, editMode }) {
     setSampleDraft(draft); setSampleStatus('review'); setSamplePlaying(false)
     } finally {sampleStoppingRef.current=false;setSampleBusy(false);setSampleAction(null)}
   }
-  const chooseSampleSong = song => {if(sampleDraft&&song.id!==sampleSong.id){pendingSampleSong.current=song;setSampleAction('discard-song');return}setSampleSong(song)}
+  const chooseSampleSong = song => {setSampleGuidePlaying(false);if(sampleDraft&&song.id!==sampleSong.id){pendingSampleSong.current=song;setSampleAction('discard-song');return}setSampleSong(song)}
   const retrySample = () => { cancelRecording(); setSampleDraft(null); setSampleStatus('ready'); setSeconds(0); setError('') }
-  useEffect(() => () => { clearInterval(timer.current); cancelRecording(); stopMicrophone() }, [])
+  useEffect(() => () => { sampleLifecycleRef.current++;clearInterval(timer.current); cancelRecording(); stopMicrophone() }, [])
   return <div className="screen voice-screen">
     <TopBar title={['sample-select','sample','complete'].includes(step) ? 'VOICE PROFILE' : 'VOICE RANGE'} back={() => {if(saving||sampleBusy)return;if(step==='sample'&&sampleStatus==='recording'){setSampleAction('stop');return}if(step==='sample')setStep('sample-select');else if(step==='sample-select'&&!editMode)setStep('range-result');else if(step==='complete')setStep('sample');else back()}} meta={step === 'complete' ? 'READY' : ['sample-select','sample'].includes(step) ? 'PROFILE AUDIO' : 'RANGE CHECK'} />
     <main className="voice-main">
       {step === 'intro' && <section className="setup-copy"><p className="kicker">About 30 seconds</p><h1>편한 음역을<br/>측정해요.</h1><p>별도 곡을 녹음하지 않습니다. 낮은 음부터 높은 음까지 편하게 소리 내면 음정 표본만 측정합니다.</p><p className="permission-primer">처음 한 번만 브라우저의 마이크 권한 창이 열립니다. 허용하면 바로 측정을 시작합니다.</p><button className="primary" data-action="range-start" onClick={startRange}>마이크 허용하고 음역 측정 시작</button></section>}
       {step === 'range-running' && <section className="measurement"><p className="kicker">RANGE · {fmt(seconds)}</p><h1>낮은 음부터 높은 음까지<br/>편하게 소리 내보세요.</h1><div className="level-orbit" style={{ '--level': level }}><span /></div><p className="pitch-readout">{pitch ? `${midiToNote(pitch)} · ${Math.round(440*Math.pow(2,(pitch-69)/12))}Hz` : '음정을 듣고 있어요…'}</p><p>자동으로 넘어가지 않습니다. 낮은 음과 높은 음을 충분히 낸 뒤 직접 마치세요.</p><div className="pitch-diagnostics" aria-live="polite"><span>입력 {Math.round(20*Math.log10(Math.max(1e-6,pitchDiagnostics.rms)))} dBFS</span><span>신뢰도 {Math.round(pitchDiagnostics.confidence*100)}%</span><span>수집 {pitchDiagnostics.accepted}/{pitchDiagnostics.checked}</span><span>{pitchDiagnostics.reason}</span></div><button className="secondary" data-action="range-finish" onClick={finishRange}>측정 마치기 · {pitchSamples.current.length} samples</button></section>}
       {step === 'range-result' && <section className="result-block"><p className="kicker">실제 마이크 음정 분석</p><h1>측정된 음역<br/><span>{range?.label}</span></h1><p>{range?.sampleCount}개의 유효 음정 표본으로 계산했습니다. 이 데이터는 Part Fit에만 사용하며 Voice Identity나 프로젝트 Record를 만들지 않습니다.</p><dl className="measurement-proof"><div><dt>Pitch confidence</dt><dd>{Math.round((range?.confidence||0)*100)}%</dd></div><div><dt>Microphone</dt><dd>{range?.microphone?.label || 'Unavailable'}</dd></div><div><dt>Sample rate</dt><dd>{range?.microphone?.settings?.sampleRate || 'Browser default'} Hz</dd></div></dl><div className="range-rail"><i/><b style={{left:`${Math.max(0,((range?.lowMidi||48)-36)/48*100)}%`,width:`${Math.max(8,((range?.highMidi||60)-(range?.lowMidi||48))/48*100)}%`}}/></div><div className="review-actions"><button className="secondary" onClick={()=>setStep('intro')}>다시 측정</button><button className="primary" data-action="sample-next" disabled={saving} onClick={() => editMode==="range"?finish({range:range?.label,rangeData:range,editMode}):setStep("sample-select")}>{editMode==="range"?"음역 변경 저장":"Sample Song 고르기"}</button></div></section>}
-      {step === 'sample-select' && <section className="sample-select-stage"><p className="kicker">VP03 · 내 음역에 맞는 세 곡</p><h1>대표 Sample로 부를<br/>한 곡을 골라요.</h1><p>세 곡은 제공곡 확정 전 Placeholder입니다. 선택한 곡의 같은 구간을 15–20초 녹음합니다.</p><div className="sample-song-list">{SAMPLE_SONGS.map(song=><button key={song.id} className={sampleSong.id===song.id?'active':''} aria-pressed={sampleSong.id===song.id} onClick={()=>chooseSampleSong(song)}><span>{song.title}</span><strong>{song.range}</strong><small>{song.key} · {song.mood}</small></button>)}</div><button className="primary" onClick={()=>setStep('sample')}>{sampleSong.title} 녹음하기</button></section>}
-      {step === 'sample' && <section className="sample-stage"><p className="kicker">Separate profile audio · {sampleSong.title}</p><h1>대표 Voice Sample을<br/>별도로 녹음해요.</h1><p>음역 측정과 다른 목적·저장 데이터입니다. 실제 제공 음원은 아직 확정되지 않아 지정 가사 구간을 무반주로 녹음합니다.</p><blockquote>“{sampleSong.lyric}”</blockquote>{sampleStatus === 'review' ? <><Player source={sampleDraft?.url} durationHint={sampleDraft?.duration} playing={samplePlaying} setPlaying={setSamplePlaying}/><div className="sample-proof"><span>VOICE SAMPLE · {fmt(sampleDraft?.duration)}</span><span>{sampleDraft?.features?.fingerprint || '분석 없음'}</span></div><VoiceIdentity/><div className="review-actions"><button className="secondary" data-action="sample-retry" onClick={()=>setSampleAction("discard")}>다시 부르기</button><button className="primary" data-action="voice-complete" onClick={() => setStep('complete')}>이 샘플 사용하기</button></div></> : <><div className="level-orbit sample-meter" style={{ '--level': level }}><span /></div><p className="record-status">{sampleStatus === 'recording' ? `RECORDING · ${fmt(seconds)}` : '15–20초 권장'}</p><button className={`record-btn ${sampleStatus === 'recording' ? 'stop' : ''}`} data-action={sampleStatus === 'recording' ? 'sample-stop' : 'sample-start'} disabled={sampleBusy} onClick={sampleStatus === 'recording' ? stopSample : startSample}><Icon name={sampleStatus === 'recording' ? 'stop' : 'mic'} size={27}/></button></>}</section>}
+      {step === 'sample-select' && <section className="sample-select-stage"><p className="kicker">VP03 · 제공 샘플 곡</p><h1>대표 Sample로 부를<br/>한 곡을 골라요.</h1><p>선택한 곡의 지정 구간을 15–20초 녹음합니다.</p><div className="sample-song-list">{SAMPLE_SONGS.map(song=><button key={song.id} className={sampleSong.id===song.id?'active':''} aria-pressed={sampleSong.id===song.id} onClick={()=>chooseSampleSong(song)}><span>{song.title}</span><strong>{song.range}</strong><small>{song.key} · {song.mood}</small></button>)}</div><Player source={sampleSong.audioFile} durationHint={sampleSong.duration} playing={sampleGuidePlaying} setPlaying={setSampleGuidePlaying} caption="제공곡 구간 듣기"/><button className="primary" onClick={()=>{setSampleGuidePlaying(false);setStep('sample')}}>{sampleSong.title} 녹음하기</button></section>}
+      {step === 'sample' && <section className="sample-stage"><p className="kicker">Separate profile audio · {sampleSong.title}</p><h1>대표 Voice Sample을<br/>별도로 녹음해요.</h1><p>음역 측정과 별도로 저장됩니다. 지정 {sampleSong.duration}초 구간을 부르고 정지를 눌러 주세요.</p><blockquote data-sample-lyric>“{sampleSong.lyrics?.[Math.max(0,sampleSong.lyrics.findLastIndex(line=>seconds>=line.time))]?.text || sampleSong.lyric}”</blockquote>{sampleStatus === 'review' ? <><Player source={sampleDraft?.url} durationHint={sampleDraft?.duration} playing={samplePlaying} setPlaying={setSamplePlaying}/><div className="sample-proof"><span>VOICE SAMPLE · {fmt(sampleDraft?.duration)}</span><span>{sampleDraft?.features?.fingerprint || '분석 없음'}</span></div><VoiceIdentity/><div className="review-actions"><button className="secondary" data-action="sample-retry" onClick={()=>setSampleAction("discard")}>다시 부르기</button><button className="primary" data-action="voice-complete" onClick={() => setStep('complete')}>이 샘플 사용하기</button></div></> : <><div className="level-orbit sample-meter" style={{ '--level': level }}><span /></div><label className="backing-guide"><span>Guide · 반주</span><input aria-label="Sample Guide 반주" type="checkbox" checked={sampleGuideEnabled} disabled={sampleBusy} onChange={event=>{setSampleGuideEnabled(event.target.checked);if(sampleStatus==='recording')updateRecordingGuides({backing:event.target.checked,parts:[]})}}/><i/></label><p className="record-status">{sampleStatus === 'recording' ? `RECORDING · ${fmt(seconds)} / ${fmt(sampleSong.duration)}` : `${sampleSong.duration}초 지정 구간`}</p><button className={`record-btn ${sampleStatus === 'recording' ? 'stop' : ''}`} data-action={sampleStatus === 'recording' ? 'sample-stop' : 'sample-start'} disabled={sampleBusy} onClick={sampleStatus === 'recording' ? stopSample : startSample}><Icon name={sampleStatus === 'recording' ? 'stop' : 'mic'} size={27}/></button></>}</section>}
       {step === 'complete' && <section className="voice-complete-stage"><p className="kicker">VP06 · Voice profile ready</p><h1>목소리 준비를<br/>마쳤어요.</h1><VoiceIdentity/><dl className="profile-ready-summary"><div><dt>편한 음역</dt><dd>{range?.label}</dd></div><div><dt>대표 Sample</dt><dd>{sampleSong.title} · {fmt(sampleDraft?.duration)}</dd></div><div><dt>Voice Identity</dt><dd>로컬 생성형 AI 미연결</dd></div></dl><p>Voice Identity는 실제 생성 모델이 연결되기 전까지 완료로 표시하지 않습니다.</p><button className="primary" data-action="profile-finish" disabled={saving} onClick={() => finish({ editMode, range:range?.label, rangeData:range, sample:sampleDraft, sampleSong, identity:{status:'blocked',reason:'free-local-generative-model-not-connected'} })}>{saving?"프로필을 저장하고 있어요.":editMode?"내 프로필로 돌아가기":"저장하고 원래 화면으로 돌아가기"}</button></section>}
-      {error && (saveFailure?<div className="permission-error" role="alert"><span>{error}</span></div>:<MicrophonePermissionNotice error={error} permissionDenied={permission==='denied'} onRetry={step==='sample'?startSample:startRange}/>)}
+      {error && (saveFailure||sampleAudioFailure?<div className="permission-error" role="alert"><span>{error}</span></div>:<MicrophonePermissionNotice error={error} permissionDenied={permission==='denied'} onRetry={step==='sample'?startSample:startRange}/>)}
       {sampleAction && <RecordingConfirmation onCancel={()=>{pendingSampleSong.current=null;setSampleAction(null)}}><p className="kicker">VOICE SAMPLE</p><h2 id="record-confirm-title">{sampleAction.startsWith('discard')?'지금 샘플을 지우고 다시 부를까요?':'녹음을 끝내고 확인할까요?'}</h2><p>기존 프로필의 샘플과 프로젝트 Track은 그대로 유지됩니다.</p><div className="review-actions"><button className="primary" disabled={sampleBusy} onClick={()=>{pendingSampleSong.current=null;setSampleAction(null)}}>{sampleAction.startsWith('discard')?'지금 샘플 유지':'계속 녹음'}</button><button className="secondary" disabled={sampleBusy} data-action={`confirm-sample-${sampleAction.startsWith('discard')?'discard':'stop'}`} onClick={sampleAction.startsWith('discard')?()=>{retrySample();if(pendingSampleSong.current){setSampleSong(pendingSampleSong.current);pendingSampleSong.current=null}setSampleAction(null)}:stopSample}>{sampleAction.startsWith('discard')?'지우고 다시 부르기':'녹음 끝내고 확인하기'}</button></div></RecordingConfirmation>}
 
     </main>

@@ -84,6 +84,6 @@ try {
  await initialContext.close()
  assert.deepEqual(await page.evaluate(()=>window.__IEUM_V2__.state.profile.roles),['QA harmony','QA support'])
  assert.deepEqual(errors,[])
- console.log(JSON.stringify({passed:true,preferencesCancelFailureRetryReload:true,cancelReturnsToProfile:true,initialSetupReturnsToMyWithoutJoining:true,rangeOnlyKeepsSample:true,duplicateSaveBlocked:true,failedSaveKeepsOldProfileAndNewTake:true,retryAndReload:true,rangeAndProjectTracksUnchanged:true,errors,limits:'Isolated synthetic microphone sample; no physical singing, supplied song or shared backend claim.'}))
+ console.log(JSON.stringify({passed:true,preferencesCancelFailureRetryReload:true,cancelReturnsToProfile:true,initialSetupReturnsToMyWithoutJoining:true,rangeOnlyKeepsSample:true,duplicateSaveBlocked:true,failedSaveKeepsOldProfileAndNewTake:true,retryAndReload:true,rangeAndProjectTracksUnchanged:true,errors,limits:'Actual provided Guide files with isolated synthetic microphone input; physical singing, listening and shared backend remain unverified.'}))
  await context.close()
 }finally{await browser.close()}

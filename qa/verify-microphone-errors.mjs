@@ -12,7 +12,7 @@ try {
    navigator.mediaDevices.getUserMedia=async()=>{throw new DOMException('QA microphone error',type)}
   },type)
   const page=await context.newPage()
-  await page.goto(process.env.IEUM_QA_URL||'http://127.0.0.1:4191/?design=figma')
+  const url=new URL(process.env.IEUM_QA_URL||'http://127.0.0.1:4191/');url.searchParams.set('design','figma');await page.goto(url.href)
   await page.waitForSelector('[data-action="record-part"]');await page.locator('[data-action="record-part"]').click()
   await page.locator('[data-action="record-start"]').click();await page.waitForSelector('.permission-error')
   const denied=type==='NotAllowedError'

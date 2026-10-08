@@ -211,7 +211,27 @@ async function decodeBlob(ctx, blob) {
   return ctx.decodeAudioData(await blob.arrayBuffer())
 }
 
-function scheduleBuffer(ctx, destination, buffer, start, sourceOffsetSec = 0, gainValue = .72, panValue = 0) {
+const providedAudioCache = new Map()
+export async function loadProvidedAudio(file, sha256) {
+  if (!file || !/^[a-f0-9]{64}$/.test(sha256 || '')) throw new Error('제공 음원의 파일 정보가 준비되지 않았어요.')
+  const key = `${file}:${sha256}`
+  if (!providedAudioCache.has(key)) {
+    const pending = (async () => {
+      const response = await fetch(file)
+      if (!response.ok) throw new Error('제공 음원을 불러오지 못했어요. 다시 시도해 주세요.')
+      const blob = await response.blob()
+      const digest = await crypto.subtle.digest('SHA-256',await blob.arrayBuffer())
+      const actual = Array.from(new Uint8Array(digest),value=>value.toString(16).padStart(2,'0')).join('')
+      if (actual !== sha256) throw new Error('제공 음원 파일을 확인하지 못했어요. 다시 시도해 주세요.')
+      return blob
+    })()
+    providedAudioCache.set(key,pending)
+    pending.catch(()=>providedAudioCache.delete(key))
+  }
+  return providedAudioCache.get(key)
+}
+
+function scheduleBuffer(ctx, destination, buffer, start, sourceOffsetSec = 0, gainValue = .72, panValue = 0, registerPlayback = true) {
   const source = ctx.createBufferSource()
   const gain = ctx.createGain()
   const pan = typeof ctx.createStereoPanner === 'function' ? ctx.createStereoPanner() : null
@@ -222,7 +242,7 @@ function scheduleBuffer(ctx, destination, buffer, start, sourceOffsetSec = 0, ga
     source.connect(gain).connect(pan).connect(destination)
   } else source.connect(gain).connect(destination)
   source.start(start, Math.min(Math.max(0, sourceOffsetSec), Math.max(0, buffer.duration - .01)))
-  runtime.playback.push(source)
+  if (registerPlayback) runtime.playback.push(source)
   return source
 }
 
@@ -238,7 +258,11 @@ function scheduleRecordingGuides(offsetSec = 0) {
   const ctx = context()
   const start = ctx.currentTime + .035
   const remaining = Math.max(.1, state.duration - offsetSec)
-  if (state.guides.backing) scheduleBacking(ctx, ctx.destination, start, remaining, .07, offsetSec)
+  if (state.guides.backing) {
+    if (state.decodedBacking) {
+      if (offsetSec < state.decodedBacking.duration) scheduleBuffer(ctx, ctx.destination, state.decodedBacking, start, offsetSec, .65)
+    } else scheduleBacking(ctx, ctx.destination, start, remaining, .07, offsetSec)
+  }
   state.decodedGuides.forEach(({track,buffer}) => {
     const index = Number(track.partIndex)
     const sourceOffset = offsetSec + (track.syncOffsetMs || 0) / 1000
@@ -246,7 +270,7 @@ function scheduleRecordingGuides(offsetSec = 0) {
   })
 }
 
-export async function startRecording({ onFrame, guides = {backing:false,parts:[]}, guideTracks = [], duration = 35 }) {
+export async function startRecording({ onFrame, guides = {backing:false,parts:[]}, guideTracks = [], backingBlob = null, duration = 35 }) {
   if (runtime.recorder && runtime.recorder.state !== 'inactive') throw new Error('이미 녹음 중이에요.')
   const hasSpeakerGuides = Boolean(guides?.backing || guides?.parts?.some(Boolean))
   const stream = await requestMicrophone({ voiceProcessing:hasSpeakerGuides ? true : null })
@@ -257,8 +281,15 @@ export async function startRecording({ onFrame, guides = {backing:false,parts:[]
     throw error
   }
   const ctx = context()
-  await ctx.resume()
-  const decodedGuides = await Promise.all(guideTracks.filter(track => track?.blob).map(async track => ({ track, buffer: await decodeBlob(ctx, track.blob) })))
+  let decodedGuides, decodedBacking
+  try {
+    await ctx.resume()
+    decodedGuides = await Promise.all(guideTracks.filter(track => track?.blob).map(async track => ({ track, buffer: await decodeBlob(ctx, track.blob) })))
+    decodedBacking = backingBlob ? await decodeBlob(ctx, backingBlob) : null
+  } catch (error) {
+    stopMicrophone()
+    throw error
+  }
   runtime.chunks = []
   const mime = ['audio/webm;codecs=opus','audio/webm','audio/mp4'].find(type => MediaRecorder.isTypeSupported(type)) || ''
   runtime.recorder = new MediaRecorder(stream, mime ? { mimeType: mime } : undefined)
@@ -270,8 +301,11 @@ export async function startRecording({ onFrame, guides = {backing:false,parts:[]
   monitorInput(onFrame)
   const start = ctx.currentTime + .035
   runtime.syncOffsetSec = Math.max(0, start - ctx.currentTime)
-  runtime.recordingGuideState = { guides:{...guides,parts:[...guides.parts]}, decodedGuides, duration:Math.max(.1,duration) }
-  if (guides.backing) scheduleBacking(ctx, ctx.destination, start, duration)
+  runtime.recordingGuideState = { guides:{...guides,parts:[...guides.parts]}, decodedGuides, decodedBacking, duration:Math.max(.1,duration) }
+  if (guides.backing) {
+    if (decodedBacking) scheduleBuffer(ctx, ctx.destination, decodedBacking, start, 0, .65)
+    else scheduleBacking(ctx, ctx.destination, start, duration)
+  }
   decodedGuides.forEach(({track,buffer}) => {
     const index = Number(track.partIndex)
     if (guides.parts[index]) scheduleBuffer(ctx, ctx.destination, buffer, start, (track.syncOffsetMs || 0) / 1000, .58, (index - 1.5) * .12)
@@ -353,16 +387,20 @@ export function cancelRecording() {
   runtime.activeElapsedSec = 0
 }
 
-export async function playCurrentMix({ included, tracks = [], duration = 18, onEnded }) {
+export async function playCurrentMix({ included, tracks = [], backingBlob = null, duration = 18, onEnded }) {
   stopGuides()
   const generation = runtime.playbackGeneration
   const ctx = context()
   await ctx.resume()
   const selected = await Promise.all(tracks.filter(track=>included.parts[Number(track.partIndex)] && track.blob).map(async track=>({track,buffer:await decodeBlob(ctx,track.blob)})))
+  const decodedBacking = included.backing && backingBlob ? await decodeBlob(ctx, backingBlob) : null
   if (generation !== runtime.playbackGeneration) return () => {}
   if (!included.backing && !selected.length) throw new Error('들을 Track을 선택해 주세요.')
   const start = ctx.currentTime + 0.08
-  if (included.backing) scheduleBacking(ctx, ctx.destination, start, duration)
+  if (included.backing) {
+    if (decodedBacking) scheduleBuffer(ctx, ctx.destination, decodedBacking, start, 0, .65)
+    else scheduleBacking(ctx, ctx.destination, start, duration)
+  }
   for (const {track,buffer} of selected) {
     const index = Number(track.partIndex)
     if (!included.parts[index] || !track.blob) continue
@@ -432,26 +470,29 @@ function cleanAndMeasureBuffer(buffer, reportedNoiseFloor = 0) {
   return { rms, gain:Math.min(2.4,Math.max(.55,.12 / Math.max(.0001,rms))), threshold }
 }
 
-export async function createAutoMix({ tracks = [], duration = 18, onProgress }) {
-  return renderTrackMix({tracks,duration,onProgress,backing:true,minTracks:2})
+export async function createAutoMix({ tracks = [], backingBlob = null, duration = 18, onProgress }) {
+  return renderTrackMix({tracks,duration,onProgress,backing:true,backingBlob,minTracks:2})
 }
 
-export async function createPreviewMix({tracks=[],duration=18,backing=false,onProgress}={}) {
+export async function createPreviewMix({tracks=[],duration=18,backing=false,backingBlob=null,onProgress}={}) {
   if (!tracks.length && !backing) throw new Error('들을 Track을 선택해 주세요.')
-  return renderTrackMix({tracks,duration,onProgress,backing,minTracks:0})
+  return renderTrackMix({tracks,duration,onProgress,backing,backingBlob,minTracks:0})
 }
 
-async function renderTrackMix({tracks,duration,onProgress,backing,minTracks}) {
+async function renderTrackMix({tracks,duration,onProgress,backing,backingBlob,minTracks}) {
   if (!OfflineAudioContextClass) throw new Error('이 브라우저는 오프라인 믹싱을 지원하지 않아요.')
   if (tracks.length < minTracks || tracks.length > 4 || tracks.some(track=>!track?.blob)) throw new Error('선택한 Part의 실제 녹음이 필요해요.')
   if (new Set(tracks.map(track=>track.partId)).size !== tracks.length) throw new Error('Part별 녹음은 하나씩 필요해요.')
   const rate = 44100
   const decodeContext = new AudioContextClass()
   const decodedTracks = []
+  let decodedBacking = null
   try { for (const track of tracks) {
     const buffer = await decodeContext.decodeAudioData(await track.blob.arrayBuffer())
     decodedTracks.push({ track, buffer, cleanup:cleanAndMeasureBuffer(buffer,track.noiseFloor) })
-  } } finally { await decodeContext.close() }
+  }
+    if (backing && backingBlob) decodedBacking = await decodeBlob(decodeContext,backingBlob)
+  } finally { await decodeContext.close() }
   const actualDuration = Math.max(duration, ...decodedTracks.map(({buffer}) => buffer.duration + .2))
   const offline = new OfflineAudioContextClass(2, Math.ceil(actualDuration * rate), rate)
   const master = offline.createDynamicsCompressor()
@@ -459,7 +500,10 @@ async function renderTrackMix({tracks,duration,onProgress,backing,minTracks}) {
   master.attack.value = .001; master.release.value = .12
   master.connect(offline.destination)
   onProgress?.(18)
-  if (backing) scheduleBacking(offline, master, 0, actualDuration, 0.075)
+  if (backing) {
+    if (decodedBacking) scheduleBuffer(offline, master, decodedBacking, 0, 0, .65, 0, false)
+    else scheduleBacking(offline, master, 0, actualDuration, 0.075)
+  }
   for (const {track,buffer:decoded,cleanup} of decodedTracks) {
     const source = offline.createBufferSource()
     const highpass = offline.createBiquadFilter()
