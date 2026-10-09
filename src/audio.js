@@ -258,8 +258,8 @@ export function backingPlaybackGain(buffer) {
   }
   const rms = count ? Math.sqrt(square/count) : 0
   // One fixed gain preserves musical dynamics and stays identical on resume.
-  // -20 dBFS RMS target, at most +6 dB, with headroom before the mix limiter.
-  const gain = rms < .0015 || !peak ? 1 : Math.min(2,.1/rms,.85/peak)
+  // -26 dBFS RMS target, no boost, with headroom before the mix limiter.
+  const gain = rms < .0015 || !peak ? 1 : Math.min(1,.05/rms,.6/peak)
   backingGainCache.set(buffer,gain)
   return gain
 }
