@@ -1,3 +1,13 @@
+## 2026-10-09 단계3 후속 — 실제 가사 구간 대조와 진입 승인 분리
+
+현재 단계3을 유지한다. qa/align-ai-provided-song.py에 별도 output-dir, 실제 분석 구간과 원곡 절대 타임코드 보존, 기존 결과 덮어쓰기 거부, 단어 시간 범위/순서 검사를 추가했다. 문자 정렬과 첫 진입·catalog 승인을 구분한다. 분석 시작 경계에 첫 단어가 붙으면 firstWordBoundaryCensored=true, entryTimingCandidate=null이다. 모든 자동 결과의 entryTimingAccepted=false/approvedEntryTime=null/catalogRegistrationApproved=false를 유지하여 문자 유사도만으로 실제 가사 진입을 승인하지 않는다.
+
+기존 실제 천천히 함께90초 원본 SHA256 7ef11d5e7d574134154c7fddc3022654feec474ac5cba70ed24c606232ca0eb9와 vocal SHA256 b2f4d47811276a4254fa17c694395e7ddb10b30df853c6c31070ac229b9dcd25를 검증했다. 기존 관측의 지속 voiced 후보17.949초와 전체 가사 종료72.34초를 포함하는16–78초를 실제 Whisper로 분석했다. Small 구간 문자 유사도0.941176·8줄 매칭·단어 시간 범위 통과, 같은 구간 재실행의 실제 단어/가사 결과 exact 일치. 첫 단어16–18.92초가 분석 경계에 붙으므로 실제 진입은 미승인이다. 기존 보고서를 다시 쓰려는 실행은 FileExistsError: Preserve existing alignment evidence로 거부됐다.
+
+Turbo 대조 첫 실행은 선행 전체 보고서 vocal-validation-report-turbo-robust-seek.json 부재의 FileNotFoundError로 실패했다. 우회하지 않고 실제 전체90초 Turbo를 먼저 실행하여 문자 유사도0.903226/timestampsWithinAudio=true/lyricAcceptance=true를 확인했다. 이어 실제16–78초 Turbo 단어 정렬은 요청하지 않은 자막 문장 인식으로 유사도0.741722/alignmentAccepted=false/exit1이다. 첫 단어도16초 경계이고 첫 진입은 미승인이다. Small 결과와 Turbo 실패를 runtime/results의 서로 다른 경로에 보존하며 모델 입력 가사를 주입하거나 임계값을 낮추지 않았다.
+
+앱 build와 전체 유지 Node QA 및 Python 문법 검사 통과. 앱 코드·음원·디자인·사용자 Track/Profile은 변경하지 않았다. 다음 잔여는 실제 곡의 신뢰 가능한 가사 진입/Part별 실제 편곡·음역·Key 검증 및 기존 catalog 등록이며, 신규 단계4/5로 건너뛰지 않는다. 실제 마이크/청취·개인 형상·서비스 조건은 유지한다. 이 작업은 검증 도구 보완이며 새로운 사용 가능 곡 등록 완료가 아니다.
+
 ## 2026-10-09 단계3 — Project 반주 연결과 녹음 입력 계보
 
 현재 실행 위치는 단계3이다. 단계0 보존 기준과 이전 검증 범위는 유지한다. 단계1 개인 식별/Track 변형/Project 결합 및 단계2 디자인 인수는 미완료/보류다. 신규 디자인·프로필 이미지·별도 앱은 만들지 않는다.
