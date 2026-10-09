@@ -1,5 +1,7 @@
 ## 2026-10-09 프로필 이미지 보류 / 단계3 제출·그래픽 상태 분리
 
+배포 마감: `068c83e2854e9a229044d1019778e5c0943e51a9`를 main에 commit/push했고 GitHub origin/main과 일치했다. Vercel bot의 Production deployment6956977210/같은 commit/status success(Deployment has completed)를 확인했다. Production HTTP200 및 검증 build `index-BK9XreAG.js` SHA256 `d7a7a8bcec0adbf0ab840175c9f9c4b39624839dadde58f72a04732d5e8acb3e`, CSS `index-DtsPXy24.css` SHA256 `b22ac9187dcf08f34a1dea11517b51e5a85b6602d5a4e844d2084ec6ae748b26` byte 일치를 확인했다. Production qa:submission-graphics(2/3/4·주 프로젝트4 Track/그래픽0/Mix 저장/reload)와 qa:continuity(제출 실패·재시도·원본/seed/Track 보존·Credits·재접속)가 모두 통과했다. 새 프로필 이미지나 진단 PNG는 배포하지 않았다. 직접 production deploy 없음. 이 기능 묶음의 배포 검증이며 단계1/3 전체·실기기 청취 완료가 아니다. 아래의 배포 전 표현은 당시 검증 기록이다.
+
 사용자가 현재 진단 이미지의 뉴런 같은 형상을 거부하고 프로필 이미지는 추가 검토 후 생성하도록 지시했다. 후보 이미지 채택/추가 생성/Profile 연결을 보류한다. 원본 진단 결과는 삭제하지 않으며 성공적인 모델 추론을 디자인 승인으로 기록하지 않는다. 독립적인 기능 작업은 계속 진행한다.
 
 기존 Home 제출수 및 주/활성 Project의 Auto Mix 준비 조건이 Layer 개수에 의존하던 부분을 `submittedProjectTracks`/`allProjectTracksSubmitted`로 변경했다. 실제 저장된 필수 Part Track ID/project/part/Blob 계약을 기준으로 세고, 임시본·Profile·pending/error 제출·다른 프로젝트 기록을 제외한다. 기존 상태 필드가 없는 정상 final Track은 호환한다. 생성 Layer의 실패/누락이 제출 오디오를 취소하지 않으며 그래픽 성공이 제출을 확정하지 않는다. 기존 Record/프로필/CSS/motion과 저장 원본은 변경하지 않았다.
