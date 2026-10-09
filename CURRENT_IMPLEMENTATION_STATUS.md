@@ -1,3 +1,13 @@
+## 2026-10-09 단계3 — 실제 앞 반주 준비 구간과 박자 분석
+
+현재 실행 위치는 단계3이며 이전 완료/보류 상태는 유지한다. 실제 Project용 곡·반주·Key/Part 데이터, 개인→Track→Project 연결, 물리 청취·지연·서버 기능은 미완료다. 디자인/프로필 이미지 생성은 보류한다. 세 샘플에 실제 원곡의 지정 구간 바로 앞 반주3초를 연결했다. 현재 감소한 반주 gain을 동일하게 사용하며 Guide OFF에서는 준비 오디오를 재생하지 않는다. 앞 반주와 본 구간을 같은 AudioContext 시계에3초 간격으로 미리 예약하고 준비가 끝난 뒤 MediaRecorder를 시작한다. 준비 시간을 Take에 넣지 않고 가사 타임라인은 본 구간0부터 유지한다. 취소/이탈은 예약 노드와 준비 소유권을 해제해 늦은 녹음을 막는다. 기존 Project 녹음의 기본 동작은 preparationBlob이 없는 경로로 보존한다.
+
+새 production asset은 각 기존 audio 폴더의 `lead-in.wav`3개다. 실제 원곡 분리 반주의 float PCM을 정확히 추출했고 원곡/backing 해시와 sourceStart/End를 catalog provenance에 보존했다. 원본 Sample/반주 MP3/가사/사용자 Profile/Track은 변경하지 않았다. Rain은18초 파생 구간과 원곡 계보가 별개이므로 excerptLineage.originalSourceSha256/30.5초를 참조한다. 최초 기술 script의 단일 sourceSha 가정이 `Full-song source lineage mismatch` 오류를 냈고 이 명시적 파생 계보를 처리해 재실행했다. 입력 데이터/해시를 오류에 맞춰 변경하지 않았다.
+
+`qa/verify-provided-rhythm.py`는 실제 배포 MP3와 해시 검증된 전체 반주의 librosa onset/beat 추정을 비교하고 같은 입력 반복의 정확한 재현을 확인한다. 서로의 빛은 구간120.185/전체79.507BPM·80ms grid 일치24.24%로 불안정, 천천히 함께80.750/79.507BPM·96.15%, 비가 그친 뒤79.507/79.507BPM·96%다. 후자2개도 강박/박자표/첫 음절/청취 승인이 아니며 countInApproved=false다. 실제 앞 반주는 이 추정 박자를 합성한 메트로놈이 아니다. 출력 JSON은 repository 밖 .ieum-p0-runtime/results/rhythm-probe-2026-10-09-v1/v2에 보존한다. 실제 앞 반주 PCM과 원곡의3초 구간이 정확히 같은지 재사용 script에서 검증한다.
+
+단위/native 브라우저 QA는 앞/본 구간 시작시각 차이3초·gain 일치·준비 중 MediaRecorder0회·본 구간 시작 후150ms 이내 Capture·이탈 후 늦은 시작 없음·Review·기존 Profile 보존을 확인했다. 이는 격리 합성 마이크 및 desktop browser 스케줄 검증이며 실제 기기 지연이나 청취 인수가 아니다. 전체 유지 Node QA/build, 실제 제공 샘플 전체 Take/권한·실패 복원, Profile 저장·편집·샘플 lifecycle 회귀가 통과했다. 앞 반주503/hash 불일치 때 마이크 접근0회 및 정상 재시도를 확인했다. 최초 회귀 실행의 권한 오류 표시 대기 timeout(30000ms)이 발생했고 같은 실행 구간의 Vite App HMR 갱신 로그를 확인했다. 앱 변경 없이 고정한 버전으로 전체 제공 샘플·Profile·진입 QA를 재실행하여 모두 통과했다. Production 결과는 확인 후 기록한다. 단계3 전체를 완료 처리하지 않는다.
+
 ## 2026-10-09 사용자 청취 피드백 — 반주 감소·Sample 녹음 준비
 
 사용자가 이전 배포의 반주가 너무 크고 진입 시점이 불명확하다고 보고했다. 수치 QA 통과를 실제 청취 인수로 간주하지 않는다. 같은 기존 React 경로의 반주 RMS 목표를0.1→0.05(-26dBFS), gain 상한2→1, peak 상한0.85→0.6으로 낮췄다. 실제3곡 gain0.887453/0.436990/0.523675, 예상 출력 RMS0.05이며 직전 배포 대비 약5.79/6.02/6.02dB 감소다. 자동 증폭 없이 곡 내부 강약과 토글/재개 gain 일관성을 유지한다.

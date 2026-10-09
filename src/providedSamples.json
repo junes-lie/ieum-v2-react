@@ -45,8 +45,20 @@
         "smallSimilarity": 0.782608695652174,
         "smallPassed": false
       },
-      "keyStatus": "unconfirmed; requested key is not asserted as actual key"
-    }
+      "keyStatus": "unconfirmed; requested key is not asserted as actual key",
+      "leadIn": {
+        "sha256": "ea838dec27d821efef1b0bfbeb5e68b6e0c50ef5aa32f47c316f6df11cef99a8",
+        "sourceSha256": "d5d70b20e830f2336140913714327df9b79bfb0f12de6c9d279b2b188445b4cb",
+        "fullBackingSha256": "c7f8d8fbcadf6a23eb7332aca29a5c26fa7831a4c595e757aa11b4568ea1041f",
+        "sourceStart": 28.5,
+        "sourceEnd": 31.5,
+        "duration": 3,
+        "method": "Exact float PCM excerpt of verified actual full-song separated backing; no fabricated metronome or vocals added",
+        "beatAcceptance": "Pending; actual preceding music context, not confirmed beat count"
+      }
+    },
+    "leadInFile": "/audio/ai-light-v1/lead-in.wav",
+    "leadInDuration": 3
   },
   {
     "id": "ieum-ai-warm-direct-v1-sample",
@@ -92,8 +104,20 @@
         "similarity": 1.0,
         "timestampsWithinAudio": true,
         "passed": true
+      },
+      "leadIn": {
+        "sha256": "6edc7bf845a4b43b5abf6c500c4ae4c108a47ef9a936459adb74b4aea81d798b",
+        "sourceSha256": "7ef11d5e7d574134154c7fddc3022654feec474ac5cba70ed24c606232ca0eb9",
+        "fullBackingSha256": "e4a4f50f40b178d53c491b77aa6ebcd8533d74367bc28f6b02f67dc1431dbbfe",
+        "sourceStart": 28.7,
+        "sourceEnd": 31.7,
+        "duration": 3,
+        "method": "Exact float PCM excerpt of verified actual full-song separated backing; no fabricated metronome or vocals added",
+        "beatAcceptance": "Pending; actual preceding music context, not confirmed beat count"
       }
-    }
+    },
+    "leadInFile": "/audio/ai-warm-direct-v1/lead-in.wav",
+    "leadInDuration": 3
   },
   {
     "id": "ieum-ai-rain-v1-sample",
@@ -168,7 +192,19 @@
           "timestampsWithinAudio": true,
           "passed": true
         }
-      ]
-    }
+      ],
+      "leadIn": {
+        "sha256": "9ccf3e06513f26e14f932603d6738bf1c7da4fb0f2b7937040858a3b74299c0a",
+        "sourceSha256": "91c8a06a8569b84b829f04ab131029729ec23097fbb7c6a11dcb8f22866b8d07",
+        "fullBackingSha256": "ee06f6443263ba2db17ca6f5ca4630687ad4801860d25fe59515f59618c96af8",
+        "sourceStart": 27.5,
+        "sourceEnd": 30.5,
+        "duration": 3,
+        "method": "Exact float PCM excerpt of verified actual full-song separated backing; no fabricated metronome or vocals added",
+        "beatAcceptance": "Pending; actual preceding music context, not confirmed beat count"
+      }
+    },
+    "leadInFile": "/audio/ai-rain-v1/lead-in.wav",
+    "leadInDuration": 3
   }
 ]

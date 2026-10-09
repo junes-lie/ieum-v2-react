@@ -13,7 +13,7 @@ for(const song of samples){
  assert.ok(song.duration>=15&&song.duration<=20)
  assert.ok(song.lyrics.length>0)
  assert.ok(song.lyrics.every((line,i)=>line.time>=0&&line.time<song.duration&&(!i||line.time>song.lyrics[i-1].time)))
- for(const [file,hash] of [[song.audioFile,song.provenance.audioSha256],[song.backingFile,song.provenance.backingSha256]]){
+ for(const [file,hash] of [[song.audioFile,song.provenance.audioSha256],[song.backingFile,song.provenance.backingSha256],[song.leadInFile,song.provenance.leadIn.sha256]]){
   const bytes=await readFile(new URL('../public'+file,import.meta.url))
   assert.equal(createHash('sha256').update(bytes).digest('hex'),hash)
   const response=await fetch(new URL(file,baseUrl),{signal:AbortSignal.timeout(30000)})

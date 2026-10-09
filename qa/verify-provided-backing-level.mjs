@@ -12,19 +12,25 @@ try {
   const context=await browser.newContext({permissions:['microphone']}),page=await context.newPage(),errors=[]
   page.on('pageerror',error=>errors.push(error.message))
   await page.addInitScript(()=>{
+   window.qaMicRequests=0
+   const micRequest=navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices)
+   navigator.mediaDevices.getUserMedia=(...args)=>{window.qaMicRequests++;return micRequest(...args)}
    window.qaBackingStarts=[]
    window.qaRecordingStarts=0
+   window.qaRecordingClock=null
    const recordStart=MediaRecorder.prototype.start
-   MediaRecorder.prototype.start=function(...args){window.qaRecordingStarts++;return recordStart.apply(this,args)}
+   MediaRecorder.prototype.start=function(...args){window.qaRecordingStarts++;window.qaRecordingClock=window.qaAudioContext?.currentTime;return recordStart.apply(this,args)}
    const original=AudioContext.prototype.createBufferSource
    AudioContext.prototype.createBufferSource=function(){
+    window.qaAudioContext=this
+    const audioContext=this
     const source=original.call(this),connect=source.connect.bind(source),start=source.start.bind(source)
     let gainNode
     source.connect=(node,...args)=>{if(node.gain)gainNode=node;return connect(node,...args)}
     source.start=(time,offset)=>{
      const buffer=source.buffer;let square=0,peak=0,count=0
      for(let channel=0;channel<buffer.numberOfChannels;channel++)for(const value of buffer.getChannelData(channel)){square+=value*value;peak=Math.max(peak,Math.abs(value));count++}
-     window.qaBackingStarts.push({gain:gainNode?.gain.value,rms:Math.sqrt(square/count),peak,duration:buffer.duration,offset})
+     window.qaBackingStarts.push({at:time,scheduledFrom:audioContext.currentTime,gain:gainNode?.gain.value,rms:Math.sqrt(square/count),peak,duration:buffer.duration,offset})
      return start(time,offset)
     }
     return source
@@ -39,11 +45,20 @@ try {
   await page.reload();await page.waitForFunction(()=>window.__IEUM_V2__?.state.profile?.sampleSong==='Protected original sample')
   await page.locator('[data-nav="user"]').click();await page.getByRole('button',{name:'다시 등록',exact:true}).click()
   await page.locator('.sample-song-list button').nth(index).click();await page.locator('.sample-select-stage > button.primary').click()
+  if(index===0){
+   for(const status of [503,200]){
+    await page.route('**'+song.leadInFile,route=>route.fulfill({status,body:status===503?'Unavailable preparation':'Wrong preparation hash'}))
+    await page.locator('[data-action="sample-start"]').click()
+    await page.getByRole('alert').waitFor()
+    assert.equal(await page.evaluate(()=>window.qaMicRequests),0,'Unavailable/mismatched preparation must fail before microphone access')
+    await page.unroute('**'+song.leadInFile)
+   }
+  }
   await page.locator('[data-action="sample-start"]').click()
   await page.waitForFunction(()=>document.querySelector('[data-sample-entry]')?.textContent.includes('녹음 준비'))
   for(const remaining of [3,2,1]){
    await page.waitForFunction(value=>document.querySelector('[data-sample-entry]')?.textContent.includes(`녹음 준비 · ${value}`),remaining)
-   assert.equal(await page.evaluate(()=>window.qaBackingStarts.length),0,'Backing must not start during preparation')
+   assert.ok(await page.evaluate(()=>window.qaBackingStarts.every(entry=>entry.duration<4 || entry.at>window.qaAudioContext.currentTime)),'Singing excerpt must not play before preparation ends')
    assert.equal(await page.evaluate(()=>window.qaRecordingStarts),0,'Preparation must not be captured in the Take')
   }
   await page.waitForSelector('[data-action="sample-stop"]')
@@ -51,8 +66,15 @@ try {
   assert.equal(await page.evaluate(()=>window.qaRecordingStarts),1)
   await page.getByRole('checkbox',{name:'Sample Guide 반주',exact:true}).uncheck()
   await page.getByRole('checkbox',{name:'Sample Guide 반주',exact:true}).check()
-  await page.waitForFunction(()=>window.qaBackingStarts.length>=2)
-  const starts=await page.evaluate(()=>window.qaBackingStarts)
+  await page.waitForFunction(()=>window.qaBackingStarts.length>=3)
+  const allStarts=await page.evaluate(()=>window.qaBackingStarts)
+  const preparation=allStarts.find(entry=>Math.abs(entry.duration-song.leadInDuration)<.02)
+  const starts=allStarts.filter(entry=>Math.abs(entry.duration-song.duration)<.15)
+  assert.ok(preparation,'Actual preceding backing must be scheduled')
+  assert.ok(Math.abs(starts[0].at-preparation.at-song.leadInDuration)<1e-6,'Preparation and singing excerpt must share one continuous Web Audio schedule')
+  assert.equal(preparation.gain,starts[0].gain)
+  const recordingClock=await page.evaluate(()=>window.qaRecordingClock)
+  assert.ok(recordingClock>=starts[0].at && recordingClock-starts[0].at<.15,'Take must start at the singing excerpt, without recording preparation')
   for(const entry of starts){
    assert.ok(Math.abs(entry.gain-Math.min(1,.05/entry.rms,.6/entry.peak))<1e-5)
    assert.ok(entry.gain*entry.peak<=.6+1e-6)
@@ -70,12 +92,13 @@ try {
    await page.locator('[data-action="sample-retry"]').click()
    await page.locator('[data-action="confirm-sample-discard"]').click()
    await page.locator('[data-action="sample-start"]').click()
-   await page.waitForFunction(()=>document.querySelector('[data-sample-entry]')?.textContent.includes('녹음 준비'))
+   await page.waitForFunction(()=>document.querySelector('[data-sample-entry]')?.textContent.includes('녹음 준비') && window.qaBackingStarts.length>=5)
    const before=await page.evaluate(()=>({audio:window.qaBackingStarts.length,recording:window.qaRecordingStarts}))
    await page.locator('[data-nav="user"]').click()
    await page.waitForTimeout(3500)
    assert.deepEqual(await page.evaluate(()=>({audio:window.qaBackingStarts.length,recording:window.qaRecordingStarts})),before,'Leaving preparation must not start audio or a recorder later')
    assert.equal(await page.evaluate(()=>window.__IEUM_V2__.state.profile.sampleSong),'Protected original sample')
+   assert.equal(await page.evaluate(()=>window.__IEUM_V2__.audioRuntime.stream),null)
   }
   await context.close()
  }

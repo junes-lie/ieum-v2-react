@@ -23,6 +23,7 @@ const runtime = {
   microphoneInfo: null,
   microphoneGeneration: 0,
   recordingGuideState: null,
+  preparationRecorder: null,
   activeElapsedSec: 0,
   activeStartedAt: 0,
   playbackGeneration: 0
@@ -303,8 +304,8 @@ function scheduleRecordingGuides(offsetSec = 0) {
   })
 }
 
-export async function startRecording({ onFrame, guides = {backing:false,parts:[]}, guideTracks = [], backingBlob = null, duration = 35 }) {
-  if (runtime.recorder && runtime.recorder.state !== 'inactive') throw new Error('이미 녹음 중이에요.')
+export async function startRecording({ onFrame, guides = {backing:false,parts:[]}, guideTracks = [], backingBlob = null, preparationBlob = null, preparationDuration = 0, onPreparation, duration = 35 }) {
+  if (runtime.preparationRecorder || (runtime.recorder && runtime.recorder.state !== 'inactive')) throw new Error('이미 녹음 중이에요.')
   const generation=runtime.microphoneGeneration
   const hasSpeakerGuides = Boolean(guides?.backing || guides?.parts?.some(Boolean))
   const stream = await requestMicrophone({ voiceProcessing:hasSpeakerGuides ? true : null })
@@ -315,29 +316,37 @@ export async function startRecording({ onFrame, guides = {backing:false,parts:[]
     throw error
   }
   const ctx = context()
-  let decodedGuides, decodedBacking
+  let decodedGuides, decodedBacking, decodedPreparation
   try {
     await ctx.resume()
     decodedGuides = await Promise.all(guideTracks.filter(track => track?.blob).map(async track => ({ track, buffer: await decodeBlob(ctx, track.blob) })))
     decodedBacking = backingBlob ? await decodeBlob(ctx, backingBlob) : null
+    decodedPreparation = preparationBlob ? await decodeBlob(ctx, preparationBlob) : null
+    if(decodedPreparation && (!decodedBacking || preparationDuration!==3 || Math.abs(decodedPreparation.duration-preparationDuration)>.02))throw new Error('준비 반주 구간이 올바르지 않아요.')
   } catch (error) {
     if(runtime.stream===stream)stopMicrophone()
     else stream.getTracks().forEach(track=>track.stop())
     throw error
   }
   assertMicrophoneSession(generation,stream)
-  if(runtime.recorder&&runtime.recorder.state!=='inactive')throw new Error('이미 녹음 중이에요.')
+  if(runtime.preparationRecorder || (runtime.recorder&&runtime.recorder.state!=='inactive'))throw new Error('이미 녹음 중이에요.')
   runtime.chunks = []
   const mime = ['audio/webm;codecs=opus','audio/webm','audio/mp4'].find(type => MediaRecorder.isTypeSupported(type)) || ''
   runtime.recorder = new MediaRecorder(stream, mime ? { mimeType: mime } : undefined)
   runtime.recorder.ondataavailable = event => { if (event.data.size) runtime.chunks.push(event.data) }
-  runtime.recorder.start(180)
-  runtime.startedAt = performance.now()
-  runtime.activeElapsedSec = 0
-  runtime.activeStartedAt = ctx.currentTime
-  monitorInput(onFrame)
-  const start = ctx.currentTime + .035
-  runtime.syncOffsetSec = Math.max(0, start - ctx.currentTime)
+  const recorder=runtime.recorder
+  const prepareSeconds=decodedPreparation ? preparationDuration : 0
+  const beginCapture=()=>{
+    recorder.start(180)
+    runtime.startedAt = performance.now()
+    runtime.activeElapsedSec = 0
+    runtime.activeStartedAt = ctx.currentTime
+    monitorInput(onFrame)
+  }
+  if(!prepareSeconds)beginCapture()
+  const preparationStart=ctx.currentTime+.035
+  const start = preparationStart + prepareSeconds
+  runtime.syncOffsetSec = prepareSeconds ? 0 : Math.max(0, start - ctx.currentTime)
   runtime.recordingGuideState = { guides:{...guides,parts:[...guides.parts]}, decodedGuides, decodedBacking, duration:Math.max(.1,duration) }
   if (guides.backing) {
     if (decodedBacking) scheduleBuffer(ctx, ctx.destination, decodedBacking, start, 0, backingPlaybackGain(decodedBacking))
@@ -347,7 +356,28 @@ export async function startRecording({ onFrame, guides = {backing:false,parts:[]
     const index = Number(track.partIndex)
     if (guides.parts[index]) scheduleBuffer(ctx, ctx.destination, buffer, start, (track.syncOffsetMs || 0) / 1000, .58, (index - 1.5) * .12)
   })
-  return { mimeType: runtime.recorder.mimeType, scheduledAt: start }
+  if(prepareSeconds){
+    runtime.preparationRecorder=recorder
+    const playbackGeneration=runtime.playbackGeneration
+    if(guides.backing)scheduleBuffer(ctx,ctx.destination,decodedPreparation,preparationStart,0,backingPlaybackGain(decodedBacking))
+    try {
+      let lastCount
+      while(ctx.currentTime<start){
+        if(runtime.preparationRecorder!==recorder || generation!==runtime.microphoneGeneration || playbackGeneration!==runtime.playbackGeneration)throw new DOMException('녹음 준비가 취소됐어요.','AbortError')
+        const remaining=Math.min(prepareSeconds,Math.ceil(start-ctx.currentTime))
+        if(remaining!==lastCount){onPreparation?.(remaining);lastCount=remaining}
+        await new Promise(resolve=>window.setTimeout(resolve,16))
+      }
+      assertMicrophoneSession(generation,stream)
+      if(runtime.preparationRecorder!==recorder || playbackGeneration!==runtime.playbackGeneration)throw new DOMException('녹음 준비가 취소됐어요.','AbortError')
+      beginCapture()
+    } catch(error) {
+      if(runtime.preparationRecorder===recorder && playbackGeneration===runtime.playbackGeneration)stopGuides()
+      if(runtime.recorder===recorder && runtime.stream===stream)stopMicrophone()
+      throw error
+    } finally {if(runtime.preparationRecorder===recorder)runtime.preparationRecorder=null}
+  }
+  return { mimeType: recorder.mimeType, scheduledAt: start }
 }
 
 export function pauseRecording() {
@@ -416,6 +446,7 @@ export async function analyzeBlob(blob) {
 }
 
 export function cancelRecording() {
+  runtime.preparationRecorder=null
   cancelAnimationFrame(runtime.raf)
   stopGuides()
   if (runtime.recorder && runtime.recorder.state !== 'inactive') runtime.recorder.stop()
