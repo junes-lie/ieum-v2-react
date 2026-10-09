@@ -464,17 +464,19 @@ export async function playCurrentMix({ included, tracks = [], backingBlob = null
   const decodedBacking = included.backing && backingBlob ? await decodeBlob(ctx, backingBlob) : null
   if (generation !== runtime.playbackGeneration) return () => {}
   if (!included.backing && !selected.length) throw new Error('들을 Track을 선택해 주세요.')
+  const sourceDuration=Math.max(decodedBacking?.duration || 0,...selected.map(({track,buffer})=>Math.max(0,buffer.duration-Math.max(0,(track.syncOffsetMs || 0)/1000))))
+  const actualDuration=sourceDuration || duration
   const start = ctx.currentTime + 0.08
   if (included.backing) {
     if (decodedBacking) scheduleBuffer(ctx, ctx.destination, decodedBacking, start, 0, backingPlaybackGain(decodedBacking))
-    else scheduleBacking(ctx, ctx.destination, start, duration)
+    else scheduleBacking(ctx, ctx.destination, start, actualDuration)
   }
   for (const {track,buffer} of selected) {
     const index = Number(track.partIndex)
     if (!included.parts[index] || !track.blob) continue
     scheduleBuffer(ctx, ctx.destination, buffer, start, (track.syncOffsetMs || 0) / 1000, .68, (index - 1.5) * .12)
   }
-  const timer = window.setTimeout(() => { if (generation === runtime.playbackGeneration) { stopGuides(); onEnded?.() } }, duration * 1000 + 80)
+  const timer = window.setTimeout(() => { if (generation === runtime.playbackGeneration) { stopGuides(); onEnded?.() } }, actualDuration * 1000 + 80)
   return () => { window.clearTimeout(timer); if (generation === runtime.playbackGeneration) stopGuides() }
 }
 
@@ -561,7 +563,7 @@ async function renderTrackMix({tracks,duration,onProgress,backing,backingBlob,mi
   }
     if (backing && backingBlob) decodedBacking = await decodeBlob(decodeContext,backingBlob)
   } finally { await decodeContext.close() }
-  const actualDuration = Math.max(duration, ...decodedTracks.map(({buffer}) => buffer.duration + .2))
+  const actualDuration = Math.max(duration, minTracks>0 ? decodedBacking?.duration || 0 : 0, ...decodedTracks.map(({buffer}) => buffer.duration + .2))
   const offline = new OfflineAudioContextClass(2, Math.ceil(actualDuration * rate), rate)
   const master = offline.createDynamicsCompressor()
   master.threshold.value = -3; master.knee.value = 0; master.ratio.value = 20

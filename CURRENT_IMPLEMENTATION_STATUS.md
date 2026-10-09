@@ -1,3 +1,13 @@
+## 2026-10-09 단계3 — 실제 오디오 길이 보존
+
+현재 실행 위치는 단계3이다. Project 목록은 기존 곡 데이터이고 실제 AI Project용 Part 편곡/요구 음역·Key 자료는 미등록이다. 제공 Sample을 기존 곡의 반주로 연결하거나 미측정 Part 자료를 채우지 않았다. 디자인/프로필 이미지 보류와 개인→Track→Project/서버/실기기 잔여 조건은 유지한다.
+
+Project 음원 연결 선행 검사에서 live `playCurrentMix`의18초 종료 타이머와 Auto Mix의 실제 backing 길이 누락을 확인했다. live Mix는 선택한 실제 decoded Track의 trim 이후 길이와 선택한 실제 반주 길이로 종료 시간을 정한다. 잘못된 duration 메타데이터/선택하지 않은 긴 Track은 사용하지 않는다. synthetic-only 기존 시연은 요청 duration을 유지한다. Auto Mix는 실제 backing이 더 길면 끝까지 렌더한다. 명시적2초 Preview 같은 짧은 청취 범위는 유지한다. 현재 UI의 Project backingBlob 등록/전달은 여전히 미완료이며 이 엔진 수정으로 곡 연결 전체를 완료했다고 표시하지 않는다.
+
+`qa/verify-audio-lengths.mjs`/qa:audio-lengths의 native Web Audio 검증:35초 합성 Track+100ms trim 종료34980ms, 선택한2초 Track 종료2080ms, 실제 등록된 천천히 함께19초 backing 종료19080ms.2/3초 격리 Track+실제19초 backing의 Auto Mix19초/18.2–18.7초 출력 RMS0.067400449로 끝부분을 보존했다.2초 명시적 Preview는2초다. 입력4개 Blob SHA256 전후 일치, runtime 오류0을 확인했다. 실제 AI backing과 격리 합성 Track의 기술 검증이며 실제 Project binding·물리 가창/청취 인수가 아니다.
+
+전체 유지 Node QA/build 및 qa:submission-graphics/qa:continuity 통과:2/3/4·주 프로젝트의 그래픽0 상태 실제 native Mix 저장/reload, 제출 실패/중복·재시도·원본/seed·Credits/프로필 복귀를 확인했다. Git/Production 마감 결과는 확인 후 기록한다. 단계3 전체를 완료 처리하지 않는다.
+
 ## 2026-10-09 단계3 — 실제 앞 반주 준비 구간과 박자 분석
 
 현재 실행 위치는 단계3이며 이전 완료/보류 상태는 유지한다. 실제 Project용 곡·반주·Key/Part 데이터, 개인→Track→Project 연결, 물리 청취·지연·서버 기능은 미완료다. 디자인/프로필 이미지 생성은 보류한다. 세 샘플에 실제 원곡의 지정 구간 바로 앞 반주3초를 연결했다. 현재 감소한 반주 gain을 동일하게 사용하며 Guide OFF에서는 준비 오디오를 재생하지 않는다. 앞 반주와 본 구간을 같은 AudioContext 시계에3초 간격으로 미리 예약하고 준비가 끝난 뒤 MediaRecorder를 시작한다. 준비 시간을 Take에 넣지 않고 가사 타임라인은 본 구간0부터 유지한다. 취소/이탈은 예약 노드와 준비 소유권을 해제해 늦은 녹음을 막는다. 기존 Project 녹음의 기본 동작은 preparationBlob이 없는 경로로 보존한다.
