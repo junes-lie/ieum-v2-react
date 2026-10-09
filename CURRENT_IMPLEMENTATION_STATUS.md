@@ -1,3 +1,21 @@
+## 2026-10-10 단계3 후속 — 실제 Part 지원 모델과 원본 검증
+
+현재 실행 위치는 단계3이다. 새 45초 오리지널 후보를 실제 ACE-Step Turbo로 생성(253.268초)하고 UVR 분리·Whisper-small 검증을 수행했다. 원본 SHA256 d9b56c90da12e6ef177dce7d851095155250a870b09dca338b3f2cbbcb46a374, 문자 유사도0.645833/lyricAcceptance=false다. 요청하지 않은 가사와 누락을 확인했으므로 앱 곡으로 등록하지 않았다. 실패 결과와 이전 원본은 보존한다.
+
+같은 후보의 Turbo audio-conditioned Part 시험(434.409초)은 원곡 보컬과 PCM 상관0.977955, 반주0.948430, 같은 관측 음역54.7–62.2 MIDI로 독립 Part 증거를 확보하지 못했다. API 인자 존재를 모델 지원으로 간주한 판단을 정정했다. 공식 pinned 모델 카드와 실제 config를 대조하여 Turbo의 Lego 미지원을 확인했고, generator가 Turbo Lego와 검증되지 않은 Base 실행을 모델 로딩 전에 거부하도록 보완했다. 이 실패 후보는 Part/Track 제출·catalog 성공으로 취급하지 않는다.
+
+공식 Base revision e432212fec32b8965a14ffa57ae653438d6abd14를 별도 D:/IEUM-model-runtime/base-2026-10-09 런타임에 보존했다. raw weights SHA256 4177f600501a6d4bd81cadaa0abac557ffd15c54e5c8cb52053cdb24a0844d6b와 변환한677개 tensor 및 silence buffer의 float32 exact 일치를 실제 검사했다. qa/verify-ai-music-conversion.py로 변환 계보·component hash를 검증하며 기존 Turbo/앱 asset은 유지한다. 첫 검증의 buffer 위치 가정 오류는 실제 converter를 확인하여 condition_encoder로 정정한 뒤 전체 검사를 통과했다.
+
+실제19초 Base 시험은 disk offload에서 단계당296.8/275.5/306.4초를 관측했다. 해당 생성 프로세스만 종료하고 원본·시험 산출물을 보존했다. opt-in lossless CPU cache는 BF16 왕복 후 원래 FP32 tensor와 정확히 같은 값만 작은 형식으로 RAM에 보존하며 나머지는 원래 형식을 유지한다. native Diffusers offload forward4회 exact 출력, 정밀도 민감 tensor fallback, 잘못된 training 호출 거부 후 재시도 및 기존 파일 보존 QA를 통과했다. CPU 캐시는 기본 생성 경로에 자동 적용하지 않는다. 실제 Base 재시험은 기존 AI 곡의31.7–50.7초 원본을 조건으로32-step Lego를 사용한다. 요청 음역/Key/BPM을 측정값이나 확정 편곡으로 취급하지 않는다.
+
+Part 분석에서는 분리 잔여 반주로 곡 Key/BPM을 확정하지 않도록 null로 구분한다. 실제45초 원곡 분석 재실행은 기존 JSON과 exact 일치했다. 다음 검증은 지원되는 Base 실제 출력의 가사·음역·원곡 중복/Part 차이 확인이며, 통과 전 새 catalog/asset 등록을 하지 않는다. 개인 형상·디자인 보류, 실제 가창/청취·서버·단계1/3 잔여 조건을 유지한다.
+
+실제 Base19초 첫 시험은32/32 계산과442.723초 추론을 완료했다. 원본 SHA2567ccfc78540fc140c8b4062012355e6e39048b6c6c2deb07eac0bcb515cbbe982, UVR vocal RMS0.130078/잔여 RMS0.002589, Whisper-small 가사3줄 유사도1.0·시간 범위 통과다. 관측 음역53.9–62.2 MIDI, 원곡 같은 구간 보컬 PCM 상관0.923408(저해상도 지연 대조 최대0.955311)로 새 화음 Part는 미승인이다. 실제 캐시13그룹/476tensor는 원래6301835520bytes에서3150917760bytes로 정확 복원 가능한 저장량을 줄였다. 지원 모델 실행·가사·보컬 분리는 검증됐지만 독립 화음은 검증되지 않았다. 원곡 보컬 포함의 영향을 확인하기 위해 실제 분리 반주만 조건으로 사용하는 시험을 이어가며 원곡/반주 각각의 해시와 source window를 구분하여 보존한다.
+
+반주만 조건으로 한 두 번째 Base19초 시험도32/32·402.183초 추론 완료(원본 SHA25679d7b77669ce6fbb09059b43615e880e64f734ba40fd5bb949e32d3140433c81)했다. 실제 반주 입력 SHA256e4a4f50f40b178d53c491b77aa6ebcd8533d74367bc28f6b02f67dc1431dbbfe를 별도로 검증했다. 원곡 대비 보컬 PCM 상관0.002871, 동시 confident296frame의 pitch 차이 중앙값−2.2반음·반음 이내13.18%로 반복 멜로디와 구분되는 결과다. 그러나 Small 가사 유사도0.555556/exit1, 독립 Turbo0.685714/exit1이며 모두 마지막 요청 가사를 인식하지 못했다. 실제 음역49.1–60.5 MIDI, UVR 잔여 RMS0.001551이다. 차이는 화성 적합성/가사 타이밍 승인과 다르며 두 ASR 실패를 보존하고 Part/catalog 등록은 하지 않았다. 지원 모델·입력 분리·변환 정확도·실행 성능의 기술 묶음은 검증했지만, 새 화음과 동일 가사/진입을 동시에 충족한 실사용 Part는 아직 없다. 다음 실제 생성 검증은 가사 시간 배치와 모델 조건/step을 함께 검토하며, 임의 transpose·곡명/Key 승인·QA 임계값 변경으로 이 조건을 대체하지 않는다. 앱 화면/음원/사용자 원본은 변경하지 않았다. build·전체 유지 Node QA·Python5파일 문법·native cache 재검증 통과다.
+
+세 번째 시험은 반주 조건과 가사 완료 지시를 유지하며 Base50/50·618.159초 추론을 완료했다(원본 SHA256d9d63511d1ec0c333e42f13a3059169ff95ac936445ad51d0cc4a7fb6d4c4c87). Small/Turbo 전체 가사 유사도는 모두0.800/exit0으로 자동 경계를 통과했으나 마지막 줄을 각각 ‘작은 뭐했어’/‘작은 모에서’로 인식했다. 실제 Small 단어 정렬 유사도0.85/alignmentAccepted=true이며 앞 두 줄7/7·마지막 줄3/7문자만 일치한다. 줄 후보0/6.14/13.68초, firstWordBoundaryCensored=true·entryTimingAccepted=false·catalogRegistrationApproved=false다. 음역49.9–62.2 MIDI/tessitura53–58, UVR 잔여 RMS0.003741이다. 자동 전체 유사도/근사 정렬 성공은 마지막 가사의 정확성·화성·실제 첫 진입 승인과 구분한다. 실제 제출 가능한 Part나 곡 등록은 미완료로 유지한다. 여러 seed 반복만으로 성공을 보장할 수 없으므로 다음 작업은 실제 가사/선율 시간 배치의 조건 표현과 화음 제어 가능성 검증이며, 승인 없이 임의 음높이 이동/Key 지정으로 완료하지 않는다. 이번 실제 생성·분리·ASR·단어 정렬 과정은 모두 종료했고 원본/실패/근사 통과 결과를 보존했다.
+
 ## 2026-10-09 단계3 후속 — 실제 가사 구간 대조와 진입 승인 분리
 
 현재 단계3을 유지한다. qa/align-ai-provided-song.py에 별도 output-dir, 실제 분석 구간과 원곡 절대 타임코드 보존, 기존 결과 덮어쓰기 거부, 단어 시간 범위/순서 검사를 추가했다. 문자 정렬과 첫 진입·catalog 승인을 구분한다. 분석 시작 경계에 첫 단어가 붙으면 firstWordBoundaryCensored=true, entryTimingCandidate=null이다. 모든 자동 결과의 entryTimingAccepted=false/approvedEntryTime=null/catalogRegistrationApproved=false를 유지하여 문자 유사도만으로 실제 가사 진입을 승인하지 않는다.
