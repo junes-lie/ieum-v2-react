@@ -6,7 +6,7 @@ Project 음원 연결 선행 검사에서 live `playCurrentMix`의18초 종료 �
 
 `qa/verify-audio-lengths.mjs`/qa:audio-lengths의 native Web Audio 검증:35초 합성 Track+100ms trim 종료34980ms, 선택한2초 Track 종료2080ms, 실제 등록된 천천히 함께19초 backing 종료19080ms.2/3초 격리 Track+실제19초 backing의 Auto Mix19초/18.2–18.7초 출력 RMS0.067400449로 끝부분을 보존했다.2초 명시적 Preview는2초다. 입력4개 Blob SHA256 전후 일치, runtime 오류0을 확인했다. 실제 AI backing과 격리 합성 Track의 기술 검증이며 실제 Project binding·물리 가창/청취 인수가 아니다.
 
-전체 유지 Node QA/build 및 qa:submission-graphics/qa:continuity 통과:2/3/4·주 프로젝트의 그래픽0 상태 실제 native Mix 저장/reload, 제출 실패/중복·재시도·원본/seed·Credits/프로필 복귀를 확인했다. Git/Production 마감 결과는 확인 후 기록한다. 단계3 전체를 완료 처리하지 않는다.
+전체 유지 Node QA/build 및 qa:submission-graphics/qa:continuity 통과:2/3/4·주 프로젝트의 그래픽0 상태 실제 native Mix 저장/reload, 제출 실패/중복·재시도·원본/seed·Credits/프로필 복귀를 확인했다. Git/Production 마감: 기능 commit `8046682fd23fff85f0d13cc26a64bb0292d77a80` push 후 Vercel bot Production deployment6958585196/동일 commit/status success를 확인했다. HTTP200 및 JS `index-CpOHw0aW.js` SHA256 `e88b5ba12cc66a2cf9ea4ced7e47fd30ae74282cf0e3c90d78642ab1e2e1ad9c`, CSS `index-DtsPXy24.css` SHA256 `b22ac9187dcf08f34a1dea11517b51e5a85b6602d5a4e844d2084ec6ae748b26`가 검증 build와 byte 일치했다. Production qa:submission-graphics/qa:continuity 모두 통과했다. qa:audio-lengths의 실제19초 backing/긴 Track API 검증은 로컬 native Web Audio 결과이며 현재 Production UI에 실제 Project backing이 연결됐다는 증거로 사용하지 않는다. 직접 deploy 없이 Git Integration만 사용했다. 단계3 전체를 완료 처리하지 않는다.
 
 ## 2026-10-09 단계3 — 실제 앞 반주 준비 구간과 박자 분석
 
