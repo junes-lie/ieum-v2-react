@@ -1,5 +1,7 @@
 ## 2026-10-09 기획 변경 이력 — Voice Identicon → Track Voice Layer → Project Record
 
+후속 단계3 반주 보완: 실제 제공 샘플3곡의 낮은 고정 gain0.65를 실제 PCM RMS/peak에 따른 곡별 고정 gain으로 보정했다. 최대 증폭·peak 상한·무음 보호를 유지하며 녹음/Guide 재개/Current Mix/offline Mix에 같은 규칙을 사용한다. 유지 QA/build, 실제3곡 native Guide·Review/원본 보존, 실제 WAV pause/resume/offline 및 전체 제공 샘플 QA를 통과했다. 자세한 수치는 CURRENT_IMPLEMENTATION_STATUS.md 최신 항목에 기록한다. 실제 프로젝트 AI 곡·반주/Key/Part 연결, 물리 청취·지연, 개인→Track→Project 통합은 여전히 잔여 조건이다. 프로필 이미지 생성·디자인 보류는 유지하고 이번 수정으로 단계3 전체를 완료 처리하지 않는다.
+
 사용자 후속 결정: 뉴런처럼 보이는 현재 진단 이미지는 프로필 후보로 채택하지 않는다. 프로필 이미지는 추가 검토 후 생성하며 해당 이미지 생성·Profile/화면 연결을 보류한다. 기술 재현 결과는 디자인 승인과 구분해 보존한다. 독립적인 제출/그래픽 상태 분리와 기존 기능은 계속 진행한다. 개인 형상 미완료 상태에서 완료 조건을 줄이거나 임의 대체 이미지를 붙이지 않는다.
 
 독립 기능 묶음 마감: 기존 Home 제출수/Auto Mix 준비 조건을 그래픽 개수에서 실제 저장된 필수 Track 기준으로 분리했다. 068c83e commit/push·Git Integration production 완료·production 그래픽0/2–4 Track 합성 및 실패·복원 연속성 QA를 확인했다. 자세한 해시/배포 증거는 CURRENT_IMPLEMENTATION_STATUS.md 최신 항목에 기록한다. 프로필 형상 보류와 기존 단계1/3 잔여 완료 조건은 유지한다.

@@ -246,6 +246,24 @@ export async function loadProvidedAudio(file, sha256) {
   return providedAudioCache.get(key)
 }
 
+const backingGainCache = new WeakMap()
+export function backingPlaybackGain(buffer) {
+  if (backingGainCache.has(buffer)) return backingGainCache.get(buffer)
+  let square = 0, count = 0, peak = 0
+  for (let channel=0;channel<buffer.numberOfChannels;channel++) {
+    for (const sample of buffer.getChannelData(channel)) {
+      if (!Number.isFinite(sample)) throw new Error('반주 오디오에 유효하지 않은 값이 있어요.')
+      square += sample*sample;count++;peak=Math.max(peak,Math.abs(sample))
+    }
+  }
+  const rms = count ? Math.sqrt(square/count) : 0
+  // One fixed gain preserves musical dynamics and stays identical on resume.
+  // -20 dBFS RMS target, at most +6 dB, with headroom before the mix limiter.
+  const gain = rms < .0015 || !peak ? 1 : Math.min(2,.1/rms,.85/peak)
+  backingGainCache.set(buffer,gain)
+  return gain
+}
+
 function scheduleBuffer(ctx, destination, buffer, start, sourceOffsetSec = 0, gainValue = .72, panValue = 0, registerPlayback = true) {
   const source = ctx.createBufferSource()
   const gain = ctx.createGain()
@@ -275,7 +293,7 @@ function scheduleRecordingGuides(offsetSec = 0) {
   const remaining = Math.max(.1, state.duration - offsetSec)
   if (state.guides.backing) {
     if (state.decodedBacking) {
-      if (offsetSec < state.decodedBacking.duration) scheduleBuffer(ctx, ctx.destination, state.decodedBacking, start, offsetSec, .65)
+      if (offsetSec < state.decodedBacking.duration) scheduleBuffer(ctx, ctx.destination, state.decodedBacking, start, offsetSec, backingPlaybackGain(state.decodedBacking))
     } else scheduleBacking(ctx, ctx.destination, start, remaining, .07, offsetSec)
   }
   state.decodedGuides.forEach(({track,buffer}) => {
@@ -322,7 +340,7 @@ export async function startRecording({ onFrame, guides = {backing:false,parts:[]
   runtime.syncOffsetSec = Math.max(0, start - ctx.currentTime)
   runtime.recordingGuideState = { guides:{...guides,parts:[...guides.parts]}, decodedGuides, decodedBacking, duration:Math.max(.1,duration) }
   if (guides.backing) {
-    if (decodedBacking) scheduleBuffer(ctx, ctx.destination, decodedBacking, start, 0, .65)
+    if (decodedBacking) scheduleBuffer(ctx, ctx.destination, decodedBacking, start, 0, backingPlaybackGain(decodedBacking))
     else scheduleBacking(ctx, ctx.destination, start, duration)
   }
   decodedGuides.forEach(({track,buffer}) => {
@@ -417,7 +435,7 @@ export async function playCurrentMix({ included, tracks = [], backingBlob = null
   if (!included.backing && !selected.length) throw new Error('들을 Track을 선택해 주세요.')
   const start = ctx.currentTime + 0.08
   if (included.backing) {
-    if (decodedBacking) scheduleBuffer(ctx, ctx.destination, decodedBacking, start, 0, .65)
+    if (decodedBacking) scheduleBuffer(ctx, ctx.destination, decodedBacking, start, 0, backingPlaybackGain(decodedBacking))
     else scheduleBacking(ctx, ctx.destination, start, duration)
   }
   for (const {track,buffer} of selected) {
@@ -520,7 +538,7 @@ async function renderTrackMix({tracks,duration,onProgress,backing,backingBlob,mi
   master.connect(offline.destination)
   onProgress?.(18)
   if (backing) {
-    if (decodedBacking) scheduleBuffer(offline, master, decodedBacking, 0, 0, .65, 0, false)
+    if (decodedBacking) scheduleBuffer(offline, master, decodedBacking, 0, 0, backingPlaybackGain(decodedBacking), 0, false)
     else scheduleBacking(offline, master, 0, actualDuration, 0.075)
   }
   for (const {track,buffer:decoded,cleanup} of decodedTracks) {

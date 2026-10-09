@@ -1,3 +1,13 @@
+## 2026-10-09 단계3 — 실제 제공 샘플 반주 레벨 보완
+
+현재 전체 실행 위치는 단계3이다. 단계0 기준 보존은 완료·검증됐고 재수행하지 않는다. 단계1 개인 입력/버전 계약 및 실제 모델 재현 기술 검증은 확보했지만 개인 식별·Track/Project/앱 연결은 미완료다. 단계2 디자인/Figma 인수와 프로필 이미지 생성은 사용자 지시로 보류한다. 단계3 녹음/실패 보존/Review 직접 제출/2–4 Auto Mix/제출·그래픽 상태 분리는 검증·배포됐다. 실제 프로젝트 곡·반주·Key/Part 데이터와 물리 기기 청취·지연 인수는 남았다. 단계4 Profile/탐색의 기존 구현은 유지하지만 새 Identity 공유 및 전체 흐름 인수는 미완료, 단계5 실제 인증·공유 저장·초대·비동기 서비스는 미연결, 단계6 종합 인수는 선행 조건 충족 후 진행한다. 전체 단계3 완료로 판정하지 않는다.
+
+실제 제공 샘플의 고정 반주 gain0.65를 디코딩된 실제 PCM의 전 채널 RMS/peak에 따른 곡별 고정 gain으로 변경했다. 목표 RMS0.1(-20dBFS), 최대 gain2(+6.02dB), peak0.85 상한을 적용하며 RMS0.0015 미만 무음/미약 입력은 증폭하지 않는다. 곡 내부의 강약은 유지하고 녹음 시작/Guide 토글·재개/Current Mix/offline Mix에 동일 규칙을 적용한다. 원본 오디오/등록 hash/가사/Key/화면/CSS는 변경하지 않았다. 실제 반주가 없는 Project의 기존 합성 반주를 실제 AI 곡 반주로 바꾼 작업은 아니다.
+
+유지 QA/build 통과. `qa/verify-backing-gain.mjs`는 무음·미약 신호·stereo·최대 증폭·peak 상한·비정상 PCM 거부를 검증한다. `qa/verify-provided-backing-level.mjs`는 실제3곡을 native AudioContext로 decode한 Guide gain, 토글 gain/시간 연속성, Review 도달, 기존 Profile 원본 보존 및 runtime 오류0을 확인했다. 서로의 빛 gain1.727898(+8.49dB/이전0.65 대비), 천천히 함께0.873980(+2.57dB), 비가 그친 뒤1.047350(+4.14dB). 실제16초 WAV의 pause/resume/토글/native offline 비무음 합성 및 live node 불변 QA도 통과했다. qa:provided의3곡 전체 Take/asset hash/가사/실패·재시도·오래된 권한 응답 격리도 통과했다. 합성 마이크 격리 QA이며 실제 청취·잔여 보컬·악기 보존·모바일 지연 인수가 아니다.
+
+이 항목 작성 시 commit/push 및 Production 검증 전이다. 해당 검증 결과는 확인 후 기록한다.
+
 ## 2026-10-09 프로필 이미지 보류 / 단계3 제출·그래픽 상태 분리
 
 배포 마감: `068c83e2854e9a229044d1019778e5c0943e51a9`를 main에 commit/push했고 GitHub origin/main과 일치했다. Vercel bot의 Production deployment6956977210/같은 commit/status success(Deployment has completed)를 확인했다. Production HTTP200 및 검증 build `index-BK9XreAG.js` SHA256 `d7a7a8bcec0adbf0ab840175c9f9c4b39624839dadde58f72a04732d5e8acb3e`, CSS `index-DtsPXy24.css` SHA256 `b22ac9187dcf08f34a1dea11517b51e5a85b6602d5a4e844d2084ec6ae748b26` byte 일치를 확인했다. Production qa:submission-graphics(2/3/4·주 프로젝트4 Track/그래픽0/Mix 저장/reload)와 qa:continuity(제출 실패·재시도·원본/seed/Track 보존·Credits·재접속)가 모두 통과했다. 새 프로필 이미지나 진단 PNG는 배포하지 않았다. 직접 production deploy 없음. 이 기능 묶음의 배포 검증이며 단계1/3 전체·실기기 청취 완료가 아니다. 아래의 배포 전 표현은 당시 검증 기록이다.
