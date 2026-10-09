@@ -1,3 +1,29 @@
+## 2026-10-10 단계3 후속 — 별도 GPU 실행 환경 검증
+
+최종 GPU 선행 검증: 같은19초50-step/기존가사완료spec/seed65359도GPU FP32 생성 성공(SHA2568b7104554f057d68936c31459fce726702cb6b37dce2bfa2b57e36ae315bb0df). 추론253.996초/전체527.117초, 이전 같은50-step CPU618.159초 대비 관측 추론 시간 약2.43배다. own allocated peak2354321920bytes/reserved3214934016bytes, NVIDIA전체 VRAM5566MiB·최대사용률63%/462samples/monitorErrors0. 초기 model/hash/disk/cache 준비 비용은 추론과 구분하며90초/batch/production 추론 service를 검증한 것으로 확장하지 않는다. CPU 환경/모델/결과·현재 앱과 음원을 보존한다.
+
+실제50-step UVR50.190초/합 residual0, vocal SHA256069ac7e8dbdc397e790a73e5f6768008490a7c51597d4e57b7620f6aa3b4b06f/RMS0.131006·잔여 RMS0.002513. Small/Turbo 모두가사0.975610/자동 QA 통과지만 둘 다‘걸어요’를‘걸어’로 인식했다. 실제 Small 단어 정렬0.975610/각줄7/7·6/7·7/7/시작0·6.9·12.02초/범위·순서 검증 통과. firstWordBoundaryCensored=true/entryTimingAccepted=false/catalogRegistrationApproved=false 유지. 관측49.5–62.4 MIDI/tessitura51–60. 실제 동일 원곡31.7–50.7초 vocal과181개 voiced pair는 중앙값-6.9반음/96.13% 낮음/near-unison1.10%/PCM상관0.002509다. 실제 낮고 다른 Part의 증거이며 syllable/chord/Key 검증이나 최종 화음 승인으로 바꾸지 않는다. qa/compare-ai-vocal-part.py는 원본·stem 해시와 actual source window를 확인하고 원본 transpose/가짜곡Key/제출 수 변경 없이 측정한다. 결과/실패/정렬 원본은 D runtime에 보존한다.
+
+GPU 환경 연결·짧은 실제 생성/메모리/속도·수치보존 기술 묶음은 완료했다. 단계3 전체/제출 가능한 완성 Part는 미완료다. 다음 구현 선행 조건은 누락된 종결음절·실제 첫 진입·원곡 화성의 확정이며, 서로 다른 seed를 반복하거나 QA 문턱을 낮추어 완료하지 않는다. 다음 단계4/5·앱 catalog/Guide 연결·디자인 변경은 시작하지 않았다. GPU 사용은 검증용 opt-in이며 CPU 기본 경로를 유지한다. 현재50-step 실행·분리·ASR·정렬·source 비교는 모두 종료됐다.
+
+선행32-step 결과: GPU FP3219초32/32 실제 생성 성공, SHA2567233bcab808265ccb9e1182684ebd3f6d60aee0c1e6f9fae643651492a335276. 추론215.497초/전체493.163초이며 기존 같은19초32-step CPU402.183초 대비 관측 추론 시간 약1.87배다. 다른 torch/CUDA random stream·환경 부하는 통제 benchmark나 음원 동일성으로 주장하지 않는다. own allocated peak2354076160bytes/reserved3206545408bytes, NVIDIA 전체 VRAM5575MiB·사용률83% 최대/426samples/monitorErrors0다. GPU cache13groups/476tensor는 원래6301835520bytes를 정확히 왕복 가능한3150917760bytes로 보관하며 계산은FP32다. 실제 GPU forward6회·원래 형식 fallback·잘못된 training 거부 후 재시도·one-shot 출력 exact/CFG null parameter와 buffer 보존·기존 파일 보존 QA 통과. 실제 저장된 text encoder/tokenizer의 가사 embedding CPU/GPU exact, contextual hidden state 최대차9.5367431640625e-05로 tolerance 검사를 통과했다.
+
+UVR 실제 분리49.641초/합 residual0, vocal SHA2566ef7c797f98b9c91e5c7f79e28374476510aa14547be0de3eb0539718ccd7444/RMS0.176135, 잔여 RMS0.005359다. Small robust 가사 인식은 빈 결과/유사도0/미통과, Turbo robust0.857143/자동 경계 통과이나 첫 줄 ‘우리 함께 해요’와 마지막 줄 ‘작은 노래 모 모아서’로 요청 가사와 다르다. pYIN 관측65.3–71.3 MIDI/tessitura66–71이며 요청 낮은 화음·정확한 가사·진입/catalog 승인은 없다. GPU 생성 성공을 실사용 Part 성공으로 바꾸지 않는다. 이후 기존50-step 가사 완료 지시 spec/seed65359의19초 GPU 교차 시험을 수행했으며, 앱/음원/사용자 원본은 변경하지 않았다.
+
+아래는 각 시점의 실패·중단·수정 이력이며 최신 판정은 위 결과를 따른다.
+
+앱 화면·음원·catalog는 변경하지 않았다. NVIDIA GeForce GTX 1660 SUPER의 실제 VRAM은 nvidia-smi 기준6144MiB, driver572.16, compute capability7.5다. WMI AdapterRAM의4GB 값은 VRAM 판정에 사용하지 않는다. 기존 CPU Python의torch2.14.1+cpu/CUDA 불가 상태를 보존했다. D:/IEUM-model-runtime/gpu-2026-10-10의 별도 venv에torch2.8.0+cu126을 설치하고 실제 CUDA FP32 행렬 계산·ACE-Step import를 확인했다. GPU torch가 자체 site-packages에서 로드되고 기존 CPU 의존성은 읽기 전용 참조한다. 원본 CPU 모델·결과는 유지한다.
+
+첫 설치는 C 임시 공간 부족 OSError[Errno28]로 실패했고 D의 프로세스 한정 TEMP/TMP로 재실행하여 설치를 완료했다. 이후 사용자가 C 공간을 확보했으며 실제 여유83GB를 확인했다. CUDA 지원 확인은 음악 생성 성공이나 가사·화음 승인과 구분한다.
+
+GPU 생성의 첫 VAE 오류는 CUDA 입력/CPU weight 불일치였다. legacy weight_norm의 사전 hook과 native Diffusers onload 순서를 확인했다. from_pretrained 후 cached weight가 Meta인 두 번째 검증 오류는 실제 loaded weight_g/weight_v의 native compute_weight를 기준으로 정정했다. native remove_weight_norm 전후74개 실제 normalized weight exact 일치를 확인했으며 모델 디스크 파일은 변경하지 않았다.
+
+FP32 native leaf RAM 및 disk offload19초 시험은 첫 단계 지연과 RAM 여유383/834MB를 확인하여 해당 GPU PID만 종료했다. 각 monitor JSON/캐시/원본을 보존했으며 생성 성공으로 처리하지 않는다. FP16 leaf disk4초 시험도 첫 단계 지연으로 보존 종료했다. 현재 native CUDA block offload FP16의 별도4초/32-step 시험을 진행한다. 실제 출력·속도·own VRAM peak·가사/음역/화음 검증은 아직 미완료다. CPU 전용 monkeypatch/cache를 GPU에서 호출하지 않으며 CPU float32 기본 경로를 유지한다.
+
+production build, CPU lossless cache exact 출력4회·fallback·재시도·기존 파일 보존, 별도4197 build 서버의2–4 Track Auto Mix/reload·반주 오류·변경된 입력 제출 거부·Draft 보존 QA를 통과했다. 샌드박스 임시 파일 권한 오류/Edge 종료,4196 QA timeout, npm preview 인자 오류 및4196 사용 중 오류는 최초 실패와 구분해 기록한다. 동일 QA를 승인된 환경/기존 포트를 보존하는4197에서 통과했다. 실제 모바일/마이크·새 음악 품질·새 commit 배포 증거를 대체하지 않는다.
+
+FP16 block4초 시험은32/32 계산을112.6초까지 완료했으나 출력 finite 검사에서 실패했다. 저장된 latent[1,100,64] 전체6400개가NaN으로 실제 확인되어 디코딩만의 오류나 성공 음원으로 처리하지 않는다. monitor wall965.678초에는 모델 계보 검사·FP16 변환 로딩이 포함된다. FP16 적용은 미승인이다. 이후 native disk offload가 CPU에 full-size empty placeholder를 남기는 코드를 확인했다. 별도 qa/cuda_disk_offload.py는 CUDA onload 그룹의 persisted tensor만0-element CPU storage로 해제하며 CPU inference hook/cache는 사용하지 않는다. qa/verify-cuda-disk-offload.py의 실제 CUDA forward3회/CPU 기준1e-5·1e-6 tolerance 일치/빈 CPU placeholder/기존 sentinel 보존을 통과했다. 이 경로로FP3219초/32-step 실제 재시험 중이다. step별 finite 검사로 유효하지 않은 latent를 즉시 거부한다.
+
 ## 2026-10-10 단계3 후속 — 실제 Part 지원 모델과 원본 검증
 
 현재 실행 위치는 단계3이다. 새 45초 오리지널 후보를 실제 ACE-Step Turbo로 생성(253.268초)하고 UVR 분리·Whisper-small 검증을 수행했다. 원본 SHA256 d9b56c90da12e6ef177dce7d851095155250a870b09dca338b3f2cbbcb46a374, 문자 유사도0.645833/lyricAcceptance=false다. 요청하지 않은 가사와 누락을 확인했으므로 앱 곡으로 등록하지 않았다. 실패 결과와 이전 원본은 보존한다.

@@ -9,9 +9,11 @@ from scipy.signal import resample_poly
 import torch
 from diffusers import AceStepPipeline,AceStepTransformer1DModel
 from transformers import AutoModel
-from cpu_disk_offload import release_cpu_disk_offload_storage,enable_lossless_cpu_inference_cache,lossless_cpu_cache_stats
 parser=argparse.ArgumentParser()
 parser.add_argument('--model-dir',type=Path,required=True)
+parser.add_argument('--device',choices=['cpu','cuda'],default='cpu')
+parser.add_argument('--compute-dtype',choices=['float32','float16'],default='float32')
+parser.add_argument('--lossless-gpu-cache',action='store_true',help='Opt-in exact packed host cache; original dtype restored on CUDA')
 parser.add_argument('--output-dir',type=Path,required=True)
 parser.add_argument('--duration',type=float,default=20)
 parser.add_argument('--seed',type=int,default=65346)
@@ -27,6 +29,13 @@ parser.add_argument('--source-stem',choices=['mix','backing'],default='mix',help
 parser.add_argument('--steps',type=int)
 parser.add_argument('--lossless-cpu-cache',action='store_true',help='Opt-in one-shot Base lego inference with exact CPU weight restoration')
 args=parser.parse_args()
+assert args.device=='cuda' or args.compute_dtype=='float32','Preserve CPU float32 inference'
+assert not args.lossless_gpu_cache or args.device=='cuda','GPU cache cannot change CPU inference'
+compute_dtype=getattr(torch,args.compute_dtype)
+if args.device=='cuda':
+ assert torch.cuda.is_available(),'CUDA runtime unavailable; preserve CPU environment'
+ assert not args.lossless_cpu_cache and not args.offload_dir,'CPU-specific cache/disk hooks cannot be used on GPU'
+ torch.cuda.reset_peak_memory_stats()
 script_sha=hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
 assert (args.task=='lego')==bool(args.source_song),'lego requires a verified generated source; text2music has no source'
 assert not (args.source_song and args.audio_codes),'Do not mix two conditioning sources'
@@ -34,6 +43,8 @@ assert args.source_song or args.source_start==0,'Source offset requires source a
 assert args.source_song or args.source_stem=='mix','Source stem requires source audio'
 model_config=json.loads((args.model_dir/'transformer'/'config.json').read_text(encoding='utf-8'))
 is_base=not model_config.get('is_turbo',False)
+assert not (args.device=='cuda' and is_base and args.compute_dtype=='float16'),'Base CUDA FP16 produced non-finite actual latents; use validated FP32 path'
+assert not args.lossless_gpu_cache or (is_base and args.task=='lego' and args.compute_dtype=='float32'),'GPU cache is validated for FP32 Base Lego only'
 assert not args.lossless_cpu_cache or (is_base and args.task=='lego'),'Lossless one-shot cache is validated for Base lego only'
 if args.task=='lego' and not is_base:raise ValueError('lego requires verified Base weights; installed Turbo does not support lego')
 model_id='ACE-Step/Ace-Step1.5';model_revision='19671f406d603126926c1b7e2adc169acbcade22'
@@ -89,29 +100,65 @@ if args.audio_codes:
  assert hashlib.sha256(code_report['audioCodes'].encode()).hexdigest()==code_report['codesSha256']
 torch.set_num_threads(4)
 torch.manual_seed(args.seed)
-release_cpu_disk_offload_storage()
-if args.lossless_cpu_cache:enable_lossless_cpu_inference_cache()
+if args.device=='cpu':
+ from cpu_disk_offload import release_cpu_disk_offload_storage,enable_lossless_cpu_inference_cache,lossless_cpu_cache_stats
+ release_cpu_disk_offload_storage()
+ if args.lossless_cpu_cache:enable_lossless_cpu_inference_cache()
 args.output_dir.mkdir(parents=True,exist_ok=True)
-print('Loading actual converted ACE-Step weights on CPU',flush=True)
+print(f'Loading actual converted ACE-Step weights for {args.device} inference',flush=True)
 # Load and offload large components sequentially, avoiding a full FP32 model peak.
-transformer=AceStepTransformer1DModel.from_pretrained(args.model_dir,subfolder='transformer',torch_dtype=torch.float32,local_files_only=True,low_cpu_mem_usage=True)
+transformer=AceStepTransformer1DModel.from_pretrained(args.model_dir,subfolder='transformer',torch_dtype=compute_dtype,local_files_only=True,low_cpu_mem_usage=True)
 offload_dir=args.offload_dir or args.output_dir/'transformer-offload'
 if args.offload_dir:
  cached=json.loads((offload_dir.parent/'song-generation-report.json').read_text(encoding='utf-8'))
  assert cached['model']==model_id and cached['revision']==model_revision,'Reuse only the verified same model cache'
  assert len(list(offload_dir.glob('group_*.safetensors')))==13,'Only a complete offload cache can be reused'
-transformer.enable_group_offload(onload_device=torch.device('cpu'),offload_device=torch.device('cpu'),offload_type='block_level',num_blocks_per_group=2,offload_to_disk_path=str(offload_dir))
+if args.device=='cpu':
+ transformer.enable_group_offload(onload_device=torch.device('cpu'),offload_device=torch.device('cpu'),offload_type='block_level',num_blocks_per_group=2,offload_to_disk_path=str(offload_dir))
+else:
+ from cuda_disk_offload import enable_cuda_disk_storage_release
+ enable_cuda_disk_storage_release()
+ if args.lossless_gpu_cache:
+  from cuda_disk_offload import enable_cuda_lossless_cache,cuda_lossless_cache_stats
+  enable_cuda_lossless_cache()
+ transformer.enable_group_offload(onload_device=torch.device('cuda'),offload_device=torch.device('cpu'),offload_type='block_level',num_blocks_per_group=2,use_stream=False,offload_to_disk_path=str(offload_dir))
 print('Transformer prepared; loading text encoder separately',flush=True)
 print(f'Actual offloaded transformer storage: {sum(p.numel() for p in transformer.parameters())} tensor elements',flush=True)
-text_encoder=AutoModel.from_pretrained(args.model_dir/'text_encoder',dtype=torch.float32,local_files_only=True,low_cpu_mem_usage=True)
+text_encoder=AutoModel.from_pretrained(args.model_dir/'text_encoder',dtype=compute_dtype,local_files_only=True,low_cpu_mem_usage=True)
 # ACE-Step accesses the lyric embedding directly after text_encoder.forward.
 # Root-level text disk offload replaces that embedding with empty storage before
 # the direct call, silently corrupting lyric conditioning. Keep this small model
 # resident; only the DiT uses block offloading.
 optional_components={'audio_tokenizer':None,'audio_token_detokenizer':None} if args.task=='lego' else {}
-pipe=AceStepPipeline.from_pretrained(args.model_dir,transformer=transformer,text_encoder=text_encoder,dtype=torch.float32,local_files_only=True,low_cpu_mem_usage=True,**optional_components)
+pipe=AceStepPipeline.from_pretrained(args.model_dir,transformer=transformer,text_encoder=text_encoder,dtype=compute_dtype,local_files_only=True,low_cpu_mem_usage=True,**optional_components)
 # Oobleck exposes its implemented temporal tiling through this runtime flag.
 pipe.vae.use_tiling=True
+if args.device=='cuda':
+ from diffusers.hooks import apply_group_offloading
+ # Legacy weight_norm pre-hooks run before Diffusers onload and cache a CPU
+ # weight. For inference, materialize exactly the same normalized VAE weight.
+ normalized_vae_weights=0
+ for module in pipe.vae.modules():
+  if hasattr(module,'weight_g') and hasattr(module,'weight_v'):
+   from torch.nn.utils.weight_norm import WeightNorm
+   hook=next(hook for hook in module._forward_pre_hooks.values() if isinstance(hook,WeightNorm) and hook.name=='weight')
+   # from_pretrained can leave the cached weight on Meta; derive the reference
+   # from the loaded weight_g/weight_v using PyTorch's own normalization hook.
+   before=hook.compute_weight(module).detach().clone()
+   torch.nn.utils.remove_weight_norm(module)
+   assert torch.equal(before,module.weight.detach()),'VAE weight normalization changed values'
+   normalized_vae_weights+=1
+ print(f'Exact VAE normalized weight parity: {normalized_vae_weights} modules',flush=True)
+ for name,module in pipe.components.items():
+  if name!='transformer' and isinstance(module,torch.nn.Module):
+   apply_group_offloading(module,onload_device=torch.device('cuda'),offload_device=torch.device('cpu'),offload_type='leaf_level',use_stream=False)
+ assert pipe._execution_device.type=='cuda','Native pipeline must compute on CUDA'
+ if args.task=='lego':
+  from cuda_disk_offload import release_after_one_shot
+  # Native Lego calls these once; cover's second encode_prompt is excluded.
+  # Preserve condition buffers, including silence_latent used later.
+  pipe.encode_prompt=release_after_one_shot(pipe.encode_prompt,pipe.text_encoder,'text/lyric encoding')
+  pipe.condition_encoder.forward=release_after_one_shot(pipe.condition_encoder.forward,pipe.condition_encoder,'condition encoding',preserve_parameters=('null_condition_emb',))
 if args.lossless_cpu_cache:
  encode_prompt=pipe.encode_prompt
  def encode_then_release(*values,**kwargs):
@@ -123,14 +170,17 @@ if args.lossless_cpu_cache:
   print('Actual caption and lyric encoding complete; one-shot text weights released',flush=True)
   return encoded
  pipe.encode_prompt=encode_then_release
+if args.device=='cuda':torch.cuda.synchronize()
 start=time.time()
 print('Generating original song; no personal voice or existing commercial song input',flush=True)
 def progress(pipeline,step,timestep,values):
+ if args.device=='cuda':torch.cuda.synchronize()
+ assert torch.isfinite(values['latents']).all(),f'Non-finite diffusion latent at step {step+1}; preserve evidence and reject output'
  print(f'Actual music diffusion step {step+1}/{steps}; elapsed {time.time()-start:.1f}s',flush=True)
  if step==steps-1:
   torch.save(values['latents'].detach().cpu(),args.output_dir/'actual-generated-latents.pt')
  return values
-result=pipe(callback_on_step_end=progress,prompt=prompt,lyrics=lyrics,vocal_language=spec['language'],audio_duration=args.duration,num_inference_steps=steps,bpm=spec['bpm'],keyscale=spec['key'],timesignature=spec['timesignature'],task_type='lego' if args.source_song else ('cover' if code_report else 'text2music'),track_name='vocals' if args.source_song else None,src_audio=source_audio,audio_codes=code_report['audioCodes'] if code_report else None,audio_cover_strength=args.audio_cover_strength,generator=torch.Generator('cpu').manual_seed(args.seed))
+result=pipe(callback_on_step_end=progress,prompt=prompt,lyrics=lyrics,vocal_language=spec['language'],audio_duration=args.duration,num_inference_steps=steps,bpm=spec['bpm'],keyscale=spec['key'],timesignature=spec['timesignature'],task_type='lego' if args.source_song else ('cover' if code_report else 'text2music'),track_name='vocals' if args.source_song else None,src_audio=source_audio,audio_codes=code_report['audioCodes'] if code_report else None,audio_cover_strength=args.audio_cover_strength,generator=torch.Generator(args.device).manual_seed(args.seed))
 audio=result.audios[0].detach().float().cpu().numpy().T
 assert np.isfinite(audio).all() and audio.ndim==2 and audio.shape[1]==2
 assert np.sqrt(np.mean(audio**2))>1e-5,'Model output is silent'
@@ -147,5 +197,9 @@ report['cpuInferenceCache']=lossless_cpu_cache_stats() if args.lossless_cpu_cach
 report['textEncoderStorage']='released after complete native caption and lyric encoding' if args.lossless_cpu_cache else 'resident'
 report['lyricEmbeddingStorage']=report['textEncoderStorage']
 report['transformerStorage']='exact CPU RAM cache; original dtype restored before native forward' if args.lossless_cpu_cache else 'DiT-only disk offload'
+report.update(executionDevice=args.device,torchVersion=torch.__version__,computeDtype=args.compute_dtype)
+report['gpuInferenceCache']=cuda_lossless_cache_stats() if args.lossless_gpu_cache else None
+if args.device=='cuda':
+ report.update(transformerStorage='native CUDA block disk offload with CUDA-only CPU-placeholder release; CPU inference hooks excluded',textEncoderStorage='released after complete native encoding' if args.task=='lego' else 'native CUDA leaf group offload',lyricEmbeddingStorage='released after complete native encoding' if args.task=='lego' else 'native CUDA leaf group offload',conditionEncoderStorage='parameters released after complete native encoding; buffers preserved' if args.task=='lego' else 'native CUDA leaf group offload',vaeNormalizedWeightParityModules=normalized_vae_weights,gpu={'name':torch.cuda.get_device_name(),'capability':torch.cuda.get_device_capability(),'peakAllocatedBytes':torch.cuda.max_memory_allocated(),'peakReservedBytes':torch.cuda.max_memory_reserved(),'cudaRuntime':torch.version.cuda})
 (args.output_dir/'song-generation-report.json').write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding='utf-8')
 print(json.dumps(report,ensure_ascii=False),flush=True)

@@ -1,3 +1,21 @@
+## 2026-10-10 단계3 GPU 선행 검증 — 기존 단계 유지
+
+최종 현재 판정: GPU 선행 실행 기술 검증은 완료했다(기존 CPU보존, 실제GPU FP3219초32/50-step, own peak2.19GiB, 수치보존·VAE parity·실제text encoder CPU/GPU대조·monitor 정상). GPU50-step 추론253.996초/전체527.117초, 이전CPU50-step618.159초 대비 관측 추론 약2.43배. 장기/batch/서버 inference나 다른 환경에 일반화하지 않는다. 검증용 opt-in CUDA cache이며 CPU default를 유지한다.
+
+단계3 전체 완료 조건은 계속 미충족이다. 50-step 출력 Small/Turbo 및 실제 단어 정렬은0.975610으로자동 QA를 통과했으나‘걸어요’의‘요’가 두 ASR/정렬에서 누락됐고 첫 단어는boundary censored다. 관측49.5–62.4 MIDI와 실제 원곡 vocal 대비181voiced pairs/중앙값-6.9반음/PCM상관0.002509로 낮고 다른 Part 증거는 확보했으나 원곡 화성/정확한 가사/첫 진입은 미승인이다. catalog·Guide·실제 제출 Track·Auto Mix 성공으로 바꾸지 않는다. 다음 선행 작업은 종결음절·실제 첫 진입·원곡 화성 검증이며 임의 transpose/Key 지정·문턱 완화·새 seed 반복으로 대체하지 않는다. 현재 GPU 생성과 관련 분석은 종료하고 원본/실패/정렬 evidence를 보존했다. 단계4/5·디자인/프로필 이미지 보류를 유지한다.
+
+선행32-step 체크포인트: GPU 실행 기술 묶음은 실제FP3219초32/32 생성/215.497초 추론/own peak2.19GiB/전체493.163초/monitorErrors0를 확인했다. CPU402.183초 대비 관측 추론 시간 약1.87배이며 cold setup·torch 버전·random stream 차이는 별도다. CPU 전용 hook/cache를 가져오지 않는 CUDA-only storage와 opt-in lossless host cache의 GPU FP32 복원·fallback·실패 재시도·one-shot 출력/CFG parameter/buffer 보존을 검증했다. 실제 text encoder의 가사 lookup은CPU/GPU exact, contextual output은 tolerance 내다. Base CUDA FP16은 실제NaN으로 로딩 전 거부한다.
+
+GPU 출력의 Small 가사 검증은 실패했고 Turbo0.857143은 자동 경계만 통과했다. 첫 줄 변경/마지막 줄 반복 및 관측65.3–71.3 MIDI로 낮은 화음·정확한 가사·진입·catalog 승인은 미완료다. 단계3 전체 완료·앱 연결로 취급하지 않는다. 이후 기존50-step spec/seed65359의 같은19초 GPU 시험을 진행했으며 기존 품질 gate를 유지했다. 아래 GPU 시험 기록의 각 시점 관측과 현재 결과를 구분한다.
+
+단계3 실제 AI Part 검증에 GPU 실행 환경 검증을 통합한다. 단계4/5·디자인/프로필 이미지·IA 변경은 시작하지 않는다. 기존 CPU 환경/모델/산출물을 보존하고 별도 D venv에서 실행한다. 실제 GTX1660 SUPER6GB/driver572.16/sm75 확인과 torch2.8.0+cu126 CUDA 행렬 계산·ACE-Step import는 통과했다. CPU torch2.14.1+cpu 기본 경로는 유지한다. GPU dtype은 명시하며 CPU 전용 memory hooks/cache를 GPU에 사용하지 않는다.
+
+실제 모델 검증 순서: 모델 계보/가중치 hash → VAE normalized weight exact 보존 → native CUDA offload 짧은 실제 출력 → own GPU peak/전체 utilization/시간/OOM 확인 → 원래 길이 실제 Part → UVR·가사·음역·화음·진입 검증 → 검증된 결과만 catalog 연결. FP16은 FP32 출력 exact 일치로 표현하지 않는다. 서로 다른 길이·dtype 시험의 시간을 CPU 대비 가속 배수로 발표하지 않는다. GPU utilization/전체 VRAM은 다른 앱을 포함하므로 torch own peak와 구분한다.
+
+VAE CPU/GPU weight 오류와 cached Meta reference 오류를 실제 native hook 기준으로 정정했고74개 normalized weight exact 일치를 확인했다. FP3219초 leaf RAM/disk 및 FP164초 leaf disk 시험은 첫 단계 지연/RAM 부족으로 해당 GPU PID만 종료하여 evidence를 보존했다. 현재 FP164초32-step native CUDA block offload 시험 중이다. 가속/실제 GPU 음악 출력/품질은 아직 미완료다. 상세 증거는 CURRENT_IMPLEMENTATION_STATUS.md의 GPU 절을 참조한다. 완료 조건은 실제 GPU 출력/메모리/시간 확인과 별도의 가사·화음·음역·진입 gate이며, 설치·CUDA kernel 성공만으로 기존 단계 완료 상태를 변경하지 않는다.
+
+FP16 block4초32/32 시험의 실제 latent6400개 전체NaN으로FP16은 미승인이다. native CUDA disk 저장소의 CPU full-size placeholder를 CUDA 그룹에 한정하여 해제하는 경로를 별도로 검증했다(실제 CUDA forward3회·CPU 수치 대조·원본 파일 보존 통과). 현재 FP3219초32-step GPU 재시험 중이며 기존 CPU 경로와 분리한다. step별 finite guard는 실패를 즉시 드러내며 NaN 치환/음원 등록으로 우회하지 않는다.
+
 ## 2026-10-10 단계3 후속 — 실제 Part 지원 모델과 원본 검증
 
 현재 실행 위치는 단계3이다. 새 45초 오리지널 후보를 실제 ACE-Step Turbo로 생성(253.268초)하고 UVR 분리·Whisper-small 검증을 수행했다. 원본 SHA256 d9b56c90da12e6ef177dce7d851095155250a870b09dca338b3f2cbbcb46a374, 문자 유사도0.645833/lyricAcceptance=false다. 요청하지 않은 가사와 누락을 확인했으므로 앱 곡으로 등록하지 않았다. 실패 결과와 이전 원본은 보존한다.
