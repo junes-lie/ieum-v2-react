@@ -995,7 +995,7 @@ function Recorder({ go, submit, onRecordingStart, partId, projectTracks, layers,
   const [inputRms,setInputRms]=useState(0)
   const legacyDraftId = `${project.id}:${currentPart.id}:temporary-recording`
   const draftId = `${CURRENT_USER_ID}:${legacyDraftId}`
-  const lyricIndex = project.lyrics?.length ? Math.max(0,project.lyrics.findLastIndex(line=>seconds>=line.time)) : 0
+  const lyricIndex = project.lyrics?.length ? project.lyrics.findLastIndex(line=>seconds>=line.time) : 0
   const lyrics = project.lyrics?.length ? project.lyrics.map(line=>line.text) : ['가사 없음']
   const begin = async () => {
     if(startingRef.current)return

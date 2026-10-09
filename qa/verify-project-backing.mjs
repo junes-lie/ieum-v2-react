@@ -52,7 +52,7 @@ try {
     await page.goto(url.href);await page.waitForFunction(()=>window.__IEUM_V2__?.state)
     await page.evaluate(({sample,failure})=>{
       const id='qa-backing-record',parts=[{id:'lead',name:'Lead',participantId:'jisun',participant:'JISUN',status:'ready'},{id:'second',name:'Second',status:'open'}]
-      localStorage.setItem('ieum-v2:user-state:v7',JSON.stringify({createdProjects:[{id,seed:'qa-original-seed',songId:'a-thousand-years',name:'QA binding only',key:'QA original key',parts,partCount:2,ownerPartId:'lead',audioSource:{kind:'project-arrangement',songId:'a-thousand-years',key:failure==='key'?'wrong-key':'QA original key',revision:'qa-v1',duration:19,sourceSha256:sample.provenance.sourceSha256,backingFile:sample.backingFile,backingSha256:sample.provenance.backingSha256}}],activeCreatedProjectId:id}))
+      localStorage.setItem('ieum-v2:user-state:v7',JSON.stringify({createdProjects:[{id,seed:'qa-original-seed',songId:'a-thousand-years',name:'QA binding only',lyrics:[{time:3.5,text:'QA first measured lyric'}],key:'QA original key',parts,partCount:2,ownerPartId:'lead',audioSource:{kind:'project-arrangement',songId:'a-thousand-years',key:failure==='key'?'wrong-key':'QA original key',revision:'qa-v1',duration:19,sourceSha256:sample.provenance.sourceSha256,backingFile:sample.backingFile,backingSha256:sample.provenance.backingSha256}}],activeCreatedProjectId:id}))
     },{sample,failure})
     if(failure==='http'||failure==='hash')await page.route('**'+sample.backingFile,route=>route.fulfill({status:failure==='http'?503:200,body:'Isolated invalid audio response'}))
     if(failure==='snapshot')await page.evaluate(async audio=>{
@@ -71,11 +71,14 @@ try {
       const preserved=await page.evaluate(async()=>{const db=await new Promise(resolve=>{const r=indexedDB.open('ieum-v2-records',1);r.onsuccess=()=>resolve(r.result)});const item=await new Promise(resolve=>{const r=db.transaction('tracks').objectStore('tracks').get('jisun:qa-backing-record:lead:temporary-recording');r.onsuccess=()=>resolve(r.result)});db.close();return item?.blob?.size})
       assert.equal(preserved,wav.length);await context.close();console.log('PASS changed audio snapshot refuses submission and preserves original Draft');continue
     }
+    assert.equal(await page.locator('.lyrics .active').textContent(),'','Intro must not claim the first lyric is currently sung')
+    assert.ok((await page.locator('.lyrics').textContent()).includes('QA first measured lyric'),'First lyric remains visible as the upcoming line')
     await page.locator('[data-action="record-start"]').click()
     if(failure==='none') {
       await page.waitForFunction(()=>window.qaBackingDuration!==null)
       assert.equal(await page.evaluate(()=>window.qaMicRequests),1)
       assert.ok(Math.abs(await page.evaluate(()=>window.qaBackingDuration)-19)<.03)
+      await page.waitForFunction(()=>document.querySelector('.lyrics .active')?.textContent==='QA first measured lyric')
       await page.locator('[data-action="record-stop"]').click();await page.waitForSelector('[data-action="record-submit"]')
       await page.locator('[data-action="record-submit"]').click();await page.waitForSelector('.workspace-screen')
       const reference=await page.evaluate(()=>window.__IEUM_V2__.state.activeTracks.lead.audioSourceRef)

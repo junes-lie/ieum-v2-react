@@ -6,12 +6,14 @@ import soundfile as sf
 from scipy.signal import resample_poly
 import librosa
 
-p=argparse.ArgumentParser();p.add_argument('--song-dir',type=Path,required=True);p.add_argument('--output-dir',type=Path);a=p.parse_args()
+p=argparse.ArgumentParser();p.add_argument('--song-dir',type=Path,required=True);p.add_argument('--output-dir',type=Path);p.add_argument('--signal-only',action='store_true',help='Measure audio independently; does not approve lyric entry or catalog registration');a=p.parse_args()
 output=(a.output_dir or a.song_dir)/'song-signal-analysis-report.json'
 assert not output.exists(),f'Preserve existing analysis: {output}'
 read=lambda name:json.loads((a.song_dir/name).read_text(encoding='utf-8'))
-generation=read('song-generation-report.json');stems=read('stem-separation-report.json');alignment=read('lyric-word-alignment-report.json')
-assert alignment['alignmentAccepted'] and alignment['sourceSha256']==generation['outputSha256']==stems['sourceSha256']
+generation=read('song-generation-report.json');stems=read('stem-separation-report.json')
+assert hashlib.sha256((a.song_dir/generation['outputFile']).read_bytes()).hexdigest()==generation['outputSha256']==stems['sourceSha256']
+alignment=None if a.signal_only else read('lyric-word-alignment-report.json')
+if alignment:assert alignment['alignmentAccepted'] and alignment['sourceSha256']==generation['outputSha256'] and alignment['vocalSha256']==stems['stems']['vocals']['sha256']
 def load(stem):
  file=a.song_dir/stems['stems'][stem]['file']
  assert hashlib.sha256(file.read_bytes()).hexdigest()==stems['stems'][stem]['sha256']
@@ -19,8 +21,8 @@ def load(stem):
  g=math.gcd(sr,22050)
  return resample_poly(audio.mean(axis=1),22050//g,sr//g)
 vocals=load('vocals');backing=load('backing');sr=22050
-start=max(0,alignment['lyrics'][0]['time']-.25)
-end=max(float(word['timestamp'][1]) for word in alignment['actualWordRecognition']['chunks'] if word['timestamp'][1] is not None)+.25
+start=max(0,alignment['lyrics'][0]['time']-.25) if alignment else 0
+end=max(float(word['timestamp'][1]) for word in alignment['actualWordRecognition']['chunks'] if word['timestamp'][1] is not None)+.25 if alignment else len(vocals)/sr
 voice=vocals[int(start*sr):int(end*sr)]
 print('Actual pYIN melody measurement',flush=True)
 f0,voiced,prob=librosa.pyin(voice,sr=sr,fmin=librosa.note_to_hz('C2'),fmax=librosa.note_to_hz('C6'),frame_length=2048,hop_length=256)
@@ -41,7 +43,10 @@ names=['C','C#','D','E♭','E','F','F#','G','A♭','A','B♭','B']
 keys=sorted([{'key':f'{names[i]} {mode}','correlation':float(np.corrcoef(chroma,np.roll(profile,i))[0,1])} for mode,profile in profiles.items() for i in range(12)],key=lambda x:x['correlation'],reverse=True)
 report={'sourceSha256':generation['outputSha256'],'vocalSha256':stems['stems']['vocals']['sha256'],'backingSha256':stems['stems']['backing']['sha256'],'librosaVersion':librosa.__version__,'measuredWindow':{'start':start,'end':end},'melodyPitch':pitch,'estimatedBeatTempoBpm':float(np.asarray(tempo).reshape(-1)[0]),'detectedBeatTimes':beats.tolist(),'estimatedKeys':keys[:5],'keyCorrelationMargin':keys[0]['correlation']-keys[1]['correlation'],'requestedBpm':generation['requestedBpm'],'requestedKey':generation['requestedKey'],'limits':['Signal estimates require listening/score review; pitch octave errors and separation leakage remain possible','Beat tempo has half/double-time ambiguity','Estimated key correlation is not a calibrated probability or definitive key','No invented Part arrangement or physical microphone claim']}
 report['confidentVoicedRuns']=runs
-report['firstLyricTiming']={'asrStart':alignment['actualWordRecognition']['chunks'][0]['timestamp'][0],'asrEnd':alignment['actualWordRecognition']['chunks'][0]['timestamp'][1],'firstSustainedVoicedEstimate':runs[0]['start'] if runs else None,'approvedEntryTime':None,'limits':'Voicing can include accompaniment leakage or non-lyrical singing; ASR word interval is not a syllable onset. No automatic count-in approval.'}
+report['analysisVersion']='ieum-song-signal-v2'
+report['lyricAlignmentVerified']=bool(alignment)
+report['catalogRegistrationApproved']=False
+report['firstLyricTiming']={'asrStart':alignment['actualWordRecognition']['chunks'][0]['timestamp'][0] if alignment else None,'asrEnd':alignment['actualWordRecognition']['chunks'][0]['timestamp'][1] if alignment else None,'firstSustainedVoicedEstimate':runs[0]['start'] if runs else None,'approvedEntryTime':None,'limits':'Voicing can include accompaniment leakage or non-lyrical singing; ASR word interval is not a syllable onset. No automatic count-in approval.'}
 output.parent.mkdir(parents=True,exist_ok=True)
 output.write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding='utf-8')
 print(json.dumps(report,ensure_ascii=False),flush=True)

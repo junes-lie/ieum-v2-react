@@ -10,6 +10,15 @@
 
 다음은 실제 Project용 오리지널 곡/Part 편곡·음역/Key 및 가사 진입 검증→검증된 곡만 기존 catalog에 등록하는 작업이다. 이번 연결 엔진 수정으로 곡 등록 전체나 단계3 완료를 표시하지 않는다. 기존90초 곡의 긴 도입과 타임코드 불확실성을 줄이기 위해 실제 ACE-Step 새 후보(seed65354)90초 생성을 별도 runtime에서 수행했다.508.742초 추론·48kHz stereo·원본 SHA2569e1a8bf9d7dc811f05095faac1f3b888d6a95779b84cc91500fe344d36848bb9이며 분리/가사 검증 전 asset으로 교체하지 않는다. 디자인 보류·개인 형상 미정 정책·실제 서버 환경·실기기 인수의 잔여 조건은 유지한다.
 
+
+Git/Production 검증: 기능 commit a5769814f664db99dc11fcdc2614f2fc6093c2a8을 origin/main에 push하고 remote 동일 hash를 확인했다. Vercel bot Production deployment6959369286/동일 commit/status success와 production HTTP200을 확인했다. JS index-DJ_ejUgn.js SHA256 bd31b7632541652c35a0bae4cb5ad07cb3f895aae8b8439b617f28c45df7b792, CSS index-DtsPXy24.css SHA256 b22ac9187dcf08f34a1dea11517b51e5a85b6602d5a4e844d2084ec6ae748b26는 검증 build와 byte 일치했다. Production qa:project-backing/qa:continuity/verify-recorder-session 통과: 실제19초 backing의2/3/4 Track 합성·저장/reload,503/hash/Key 실패 마이크0·제출0, 변경된 source snapshot 제출 거부/원본 Draft 보존, 정상 Review 제출/19초 Current Mix,360/390/430 연속성·중복 녹음 시작/정지 보호를 확인했다. 격리 합성 마이크/Track을 쓴 기술 검증이며 실제 Project 곡 catalog 등록·Part 편곡·실기기 청취 인수가 아니다. 전체 유지 Node QA/build도 통과했으며 직접 Vercel deploy는 사용하지 않았다. 단계3 전체 완료와 단계4/5 진입으로 기록하지 않는다.
+
+새90초 음악 후보 원본은 기존 파일과 별도로 보존한다. 실제 UVR 분리194.970초·보컬 SHA256d47532f497bd45fdc6dd7e15d23ecea98b5a58856010503be9d51fb469836d7a·반주 SHA25632b941382d0efd614475078a29d350c553923aacd01d9944e1fb936b32a983ee를 검증했다. Whisper-small 전체 가사 검증은 textSimilarity0.785714/lyricAcceptance=false로 실패했다. 첫 요청 가사16.82초, 요청하지 않은 앞부분/반복 가사 인식이 있어 새 후보를 production asset으로 등록하지 않았다. 실패 보고서를 보존하고 별도 실제 Whisper Turbo 텍스트/단어 정렬 대조를 수행했다. 결과는 아래에 기록한다. 실제 Part 편곡/요구 음역·Key·승인된 첫 가사 진입 자료는 계속 생성·검증할 작업이며 외부 자료 대기 완료나 사용자 자료 요청으로 전환하지 않는다.
+
+후속 가사 진입/분석 검증: Recorder가 첫 가사 time 이전에도 Math.max(0)로 첫 줄을 현재 가사로 표시하던 오류를 수정했다. 첫 타임코드 전에는 첫 줄을 다음 가사로 유지하며 실제 시간이 도달한 뒤 현재 줄로 전환한다. 새 native QA는3.5초 첫 가사에서 녹음 전/전주 동안 현재 줄 비어 있음·다음 줄 표시,3.5초 뒤 현재 줄 전환과 Review 직접 제출·원본 참조·19초 Current Mix를 검증했다. qa:project-backing/전체 유지 Node QA/build가 통과했다. CSS/화면/음원/개인 형상을 변경하지 않았다.
+
+새 곡 후보의 Whisper Turbo 텍스트 유사도0.839695는 통과했지만 첫 문장0–20.26초로 Small의16.82초와 다르다. 별도 실제 Turbo 단어 정렬은 유사도0.696203/alignmentAccepted=false로 실패했고 첫 단어0–18.2초다. 실패 보고서를 덮어쓰거나 통과 기준을 낮추지 않았다. 실제 pYIN 첫 지속 voiced 후보17.1015초, 보수적 음역E♭3–E♭4/주 음역G3–C4·2476 confident frames·coverage0.3194와 BPM80.7495, Key 후보G major0.72749/D major0.68552를 측정했다. 이 신호 측정은 가사 진입/Key/Part 편곡 승인과 다르다. `--signal-only`는 가사 실패와 독립적인 오디오 측정만 허용하고 lyricAlignmentVerified=false/catalogRegistrationApproved=false/approvedEntryTime=null을 출력한다. 기본 모드는 기존처럼 실제 승인된 가사 정렬과 원본/보컬 해시를 검증한다. 기존 실제90초 곡을 기본 모드로 재측정하여 이전 report와 원본/stem 해시·분석 window·음역·BPM·beat times·Key 후보·voiced runs가 정확히 일치함을 확인했다. 새 후보의 원본/latent/stems/모델 revision/가사 실패/신호 보고서는 runtime에 보존하며 production 곡으로 등록하지 않는다. 다음 실제 곡/Part 자료 생성·검증 및 개인 형상·서비스/실기기 잔여 조건을 유지한다.
+
 ## 2026-10-09 단계3 — 실제 오디오 길이 보존
 
 현재 실행 위치는 단계3이다. Project 목록은 기존 곡 데이터이고 실제 AI Project용 Part 편곡/요구 음역·Key 자료는 미등록이다. 제공 Sample을 기존 곡의 반주로 연결하거나 미측정 Part 자료를 채우지 않았다. 디자인/프로필 이미지 보류와 개인→Track→Project/서버/실기기 잔여 조건은 유지한다.
