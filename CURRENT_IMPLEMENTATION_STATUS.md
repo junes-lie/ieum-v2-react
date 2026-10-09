@@ -6,7 +6,7 @@
 
 유지 QA/build 통과. `qa/verify-backing-gain.mjs`는 무음·미약 신호·stereo·최대 증폭·peak 상한·비정상 PCM 거부를 검증한다. `qa/verify-provided-backing-level.mjs`는 실제3곡을 native AudioContext로 decode한 Guide gain, 토글 gain/시간 연속성, Review 도달, 기존 Profile 원본 보존 및 runtime 오류0을 확인했다. 서로의 빛 gain1.727898(+8.49dB/이전0.65 대비), 천천히 함께0.873980(+2.57dB), 비가 그친 뒤1.047350(+4.14dB). 실제16초 WAV의 pause/resume/토글/native offline 비무음 합성 및 live node 불변 QA도 통과했다. qa:provided의3곡 전체 Take/asset hash/가사/실패·재시도·오래된 권한 응답 격리도 통과했다. 합성 마이크 격리 QA이며 실제 청취·잔여 보컬·악기 보존·모바일 지연 인수가 아니다.
 
-이 항목 작성 시 commit/push 및 Production 검증 전이다. 해당 검증 결과는 확인 후 기록한다.
+배포 검증: 기능 commit `e7224f62154843d9cc9cf26e85e27d4a8516193e`를 origin/main에 push하고 원격 hash 일치를 확인했다. Vercel bot의 Production deployment6957232500/해당 commit/status success를 확인했다. Production HTTP200, JS `index-CPX8odlN.js` SHA256 `35e8bafd4ceae390fced0e21dfdaa032447159b5ce96dc8365652d55874b1fd1`와 CSS `index-DtsPXy24.css` SHA256 `b22ac9187dcf08f34a1dea11517b51e5a85b6602d5a4e844d2084ec6ae748b26`가 로컬 검증 build와 byte 일치했다. Production qa:backing-level 및 qa:provided가 통과했다. 실제3곡 Guide gain/토글/Review, 전체 지정 Take, 가사 타임라인, hash, 로딩 이탈·오래된 권한 응답/실패·재시도와 Profile 보존을 확인했다. 직접 production deploy 없이 Git Integration으로 배포했다. 실제 청취·Project 반주 연결 및 전체 단계3는 아직 미완료다.
 
 ## 2026-10-09 프로필 이미지 보류 / 단계3 제출·그래픽 상태 분리
 
