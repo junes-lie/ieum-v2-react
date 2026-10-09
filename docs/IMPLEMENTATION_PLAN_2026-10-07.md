@@ -1,3 +1,15 @@
+## 2026-10-09 단계3 — Project 반주 연결과 녹음 입력 계보
+
+현재 실행 위치는 단계3이다. 단계0 보존 기준과 이전 검증 범위는 유지한다. 단계1 개인 식별/Track 변형/Project 결합 및 단계2 디자인 인수는 미완료/보류다. 신규 디자인·프로필 이미지·별도 앱은 만들지 않는다.
+
+기존 앱의 Project별 `audioSource`를 검증해 Recorder Guide, Workspace Current Mix, 제출 성공 뒤 Auto Mix에 실제 backing Blob을 전달한다. source kind=project-arrangement, songId, 현재 Key, revision, 실제 duration, 원본/반주 SHA256과 허용 asset 경로를 검사한다. Profile 제공 Sample을 Project로 자동 전환하지 않는다. 반주 없는 기존 Project는 기존 경로를 유지한다. 녹음 시작 시 입력 참조를 snapshot으로 잡아 Draft→직접 제출 Track→최종 Mix에 보존한다. 변경된 곡/Key/revision/hash/길이의 Track을 현재 반주와 합성하지 않고 원본을 보존한다. 반주 fetch/hash 실패는 마이크 권한 오류로 표시하지 않고 실제 오류를 노출한다. 로딩 중 이탈 뒤 늦은 녹음 시작을 막는다.
+
+실제 전체 AI 곡 천천히 함께90초의 원본/분리 stem/가사 정렬 해시를 확인하고 실제 pYIN·backing beat/chroma 분석을 수행했다. 2037개 높은 확률 voiced frame의 관측 음역 MIDI53.8–62.3, 보수적 F3–E♭4, tessitura G3–D4, BPM80.7495 추정이다. Key 후보 D major0.75438/G major0.73435·차이0.02003으로 확정하지 않는다. 최초 ASR 단어0–18.84초 대비 최초0.15초 이상 지속 voiced 후보17.949초를 관측했다. 반주 누출/비가사 발성/옥타브 오류 가능성이 있어 첫 가사 진입·강박 승인으로 사용하지 않는다. 이전 분석을 덮어쓰지 않도록 output-dir 및 기존 output 거부를 추가했다. 실제 보고서는 repository 밖 runtime/results에 보존한다.
+
+`qa:project-backing`은 실제 등록된 천천히 함께19초 반주와 격리된 합성1초 Track으로 2/3/4 필수 제출→19초 native Auto Mix→저장/reload를 확인한다. 끝18.2–18.7초 RMS는 각각0.070322/0.065383/0.063774다. 503/hash/Key 오류에서 마이크 접근0, 제출0을 확인한다. 정상 경로는 actual backing decode→격리 마이크→Review 직접 제출→source snapshot 유지→19초 Current Mix를 검증한다. 이는 production 곡 등록이나 실제 Part 편곡/물리 청취 인수가 아니다. 첫 Current Mix QA의 timeout(30000ms)은 짧은 Take 길이로 backing Preview가 잘리는 오류를 드러냈다. 실제 source duration을 보존하도록 수정한 뒤 정상 녹음→Review 직접 제출→source snapshot 유지→19초 Current Mix 재검증을 통과했다. 변경된 source snapshot의 Review 제출은 거부되고 원본 Draft 바이트가 보존되며 마이크 접근/제출수가0인 native QA도 통과했다.
+
+다음은 실제 Project용 오리지널 곡/Part 편곡·음역/Key 및 가사 진입 검증→검증된 곡만 기존 catalog에 등록하는 작업이다. 이번 연결 엔진 수정으로 곡 등록 전체나 단계3 완료를 표시하지 않는다. 기존90초 곡의 긴 도입과 타임코드 불확실성을 줄이기 위해 실제 ACE-Step 새 후보(seed65354)90초 생성을 별도 runtime에서 수행했다.508.742초 추론·48kHz stereo·원본 SHA2569e1a8bf9d7dc811f05095faac1f3b888d6a95779b84cc91500fe344d36848bb9이며 분리/가사 검증 전 asset으로 교체하지 않는다. 디자인 보류·개인 형상 미정 정책·실제 서버 환경·실기기 인수의 잔여 조건은 유지한다.
+
 ## 2026-10-09 기획 변경 이력 — Voice Identicon → Track Voice Layer → Project Record
 
 후속 단계3 음원 연결 선행 보완: live Mix의18초 고정 종료와 Auto Mix의 실제 backing 길이 누락을 수정했다. native 실제19초 backing/35초 격리 Track/잘못된 metadata·선택 제외/명시적 짧은 Preview/원본 hash 보존 및2–4 제출·합성 회귀를 검증한다. 기존 Project에 실제 곡/반주·Part 자료를 등록/전달하는 작업은 별도 잔여 조건으로 유지한다. 제공 Sample을 기존 곡에 임의 연결하지 않는다.
