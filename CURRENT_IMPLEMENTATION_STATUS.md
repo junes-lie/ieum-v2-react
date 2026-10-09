@@ -1,3 +1,33 @@
+## 2026-10-09 프로필 이미지 보류 / 단계3 제출·그래픽 상태 분리
+
+사용자가 현재 진단 이미지의 뉴런 같은 형상을 거부하고 프로필 이미지는 추가 검토 후 생성하도록 지시했다. 후보 이미지 채택/추가 생성/Profile 연결을 보류한다. 원본 진단 결과는 삭제하지 않으며 성공적인 모델 추론을 디자인 승인으로 기록하지 않는다. 독립적인 기능 작업은 계속 진행한다.
+
+기존 Home 제출수 및 주/활성 Project의 Auto Mix 준비 조건이 Layer 개수에 의존하던 부분을 `submittedProjectTracks`/`allProjectTracksSubmitted`로 변경했다. 실제 저장된 필수 Part Track ID/project/part/Blob 계약을 기준으로 세고, 임시본·Profile·pending/error 제출·다른 프로젝트 기록을 제외한다. 기존 상태 필드가 없는 정상 final Track은 호환한다. 생성 Layer의 실패/누락이 제출 오디오를 취소하지 않으며 그래픽 성공이 제출을 확정하지 않는다. 기존 Record/프로필/CSS/motion과 저장 원본은 변경하지 않았다.
+
+`qa/verify-submission-graphics-separation.mjs`의2–4 Part 계약과 `qa/verify-mix-without-graphics.mjs`의 실제 브라우저/native offline 합성을 검증했다. 그래픽0개인 신규2/3/4와 기존 주 프로젝트4개 모두 실제 Mix 파일 저장·프로젝트 재진입/reload·seed/Track 수 보존을 통과했다. 격리 합성 음원이며 물리 청취/AI 그래픽 인수는 아니다. 최초 새 QA의 DB 이름 오류(NotFoundError), 재접속의 오래된 QA hook snapshot 및 잘못된 한글 버튼 selector timeout을 실제 DB명/기존 PROJECTS 탭 재진입으로 수정했다. 제품을 테스트의 잘못된 가정에 맞춰 수정하지 않았다. 기존 전체 QA/build와2/3/4 제출 실패/중복·재시도·복원·Credits 연속성 QA도 통과했다. 배포 전이며 전체 단계3 완료는 아니다.
+
+## 2026-10-09 단계1 실제 개인 생성·Track 변형·결합 기술 검증
+
+기존 SD-Turbo pinned revision `b261bac6fd2cf515557d5d0707481eafa0485ec2`와 실제 VocalSet4명/기존 BYOL embedding을 사용해 새 개인 입력 계약의 digest를 모델 seed에 연결했다. 같은 입력 반복과 새 Python 프로세스의 재생성이 실제 동일 PNG/픽셀/윤곽 해시로 일치했다. 다른4명과 같은 Profile 입력의 다른 사용자 조건에서 흑백/윤곽 결과도 달랐다. 이는 특정 사용자를 사람이 인식한다는 보장이나 학습된 audio-image adapter 검증이 아니다. CPU 개인 생성은 case당12–14초였고 모바일/비용 목표는 미확정이다.
+
+같은4명의 별도 실제 `_e.wav` 녹음을 Project Track 평가 입력으로 분석하여 기본 개인 latent를 원본 그대로 보존하고 실제 spectral/envelope 특징으로 변형한 후 실제 VAE로 decode했다. 개인 원형과 변형 결과의 흑백 상관계수0.996206/0.999201/0.998061/0.998386, RMSE0.00658–0.01362, 반복 decode 동일 픽셀을 확인했다. 단순 latent2/3/4 평균의 재현/원본 보존은 통과했으나 실제4개 결과가 흐려졌다. 평균 결합을 최종 개인 흔적 보존 방식으로 승인하지 않는다. 실제 latent 국소 활성에 따른 전면 가중 결합 후보는4개에서 대비 표준편차0.072948→0.100935(약38% 증가), 모든 원본 레이어 보존/반복 픽셀 일치였다. fixed sector/동심원/장르 preset은 쓰지 않았다. 후보의 참여자 인식, Project Seed와 생성 결과 연결, 현재 Record motion/UI 통합은 아직 미검증이다. 디자인 선택으로 기록하지 않는다.
+
+`voiceIdentityContract.js`에2–4 Project 제출/그래픽 상태 독립 계약 및 실제 개인 PNG/입력 계보/버전/해시 검증을 추가했다. 64-bit 추론 seed는 JavaScript 안전정수 범위를 넘으므로 확정 snapshot과 향후 Python 출력은 정확한 decimal string으로 보존하고 number seed는 거부한다. 최초 진단 보고서의 native 정수는 보존하고 QA에서는 입력 digest로 정확한 정수를 재계산한다. 입력 변조/버전 불일치/해시 불일치 거부, 실제 생성 PNG 수락을 확인했다. `qa:identity` 명령을 추가했다. Profile 저장·Track 제출·Mix 성공을 그래픽 검증과 혼동하지 않는다.
+
+재현 script: `qa/verify-personal-identity-model.py`(새 프로세스 반복 옵션 포함), `qa/verify-identity-track-model.py`(기본 Track·2–4결합 및 결합 비교 모드), `qa/verify-voice-identity-contract.mjs`. 실제 PNG/latent/PCM/입력 mapping/보고서는 repository 밖 `D:/IEUM-AI-runtime/results/`의 신규 personal-identity-probe/identity-track-probe/identity-blend-comparison/personal-identity-repeat-2026-10-09-v1 폴더에 보존한다. userId 포함 입력은 private 진단 자료이며 public asset으로 복사하지 않았다. 기존 Profile/Track DB와 시각 코드는 변경하지 않았다.
+
+전체 유지 QA/build 및 실제 입력/생성 artifact 계약 QA 통과. G1 재현/비색상 차이와 G2/G3 수치 기술 검증은 확보했지만 사람의 식별·최종 결합/서비스/실기기 인수와 G4/G5 앱 연결은 미완료다. 다음 단계 완료로 넘기지 않는다. 이번 검증 코드는 아직 commit/push/배포하지 않았다. 기존 반주 문제와 단계3 잔여 작업은 해결했다고 표시하지 않는다.
+
+## 2026-10-09 단계1 선행 보완 — 개인/Track 입력 계약
+
+사용자 기획 변경 후 계속 진행 지시에 따라 `src/voiceIdentityContract.js`에 개인/Track 생성 입력 manifest를 추가했다. 동일 JSON 입력의 key 순서를 정규화하고 user/Profile revision/분석 출처·원본 SHA256/generator version을 private digest에 포함한다. Profile source와 Project Track을 구분하고 Track 입력은 확정 개인 결과의 opaque ID/revision/출력 해시를 요구한다. 원본 입력을 변경하지 않으며 ID-only 기본 형상·갱신·fallback 미정 정책을 적용하지 않았다. 현재 화면/저장/렌더러에는 아직 연결하지 않았다. public manifest나 URL로 private userId/digest를 배포하지 않는다.
+
+현재 v3 밝기/거칠기/성량 변화는 신호 proxy 추정으로만 구분하고 confidence는 null이다. 무음/결측/비정상 수치는 유효 값으로 채우지 않는다. 평균 음역·실제 음역·호흡량·비브라토·BPM·리듬 복잡도는 이 계약에서 검증된 extractor 미연결로 명시한다. pitchVariation을 비브라토로, articulation을 BPM/리듬 복잡도로 간주하지 않는다. 기존 분석 출력/Layer signature/사용자 저장 데이터는 변경하지 않았다.
+
+`node qa/verify-voice-identity-contract.mjs`에서 재직렬화·키/소스 순서·revision/버전/원본 변경, 목적 혼용 거부, 결측/무음 처리, 확정 개인 참조 없는 Track 입력 거부를 통과했다. 같은 script에 기존 실제 VocalSet4명 보고서를 전달하여 실제 원본 파일 해시와 입력 manifest 재현을 확인했다. 기존 추론 보고서의 특징을 재사용한 것이며 새 모델 추론/음색 신뢰도/개인 형상 구분 검증이 아니다. 전체 `npm run qa`와 production build 통과. build JS/CSS 이름은 기존과 동일하며 UI 기능은 아직 추가하지 않았다.
+
+G1 전체 및 G2–G5는 미완료다. 다음 작업은 실제 생성 모델 결과에 개인 형상 식별 특징을 연결하고 같은 입력·버전 재현/서로 다른 사용자 형상 구분을 검증하는 것이다. 입력 digest 구분은 형상 구분 통과 근거가 아니다. 기존 단계3 잔여 작업/디자인 보류는 유지한다. 이번 선행 보완은 아직 commit/push/배포하지 않았다.
+
 ## 2026-10-08 단계 3 — 세 실제 제공 샘플 및 마이크 세션 보호 배포 검증
 
 기존 React Voice Setup에 실제 AI 오디오 세 구간(서로의 빛16초/천천히 함께19초/비가 그친 뒤18초)을 등록했다. 각 구간의 실제 MP3/분리 반주/해시/가사 word time을 연결했다. 세 곡 모두 미리듣기·Guide decode·가사 전환·지정 전체 길이 Take Review·기존 Profile 원본 보존 QA 통과. 첫 구간의 Guide 토글 시간 연속성, 다운로드503/해시 불일치 시 마이크0회, 재시도, 로딩 중 이탈, 늦은 권한 응답 후 이탈도 통과했다.

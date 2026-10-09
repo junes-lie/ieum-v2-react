@@ -13,6 +13,25 @@ export function createProjectModel({ id, seed, partIds, catalog }) {
 
 export const SUPPORTED_PART_COUNTS = Object.freeze([2, 3, 4])
 
+// Only persisted final Track records count; graphics and invitation states do not.
+// Legacy final records have no submissionStatus/kind, so retain that contract.
+export function submittedProjectTracks(project, tracks = {}) {
+  const partIds = project.partIds || project.parts?.map(part=>part.id) || []
+  return partIds.flatMap(partId=>{
+    const track = tracks[partId]
+    if (!track || track.id!==`${project.id}:${partId}` || track.projectId!==project.id || track.partId!==partId ||
+        !(track.blob instanceof Blob) || !track.blob.size ||
+        (track.kind && track.kind!=='project-track') ||
+        (track.submissionStatus && track.submissionStatus!=='success')) return []
+    return [track]
+  })
+}
+
+export function allProjectTracksSubmitted(project, tracks) {
+  const count = (project.partIds || project.parts?.map(part=>part.id) || []).length
+  return SUPPORTED_PART_COUNTS.includes(count) && submittedProjectTracks(project,tracks).length===count
+}
+
 // Preserve known Part colors while allocating free Part IDs to unused slots.
 export function resolveRecordPartSlots(partIds, palettePartIds) {
   const reserved = new Set(partIds.map(id => palettePartIds.indexOf(id)).filter(index => index >= 0))

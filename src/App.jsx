@@ -27,7 +27,7 @@ import { readLocalUserState, writeLocalUserState } from './projectService.js'
 import { evaluatePartFit } from './matching.js'
 import { buildVoiceLayer, projectRecordSignature } from './voiceAnalysis.js'
 import { clearProjectTracks, deleteTrack, deleteRecordingDraft, loadProjectTracks, loadTrack, saveTrack, saveTracks } from './trackStore.js'
-import { createProjectModel, resolveRecordPartSlots, SUPPORTED_PART_COUNTS } from './projectModel.js'
+import { createProjectModel, resolveRecordPartSlots, SUPPORTED_PART_COUNTS, submittedProjectTracks, allProjectTracksSubmitted } from './projectModel.js'
 import { CURRENT_USER_ID, PEOPLE, PERSON_BY_ID, SAMPLE_SONGS, personFromName } from './catalog.js'
 import { createRecordingInflowRenderer, createResonanceRenderer } from './resonanceWebGL.js'
 import { loadAiVoiceFields } from './aiVoiceLayer.js'
@@ -567,7 +567,7 @@ function BottomNav({ current, go }) {
 
 function Home({ openSong, layers, projectTracks, profile, mix, openCreateProject, openComplete }) {
   const [query,setQuery] = useState('')
-  const submitted = layers.filter(Boolean).length
+  const submitted = submittedProjectTracks(PROJECT,projectTracks).length
   const demoCount = Object.values(projectTracks).filter(track=>track.demo).length
   const openCount = TOTAL_PARTS - submitted
   const searchResults = query.trim() ? SONGS.filter(song=>`${song.title} ${song.artist} ${song.genre}`.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase())) : []
@@ -584,7 +584,7 @@ function Home({ openSong, layers, projectTracks, profile, mix, openCreateProject
           <div className="home-actions"><button className="primary" data-action="open-parts" onClick={() => {const target=document.getElementById("recruiting-projects");target?.scrollIntoView({behavior:"smooth",block:"start"});target?.focus({preventScroll:true})}}>OPEN Part 찾기 <Icon name="search"/></button><button className="secondary" data-action="create-project" onClick={openCreateProject}>새 프로젝트 만들기</button></div>
         </div>
         <div className="demo-record">
-          <ResonanceRecord layers={layers} compact seed={PROJECT_SEED} label={`A Thousand Years, 네 파트 중 ${submitted}개 제출 Track 분석 완료`}/>
+          <ResonanceRecord layers={layers} compact seed={PROJECT_SEED} label={`A Thousand Years, 네 파트 중 ${submitted}개 Track 제출 완료`}/>
           <span className="demo-count">{String(submitted).padStart(2,'0')}/04 <small>TRACKS</small></span>
         </div>
       </section>
@@ -1473,8 +1473,8 @@ export default function App() {
     localStorage.removeItem(APP_STATE_KEY)
     window.location.reload()
   }
-  const readyForMix = layers.filter(Boolean).length === PARTS.length
-  const activeReadyForMix = activeLayers.filter(Boolean).length === activeParts.length
+  const readyForMix = allProjectTracksSubmitted(PROJECT,projectTracks)
+  const activeReadyForMix = allProjectTracksSubmitted(activeProject,activeTracks)
 
   useEffect(() => {
     const onPopState = event => {
@@ -1538,7 +1538,7 @@ export default function App() {
     createdProjects.forEach(project=>{
       const tracks=createdProjectTracks[project.id] || {}
       const required=project.parts || []
-      if (!required.length || !required.every(part=>tracks[part.id]?.blob) || createdMixes[project.id] || createdMixJobs.current.has(project.id)) return
+      if (!allProjectTracksSubmitted(project,tracks) || createdMixes[project.id] || createdMixJobs.current.has(project.id)) return
       createdMixJobs.current.add(project.id)
       setCreatedMixStates(current=>({...current,[project.id]:'processing'}))
       ;(async()=>{
