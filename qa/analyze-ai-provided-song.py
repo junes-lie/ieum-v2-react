@@ -11,7 +11,7 @@ output=(a.output_dir or a.song_dir)/'song-signal-analysis-report.json'
 assert not output.exists(),f'Preserve existing analysis: {output}'
 read=lambda name:json.loads((a.song_dir/name).read_text(encoding='utf-8'))
 generation=read('song-generation-report.json');stems=read('stem-separation-report.json')
-if a.vocal_part:assert generation['taskType']=='lego' and generation['trackName']=='vocals' and generation['conditioningSourceSha256']
+if a.vocal_part:assert generation['taskType'] in ('lego','repaint') and generation['trackName']=='vocals' and generation['conditioningSourceSha256']
 assert hashlib.sha256((a.song_dir/generation['outputFile']).read_bytes()).hexdigest()==generation['outputSha256']==stems['sourceSha256']
 alignment=None if a.signal_only else read('lyric-word-alignment-report.json')
 if alignment:assert alignment['alignmentAccepted'] and alignment['sourceSha256']==generation['outputSha256'] and alignment['vocalSha256']==stems['stems']['vocals']['sha256']

@@ -22,13 +22,21 @@ parser.add_argument('--audio-codes',type=Path)
 parser.add_argument('--audio-cover-strength',type=float,default=1.0)
 parser.add_argument('--offload-dir',type=Path)
 parser.add_argument('--source-song',type=Path,help='Verified generated source directory for an audio-conditioned vocal Part candidate')
-parser.add_argument('--task',choices=['text2music','lego'],default='text2music')
+parser.add_argument('--task',choices=['text2music','lego','repaint'],default='text2music')
 parser.add_argument('--model-lineage',type=Path,help='Verified Base conversion manifest; required for Base inference')
 parser.add_argument('--source-start',type=float,default=0,help='Actual source window start; output retains its duration and source offset')
 parser.add_argument('--source-stem',choices=['mix','backing'],default='mix',help='Verified original mix or its actual separated backing as Lego context')
+parser.add_argument('--generation-start',type=float,help='Native generation mask start within the actual input window; diagnostic only')
+parser.add_argument('--generation-end',type=float)
+parser.add_argument('--region-lyric-line',type=int,help='Repaint only: condition on a source candidate lyric line; keep full expected output lyrics for independent QA')
 parser.add_argument('--steps',type=int)
 parser.add_argument('--lossless-cpu-cache',action='store_true',help='Opt-in one-shot Base lego inference with exact CPU weight restoration')
 args=parser.parse_args()
+assert (args.generation_start is None)==(args.generation_end is None),'Specify both generation mask boundaries'
+if args.generation_start is not None:
+ assert args.task in ('lego','repaint') and args.source_song and args.source_stem=='mix','Partial generation requires a verified candidate mix source'
+ assert 0<=args.generation_start<args.generation_end<=args.duration,'Mask must remain inside actual input duration'
+assert args.region_lyric_line is None or (args.task=='repaint' and args.generation_start is not None),'Region lyric conditioning requires explicit Repaint mask'
 assert args.device=='cuda' or args.compute_dtype=='float32','Preserve CPU float32 inference'
 assert not args.lossless_gpu_cache or args.device=='cuda','GPU cache cannot change CPU inference'
 compute_dtype=getattr(torch,args.compute_dtype)
@@ -37,14 +45,16 @@ if args.device=='cuda':
  assert not args.lossless_cpu_cache and not args.offload_dir,'CPU-specific cache/disk hooks cannot be used on GPU'
  torch.cuda.reset_peak_memory_stats()
 script_sha=hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
-assert (args.task=='lego')==bool(args.source_song),'lego requires a verified generated source; text2music has no source'
+assert (args.task in ('lego','repaint'))==bool(args.source_song),'Audio-conditioned tasks require a verified generated source; text2music has no source'
 assert not (args.source_song and args.audio_codes),'Do not mix two conditioning sources'
 assert args.source_song or args.source_start==0,'Source offset requires source audio'
 assert args.source_song or args.source_stem=='mix','Source stem requires source audio'
 model_config=json.loads((args.model_dir/'transformer'/'config.json').read_text(encoding='utf-8'))
 is_base=not model_config.get('is_turbo',False)
 assert not (args.device=='cuda' and is_base and args.compute_dtype=='float16'),'Base CUDA FP16 produced non-finite actual latents; use validated FP32 path'
-assert not args.lossless_gpu_cache or (is_base and args.task=='lego' and args.compute_dtype=='float32'),'GPU cache is validated for FP32 Base Lego only'
+assert not args.lossless_gpu_cache or (is_base and args.task in ('lego','repaint') and args.compute_dtype=='float32'),'GPU cache requires FP32 Base audio conditioning'
+if args.task=='repaint':
+ assert is_base and args.device=='cuda' and args.compute_dtype=='float32' and args.generation_start is not None,'Repaint diagnostic requires Base CUDA FP32 and explicit native mask'
 assert not args.lossless_cpu_cache or (is_base and args.task=='lego'),'Lossless one-shot cache is validated for Base lego only'
 if args.task=='lego' and not is_base:raise ValueError('lego requires verified Base weights; installed Turbo does not support lego')
 model_id='ACE-Step/Ace-Step1.5';model_revision='19671f406d603126926c1b7e2adc169acbcade22'
@@ -64,9 +74,10 @@ if is_base:
 steps=args.steps if args.steps is not None else (50 if is_base else 8)
 assert 32<=steps<=64 if is_base else steps==8
 assert 0<=args.audio_cover_strength<=1
-assert not any((args.output_dir/name).exists() for name in ['ieum-original-song.wav','song-generation-report.json','actual-generated-latents.pt']),'Use a new output directory; never overwrite an existing inference'
+assert not any((args.output_dir/name).exists() for name in ['ieum-original-song.wav','song-generation-report.json','actual-generated-latents.pt','actual-generation-mask.pt']),'Use a new output directory; never overwrite an existing inference'
 spec=json.loads(args.spec.read_text(encoding='utf-8'))
 lyrics=spec['lyrics'];prompt=spec['prompt']
+model_lyrics=lyrics
 source_report=None;source_audio=None;conditioning_audio_sha=None
 if args.source_song:
  source_report=json.loads((args.source_song/'song-generation-report.json').read_text(encoding='utf-8'))
@@ -92,6 +103,12 @@ if args.source_song:
  assert 0<=args.source_start and args.source_start+args.duration<=len(source_audio)/source_sr
  source_audio=source_audio[round(args.source_start*source_sr):round((args.source_start+args.duration)*source_sr)]
  source_audio=torch.from_numpy(source_audio.T.copy())
+ if args.region_lyric_line is not None:
+  assert source_report.get('taskType') in ('lego','repaint') and source_report.get('trackName')=='vocals','Region repair requires an actual generated vocal candidate'
+  assert source_report['lyrics']==lyrics,'Do not change the full expected lyrics to force QA acceptance'
+  lines=[line.strip() for line in lyrics.splitlines() if line.strip() and not line.startswith('[')]
+  assert 0<=args.region_lyric_line<len(lines)
+  model_lyrics='[Verse]\n'+lines[args.region_lyric_line]
 code_report=None
 if args.audio_codes:
  code_report=json.loads(args.audio_codes.read_text(encoding='utf-8'))
@@ -129,7 +146,7 @@ text_encoder=AutoModel.from_pretrained(args.model_dir/'text_encoder',dtype=compu
 # Root-level text disk offload replaces that embedding with empty storage before
 # the direct call, silently corrupting lyric conditioning. Keep this small model
 # resident; only the DiT uses block offloading.
-optional_components={'audio_tokenizer':None,'audio_token_detokenizer':None} if args.task=='lego' else {}
+optional_components={'audio_tokenizer':None,'audio_token_detokenizer':None} if args.task in ('lego','repaint') else {}
 pipe=AceStepPipeline.from_pretrained(args.model_dir,transformer=transformer,text_encoder=text_encoder,dtype=compute_dtype,local_files_only=True,low_cpu_mem_usage=True,**optional_components)
 # Oobleck exposes its implemented temporal tiling through this runtime flag.
 pipe.vae.use_tiling=True
@@ -153,7 +170,7 @@ if args.device=='cuda':
   if name!='transformer' and isinstance(module,torch.nn.Module):
    apply_group_offloading(module,onload_device=torch.device('cuda'),offload_device=torch.device('cpu'),offload_type='leaf_level',use_stream=False)
  assert pipe._execution_device.type=='cuda','Native pipeline must compute on CUDA'
- if args.task=='lego':
+ if args.task in ('lego','repaint'):
   from cuda_disk_offload import release_after_one_shot
   # Native Lego calls these once; cover's second encode_prompt is excluded.
   # Preserve condition buffers, including silence_latent used later.
@@ -171,6 +188,21 @@ if args.lossless_cpu_cache:
   return encoded
  pipe.encode_prompt=encode_then_release
 if args.device=='cuda':torch.cuda.synchronize()
+mask_report=None
+if args.generation_start is not None:
+ native_mask=pipe._build_chunk_mask
+ def audited_mask(*values,**kwargs):
+  global mask_report
+  mask=native_mask(*values,**kwargs)
+  left=int(args.generation_start*pipe.latents_per_second)
+  right=int(args.generation_end*pipe.latents_per_second)
+  assert 0<=left<right<=mask.shape[1]
+  assert torch.all(mask[:,left:right,:]==1) and torch.all(mask[:,:left,:]==0) and torch.all(mask[:,right:,:]==0),'Native generation mask differs from the requested region'
+  file=args.output_dir/'actual-generation-mask.pt'
+  torch.save(mask.detach().cpu(),file)
+  mask_report={'file':file.name,'sha256':hashlib.sha256(file.read_bytes()).hexdigest(),'shape':list(mask.shape),'firstActiveFrame':left,'endActiveFrameExclusive':right,'latentsPerSecond':pipe.latents_per_second,'outsideWindowMaskZero':True,'insideWindowMaskOne':True,'limits':'Native conditioning mask does not guarantee exact decoded PCM outside the selected region'}
+  return mask
+ pipe._build_chunk_mask=audited_mask
 start=time.time()
 print('Generating original song; no personal voice or existing commercial song input',flush=True)
 def progress(pipeline,step,timestep,values):
@@ -180,7 +212,7 @@ def progress(pipeline,step,timestep,values):
  if step==steps-1:
   torch.save(values['latents'].detach().cpu(),args.output_dir/'actual-generated-latents.pt')
  return values
-result=pipe(callback_on_step_end=progress,prompt=prompt,lyrics=lyrics,vocal_language=spec['language'],audio_duration=args.duration,num_inference_steps=steps,bpm=spec['bpm'],keyscale=spec['key'],timesignature=spec['timesignature'],task_type='lego' if args.source_song else ('cover' if code_report else 'text2music'),track_name='vocals' if args.source_song else None,src_audio=source_audio,audio_codes=code_report['audioCodes'] if code_report else None,audio_cover_strength=args.audio_cover_strength,generator=torch.Generator(args.device).manual_seed(args.seed))
+result=pipe(callback_on_step_end=progress,prompt=prompt,lyrics=model_lyrics,vocal_language=spec['language'],audio_duration=args.duration,num_inference_steps=steps,bpm=spec['bpm'],keyscale=spec['key'],timesignature=spec['timesignature'],task_type=args.task if args.source_song else ('cover' if code_report else 'text2music'),track_name='vocals' if args.task=='lego' else None,src_audio=source_audio,audio_codes=code_report['audioCodes'] if code_report else None,audio_cover_strength=args.audio_cover_strength,generator=torch.Generator(args.device).manual_seed(args.seed),repainting_start=args.generation_start,repainting_end=args.generation_end)
 audio=result.audios[0].detach().float().cpu().numpy().T
 assert np.isfinite(audio).all() and audio.ndim==2 and audio.shape[1]==2
 assert np.sqrt(np.mean(audio**2))>1e-5,'Model output is silent'
@@ -189,10 +221,18 @@ sf.write(file,audio,pipe.sample_rate,subtype='PCM_16')
 report={'status':'actual-model-inference','title':'서로의 빛','model':'ACE-Step/Ace-Step1.5','revision':'19671f406d603126926c1b7e2adc169acbcade22','license':'MIT','seed':args.seed,'prompt':prompt,'lyrics':lyrics,'requestedBpm':80,'requestedKey':'C major','requestedDuration':args.duration,'sampleRate':pipe.sample_rate,'duration':len(audio)/pipe.sample_rate,'channels':2,'peak':float(np.max(np.abs(audio))),'rms':float(np.sqrt(np.mean(audio**2))),'outputSha256':hashlib.sha256(file.read_bytes()).hexdigest(),'inferenceSeconds':time.time()-start,'output':str(file.resolve()),'limitations':['Requested key and tempo are conditioning, not measured guarantees','Vocal quality, separated backing, lyric timestamps and Part ranges require actual output verification','No shared service or physical microphone acceptance']}
 report.update(title=spec['title'],requestedBpm=spec['bpm'],requestedKey=spec['key'],outputFile=file.name,musicCodeModel={k:code_report[k] for k in ['model','revision','codesSha256','codeCount']} if code_report else None,taskType='cover' if code_report else 'text2music',audioCoverStrength=args.audio_cover_strength if code_report else None,lyricEmbeddingStorage='resident text encoder; DiT-only disk offload',vaeTemporalTiling=pipe.vae.use_tiling,specSha256=hashlib.sha256(args.spec.read_bytes()).hexdigest(),latentSha256=hashlib.sha256((args.output_dir/'actual-generated-latents.pt').read_bytes()).hexdigest())
 if source_report:
- report.update(taskType='lego',trackName='vocals',conditioningSourceSha256=source_report['outputSha256'],conditioningSourceRevision=source_report['revision'],conditioningSourceWindow={'start':args.source_start,'end':args.source_start+args.duration},partArrangementApproved=False)
+ report.update(taskType=args.task,trackName='vocals',conditioningSourceSha256=source_report['outputSha256'],conditioningSourceRevision=source_report['revision'],conditioningSourceWindow={'start':args.source_start,'end':args.source_start+args.duration},partArrangementApproved=False)
  report.update(conditioningSourceStem=args.source_stem,conditioningAudioSha256=conditioning_audio_sha)
+ report['conditioningReportSha256']=hashlib.sha256((args.source_song/'song-generation-report.json').read_bytes()).hexdigest()
+ report['conditioningParentAncestry']={key:source_report.get(key) for key in ['taskType','conditioningSourceSha256','conditioningSourceWindow','conditioningReportSha256','conditioningParentAncestry']}
+ report['nativeGenerationWindow']={'start':args.generation_start,'end':args.generation_end} if args.generation_start is not None else None
+ report['outsideGenerationWindowPcmPreserved']=None
+ report['nativeGenerationMask']=mask_report
 report.update(model=model_id,revision=model_revision,inferenceSteps=steps,modelLineageSha256=hashlib.sha256(args.model_lineage.read_bytes()).hexdigest() if lineage else None,generatorScriptSha256=script_sha,guidanceScale=7.0 if is_base else None)
-report['semanticCodeComponentsLoaded']=args.task!='lego'
+report.update(modelLyrics=model_lyrics,regionLyricLineIndex=args.region_lyric_line,fullExpectedLyricsUnchanged=True)
+if args.region_lyric_line is not None:
+ report['limitations'].append('Region repair uses modelLyrics for the selected line; lyrics retains all expected output lines for independent ASR. No automatic syllable/timing/harmony approval.')
+report['semanticCodeComponentsLoaded']=args.task not in ('lego','repaint')
 report['cpuInferenceCache']=lossless_cpu_cache_stats() if args.lossless_cpu_cache else None
 report['textEncoderStorage']='released after complete native caption and lyric encoding' if args.lossless_cpu_cache else 'resident'
 report['lyricEmbeddingStorage']=report['textEncoderStorage']
@@ -200,6 +240,6 @@ report['transformerStorage']='exact CPU RAM cache; original dtype restored befor
 report.update(executionDevice=args.device,torchVersion=torch.__version__,computeDtype=args.compute_dtype)
 report['gpuInferenceCache']=cuda_lossless_cache_stats() if args.lossless_gpu_cache else None
 if args.device=='cuda':
- report.update(transformerStorage='native CUDA block disk offload with CUDA-only CPU-placeholder release; CPU inference hooks excluded',textEncoderStorage='released after complete native encoding' if args.task=='lego' else 'native CUDA leaf group offload',lyricEmbeddingStorage='released after complete native encoding' if args.task=='lego' else 'native CUDA leaf group offload',conditionEncoderStorage='parameters released after complete native encoding; buffers preserved' if args.task=='lego' else 'native CUDA leaf group offload',vaeNormalizedWeightParityModules=normalized_vae_weights,gpu={'name':torch.cuda.get_device_name(),'capability':torch.cuda.get_device_capability(),'peakAllocatedBytes':torch.cuda.max_memory_allocated(),'peakReservedBytes':torch.cuda.max_memory_reserved(),'cudaRuntime':torch.version.cuda})
+ report.update(transformerStorage='native CUDA block disk offload with CUDA-only CPU-placeholder release; CPU inference hooks excluded',textEncoderStorage='released after complete native encoding' if args.task in ('lego','repaint') else 'native CUDA leaf group offload',lyricEmbeddingStorage='released after complete native encoding' if args.task in ('lego','repaint') else 'native CUDA leaf group offload',conditionEncoderStorage='parameters released after complete native encoding; buffers preserved' if args.task in ('lego','repaint') else 'native CUDA leaf group offload',vaeNormalizedWeightParityModules=normalized_vae_weights,gpu={'name':torch.cuda.get_device_name(),'capability':torch.cuda.get_device_capability(),'peakAllocatedBytes':torch.cuda.max_memory_allocated(),'peakReservedBytes':torch.cuda.max_memory_reserved(),'cudaRuntime':torch.version.cuda})
 (args.output_dir/'song-generation-report.json').write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding='utf-8')
 print(json.dumps(report,ensure_ascii=False),flush=True)

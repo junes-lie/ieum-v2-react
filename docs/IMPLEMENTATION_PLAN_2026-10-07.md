@@ -1,3 +1,43 @@
+## 2026-10-10 단계3 후속 — 구간 가사와 원곡 시간차 진단
+
+현재 단계3이다. GPU/SSD 실행 및 구간 복원 진단 묶음은 검증했지만 제출 가능한 새 Part는 미완료다. 이번 작업은 QA 도구와 현재 계획/상태 기록만 수정했다. React 화면, 제공곡, 사용자 Track, Guide, catalog는 유지하며 단계4/5·디자인·Profile 이미지는 시작하지 않았다.
+
+### 실제 GPU 비교 결과
+
+모든 시험은 같은 Base revision e432212fec32b8965a14ffa57ae653438d6abd14, FP32 계산, seed65359, 19초, 50-step, 기존 세 줄 가사를 유지했다. Small/Turbo 유사도는 기존 자동 QA 경계0.8과 정확한 가사를 구분한다. 아래 후보의 normalizedLyricsExact는 모두 false이며 등록하지 않았다.
+
+| 시험 | 추론 / 전체 초 | Small / Turbo | 판정 |
+| --- | --- | --- | --- |
+| 종결음절 발음 지시 추가 | 374.311 / 1039.069 | 0.900 / 0.900 | ‘요’ 누락, ‘노래’ 오인식 |
+| 원곡 ASR 추정 시간 배치 지시 | 132.787 / 338.668 | 0.900 / 0.900 | 같은 가사 오류, 시간 지시만으로 해결되지 않음 |
+| 후보 mix의 native Lego 6–11.7초 mask | 157.942 / 241.074 | 0.975610 / 0.975610 | ‘걸어’로 인식, 마지막 ‘요’ 미확인 |
+| 동일 mask의 native Repaint | 122.578 / 190.481 | 0.790698 / 0.809524 | ‘요’는 인식하나 ‘우리 함께’가 다른 가사로 바뀜; Small 자동 QA 실패 |
+| Repaint의 선택 줄만 modelLyrics 입력 | 141.456 / 245.772 | 0.952381 / 0.837209 | Small ‘걸어로’ / Turbo ‘가려놓은’; 정확한 가사 미확인 |
+
+원곡 반주 조건 시험은 실제 원곡31.7–50.7초를 사용했다. 구간 복원 세 시험의 직접 부모는 기존 GPU50-step 후보 WAV SHA2568b7104554f057d68936c31459fce726702cb6b37dce2bfa2b57e36ae315bb0df/report SHA256d76ad5c4c5f4b7b0b8c0f60cf46b85a74fe1f00fdc9190635c5f8b81449b6a84다. 원곡과 중간 후보의 계보·입력 창·부모 report hash를 구분했다. 결과 SHA256은 순서대로 80205ff8950af5869914b2997a599f67b4cb0752624ba35ae3fcb1040f903141 / 0391c300fb33537a4438bd02fc1c3bea6a7af59c9ccf091da6d4e208077e5161 / 2196a74fa465caa230b263f23265e0214cac10dd93020ea6130957018a0b23df / 2cedee630403a1a89ea9fd9dc98ce436d488a7366455c8139f4af0388fbca6ca / b2fa2414b671562ff16c85c2d487d078b710dec59a4ee54428acf88091fe6b96다. 생성 monitorErrors는 모두0이며 원본/실패/자동 QA 근사 통과 결과를 전부 보존했다.
+
+실제 native mask는 [1,475,64], 25latent/s, active150–292 exclusive, SHA256cd9167becf439080b6abe45c0ac2e1b3b5d9c4bd81b0907c867e18b3c8392544다. 요청6–11.7초의 latent 양자화 끝은11.68초다. native Lego는 선택 구간의 source latent를 유지하고 Repaint는 그 구간을 학습된 silence latent로 조건화한다. 실제 디코딩 PCM은 세 시험 모두 구간 밖도 달랐다. 앞/뒤 RMS 차이는 Lego0.029509/0.030803, Repaint0.037951/0.038646, 선택 줄 Repaint0.028155/0.029896이다. outsideGenerationWindowPcmPreserved=false이며 수동 splicing으로 보존됐다고 처리하지 않았다. 구간 밖 비교 대상이 없는 전체 mask는 이 값을 null로 기록한다.
+
+마지막 후보 실제 UVR49.051초/합 residual0, vocal SHA256b6402e6cca45d429de04a2738ac2ed6f9e00388253402f3760346509b14604ef다. Small 단어 정렬0.952381, 각 줄7/7·6/7·7/7, 시작0·6.20·12.10초이며 firstWordBoundaryCensored=true, entryTimingAccepted=false다. pYIN439 confident frames, 관측44.6–62.4 MIDI/tessitura54–60이며 요청 Key/BPM을 확정하지 않았다. 두 ASR의 정확도와 음역 관측만으로 화음·실제 진입·catalog를 승인하지 않는다.
+
+### 실행 환경과 검증 도구
+
+실제 저장장치는 C Samsung970EVO SSD / D ToshibaHDWD120 HDD다. 사용자 확보 공간에 별도 .ieum-gpu-ssd-runtime/base-diffusers를 복사했으며20파일12652685939bytes의 SHA256이 D 원본/기존 변환 계보와 모두 exact 일치했다. 복사276.956초/해시 검증130.320초다. CPU 환경·D 모델·결과·다른 작업은 보존하고 C 모델/cache/result도 repository 밖에 둔다. GPU 계산은 FP32이며 BF16은 정확히 왕복 가능한 host weight 저장에만 사용한다. 서로 다른 prompt/시스템 부하의 시간을 SSD 통제 benchmark로 표현하지 않는다.
+
+실제 tokenizer 감사: 기존/발음 추가/시간 배치 caption170/218/214 tokens, lyrics34 tokens, native 제한256/2048 내로 모두 잘리지 않았다. 가사 오류를 truncation으로 단정하지 않는다. 기존 후보6.0–11.7초 구간 ASR도 ‘우리 함께 걸어’/0.923077로 인식했다. ASR 결과만으로 실제 음절 부재를 단정하지 않는다.
+
+qa/verify-ai-provided-song.py에 별도 output-dir·실제 구간·원래 가사 줄 선택·정확 일치 여부·기존 결과 덮어쓰기 거부를 추가했다. 저장 경로/model output 변수 충돌 AttributeError는 이름을 분리해 수정했고 실제 재실행/overwrite 거부와 기존 결과 hash 보존을 확인했다. qa/compare-ai-vocal-part.py는 실제 반주 hash/F0 시점 chroma, 두 실제 정렬의 줄 시간차, native mask와 구간 안팎 PCM 차이를 각각 기록한다. 기존 후보의 원곡 줄 시간차−2.12/−1.70/−2.28초와 median chroma share0.171344는 관측이며 확정 acoustic onset·화음/Key·자동 shift/Guide 타임코드가 아니다. 원곡 전체와19초 창의 ASR 문맥 차이도 남아 있다.
+
+generator는 native Repaint를 Base CUDA FP32/명시적 mask의 진단용 opt-in으로 제한한다. CPU 기본 경로와 CPU 전용 cache를 유지한다. 선택 줄 modelLyrics와 전체 기대 lyrics를 구분하며 부모와 전체 가사가 같은지 검증한다. 실제 세 가지 잘못된 입력(한쪽 mask, mask 없는 선택 줄, CPU Repaint)을 모델 로딩 전에 거부했고 output을 생성하지 않았다. 기존 ASR0.8 기준, seed, 원곡 음높이, 제출/Auto Mix 성공 조건을 변경하지 않았다.
+
+유지 QA: production build, Python4파일 문법, Project audio contract, 실제 제공3곡 asset/hash·Guide·합성 Take·입력 오류/재시도, 반주 gain3곡, microphone session/timer·동시Stop Review 보존 통과. 초기 localhost EACCES4195/Edge temporary path permission 실패는 승인된 실행 환경과4197 preview로 동일 QA를 재실행하여 통과했다. synthetic microphone/native audio 결과를 실제 마이크·청취로 확장하지 않는다.
+
+### 남은 완료 조건과 다음 작업
+
+정확한 세 줄 가사, 실제 원곡 화성/음절 동기화, 첫 진입과 count-in 승인, 실기기 녹음/청취 검증이 남았다. 현재 원곡/Part/Guide를 승인하거나 완료된 단계로 변경하지 않는다. 반복 seed나 임의 transpose·QA 문턱 완화로 우회하지 않는다. 다음 독립 기술 작업은 같은 원곡 창에서 ASR 문맥과 실제 가창 진입을 대조하고, 원곡 화성에 맞는 Part 제어 가능성을 검증하는 것이다. 검증된 음원만 기존 catalog/Guide 흐름에 연결한다. 공유 서비스와 비용·성능 정책은 기존 미결 상태를 유지한다.
+
+이번 변경은 QA/문서6파일의 의미 있는 기술 검증 묶음으로 diff/staged diff 검토 → commit → main push → Git Integration 배포 commit 일치 → Production QA 순서로 마감한다. 이 기록은 단계3 전체나 실사용 Part 완료를 뜻하지 않는다.
+
 ## 2026-10-10 단계3 GPU 선행 검증 — 기존 단계 유지
 
 최종 현재 판정: GPU 선행 실행 기술 검증은 완료했다(기존 CPU보존, 실제GPU FP3219초32/50-step, own peak2.19GiB, 수치보존·VAE parity·실제text encoder CPU/GPU대조·monitor 정상). GPU50-step 추론253.996초/전체527.117초, 이전CPU50-step618.159초 대비 관측 추론 약2.43배. 장기/batch/서버 inference나 다른 환경에 일반화하지 않는다. 검증용 opt-in CUDA cache이며 CPU default를 유지한다.

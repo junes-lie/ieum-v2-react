@@ -6,7 +6,19 @@ import soundfile as sf
 from scipy.signal import resample_poly
 import torch
 from transformers import WhisperProcessor,WhisperForConditionalGeneration
-p=argparse.ArgumentParser();p.add_argument('--song-dir',type=Path,required=True);p.add_argument('--asr-dir',type=Path,required=True);p.add_argument('--vocals',action='store_true');p.add_argument('--chunk-seconds',type=int,default=0);p.add_argument('--asr-model',choices=['small','turbo'],default='small');p.add_argument('--robust',action='store_true');args=p.parse_args()
+p=argparse.ArgumentParser();p.add_argument('--song-dir',type=Path,required=True);p.add_argument('--asr-dir',type=Path,required=True);p.add_argument('--vocals',action='store_true');p.add_argument('--chunk-seconds',type=int,default=0);p.add_argument('--asr-model',choices=['small','turbo'],default='small');p.add_argument('--robust',action='store_true')
+p.add_argument('--output-dir',type=Path)
+p.add_argument('--start-seconds',type=float,default=0)
+p.add_argument('--end-seconds',type=float)
+p.add_argument('--lyric-line',type=int,help='Zero-based nonempty lyric line from the verified generation report; diagnostic only')
+args=p.parse_args()
+name='vocal-validation-report' if args.vocals else 'song-validation-report'
+if args.chunk_seconds:name+=f'-chunks-{args.chunk_seconds}'
+if args.asr_model!='small':name+='-'+args.asr_model
+if args.robust:name+='-robust'
+name+='-seek'
+output_file=(args.output_dir or args.song_dir)/(name+'.json')
+assert not output_file.exists(),f'Preserve existing ASR evidence: {output_file}'
 report=json.loads((args.song_dir/'song-generation-report.json').read_text(encoding='utf-8'))
 file=args.song_dir/'ieum-original-song.wav'
 assert hashlib.sha256(file.read_bytes()).hexdigest()==report['outputSha256']
@@ -20,6 +32,11 @@ if args.vocals:
  file=args.song_dir/stems['stems']['vocals']['file']
  assert hashlib.sha256(file.read_bytes()).hexdigest()==stems['stems']['vocals']['sha256']
  audio,sr=sf.read(file,dtype='float32',always_2d=True)
+full_duration=len(audio)/sr
+end=args.end_seconds if args.end_seconds is not None else full_duration
+assert 0<=args.start_seconds<end<=full_duration
+assert args.lyric_line is None or args.output_dir,'Phrase diagnostics require a separate output directory'
+audio=audio[round(args.start_seconds*sr):round(end*sr)]
 g=math.gcd(sr,16000)
 mono=resample_poly(audio.mean(axis=1),16000//g,sr//g)
 torch.set_num_threads(2)
@@ -55,6 +72,10 @@ for offset in range(0,len(mono),chunk_size):
 text=' '.join(s['text'] for s in segments)
 timestamped=' '.join(s['timestamped'] for s in segments)
 expected=re.sub(r'\[[^]]+\]','',report['lyrics'])
+if args.lyric_line is not None:
+ lines=[line.strip() for line in expected.splitlines() if line.strip()]
+ assert 0<=args.lyric_line<len(lines)
+ expected=lines[args.lyric_line]
 normalize=lambda x:re.sub(r'[^가-힣a-zA-Z0-9]','',x).lower()
 similarity=difflib.SequenceMatcher(None,normalize(expected),normalize(text)).ratio()
 asr_model,asr_revision=('openai/whisper-large-v3-turbo','41f01f3fe87f28c78e2fbf8b568835947dd65ed9') if args.asr_model=='turbo' else ('openai/whisper-small','973afd24965f72e36ca33b3055d56a652f456b4d')
@@ -64,11 +85,10 @@ segment_timing_valid=all(all(s['start']<=float(t)<=s['end']+.1 for t in re.finda
 timing_valid=bool(timestamps) and segment_timing_valid and all(0<=t<=len(audio)/sr+.1 for t in timestamps) and timestamps==sorted(timestamps)
 result.update(sourceSha256=source_hash,inputFile=file.name,inputSha256=hashlib.sha256(file.read_bytes()).hexdigest(),timestampsWithinAudio=timing_valid,lyricAcceptance=similarity>=.8 and timing_valid,acceptanceRule='Automatic QA: normalized lyric similarity >=0.8 and monotonic timestamps within actual audio; human listening still required')
 result.update(chunkSeconds=args.chunk_seconds,segments=segments,generationParameters=generation_kwargs,timestampSource='returned model segments with absolute seek offsets; short chunks use local model timestamps plus input offset')
-name='vocal-validation-report' if args.vocals else 'song-validation-report'
-if args.chunk_seconds:name+=f'-chunks-{args.chunk_seconds}'
-if args.asr_model!='small':name+='-'+args.asr_model
-if args.robust:name+='-robust'
-name+='-seek'
-(args.song_dir/(name+'.json')).write_text(json.dumps(result,ensure_ascii=False,indent=2),encoding='utf-8')
+result.update(analysisWindow={'start':args.start_seconds,'end':end},originalDuration=full_duration,lyricLineIndex=args.lyric_line,normalizedLyricsExact=normalize(expected)==normalize(text),diagnosticWindowOnly=args.start_seconds!=0 or end!=full_duration or args.lyric_line is not None,catalogRegistrationApproved=False,entryTimingAccepted=False)
+result['limits'].append('Diagnostic window timestamps are relative to that window; excluded audio and full-song lyrics are not approved')
+result.update(validationVersion='ieum-actual-asr-window-v1',validationScriptSha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest())
+output_file.parent.mkdir(parents=True,exist_ok=True)
+output_file.write_text(json.dumps(result,ensure_ascii=False,indent=2),encoding='utf-8')
 print(json.dumps(result,ensure_ascii=False),flush=True)
 if not result['lyricAcceptance']:raise SystemExit(2)
