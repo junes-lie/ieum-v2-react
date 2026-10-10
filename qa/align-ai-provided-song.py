@@ -14,11 +14,17 @@ p.add_argument('--asr-model',choices=['small','turbo'],default='small')
 p.add_argument('--output-dir',type=Path)
 p.add_argument('--start-seconds',type=float,default=0)
 p.add_argument('--end-seconds',type=float)
+p.add_argument('--lyric-lines',type=int,nargs='+',help='Zero-based original lyric line indices for a window diagnostic; no forced ASR transcript')
 a=p.parse_args()
 output_dir=a.output_dir or a.song_dir
 output_file=output_dir/'lyric-word-alignment-report.json'
 if output_file.exists():raise FileExistsError(f'Preserve existing alignment evidence: {output_file}')
 generation=json.loads((a.song_dir/'song-generation-report.json').read_text(encoding='utf-8'))
+lines=[line for line in generation['lyrics'].splitlines() if line.strip() and not line.startswith('[')]
+if a.lyric_lines is not None:
+ assert a.output_dir,'Subset diagnostics require a separate output directory'
+ assert a.lyric_lines and a.lyric_lines==sorted(set(a.lyric_lines)) and all(0<=index<len(lines) for index in a.lyric_lines),'Select ordered, unique original lyric indices'
+ lines=[lines[index] for index in a.lyric_lines]
 stems=json.loads((a.song_dir/'stem-separation-report.json').read_text(encoding='utf-8'))
 validation_name='vocal-validation-report'+('-turbo' if a.asr_model=='turbo' else '')+'-robust-seek.json'
 accepted=json.loads((a.song_dir/validation_name).read_text(encoding='utf-8'))
@@ -43,7 +49,6 @@ result=asr({'array':mono,'sampling_rate':16000},return_timestamps='word',generat
 for word in result['chunks']:
  word['timestamp']=tuple(None if t is None else float(t)+a.start_seconds for t in word['timestamp'])
 norm=lambda x:re.sub(r'[^가-힣a-zA-Z0-9]','',x).lower()
-lines=[line for line in generation['lyrics'].splitlines() if line.strip() and not line.startswith('[')]
 expected=''.join(norm(line) for line in lines)
 observed='';char_times=[]
 for word in result['chunks']:
@@ -66,6 +71,7 @@ word_starts=[word['timestamp'][0] for word in result['chunks']]
 word_timing_valid=word_timing_valid and all(t is not None for t in word_starts) and word_starts==sorted(word_starts,key=lambda t:float('-inf') if t is None else t)
 report={'sourceSha256':generation['outputSha256'],'vocalSha256':input_hash,'asrModel':accepted['asrModel'],'asrRevision':accepted['asrRevision'],'actualWordRecognition':result,'textSimilarity':matcher.ratio(),'lyrics':aligned,'alignmentAccepted':valid and matcher.ratio()>=.8,'method':'Whisper cross-attention word alignment; line starts are first actually matched word times, not evenly spaced or forced text','limits':['ASR word times and fuzzy matching require listening review','No measured key, tempo or Part range guarantee']}
 report.update(analysisWindow={'start':a.start_seconds,'end':end_seconds},wordTimestampsWithinWindow=word_timing_valid,catalogRegistrationApproved=False)
+report.update(lyricLineIndices=a.lyric_lines,diagnosticSubsetOnly=a.lyric_lines is not None,alignmentScriptSha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest())
 report['limits'].extend(['Windowed recognition does not approve excluded intro or outro','Word onset requires independent acoustic and listening validation; text similarity alone is insufficient'])
 report['alignmentAccepted']=report['alignmentAccepted'] and word_timing_valid
 boundary_censored=bool(times and times[0] is not None and times[0]<=a.start_seconds)
