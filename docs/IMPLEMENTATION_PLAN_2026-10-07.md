@@ -1,3 +1,9 @@
+### R6 잘못된 score 입력의 모델 로딩 전 거부 — 2026-10-12
+
+유지 probe-korean-score-synthesis.py의 가사·음표·길이·10초 제한 및 새 output 경로 검사를 numpy/torch import와 모델 생성/weights/CUDA 전에 이동했다. 공식 config의 Notes 한도 및 변환 token/frame 검증도 모델 생성 전에 확인한다. 기존 모델 수식·음원·seed/step·PCM 처리·환경은 유지한다. preflight의 진단 길이는 실제 입력 합계를 기록한다.
+
+시스템 Python(음악 deps 없는 환경)에서11초/bool 음표/비한글 음절/NaN 길이4종 모두 AssertionError로 거부했고 dependency import/출력 생성 없음. Python 문법 통과. 기존 GPU 환경에서 live resource guard로7초 정상 score를 실제 생성: child exit0/resourceStopped=false,14.527초, inference1.233초, WAV SHA25674b7053a89a8c9bcd4ec03954c0dddacf9361c6eb6463bc44afe147141fb1e5f 기존 exact, GPU peak421700608bytes, child RAM peak1.20992GiB/free min8.61053GiB. 원본/새 결과·monitor는 repo 밖 기존 runtime에 보존한다. sourceSongConnected/catalogRegistrationApproved=false 유지하며 새로운 가사·화성·실기기/권한 승인으로 계산하지 않는다.
+
 ### R1/R2 녹음 세션 잔여 참조 정리 — 2026-10-12
 
 cancelRecording이 세션 소유 decoded/recordingBlob/lastAnalysis/URL 문자열 참조를 반환하도록 보완한다. Review·Profile·저장 Track이 독립적으로 가진 Blob/재생 URL을 revoke하거나 삭제하지 않는다. 다른 사용자 legacy Draft는 소유권 확인 후에만 URL을 만들도록 순서를 고친다. 기존 녹음/Setup/Review/제출 UX와 데이터 스키마는 유지한다.

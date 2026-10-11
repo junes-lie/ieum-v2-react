@@ -2,26 +2,46 @@
 Runtime preparation and unresolved pitch/voice/license gates are documented in the active plan.
 The caller must apply live RAM monitoring; this script does not manage other processes.
 """
-import argparse,hashlib,json,sys,time
+import argparse,hashlib,json,math,sys,time
 from pathlib import Path
 p=argparse.ArgumentParser();p.add_argument('--runtime-dir',type=Path,required=True);p.add_argument('--preflight',action='store_true');p.add_argument('--output-dir',type=Path);p.add_argument('--score-spec',type=Path);a=p.parse_args()
 root=a.runtime_dir.resolve()
+syllables=['<X>','오','늘','도','함','께','해','요','<X>']
+notes=[0,72,74,76,79,77,76,72,0]
+seconds=[1.0,.6,.6,.6,.6,.6,.6,1.2,1.2]
+score_spec=None
+if a.score_spec:
+ score_spec=json.loads(a.score_spec.read_text(encoding='utf-8'))
+ syllables=score_spec['syllables'];notes=score_spec['notes'];seconds=score_spec['durationsSeconds']
+assert len(syllables)==len(notes)==len(seconds)
+assert syllables and all(isinstance(s,str) and (s=='<X>' or len(s)==1 and '\uac00'<=s<='\ud7a3') for s in syllables)
+assert all(isinstance(n,int) and not isinstance(n,bool) and 0<=n<128 for n in notes)
+assert all(isinstance(d,(int,float)) and not isinstance(d,bool) and math.isfinite(d) and d>0 for d in seconds)
+assert sum(seconds)<=10,'Short score feasibility only; verify resource bounds before longer input'
+if not a.preflight:
+ assert a.output_dir and not a.output_dir.exists(),'A new output directory is required'
 sys.path[:0]=[str(root/'probe-source'),str(root/'deps')]
 import numpy as np
 import soundfile as sf
 import torch,yaml
 from scipy.signal import resample_poly
-from Modules.Modules import DiffSinger
 from Arg_Parser import Recursive_Parse
 from Pattern_Generator import Convert_Feature_Based_Music,Expand_by_Duration
 
 torch.set_num_threads(2);torch.manual_seed(65359)
 hp=Recursive_Parse(yaml.safe_load((root/'Hyper_Parameters.yaml').read_text(encoding='utf-8')))
+token_dict=yaml.safe_load((root/'YAML/Token.yaml').read_text(encoding='utf-8'))
+converted=Convert_Feature_Based_Music(list(zip(seconds,syllables,notes)),hp.Sound.Sample_Rate,hp.Sound.Frame_Shift,hp.Duration.Consonant_Duration,hp.Duration.Equality)
+tokens,expanded_notes,expanded_durations=Expand_by_Duration(*converted)
+assert all(n<hp.Notes for n in notes)
+assert all(value in token_dict for value in tokens)
+assert tokens and len(tokens)*hp.Sound.Frame_Shift/hp.Sound.Sample_Rate<=10
+from Modules.Modules import DiffSinger
 model=DiffSinger(hp).eval()
 parameter_bytes=sum(value.numel()*value.element_size() for value in model.parameters())
-print(json.dumps({'parameterBytes':parameter_bytes,'checkpointBytes':(root/'Checkpoint/S_200000.pt').stat().st_size,'checkpointLoading':'weights_only=True,mmap=True','diagnosticSeconds':7.0}),flush=True)
+print(json.dumps({'parameterBytes':parameter_bytes,'checkpointBytes':(root/'Checkpoint/S_200000.pt').stat().st_size,'checkpointLoading':'weights_only=True,mmap=True','diagnosticSeconds':sum(seconds)}),flush=True)
 if a.preflight:raise SystemExit(0)
-assert torch.cuda.is_available() and a.output_dir and not a.output_dir.exists()
+assert torch.cuda.is_available()
 checkpoint=root/'Checkpoint/S_200000.pt';vocoder_file=root/'vocoder.pts'
 def file_hash(path):
  digest=hashlib.sha256()
@@ -36,21 +56,6 @@ model.cuda()
 with vocoder_file.open('rb') as stream:
  vocoder=torch.jit.load(stream,map_location='cpu').eval().cuda()
 torch.cuda.reset_peak_memory_stats()
-syllables=['<X>','오','늘','도','함','께','해','요','<X>']
-notes=[0,72,74,76,79,77,76,72,0]
-seconds=[1.0,.6,.6,.6,.6,.6,.6,1.2,1.2]
-score_spec=None
-if a.score_spec:
- score_spec=json.loads(a.score_spec.read_text(encoding='utf-8'))
- syllables=score_spec['syllables'];notes=score_spec['notes'];seconds=score_spec['durationsSeconds']
-assert len(syllables)==len(notes)==len(seconds)
-assert syllables and all(isinstance(s,str) and (s=='<X>' or len(s)==1 and '\uac00'<=s<='\ud7a3') for s in syllables)
-assert all(isinstance(n,int) and not isinstance(n,bool) and 0<=n<hp.Notes for n in notes)
-assert all(isinstance(d,(int,float)) and not isinstance(d,bool) and np.isfinite(d) and d>0 for d in seconds)
-assert sum(seconds)<=10,'Short score feasibility only; verify resource bounds before longer input'
-token_dict=yaml.safe_load((root/'YAML/Token.yaml').read_text(encoding='utf-8'))
-converted=Convert_Feature_Based_Music(list(zip(seconds,syllables,notes)),hp.Sound.Sample_Rate,hp.Sound.Frame_Shift,hp.Duration.Consonant_Duration,hp.Duration.Equality)
-tokens,expanded_notes,expanded_durations=Expand_by_Duration(*converted)
 inputs=dict(tokens=torch.tensor([[token_dict[value] for value in tokens]],device='cuda'),notes=torch.tensor([expanded_notes],device='cuda'),durations=torch.tensor([expanded_durations],device='cuda'),lengths=torch.tensor([len(tokens)],device='cuda'),singers=torch.tensor([0],device='cuda'),genres=torch.tensor([0],device='cuda'),ddim_steps=50)
 start=time.perf_counter()
 with torch.inference_mode():

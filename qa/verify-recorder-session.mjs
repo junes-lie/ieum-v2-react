@@ -16,6 +16,7 @@ try {
  const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message))
  const url=new URL(process.env.IEUM_QA_URL||'http://127.0.0.1:4193/');url.searchParams.set('design','figma');await page.goto(url.href)
  await page.locator('[data-action="record-part"]').click()
+ await page.waitForFunction(()=>document.querySelector('[data-action="record-start"]')?.disabled===false)
  await page.evaluate(()=>{const b=document.querySelector('[data-action="record-start"]');b.click();b.click()})
  await page.waitForSelector('[data-action="record-pause"]');await page.waitForTimeout(700)
  assert.equal(await page.evaluate(()=>window.qaRequests),1,'Concurrent Start must request one microphone session')

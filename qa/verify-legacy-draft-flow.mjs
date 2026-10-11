@@ -9,7 +9,7 @@ try {
   const context=await browser.newContext()
   await context.addInitScript(()=>localStorage.setItem('ieum-v2:user-state:v7',JSON.stringify({joined:true,joinedPart:'tenor'})))
   const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message))
-  await page.goto(process.env.IEUM_QA_URL||'http://127.0.0.1:4193/?design=figma')
+  const url=new URL(process.env.IEUM_QA_URL||'http://127.0.0.1:4193/');url.searchParams.set('design','figma');await page.goto(url.href)
   await page.waitForFunction(()=>Object.keys(window.__IEUM_V2__?.state?.projectTracks||{}).length===2)
   await page.evaluate(async owner=>{
    const projectId='ieum-thousand-years-v7',id=`${projectId}:tenor:temporary-recording`
@@ -23,7 +23,7 @@ try {
   await page.waitForFunction(()=>document.querySelector('[data-action="record-submit"]')||document.querySelector('[data-action="record-start"]'))
   if(owner==='another-user') {
    assert.equal(await page.locator('[data-action="record-submit"]').count(),0)
-   await page.waitForFunction(()=>!document.querySelector('[data-action="record-start"]')?.disabled)
+   await page.waitForFunction(()=>document.querySelector('[data-action="record-start"]')?.disabled===false)
    assert.equal(await page.evaluate(()=>window.qaRestoredUrls),0,'Foreign draft must not allocate a playback URL')
   } else {
    await page.waitForSelector('[data-action="record-submit"]')
