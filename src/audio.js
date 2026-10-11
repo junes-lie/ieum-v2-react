@@ -458,6 +458,9 @@ export async function stopRecording() {
   stopGuides()
   runtime.recordingGuideState = null
   const blob = new Blob(runtime.chunks, { type: recorder.mimeType || 'audio/webm' })
+  // The recorder callback also closes over this collector; replacing only the
+  // runtime pointer leaves the encoded chunks retained by that callback.
+  runtime.chunks.length = 0
   runtime.chunks = []
   // A prior recording URL may still be used by the Voice Profile player.
   // Blob URLs are page-scoped and are released on navigation; revoking here
@@ -498,6 +501,7 @@ export function cancelRecording() {
   cancelAnimationFrame(runtime.raf)
   stopGuides()
   if (runtime.recorder && runtime.recorder.state !== 'inactive') runtime.recorder.stop()
+  runtime.chunks.length = 0
   runtime.chunks = []
   runtime.recordingGuideState = null
   runtime.activeElapsedSec = 0

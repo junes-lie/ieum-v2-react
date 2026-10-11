@@ -1,3 +1,7 @@
+### R1 실제 encoded chunk collector 수명 — 2026-10-12
+
+이전 callback이 runtime 포인터 교체 뒤에도 encoded chunk 배열을 보유하는 native 실패를 재현했다. 취소와 Blob 구성 성공 후 collector 자체를 비워 원본 Blob/늦은 callback guard를 보존한다. 실제 cancelled/finalized 배열 해제·새 Take bytes exact와 build/audio 회귀를 통과했다. 추가 종료/오류3조건 복원·single App 회귀도 통과했으며 main 자동배포→production 같은 소유권 QA로 마감하며 PC 전체 RAM 절감량·물리/음악·서비스 완료로 확대하지 않는다. 단계·사용자 데이터와 디자인 보류는 유지하고 상세 증거는 상태 문서에 기록한다.
+
 ### R2 Sample Review의 Profile handoff와 이탈 — 2026-10-12
 
 저장하지 않은 새 Sample Review 이탈의 URL 미해제를 native 재현했다. 종료된 Review는 URL을 해제하고 Profile 저장 handoff는 유지하며 저장 실패가 이탈 뒤 도착하는 경우 별도로 해제한다. 기존 Sample/프로젝트 원본/성공 저장 플레이어는 보존한다. 두 실제 이탈/지연 오류 조건과 기존 정상·실패 Profile 편집/reload·늦은 decode·build/atomic 저장 회귀를 통과했다. 수정 묶음은 main 자동배포 후 production 같은 오류/정상 QA로 마감하며 전체 R2/물리 인수·R3/R4 실제 서비스·R5 정책/디자인·R6 음악 승인은 그대로 남긴다. 상세 증거는 상태 문서 참조.

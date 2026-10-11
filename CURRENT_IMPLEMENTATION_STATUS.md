@@ -1,3 +1,11 @@
+### R1 MediaRecorder callback의 encoded collector 해제 — 2026-10-12
+
+e2036a5f89b9d5f6c59921b634e25565eb057f29 Git Integration7003072099 success/production HTTP200/index-9LEKbVCu.js local/remote SHA8CE231966C9459244639B1D9F34315A6A17745C01ACDE6E1348E62F9C9A651CE exact를 확인했다. production Sample Review 이탈/지연 저장 실패/기존 Profile bytes exact 및 정상 Profile 편집 실패·재시도/성공 handoff/reload/pageerror0 모두 통과했다.
+
+현재 stop/cancel은 runtime.chunks 배열 포인터만 교체했으나 MediaRecorder.ondataavailable closure는 기존 collector를 계속 보유했다. 기존 유지 chunk ownership QA에서 실제 collector 배열을 캡처하자 취소 후 길이1이라는 native assertion 실패가 발생했다. 취소 및 정상 Blob 구성 후 collector 자체의 length를0으로 지우고 런타임 포인터를 교체하도록 최소 수정했다. 완성 Blob은 이미 구성된 독립 원본으로 보존하며 늦은 폐기 recorder event는 기존 소유권 guard로 계속 무시한다.
+
+보강된 기존 qa/verify-recording-chunk-ownership.mjs에서 cancelled/finalized collector length0, 늦은 prior callback 새 Take 미혼입, 실제 새 Review Blob과 별도 native chunk snapshot SHA exact/pageerror0을 통과했다. build34modules/index-BUSjwhHm.js, 독립 Take bytes/URL 보존을 포함한 audio foundation Node QA를 통과했다. collector 참조 해제와 실제 PC 전체 RAM 감소량/GC 시점은 구분한다. 추가 관련 마이크 종료/decode 실패/paused decode 실패3조건의 원본 SHA/Draft 복원 및 single App 회귀도 통과했다. 이 묶음만 자동배포→production 동일 ownership QA로 마감한다. 기존 사용자의 서버3파일·디자인·음악/서비스/실기기 gate는 유지한다.
+
 ### R2 저장하지 않은 Sample Review 이탈 수명 — 2026-10-12
 
 43693b528d606bd21c7d9466186bd5c7a896f95e Git Integration7003016406 success/production HTTP200/index-DxPQ6ex0.js local/remote SHA87C0813CC48AA1508FF8A44DC445CFDA028685FECE59182E35ACF8FEC748AC70 exact를 확인했다. production 기존 Profile 편집/저장 실패/재시도/이전 URL 해제/새 URL 재생/reload/Project 보존/pageerror0을 통과했다.
