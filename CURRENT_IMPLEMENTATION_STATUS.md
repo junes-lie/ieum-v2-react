@@ -1,3 +1,15 @@
+### R6 두 실제 생성 성부의 합산/기존 믹서 관측 — 2026-10-12
+
+79c970563a97b1b8c453e1f9629694d477b7e8d8 main/origin 일치 및 Git Integration7002892571 success를 확인했다. production HTTP200/index-DpeDJVz-.js local/remote SHA84CBF8692F280E5D18B581D03EEE46FDBE09F7D4BE246AEA405F67E3967E0A44 exact다. 보류 서버3파일은 보존했다.
+
+기존 MLP base/upper native FLOAT22050 원본 두 개를 같은 진단 타임라인에서 실제 합산했다. gain1/peak.207052/duration5.468299초/output SHA38c6be35d9196ee06a6551bf3c1b4bb30f5e8e8cb403ce698bc351d23adf4389. 시작1초 합산 RMS.011157/peak.092047/성부 파형 correlation.719656, 끝 rest RMS.000800/correlation.846824다. voiced 구간 correlation−.015~.042는 화음 정답/청취 품질 지표가 아니다. 동일 singer/vocoder의 잔여 소리가 합산될 수 있는 관측이며 원본을 gate/repair하지 않았다.
+
+이어 실제 repository src/audio.js SHA d45aa5e0344115d7b4483eefdac28b085906c57915d589654e62c31512a44f26의 createPreviewMix를 격리 native Edge/OfflineAudioContext에서 동일 원본 두 개·backing=false·offset0으로 호출했다. 새 앱/곡 등록/제출/DB 변경 없음. 실제 출력 WAV44100/stereo/duration5.668299초/output SHA1d65a59fce10b0ddd852ab548f799e241c0b429949e91d709dc3a8b5e334dd6e, wall512.6ms/pageerror0. 기존 cleanup/normalization/EQ/compressor 처리 후 master peakBefore.925792/gain.764692/peakAfter.707946, 저장 PCM peak.707916으로 기존−3dBFS ceiling 내였다.
+
+첫 probe는 AudioContext decode가 장치48000으로 변환하는 것을 WAV 출력44100과 혼동해 assertion 실패했다. 이를 header/저장 PCM/재생 decoded rate로 분리했다. 다음 probe의 재생 피크 ceiling 검사는 실패했으며 마지막 보고서에 그대로 playbackDecodedCeilingExceeded=true로 보존한다. 실제48000 decode peak.710779/전체 RMS.163356/첫1초 RMS.057104다. 저장 PCM ceiling 성공을 재생 true-peak 보장으로 확대하지 않는다. 새 limiter 목표/반주 gain/임의 휴지 제거 정책을 도입하지 않는다. UTF-8 JSON 재조회도 명시 encoding으로 확인했으며 console glyph 깨짐을 실제 음절 데이터 손상으로 오인하지 않았다.
+
+결과는 기존 runtime의 two-generated-parts-observation 및 two-native-app-mix-observation에 보존한다. 이 두 성부의 실제 결합 관측은 확보했으나 전체 곡/독립2–4Part·반주 화성·sourceScore·권리/청취·물리 성능·catalog 승인은 미완료다. 실제 서비스는 preparation/503 SERVICE_NOT_CONFIGURED이며 미정 로그인/제공자를 임의 확정하지 않는다. 현재 앱/사용자 파일·디자인은 변경하지 않았다.
+
 ### R6 실제 파형의 앱 추출기 교차 관측 — 2026-10-12
 
 직전 aeaaa9cb8ba74e1736ec17fbd18bb86c5795c887 Git Integration7002801786 success/production HTTP200 및 index-DpeDJVz-.js SHA84CBF8692F280E5D18B581D03EEE46FDBE09F7D4BE246AEA405F67E3967E0A44 일치를 확인했다. 현재 production /api/capabilities는 preparation/모든 공유 capability false, 진단용 비밀이 아닌 invalid token의 /api/me/session은 HTTP503 SERVICE_NOT_CONFIGURED였다. 인증·협업 연결 성공으로 처리하지 않는다.

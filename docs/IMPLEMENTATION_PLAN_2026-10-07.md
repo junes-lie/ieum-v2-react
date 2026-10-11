@@ -1,3 +1,7 @@
+### R6 실제 두 성부 결합과 저장/재생 피크 분리 — 2026-10-12
+
+기존 두 native 생성 성부를 실제 합산하고 기존 createPreviewMix의 native OfflineAudioContext 경로에 입력했다. 원본 직접 합산과 기존 gate/normalize/EQ/compressor 처리 출력을 구분한다. 저장44100 PCM은−3dBFS ceiling 내이나48000 재생 decode 피크는 소폭 초과했으며 첫 휴지 잔여 RMS 증가도 관측했다. sourceScore/화성·전체2–4Part/청취 승인이나 새 gain/true-peak 정책 확정으로 처리하지 않는다. 원본/출력/source hash·실패 assertion·최종 수치는 상태 문서/runtime에 보존한다. 다음은 확정 입력·권리 조건의 실제 전체 성부와 청취/진입 검증이며 기능·디자인·서버 미정 gate는 유지한다.
+
 ### R6 음정 누락 해석의 교차 검증 — 2026-10-12
 
 같은 MLP 실제 파형을 기존 앱 normalized-difference-v1/48k4096창으로 비교했다. base '가'는11 interiorframes/median54.750으로 관측되어 pYIN 확률 조건의 누락을 실제 발성 부재로 단정하지 않는다. upper '히'/마지막 약−.47/+.58반음 및 첫 rest 검출 차이는 남는다. 원본/파생/PCM hash·모든 frame/reason과 고정 조건은 상태 문서/runtime에 보존한다. 분석기를 통과시키기 위한 임계값·모델·출력 변경은 없다. 다음 R6은 확정 score/실제 화성·지속음과 권리/청취·전체 Part 검증이며 기존 순서/완료 gate는 유지한다. 실제 production 서비스의 preparation/503 SERVICE_NOT_CONFIGURED도 확인되어 R3/R4 연결 완료로 처리하지 않는다.
