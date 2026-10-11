@@ -15,6 +15,7 @@ parser.add_argument('--model-dir',type=Path,required=True)
 parser.add_argument('--device',choices=['cpu','cuda'],default='cpu')
 parser.add_argument('--compute-dtype',choices=['float32','float16'],default='float32')
 parser.add_argument('--lossless-gpu-cache',action='store_true',help='Opt-in exact packed host cache; original dtype restored on CUDA')
+parser.add_argument('--gpu-host-cache-mib',type=int,help='Optional retained host cache budget; zero keeps native disk loads')
 parser.add_argument('--output-dir',type=Path,required=True)
 parser.add_argument('--duration',type=float,default=20)
 parser.add_argument('--seed',type=int,default=65346)
@@ -41,6 +42,7 @@ if args.generation_start is not None:
 assert args.region_lyric_line is None or (args.task=='repaint' and args.generation_start is not None),'Region lyric conditioning requires explicit Repaint mask'
 assert args.device=='cuda' or args.compute_dtype=='float32','Preserve CPU float32 inference'
 assert not args.lossless_gpu_cache or args.device=='cuda','GPU cache cannot change CPU inference'
+assert args.gpu_host_cache_mib is None or (args.lossless_gpu_cache and args.gpu_host_cache_mib>=0),'Host cache budget requires opt-in GPU cache and nonnegative MiB'
 compute_dtype=getattr(torch,args.compute_dtype)
 if args.device=='cuda':
  assert torch.cuda.is_available(),'CUDA runtime unavailable; preserve CPU environment'
@@ -143,7 +145,7 @@ else:
  enable_cuda_disk_storage_release()
  if args.lossless_gpu_cache:
   from cuda_disk_offload import enable_cuda_lossless_cache,cuda_lossless_cache_stats
-  enable_cuda_lossless_cache()
+  enable_cuda_lossless_cache(None if args.gpu_host_cache_mib is None else args.gpu_host_cache_mib*1024*1024)
  transformer.enable_group_offload(onload_device=torch.device('cuda'),offload_device=torch.device('cpu'),offload_type='block_level',num_blocks_per_group=2,use_stream=False,offload_to_disk_path=str(offload_dir))
 print('Transformer prepared; loading text encoder separately',flush=True)
 print(f'Actual offloaded transformer storage: {sum(p.numel() for p in transformer.parameters())} tensor elements',flush=True)

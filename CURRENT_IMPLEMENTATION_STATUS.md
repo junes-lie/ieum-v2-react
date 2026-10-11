@@ -1,10 +1,18 @@
+## 2026-10-12 R6 RAM 경로 보완 — 선택적인 host cache 예산
+
+기존 cuda_disk_offload의 전체 exact host cache를 보존하고 선택적인 max_cache_bytes 상한을 추가했다. generator --lossless-gpu-cache --gpu-host-cache-mib와 연결하며 기본값은 기존과 같다. 그룹의 원래 tensor bytes가 잔여 예산을 넘으면 host 복사를 만들지 않고 기존 native disk 경로로 유지한다. 이미 cache가 있으면 같은 exact 복원 경로를 사용한다. liveResidentBytes/maxResidentBytes/skippedBudgetLoads를 누적 통계와 구분해 보고한다. active cache의 예산 변경은 release 전 거부하며 zero budget은 디스크 경로다.
+
+새 유지 verify-cuda-cache-budget.py 실제 CUDA 작은 모델에서544bytes 상한/반복 exact 출력/예산 초과 그룹 disk fallback/zero 예산/반환 후 재생성/active 변경 거부/원래 disk file bytes 보존 통과. 기존 verify-cuda-disk-offload.py 실제 CUDA lifecycle 회귀도 통과(정밀도 민감 tensor 보존·packed tensor·release/disk reload exact·one-shot/buffer). Python 문법과 generator negative budget의 모델 로딩/출력 생성 전 거부 확인. 진단 로그는 repository 밖 .ieum-gpu-ssd-runtime에 보존한다.
+
+상한은 유지되는 host tensor cache에만 적용되며 전체 RAM/일시 복사/model 로딩 peak 제한이 아니다. 전체 음악 모델의 캐시 용량/시간 개선이나 가사·화음 품질 승인은 측정하지 않았다. 실패 음악을 반복 생성해 성능 수치를 만들지 않는다. 다음 전체 모델 실행은 실제 PC 여유·임시 복사 여유·지원 제어 경로를 확인한 뒤 resource monitor와 함께 진행한다. 기존 CPU 환경/weights/output/App/디자인 worktree 변경 없음.
+
 ## 2026-10-12 R1 녹음 복구 확인 전 새 녹음 차단 / 재시도
 
 Recorder의 기존 Draft 로딩은 비동기 확인 전에도 녹음 시작을 허용하고 로딩 실패를 무시했다. 복구 loading/ready/error를 구분해 로딩 중·실패 후에는 마이크 시작을 막는다. 기존 오류 영역의 “저장한 녹음 다시 불러오기”는 읽기만 재시도하며 원본을 삭제/교체하지 않는다. 정상 복구는 기존 Review/직접 제출 흐름을 그대로 사용한다. 새 화면·디자인 토큰·제품 정책·서비스 연결 변경은 없다.
 
 검증: Node React/격리 DB의 실제 get 실패와 재시도, 제출 실패/정리 실패·원본 보존·2–4 Part 재로드 통합 QA 통과. 새 유지 qa/verify-draft-restoration.mjs에서 실제 렌더/native IndexedDB 읽기 실패 뒤 mic request0, 시작 disabled, 재시도 Review 복원, SHA256 원본 동일, 제출수2 유지·pageerror0 확인. 기존 recorder-session/retake-lifecycle 실제 렌더 QA 통과. build34modules 통과. npm preview 인자 전달 오류(dist 없음) 후 같은 Vite CLI의 명시 인자로 재실행했고, sandbox loopback timeout/refused는 preview와 browser QA를 동일 승인 실행 경계에서4194로 제공해 동일 QA를 통과했다. Computer Use/원본 웹 UI 접근 없음. synthetic/격리 DB 결과이며 실기기 청취·최신 디자인 승인이 아니다.
 
-현재 서버 미커밋3파일은 보존/제외한다. 앞선 실제 R6 실패 증거도 현재 계획/상태에 보존한다. 배포는 해당 기능 묶음의 main push→Git Integration으로만 진행한다.
+현재 서버 미커밋3파일은 보존/제외한다. 앞선 실제 R6 실패 증거도 현재 계획/상태에 보존한다. 6b91f11 main 동기화/Git Integration6998516317 success. production draft-restoration native QA 통과 및 JS SHA256 E007051CDC313EA73AB06CA877C1D2E3F7EF5BE07170D6E79B6F0550536B4B2B local exact 확인. 검증용 해당 preview session은 종료했다.
 
 ## 2026-10-12 R6 장시간 작업 우선 — 한 구절 실제 제어 시험 결과
 
