@@ -1,3 +1,13 @@
+### R1 반복 Draft 복원 Review URL 해제 — 2026-10-12
+
+직전8dc45a8c80dc40e7fb283d02ac00badbf6005dca Git Integration7002932392 success/production HTTP200/index-DpeDJVz-.js를 확인했다. 현재 앱에서 저장 Draft를3회 복원→Review→작업실로 나가면 생성된 URL3개 모두 미해제인 native assertion 실패를 재현했다. 최초 probe의 home/작업실 진입 조건 오류는 기존 단일 App의 ?design=figma workspace 초기 조건으로 교정한 뒤 실제 누적을 확인했다.
+
+Recorder의 draft URL effect cleanup을 추가해 종료된 Review 소유 URL만 해제한다. submittingRef가 true인 성공 제출은 Project Track 플레이어로 URL 소유권을 넘기므로 해제하지 않는다. 제출 실패는 false로 되돌아오며 기존 Review·재시도 원본을 유지한다. Blob/IndexedDB 원본은 삭제하지 않는다. 새 UI/기획/디자인/서비스 변경은 없다.
+
+새 유지 qa/verify-draft-review-url-lifecycle.mjs에서 native 격리 IndexedDB3회 복원/이탈 URL 해제, 제출 오류 주입 후 URL/재생/원본 hash 보존, 재시도 성공 URL 그대로 전달/재생 가능/Track hash exact 및 reload 원본 hash exact/pageerror0을 통과했다. qa:drafts에 연결했다. build34modules/index--srv8LMR.js, audio foundation·track store·single App Node 회귀 및 native retake recording/paused/review 실패 보존·ended normal/decode failure/paused decode failure3조건 원본/임시본/elapsed/참조 해제 모두 통과했다. 실제 PC RAM 절감량·물리 입력/청취 승인으로 확대하지 않는다.
+
+이 검증 묶음만 main push→Git Integration→production 동일 QA로 마감한다. 보류 서버3파일·R5 디자인/미정 정책·R6 실제 음악/권리·R3/R4 실제 서비스·R7 물리 인수는 보존하며 전체 단계 완료로 표시하지 않는다.
+
 ### R6 두 실제 생성 성부의 합산/기존 믹서 관측 — 2026-10-12
 
 79c970563a97b1b8c453e1f9629694d477b7e8d8 main/origin 일치 및 Git Integration7002892571 success를 확인했다. production HTTP200/index-DpeDJVz-.js local/remote SHA84CBF8692F280E5D18B581D03EEE46FDBE09F7D4BE246AEA405F67E3967E0A44 exact다. 보류 서버3파일은 보존했다.

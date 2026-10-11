@@ -1114,6 +1114,13 @@ function Recorder({ go, submit, onRecordingStart, partId, projectTracks, layers,
     return ()=>{active=false}
   },[draftId,restoreAttempt])
   useEffect(() => () => { startingRef.current=false; clearInterval(timer.current); cancelRecording(); stopMicrophone() }, [])
+  useEffect(() => {
+    const url=draft?.url
+    return () => {
+      // Successful submission transfers this URL to the Project Track player.
+      if(url && !submittingRef.current)URL.revokeObjectURL(url)
+    }
+  },[draft?.url])
   useEffect(()=>{if(status==='recording'||status==='paused')updateRecordingGuides(guides)},[guides])
   const provisionalLayer = draft?.features ? buildVoiceLayer(project.seed,currentPart.id,draft.features) : null
   const reviewLayers = layers.map((layer,index)=>index===currentIndex&&provisionalLayer?provisionalLayer:layer)

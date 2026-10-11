@@ -1,3 +1,7 @@
+### R1 임시 Review URL의 반복 복원 수명 — 2026-10-12
+
+저장 Draft3회 복원/작업실 이탈의 URL 누적을 실제 재현하고 Recorder cleanup에 소유권 해제를 연결했다. 제출 실패 Review와 성공 제출 Track 플레이어의 URL/원본은 보존한다. native 반복 이탈·실패/재시도·제출/reload bytes exact와 관련 build/녹음 회귀를 확인했다. 검증된 묶음만 자동배포→production 같은 QA로 마감하며 물리 입력·전체 R1/R6·서비스 완료로 확대하지 않는다. 상세 실패/결과는 상태 문서 참조. 디자인과 외부 정책은 변경하지 않는다.
+
 ### R6 실제 두 성부 결합과 저장/재생 피크 분리 — 2026-10-12
 
 기존 두 native 생성 성부를 실제 합산하고 기존 createPreviewMix의 native OfflineAudioContext 경로에 입력했다. 원본 직접 합산과 기존 gate/normalize/EQ/compressor 처리 출력을 구분한다. 저장44100 PCM은−3dBFS ceiling 내이나48000 재생 decode 피크는 소폭 초과했으며 첫 휴지 잔여 RMS 증가도 관측했다. sourceScore/화성·전체2–4Part/청취 승인이나 새 gain/true-peak 정책 확정으로 처리하지 않는다. 원본/출력/source hash·실패 assertion·최종 수치는 상태 문서/runtime에 보존한다. 다음은 확정 입력·권리 조건의 실제 전체 성부와 청취/진입 검증이며 기능·디자인·서버 미정 gate는 유지한다.
