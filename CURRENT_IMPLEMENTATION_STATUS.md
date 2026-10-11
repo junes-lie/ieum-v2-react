@@ -1,3 +1,12 @@
+### R6 짧은 음절 측정 구간의 편향 / R1 production — 2026-10-12
+
+c65bcead911e84895447a2d2eaf8d372f59a4000 Git Integration7001631905 success, production HTTP200/index-Bl8Ph6NX.js remote/local SHA256D3BE03C218574646E032A5E51738720FA46554FF5982685E702A019D30EF8FC5 exact. production actual native fake Take 저장1.26초·WebM metadata nonfinite에서 slider1.26초 일치, rendered Mix11.978571초 복귀/pageerror0을 통과했다. 물리 입력·지연/청취 인수를 대신하지 않는다.
+
+고정 실제 CSD 첫0.2307초 음절의 기존 pYIN .75조건/frame1024·1536/hop128을 유지해 관측 궤적을 읽었다. 양끝80ms 제외 interior는4/5confident frames·median57.7/57.8이었지만 full annotation span은12/18frames·median59.15/58.85, min57.7/57.8~max59.3이었다. 1.05초 이전 lower onset와 이후59근처가 함께 관측됐다. 따라서 trimmed sparse median이나 Basic Pitch58/59 분할을 전체 note target59가 잘못됐다는 정답으로 바꾸지 않는다. GAME merged59·Basic Pitch분할·음절 annotation·실제 F0는 서로 다른 의미다. trajectory JSON SHA8dac88600fbcc6889bd1fa10be0d9031a63b09bd3a9b8d80c06e4be1c9b0665d, guard exit0/wall8.621초/free최소9.184GiB/owned0.235GiB.
+
+유지 qa/measure-korean-score-output.py에 기존 interior 관측을 그대로 둔 fullInterval의 전체/유효 frame 수·median/min/max와 interiorWindowSeconds를 추가했다. 음절과 noteCurves event 양쪽에 적용하고 어떤 값을 대신 통과 기준으로 선택하지 않는다. 같은 opening linear waveform의 prior interior observations와 같은 melisma waveform의 prior observations/events가 exact 유지됐다. 원곡 첫 구절 마지막 음절은 interior54.5/16frames, full54.6/23frames·min52.8/max54.9로 남는다. 임의 목표55로 보정하지 않는다. synthetic64→66 events는 full23/20frames·median64.1/65.9, 기존interior13/13frames 유지. 새 waveform/ASR·seed/threshold 반복 없음.
+
+새 측정2회 guard exit0/중단false·wall7.274/7.305초·free최소9.156/9.137GiB·owned0.245/0.248GiB. 단계 전체·원곡 화성·2–4Part·권한/청취 및 보류 형상/실제 서버 gate는 그대로 남는다. 이번 변경은 재사용 측정/불확실성 기록만이며 앱 build·native 인수를 다시 반복하지 않는다. 보류 서버3파일 stage 제외.
 ### R1 native Take로 전환할 때 재생 길이 — 2026-10-12
 
 production에서 실제 fake microphone Take를 녹음·제출한 뒤 Current Mix→개별 Tenor로 전환했다. rendered WAV preview11.978571초를 표시하던 Player가 native WebM의 duration이 nonfinite인 경우 Take의 저장 길이1.2초 대신 이전11.978571초 slider max를 유지하는 결함을 재현했다. 첫 QA는 Home에서 작업실 버튼을 기다려 timeout이었고 기존 단일 앱의 workspace query를 명시하자 실제 길이 assertion이 실패했다. 테스트 조건 문제와 앱 결함을 분리한다.

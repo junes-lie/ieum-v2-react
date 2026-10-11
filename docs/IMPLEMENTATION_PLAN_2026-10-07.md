@@ -1,3 +1,6 @@
+### R6 측정 범위와 표기 음표 구분 — 2026-10-12
+
+실제 수동 note와 acoustic trajectory가 같은 정보를 뜻하지 않으며, 짧은 음절에서 고정80ms edge 제외가 lower onset의4/5frames만 남길 수 있음을 관측했다. 기존 측정/threshold·실패 값은 유지하고 전체 구간 분포와 표본 수를 병기하도록 유지 도구를 보완했다. 동일 waveform의 기존 interior 및 noteCurves event 수치 exact, fullInterval 추가 경로 검증을 통과했다. 어떤 window를 선택해 품질 gate를 통과시키지 않으며, 실제 음절/note/rest/화성의 불확실성을 보존한 제어 검증을 이어간다. R1 Player 수정의 Git Integration/production hash exact와 길이 전환 QA 통과는 상태 문서 최신 항목 참조. 실제 AI/2–4Part·권한/청취·서비스·디자인 인수는 완료로 확대하지 않는다.
 ### R1 현재 원본의 native 재생 길이 — 2026-10-12
 
 Current Mix→native Take 선택에서 WebM duration metadata가 없는 경우 이전 Mix 길이가 남는 production 결함을 재현했다. 기존 Player의 표시 time/known duration만 현재 source 기준으로 갱신한다. 실제1.2초 Take와 slider 일치/Mix11.978571초 복귀, Sample/정상2–4/main Mix 회귀·build/Node 통과. 관련 묶음만 commit/push→Git Integration→production 전환 QA로 마감하며 자동재생 정책·녹음 타임라인·새 IA/디자인은 바꾸지 않는다. 실제 AI 곡·서버·실기기 gate는 계속 별도다.
