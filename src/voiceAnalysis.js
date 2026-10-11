@@ -2,7 +2,8 @@ import { estimatePitch, PITCH_ANALYSIS_VERSION } from './pitch.js'
 
 export function isSupportedVoiceAnalysis(features) {
   return features?.version === 'ieum-basic-voice-v3' ||
-    (features?.version === 'ieum-basic-voice-v4' && features.pitchAnalysisVersion === 'normalized-difference-v1')
+    (features?.version === 'ieum-basic-voice-v4' && features.pitchAnalysisVersion === 'normalized-difference-v1') ||
+    (features?.version === 'ieum-basic-voice-v5' && features.pitchAnalysisVersion === 'normalized-difference-v1' && features.pitchFrameLength === 4096)
 }
 
 const clamp01 = value => Math.max(0, Math.min(1, value))
@@ -70,6 +71,7 @@ export function analyzeAudioBuffer(audioBuffer) {
   const source = audioBuffer.getChannelData(0)
   const sampleRate = audioBuffer.sampleRate
   const fftSize = 1024
+  const pitchSize = 4096
   const frameCount = Math.min(72, Math.max(12, Math.floor(source.length / fftSize)))
   const hop = Math.max(1, Math.floor((source.length - fftSize) / Math.max(1, frameCount - 1)))
   const frameRms = [], centroids = [], rolloffs = [], flatnesses = [], zcrs = [], fluxes = [], pitchMidis = []
@@ -87,8 +89,9 @@ export function analyzeAudioBuffer(audioBuffer) {
     }
     const currentRms = Math.sqrt(sumSquares / fftSize)
     frameRms.push(currentRms)
-    if (frameIndex % 2 === 0) {
-      const pitch = estimatePitch(frame, sampleRate, currentRms)
+    if (frameIndex % 2 === 0 && source.length >= pitchSize) {
+      const pitchStart = Math.max(0, Math.min(source.length - pitchSize, start + (fftSize - pitchSize) / 2))
+      const pitch = estimatePitch(source.subarray(pitchStart,pitchStart + pitchSize), sampleRate)
       if (pitch.hz >= 65 && pitch.hz <= 1050 && pitch.confidence >= .30) {
         pitchMidis.push(69 + 12 * Math.log2(pitch.hz / 440))
       }
@@ -155,8 +158,9 @@ export function analyzeAudioBuffer(audioBuffer) {
   const pitchRange = pitchMidis.length > 2 ? percentile(pitchMidis, .85) - percentile(pitchMidis, .15) : 0
   const pitchVariation = clamp01(pitchMotion / 3.5 * .62 + pitchRange / 20 * .38)
   const features = {
-    version: 'ieum-basic-voice-v4',
+    version: 'ieum-basic-voice-v5',
     pitchAnalysisVersion: PITCH_ANALYSIS_VERSION,
+    pitchFrameLength: pitchSize,
     durationSec: round(audioBuffer.duration, 3),
     sampleRate,
     rms: round(rms),

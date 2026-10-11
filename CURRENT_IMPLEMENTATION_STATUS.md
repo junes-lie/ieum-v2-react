@@ -1,3 +1,13 @@
+### R5 Track/Sample 저음 주기 창 — 2026-10-12
+
+00bb5d015f0359e0b522b3dec8388161355cb256 Git Integration7002148063 success, production index-Du-vkZ30.js remote/local SHA25622433135801A50839F2DFC91D3E0E8FD2AA8532DEB22494264152F2F72D11368 exact. production Sample 분석 버전 저장/reload·범위/Sample 유지·실패/재시도, mixed v3/v4의 native2/3/4Part exact Layer signature/Review 제출/Mix/Credits 복귀/reload/pageerror0을 통과했다. native Current Mix 화면 이탈 시 paused=true·재생 시간 정지도 확인하여 재생기에 추가 수정하지 않았다.
+
+후속 synthetic82.41Hz를 실제 analyzeAudioBuffer에 넣으면44.1/48kHz 모두 pitchFrameCount=0이었던 원인을 확인했다. spectral1024 FFT와 같은 길이를 pitch에 넘겨 저음의 lag를 충분히 담지 못했다. spectral/level1024 경로는 유지하고 pitch만 중심 근처4096 샘플에서 독립 RMS로 측정한다. 짧아4096 샘플이 없으면 pitch를 생성하지 않는다. 새 결과는 ieum-basic-voice-v5, normalized-difference-v1, pitchFrameLength4096을 fingerprint 입력에 기록하며 기존v3/v4와 정확한v5를 모두 보존한다. 기존 확정 결과를 다시 계산하거나 이미지/renderer/개인 생성 정책을 변경하지 않는다.
+
+65.41/73.42/82.41/110/146.83/220/440Hz×44.1/48kHz14조건 모두 실제36periodic frames·안정 음정 motion<.01/동일 feature exact를 통과했다. 저음82.41→110 변화의 pitchVariation> .02도 검증했다. 실제 CSD 연구 PCM에서 이전v4와 모든 spectral/level/envelope 필드는 exact, pitch24frames→24frames/variation.23261→.2024로 관측했다. archive 비교의 첫 cwd URL decoding 오류를 fileURLToPath로 수정한 뒤 실행했으며 audio/결과는 기존 runtime에 보존한다. 값의 차이는 정확도·음색 신뢰도나 실제 음역 승인과 다르다.
+
+build34modules·Identity 계약의 legacy/new 버전 및 잘못된v5 window 거부,2–4 결합/서로 다른 Track/기존 Layer 재현·audio foundation/단일 앱 Node 렌더 통과. native 새 Sample v5/window 저장/reload와 mixed v3/v4/v5의2/3/4Part exact signature/제출 실패·재시도/Mix/Credits/reload 회귀 통과. desktop Node3tracks 분석254.5ms 관측으로 기존110ms대보다 증가하며 mobile 지연은 미측정이다. 전체 R5 생성/개인 형상·미지원 음역/호흡량/비브라토 후보와 R6 음악·화성/AI Part·서비스/물리 인수는 완료로 확대하지 않는다. 실제 서버3파일·디자인·원본 파일 보존.
+
 ### R5 공유 분석기의 버전·기존 결과 호환 — 2026-10-12
 
 aa363fbbdaf54ca71a709a52829f13a77d871f48 Git Integration7002045989 success 및 production index-DGShlvLH.js에서 음역4조건을 확인했다: 무음0/거부, 실제 가창double tap1요청·126표본/B3–G♯4, tone-noise120→120/A3–A3, 준비 실패 후 retry127표본/B3–G♯4·stream 해제/미등록/pageerror0. R1 start/tracked 수정은 production에서도 통과했으며 물리 입력 검증은 아니다.

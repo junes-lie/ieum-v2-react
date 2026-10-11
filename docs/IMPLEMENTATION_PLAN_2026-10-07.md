@@ -1,3 +1,7 @@
+### R5 저음 Track 분석 선행 교정 — 2026-10-12
+
+spectral1024 창 때문에82Hz 음정 표본이0이던 재현을 교정했다. pitch4096 창을 독립 사용하고 v5/extractor/window를 보존하며 저장v3/v4/v5는 재분석하지 않는다. 저음65–440Hz×44.1/48kHz14조건·안정/변화·같은 입력 재현, 실제 연구 PCM의 spectral/level exact, native Sample 저장 및 mixed2–4Part/제출/Mix/reload 계보를 검증했다. 분석 CPU 시간 증가와 실제 mobile/다양한 목소리 신뢰도는 별도 인수로 남긴다. shape/renderer/개인 정책 변경이나 평균음역/비브라토 추출 승인 없음. 직전 production 버전/계보 검증 증거와 R5/R6/서비스 완료 gate는 상태 문서에 보존한다. 이번 묶음도 자동배포 후 관련 결과를 확인한다.
+
 ### R5 분석 버전 계보 선행 후속 — 2026-10-12
 
 공유 pitch 추출기의 변경을 Sample/Track features에도 v4+normalized-difference-v1로 기록하고 fingerprint 입력에 보존한다. 저장 v3/정확한 v4는 기존 확정 결과로 읽어 강제 재분석하지 않는다. 잘못된 버전 조합·미지원 특성은 승인하지 않는다. 같은 입력/버전 재현과 mixed v3/v4의2–4Part/제출/실패/결과/reload exact signature·Sample 저장 버전 회귀를 확인했다. 기본형/renderer/개인 생성 정책 변경은 없으며 R5 전체 미완료 gate는 유지한다. 직전 R1 production4조건 통과는 상태 문서 최신 항목 참조. 이번 묶음은 자동배포 뒤 Sample/Project 계보와 production asset을 확인한다.

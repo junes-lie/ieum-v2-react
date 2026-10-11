@@ -21,7 +21,7 @@ try{
   await page.goto(url);await page.waitForFunction(()=>!!window.__IEUM_V2__?.state)
   const id=`qa-screen-${count}`,seed=`qa-screen-seed-${count}`
   const parts=Array.from({length:count},(_,i)=>({id:`free-${i}`,name:`Voice ${i+1}`,color:'#3b82f6',participantId:i?'luna':'jisun',participant:i?'LUNA':'JISUN',status:i?'submitted':'ready'}))
-  const featuresByPart=parts.map((_,index)=>index===1?{...features,version:'ieum-basic-voice-v4',pitchAnalysisVersion:'normalized-difference-v1',fingerprint:'qa-screen-continuity-v4'}:features)
+  const featuresByPart=parts.map((_,index)=>index===1?{...features,version:'ieum-basic-voice-v4',pitchAnalysisVersion:'normalized-difference-v1',fingerprint:'qa-screen-continuity-v4'}:index===2?{...features,version:'ieum-basic-voice-v5',pitchAnalysisVersion:'normalized-difference-v1',pitchFrameLength:4096,fingerprint:'qa-screen-continuity-v5'}:features)
   const layers=parts.map((part,index)=>buildVoiceLayer(seed,part.id,featuresByPart[index]))
   await page.evaluate(async({id,seed,parts,layers,featuresByPart,audio})=>{
    const db=await new Promise((resolve,reject)=>{const r=indexedDB.open('ieum-v2-records',1);r.onupgradeneeded=()=>r.result.createObjectStore('tracks',{keyPath:'id'});r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})
@@ -35,6 +35,7 @@ try{
   await page.waitForFunction(()=>window.__IEUM_V2__.state.activeTracks?.['free-1'])
   assert.equal(await page.evaluate(()=>window.__IEUM_V2__.state.activeTracks['free-1'].features.version),'ieum-basic-voice-v4')
   assert.equal(await page.evaluate(()=>window.__IEUM_V2__.state.activeTracks['free-1'].layer.signature),layers[1].signature,'Stored v4 Layer must retain its exact lineage')
+  if(count>=3)assert.equal(await page.evaluate(()=>window.__IEUM_V2__.state.activeTracks['free-2'].layer.signature),layers[2].signature,'Stored v5 Layer must not be reanalyzed')
   assert.equal(await page.locator('.bottom-nav').count(),0)
   assert.deepEqual(await page.locator('.lyrics>span').allTextContents(),['QA previous','QA current','QA next'])
   assert.equal(await page.locator('.lyrics>span.active').textContent(),'QA current')
@@ -84,6 +85,7 @@ try{
   assert.equal(await page.evaluate(()=>window.qaTrackWriteCount),2,'Failed double click plus successful double click must total two writes')
   await page.reload();await page.waitForSelector('[data-action="open-complete"]');await page.locator('[data-action="open-complete"]').click();await page.waitForSelector('.complete-screen')
   assert.equal(await page.evaluate(()=>window.__IEUM_V2__.state.activeTracks['free-1'].layer.signature),layers[1].signature,'v4 Layer must survive submission/Mix/reload beside legacy v3 Layers')
+  if(count>=3)assert.equal(await page.evaluate(()=>window.__IEUM_V2__.state.activeTracks['free-2'].layer.signature),layers[2].signature,'v5 Layer must survive submission/Mix/reload beside v3/v4 Layers')
   assert.equal(await page.locator('.record-center-credits button').count(),count)
   assert.deepEqual(errors,[])
   results.push({count,duplicateSubmitBlocked:true,projectPreserved:true,reviewSubmit:true,failurePreservesSource:true,permissionUISeparated:true,actualSyntheticMix:true,creditsProfileReturn:true,reload:true,widths:[360,390,430],errors});await context.close()
