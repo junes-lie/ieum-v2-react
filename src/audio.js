@@ -350,10 +350,13 @@ export async function startRecording({ onFrame, guides = {backing:false,parts:[]
   if(runtime.preparationRecorder || (runtime.recorder&&runtime.recorder.state!=='inactive'))throw new Error('이미 녹음 중이에요.')
   let recorder
   try {
-  runtime.chunks = []
+  const chunks = []
+  runtime.chunks = chunks
   const mime = ['audio/webm;codecs=opus','audio/webm','audio/mp4'].find(type => MediaRecorder.isTypeSupported(type)) || ''
   runtime.recorder = new MediaRecorder(stream, mime ? { mimeType: mime } : undefined)
-  runtime.recorder.ondataavailable = event => { if (event.data.size) runtime.chunks.push(event.data) }
+  runtime.recorder.ondataavailable = event => {
+    if (runtime.recorder === recorder && runtime.chunks === chunks && event.data.size) chunks.push(event.data)
+  }
   recorder=runtime.recorder
   const prepareSeconds=decodedPreparation ? preparationDuration : 0
   const beginCapture=()=>{

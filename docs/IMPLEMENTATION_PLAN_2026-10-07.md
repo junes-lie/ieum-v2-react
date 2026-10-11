@@ -1,3 +1,7 @@
+### R1 재녹음 데이터 이벤트 소유권 — 2026-10-12
+
+이전 recorder의 늦은 dataavailable이 새 Take의 전역 chunks에 추가되는 실제 결함을 production에서 재현했다(1→2). recorder별 배열/현재 recorder·배열 소유권을 함께 확인하도록 최소 수정. 새 native QA의 Review SHA256 exact, 기존 종료 원본/Draft·중복 세션·Sample 보존·Node audio/build 통과. 관련 qa:record-errors에 유지 검증 연결, main push→Git Integration→production chunk QA를 수행한다. 물리 latency/청취·R1 전체 완료로 확대하지 않으며 IA/디자인/서버 작업은 제외한다.
+
 ### R2 임시 탐색 캐시 / R6 실제 annotation 관측 — 2026-10-12
 
 R2: sessionStorage 실패가 실제 Collection/Detail/My 화면을 crash시키는 결함만 최소 수정한다. 선택적 cache 읽기/쓰기 실패는 기존 화면 기본값/React 선택으로 계속하며 영구 사용자 저장 오류 경로는 유지한다. 유효하지 않은 Collection 탭/Projects 필터는 기존 defaults. native3실패 분기·참여/Track/저장 보존 및 기존 Collection scroll/복귀, 2–4 Part 생성 회귀와 build 통과. 해당 기능 main push→Git Integration→production cache QA를 수행한다. 디자인/IA/정책 변경과 보류 서버3파일 제외.

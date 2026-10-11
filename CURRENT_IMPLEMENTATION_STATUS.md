@@ -1,3 +1,11 @@
+### R1 이전 녹음기의 지연 chunk 소유권 — 2026-10-12
+
+production에서 첫 Take를 취소/다시 시작한 뒤 이전 recorder의 실제 첫 chunk를 늦은 callback으로 전달했을 때 새 Take chunks가1→2로 증가하는 결함을 재현했다. recorder별 수집 배열을 보존하고 현재 recorder와 현재 배열이 모두 소유 일치할 때만 dataavailable bytes를 추가한다. 취소/확정 뒤 배열을 반환한 이전 요청은 새 Take에 쓸 수 없다. 원본/임시본/녹음·제출 UX와 디자인 변경 없음.
+
+build34modules/Node audio foundation 및 새 native chunk-ownership QA의 이전 이벤트 무시·새 Take Review bytes SHA256 exact·pageerror0 통과. 기존 ended-mic 원본 Review/Draft 복원, recorder-session 중복 시작/정지·타이머, Profile sample-lifecycle 취소/메타데이터·원본 보존도 통과. 주입한 지연 callback/fake mic 경계이며 물리 기기 event latency·청취는 미검증이다. 검증된 묶음만 main push→Git Integration→production을 수행하며 서버 보류3파일 유지/제외.
+
+R2 앞선 a9570af03f2265ace4c812d3733e93f8cfedb68a main/origin 일치, Production7000594872 success. production HTTP200/JS index-Dpc0XI7d.js SHA256ABA58CBF04E5C69D2927D8284B9177FB09D3C147346C16A5A5005DAD54EF1E00 및 실제 캐시 read/write/invalid3조건·Collection scroll/복귀 회귀 통과. 다음 build 생성으로 이전 local asset은 대체되어 이번 기록은 remote 관측/검증 build 파일명 일치이며 SHA256 local exact 주장이 아니다.
+
 ### R2 선택적 탐색 캐시 실패 보호 — 2026-10-12
 
 production의 격리 sessionStorage.getItem 실패에서 Collection 진입 pageerror 'QA session cache read blocked'를 재현했다. Detail Part/Collection 탭/My Projects 필터의 선택적 hint 읽기·쓰기를 보호하고 잘못된 탭/필터 값은 기존 기본값으로 처리한다. React의 현재 선택/원본 DB·참여·저장 상태는 유지한다. 영구 저장 실패를 숨기거나 새 정책/화면/디자인을 추가하지 않는다.
