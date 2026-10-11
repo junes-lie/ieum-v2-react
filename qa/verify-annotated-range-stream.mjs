@@ -14,13 +14,20 @@ const {chromium}=require('playwright')
 const browser=await chromium.launch({headless:true,executablePath:'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe'})
 try {
  const results=[]
- for(const mode of ['silence','annotated-singing']){
+ for(const mode of ['silence','annotated-singing','tone-noise']){
   const context=await browser.newContext({viewport:{width:390,height:844}})
   await context.addInitScript(({pcm,mode})=>{
    navigator.mediaDevices.getUserMedia=async()=>{
     const audio=new AudioContext({sampleRate:44100}),destination=audio.createMediaStreamDestination()
     const buffer=audio.createBuffer(1,pcm.length,44100)
-    if(mode!=='silence')buffer.copyToChannel(Float32Array.from(pcm),0)
+    if(mode==='annotated-singing')buffer.copyToChannel(Float32Array.from(pcm),0)
+    if(mode==='tone-noise'){
+     const data=buffer.getChannelData(0);let seed=71
+     for(let i=0;i<data.length;i++){
+      seed=seed*16807%2147483647
+      data[i]=i/44100<2.5?.03*Math.sin(2*Math.PI*220*i/44100):.04*(seed/2147483647*2-1)
+     }
+    }
     const input=audio.createBufferSource();input.buffer=buffer;input.connect(destination)
     window.qaRangeInput={audio,input,stream:destination.stream,ended:false}
     input.onended=()=>{window.qaRangeInput.ended=true}
@@ -34,6 +41,14 @@ try {
   await page.locator('[data-nav="user"]').click()
   await page.getByRole('button',{name:'내 목소리 알아보기',exact:true}).click()
   await page.locator('[data-action="range-start"]').click()
+  let trackedSamples=null
+  if(mode==='tone-noise'){
+   await page.waitForFunction(()=>document.querySelector('.pitch-diagnostics span:last-child')?.textContent==='tracked')
+   const accepted=()=>page.locator('.pitch-diagnostics').innerText().then(text=>Number(text.match(/수집\s+(\d+)\//)[1]))
+   const before=await accepted();await page.waitForTimeout(100);const after=await accepted()
+   trackedSamples={before,after}
+   assert.equal(after,before,'Display-held pitch during nonperiodic input must not count as a fresh measured sample')
+  }
   await page.waitForFunction(()=>window.qaRangeInput?.ended)
   await page.waitForTimeout(450)
   const diagnostics=await page.locator('.pitch-diagnostics').innerText()
@@ -53,13 +68,14 @@ try {
    await page.waitForSelector('.result-block')
    range=await page.locator('.result-block').innerText()
    const label=await page.locator('.result-block h1 span').textContent()
-   assert.match(label,/^[A-G][♯♭]?3–[A-G][♯♭]?4$/,'This bounded annotated singer must not acquire a false octave-5 upper range')
+   if(mode==='annotated-singing')assert.match(label,/^[A-G][♯♭]?3–[A-G][♯♭]?4$/,'This bounded annotated singer must not acquire a false octave-5 upper range')
+   else assert.equal(label,'A3–A3')
    assert.ok(range.includes(`${accepted}개의 유효 음정 표본`))
    assert.equal(await page.evaluate(()=>window.qaRangeInput.stream.getTracks().every(track=>track.readyState==='ended')),true,'Finishing range must stop the input stream')
   }
   assert.deepEqual(errors,[])
   await page.evaluate(()=>{window.qaRangeInput.stream.getTracks().forEach(track=>track.stop());return window.qaRangeInput.audio.close()})
-  results.push({mode,accepted,checked,range,noProfileEnrollment:true,pageErrors:errors});await context.close()
+  results.push({mode,accepted,checked,range,trackedSamples,noProfileEnrollment:true,pageErrors:errors});await context.close()
  }
  console.log(JSON.stringify({passed:true,results,limits:'Bounded CC-BY-NC-SA research PCM injected through native MediaStream/WebAudio; no physical microphone, scientific voice judgement, full-range calibration or Profile/Identicon approval.'}))
 }finally{await browser.close()}

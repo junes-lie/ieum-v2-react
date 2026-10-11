@@ -777,16 +777,17 @@ function VoiceSetup({ complete, go, back, existing, editMode }) {
       monitorInput(frame => {
         setLevel(frame.level)
         if (frame.pitchFresh) setPitchDiagnostics(previous => {
-          const valid = Number.isFinite(frame.midi) && frame.midi >= 36 && frame.midi <= 84
+          const inRange = Number.isFinite(frame.midi) && frame.midi >= 36 && frame.midi <= 84
+          const valid = inRange && frame.pitchReason === 'detected'
           return {
             checked:previous.checked + 1,
             accepted:previous.accepted + (valid ? 1 : 0),
             rms:frame.rms || 0,
             confidence:frame.pitchConfidence || 0,
-            reason:Number.isFinite(frame.midi) && !valid ? 'out-of-range' : frame.pitchReason
+            reason:Number.isFinite(frame.midi) && !inRange ? 'out-of-range' : frame.pitchReason
           }
         })
-        if (frame.pitchFresh && Number.isFinite(frame.midi) && frame.midi >= 36 && frame.midi <= 84) {
+        if (frame.pitchFresh && frame.pitchReason === 'detected' && Number.isFinite(frame.midi) && frame.midi >= 36 && frame.midi <= 84) {
           pitchSamples.current.push(frame.midi)
           confidenceSamples.current.push(frame.pitchConfidence || 0)
           setPitch(frame.midi)

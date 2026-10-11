@@ -1,3 +1,11 @@
+### R1/R5 추적 표시와 측정 표본 분리 — 2026-10-12
+
+18e48a4c15a39ff29210826a80b9e93c70a32988 Git Integration7001957166 success, production index-COo5wZ9E.js remote/local SHA256A023C8FE1FFB8F96FF9B1B1CEFE5D05B1D80F6D6487740464EBB09D827E52435 exact. production 무음 거부/실제 짧은 가창145표본·B3–G♯4·stream 종료/미등록, Profile 편집/analysisVersion 보존·저장 실패·재시도·복귀 회귀/pageerror0 통과.
+
+후속 native tone→큰 비주기 noise 입력에서 pitchReason=tracked인100ms 동안 accepted121→126을 재현했다. monitorInput은 표시 연속성을 위해 이전 음정을350ms 유지하지만, 이를 새 측정으로 수집하는 것은 실제 추출 표본과 다르다. VoiceSetup의 accepted 및 pitchSamples는 fresh이면서 reason=detected이고 기존36–84 범위에 든 값만 수집하도록 최소 교정했다. 표시 tracking/진단 reason·표본6개/percentile·녹음·Profile 정책은 유지한다.
+
+최종 local native 무음0/거부, 같은 실제 자료126표본·B3–G♯4, tone-noise119→119/상한A3·stream 해제·미등록/pageerror0을 통과했다. accepted/check count는 browser scheduling에 따라 달라질 수 있으며 그 수치 자체를 과학적 신뢰도나 음역 정확도로 승인하지 않는다. build34modules/Node pitch16fixture 및 Profile 저장·분석 버전 보존 회귀를 검증한다. 실제 기기/다양한 목소리·전체 R5/R6 완료 조건과 서비스3파일 보류는 그대로다.
+
 ### R1/R5 음역 상한 오검출 교정 — 2026-10-12
 
 4cae0daef744ce9db0ae2199b837ede2f92c8a47 Git Integration7001850558 success 및 production index-Bl8Ph6NX.js SHA256D3BE03C218574646E032A5E51738720FA46554FF5982685E702A019D30EF8FC5 local exact를 확인했다. 뒤이어 실제 CSD3.9초 PCM을 native MediaStream→WebAudio→monitorInput→VoiceSetup에 넣었더니 기존 측정 상한이 G♯5로 부풀었다. 직접 함수 전체 구간에서도 MIDI75 초과11frames, 일부는 첫 음표 전·일부는 annotation59/68 구간에 나타났다. 따라서 이전 음절별 interior 대조만으로 live 음역 측정 정확성을 승인하지 않는다.
