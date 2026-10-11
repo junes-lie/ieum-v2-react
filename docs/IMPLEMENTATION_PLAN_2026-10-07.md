@@ -1,3 +1,9 @@
+### R6 대체 한국어 score 경로의 실제 관측 — 2026-10-12
+
+기존 R6 안에서 공식 MLP Singer의 다른 native 한국어/MIDI 구조를 검증했다. 코드/94MB checkpoint·공식 호환55.8MB HiFi-GAN을 고정 hash/원문으로 확인하고 제한 로더·현재 GPU 환경에서 두 기존 opening 가설의 실제 파형을 생성했다. 새 앱/프로토타입/추론 서비스/환경 설치가 아니다. 두 Small 가사 exact와 mel fresh-process 재현은 확인했지만 base '가'의 fixed interior 음정 누락, upper 마지막+.6반음과 음절 끝/지속음 차이를 보존했다. threshold/seed/출력 편집으로 통과시키지 않는다. 코드 MIT를 CSD 학습 자료·voice/production 권리 승인으로 확대하지 않는다. SoulX의 Korean SVS 지원은 현재 공식 원문에서 확인하지 못해 설치하지 않았다.
+
+현재 결정: MLP도 전체 Part/catalog 준비 완료 경로가 아니며 기존 성공·실패 증거와 모델을 보존한다. sourceScore/실제 화성·휴지/2–4Part·청취/권리 gate를 그대로 두고 현재 곡을 교체하지 않는다. 다음 R6은 모델을 더 쌓기보다 원곡 score/화성·지원 음역/지속음의 불확실성 및 권리 조건을 해결한 입력의 실제 Part 검증이다. 상세 native/파생 hash·원문/로더 오류·자원·측정과 직전 R1 production 완료 증거는 상태 문서 참조. R1/R2 독립 기능과 R3/R4 실제 서비스·R5 미정 형상/정책·R7 인수의 의존관계를 변경하지 않는다.
+
 ### R1 이탈 후 분석 버퍼 소유권 후속 — 2026-10-12
 
 Sample 늦은 종료 URL 교정 이후 cleanup된 decoded/lastAnalysis 재부착을 추가 재현했다. 같은 recorder+URL을 현재 세션이 소유할 때만 전역 참조를 갱신하며 반환 Take는 독립 보존한다. native 지연 결과/이탈/reload의 URL·buffer 해제와 기존 Profile·정상 Recorder bytes exact/build/Node 회귀를 통과했다. 관련 자동배포와 production 결과를 확인하고 전체 R1/R6·물리/서비스 완료 상태는 유지한다. 상세 실패·버전·직전 배포는 상태 문서 참조.

@@ -1,3 +1,19 @@
+### R6 다른 한국어 score 구조의 실제 검증 — 2026-10-12
+
+c734679725be43150a6df9309332e7cf4d110c21 Git Integration7002616427 success/production HTTP200/index-DpeDJVz-.js remote/local SHA84CBF8692F280E5D18B581D03EEE46FDBE09F7D4BE246AEA405F67E3967E0A44 exact, native 늦은 Sample URL·buffer 해제/기존 Profile reload와 정상 Recorder bytes exact/pageerror0을 확인했다. receipt는 기존 runtime에 보존했다. 현재 서버 보류3파일은 유지한다.
+
+[MLP Singer 공식 코드](https://github.com/neosapience/mlp-singer/tree/7f4621ca04ee5e35c0e0a80b1fed785a55a51891)의 한국어 G2P/align·MIDI-minus52/26index·192frame MLP 구조를 검토했다. pinned 원문13파일 byte/Git blob/SHA 대조, checkpoint94151441bytes Git blobc67d75c084566f4307ad25df7342f7fc288ada7c/SHA1914d74820b554d566c5607afdb76f70c3885b043457a12e6c81f1ef242ae895를 보존했다. MIT 코드와 CSD 학습 자료의 실제 서비스 권리 확인은 구분하며 새 제공자를 확정하지 않는다. SoulX 공식 README는 Mandarin/English/Cantonese 학습을 명시하고 Korean SVS 지원 근거는 확인하지 못해 새 설치/추론 후보로 선정하지 않았다. 최신 정책 확인에 필요한 Notion/figma-desktop 도구는 현재 노출0개였으며 읽었다고 주장하지 않는다.
+
+첫 MLP load는 weights_only가 utils.EarlyStopMonitor를 거부해 실패했다. unsafe globals가 해당 클래스 하나뿐인지 검사하고 pinned 원문에서 확인한 클래스만 safe_globals로 허용했다. unrestricted pickle/환경 재설치 없음. 같은 음절·시간과 base MIDI55/59/62/57/57/55/55, upper59/62/66/62/62/59/59를 원문 align/model에 입력했다. 두 독립 프로세스의 mel80×471 hash가 각 exact였고 다른 MIDI의 mel 차이는 관측됐지만 음높이·음원 품질로 간주하지 않았다.
+
+공식 MLP README 링크의 HiFi-GAN config799bytes SHA c1bd98e99062ddbced38729a5252dc2aa772328d16d70097ac139dab2f269dc9와 native55788858bytes SHA771eaf4876485a35e25577563d390c262e23c2421e4a8c929eacfde34a5b7a60를 크기 상한 stream으로 받았다. submodule4769534d45265d52a904b850da5a622601885777 코드3파일/License Git blob 대조 및 mel80/22050Hz/hop256/FFT1024/fmin0/fmax8000 호환을 확인했다. zip-only globals scanner는 legacy torch.save라 실패했으나 weights_only 제한 로더와 strict state dict는 통과했다. 검토한 Generator/align 원문 body만 실행하고 기존48k vocoder로 대신하지 않았다.
+
+실제 두 native FLOAT22050 WAV를 보존하고 ASR/기존 측정용 polyphase320/147→stereo PCM16 파생을 분리했다. normalization/output shift/rest gate/repair 없음. base nativeSHA97c346658ddc5c22efd3d03fa7a290e74153042f2d5b3d24871964e1345f1162→derivedSHA12f6d5823009ee0e62d8d091524b9ec9238b3315bc2c897da7720ffe1e1d44e0, upper78686a4ecc341fb53fe98a4191cc991b598164fe576aad8ccbd0c50872ab4e68→bc7d6340bb23ecde691398dbf6a062763eb84a0bac2bd94d880075018a6ca4dd. duration5.4683125초, base peak.134429/RMS.019358·upper.131969/.028983. waveform 실행 wall6.0856초/GPU peak173651968bytes/owned최대.9075GiB/free최소8.268GiB. mel만 .10486초를 전체 vocoder 추론 속도로 표시하지 않는다.
+
+기존 pYIN .75/80ms interior의 base7음절 median54.9/59/62/56.9/57.05/null/55.1, upper59.2/62.15/65.5/61.9/62/59.1/59.6. base '가'는 interior0frames/full8frames median54.7이고 upper 마지막+.6반음·'히'−.5반음도 보존했다. legacy notesMidi 경로는 명시한 실제 MIDI 입력을 비교하며 report의 legacy encoding 라벨을 새 pinned 모델 지원 승인으로 쓰지 않는다. Small 가사는 양쪽 천천히걸어가요 exact/similarity1. MMS base/upper mean absolute onset37.313/42.858ms·max79.249/78.599ms, phonetic end4.126272/4.066181은 요청 note end4.468182와 다르다. wrong transcript 일부 score가 더 높다. CTC end≠지속음 길이·path score≠정확도와 missing/sparse frames를 유지하며 sourceScore/화음·2–4Part/catalog/청취는 미완료다.
+
+base/upper pYIN wall7.329/7.314초·free8.941/8.948GiB/owned.238/.234GiB, Small17.220/17.227초·free7.595/7.583GiB/owned1.577/1.564GiB, MMS12.175/12.150초·free8.321/8.307GiB/owned.855/.855GiB, 최종 모든 실행 exit0/resourceStopped=false. source/probe/실패와 성공 결과·음원은 기존 runtime의 Git 제외 경로에 보존하며 repository 앱/asset/환경을 바꾸지 않았다. 다른 architecture가 정확한 가사·저음 일부를 생성한다는 근거는 얻었지만 기존 DiffSinger 실패나 전체 음악 gate를 해결했다고 표시하지 않는다.
+
 ### R1 늦은 분석의 전역 버퍼 재부착 방지 — 2026-10-12
 
 0d078fc6a949138638df4e870e4d464610a976b1 Git Integration7002597560 success 및 production index-Blysb9GK.js를 확인했다. 해당 local/native Sample lifecycle·거부/Review URL/폐기취소·Profile 보존 회귀는 통과했다. 후속 delayed Stop QA에서 이탈 후 URL은 해제됐으나 decoded AudioBuffer와 lastAnalysis가 cleanup 이후 다시 붙는 실제 assertion 실패를 확인했다. 현재 recorder와 URL의 소유권이 유지된 경우에만 전역 분석 참조를 갱신하도록 제한했다. 반환되는 종료 Take의 blob/url/features/duration은 독립 결과로 유지한다.
