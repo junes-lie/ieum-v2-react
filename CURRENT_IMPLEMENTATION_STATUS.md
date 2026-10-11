@@ -1,3 +1,11 @@
+### R6 분석 난수 원인과 실행 seed 검증 — 2026-10-12
+
+기존 pinned ONNX graph를 [공식 protobuf schema](https://raw.githubusercontent.com/onnx/onnx/main/onnx/onnx.proto)의 Model.graph/Graph.node/Node.op_type·attribute로 읽었다. segmenter의 /RandomUniformLike는 dtype1만 있고 명시 seed가 없었다. 나머지4개 graph에는 조사한 random op가 없었다. 원본 model/hash를 변경하거나 새 onnx 패키지를 설치하지 않았다. 관측 원인 후보를 실제 graph로 확인한 것이며 모든 변동 원인을 배제한 것은 아니다.
+
+유지 도구에 선택적 --seed를 추가해 [공식 ONNX Runtime set_seed](https://onnxruntime.ai/docs/api/python/api_summary.html)를 session 생성 전에 적용하고 결과에 seed/scope를 기록한다. 미지정 경로는 기존대로 유지한다. 음질에 맞는 seed를 탐색하지 않고 첫 검증값0 하나만 사용했다. 동일 원곡16–23.5초·모델/버전/threshold를 두 별도 프로세스에서 실행한10segments/notes 전체가 exact 일치했다. 추론1.307/1.284초, guard exit0/중단false·wall4.852/4.849초·free 최소9.316/9.315GiB·owned peak0.282GiB. 음수seed는 numpy/모델 import 전에 거부하며 output 생성 없음. 새 환경/대형 GPU/원본 변경 없음. 재현성 사례가 가사 경계/화음/청취 정확도를 뜻하지 않으며 이전 seed 없는 실패와 모든 sourceScore/Part/catalog 승인false를 유지한다.
+
+앞선084ffab2756794025e0cf0f27b92231ccf1260d6 main/origin 일치, Git Integration7000854712 success. production HTTP200/index-U1LmFjMk.js SHA2563416E3B50EC85C012FC8DE8447A793BB516BFEB42BEA95D856DF2ED09A89FED0 local exact. Python 연구 도구/문서만 변경되어 앱 asset은 그대로였다.
+
 ### R6 경량 가창 음표 추출 / R1 Production 확인 — 2026-10-12
 
 R1 845d37dcb373f63cc6286f837259b8af58b72805 main/origin 일치, Git Integration Production7000665875 success. production HTTP200/index-U1LmFjMk.js SHA2563416E3B50EC85C012FC8DE8447A793BB516BFEB42BEA95D856DF2ED09A89FED0 local exact. 실제 production 이전 recorder 지연 chunk 분리·새 Review 원본 exact 및 ended-mic 원본/Draft 복원 모두 통과.

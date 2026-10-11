@@ -1,3 +1,7 @@
+### R6 실행 난수 재현성 선행 검증 — 2026-10-12
+
+실제 segmenter graph의 seed 없는 RandomUniformLike를 확인했다. 공식 ONNXRuntime set_seed를 session 생성 전에 선택적으로 적용/결과 기록하도록 유지 도구를 보완했다. 첫 값0의 두 독립 프로세스에서 동일 원곡7.5초·10segments notes exact 반복을 확인했다(추론 약1.3초/owned0.282GiB/free9.315GiB 이상). seed 미지정 기존 경로와 실패 증거는 보존한다. 모델 변경/threshold·seed 품질 탐색/새 환경 설치 없음. 이 사례의 실행 재현성 검증은 통과했으나 phonetic-note 경계·누락·화음·지원 음역·2–4Part·권한/청취 gate는 계속 미완료다. 다음은 재현 입력과 불확실 음절/note 연결의 근거를 함께 보존하며 실제 음악 조건을 검증하는 작업이다.
+
 ### R6 가창 note 경계의 독립 모델 관측 — 2026-10-12
 
 기존 MMS phonetic onset/pYIN frame 관측과 구분하여 [공식 GAME small ONNX](https://github.com/openvpi/GAME/releases/tag/v1.0.3)를 연구용으로 검증했다. 모델45.7MB/기존 CPU2스레드에서 CSD0.594초·원곡 두 구절 약1.5초 추론, guard owned peak 약0.21–0.31GiB. native Korean map 없음(language0), weight CC-BY-NC-SA4.0·상업 채택false. 실제 수동9note 중8matching/동일 pitch 두 음절 경계 누락을 보존한다. 최종 유지 probe-singing-notes-onnx는 pinned6파일/hash/config/10초·output 보존 검사와 explicit ONNX 추천 threshold/8step을 사용하며 확정 flagsfalse.

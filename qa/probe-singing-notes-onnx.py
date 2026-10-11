@@ -1,7 +1,8 @@
 """Research-only pinned GAME ONNX observations; run with the live RAM guard."""
 import argparse,hashlib,json,math,time
 from pathlib import Path
-p=argparse.ArgumentParser();p.add_argument('--runtime-dir',type=Path,required=True);p.add_argument('--audio',type=Path,required=True);p.add_argument('--start',type=float,default=0);p.add_argument('--duration',type=float,required=True);p.add_argument('--output',type=Path,required=True);a=p.parse_args()
+p=argparse.ArgumentParser();p.add_argument('--runtime-dir',type=Path,required=True);p.add_argument('--audio',type=Path,required=True);p.add_argument('--start',type=float,default=0);p.add_argument('--duration',type=float,required=True);p.add_argument('--output',type=Path,required=True);p.add_argument('--seed',type=int,default=None);a=p.parse_args()
+assert a.seed is None or 0<=a.seed<=2147483647,'Seed must fit a nonnegative signed 32-bit integer'
 assert a.audio.is_file() and not a.output.exists() and math.isfinite(a.start) and a.start>=0 and math.isfinite(a.duration) and 0<a.duration<=10
 root=a.runtime_dir.resolve();manifest=json.loads((root/'source-manifest.json').read_text());model=root/'model/GAME-1.0.3-small-onnx';config=json.loads((model/'config.json').read_text())
 assert manifest['assetSha256']=='00ba0c64115b6b874d9ea4afd3e6cf822abda2a04e52569233b0a044fd40e4e8' and manifest['tag']=='v1.0.3'
@@ -14,6 +15,7 @@ with sf.SoundFile(a.audio) as file:
  rate=file.samplerate;file.seek(round(a.start*rate));wave=file.read(round(a.duration*rate),dtype='float32',always_2d=True).mean(axis=1)
 assert len(wave)>0 and np.isfinite(wave).all();actual_duration=len(wave)/rate;g=math.gcd(rate,config['samplerate']);wave=resample_poly(wave,config['samplerate']//g,rate//g).astype(np.float32)[None]
 options=ort.SessionOptions();options.intra_op_num_threads=2;options.inter_op_num_threads=1
+if a.seed is not None:ort.set_seed(a.seed)
 sessions={name:ort.InferenceSession(str(model/(name+'.onnx')),sess_options=options,providers=['CPUExecutionProvider']) for name in ['encoder','dur2bd','segmenter','bd2dur','estimator']}
 start=time.perf_counter();duration=np.array([actual_duration],dtype=np.float32)
 x_seg,x_est,maskT=sessions['encoder'].run(None,{'waveform':wave,'duration':duration})
@@ -30,4 +32,5 @@ for length,valid,voiced,midi in zip(durations[0],maskN[0],presence[0],scores[0])
  rows.append({'start':position,'end':position+float(length),'duration':float(length),'voicePresent':bool(voiced),'observedMidi':float(midi) if voiced else None,'rawModelScore':float(midi)})
  position+=float(length)
 report={'status':'research-note-extraction-candidate','audioSha256':hashlib.sha256(a.audio.read_bytes()).hexdigest(),'window':{'start':a.start,'duration':actual_duration},'model':'openvpi/GAME 1.0.3 small ONNX','assetSha256':manifest['assetSha256'],'license':manifest['weightLicense'],'onnxruntimeVersion':ort.__version__,'executionProvider':'CPUExecutionProvider','cpuIntraThreads':2,'cpuInterThreads':1,'languageId':0,'languageReason':'Korean is not a native language in this model map; official unset/universal ID used, not claimed Korean support','boundaryThreshold':.2,'presenceThreshold':.2,'radiusFrames':2,'sampleTimes':ts,'timestep':config['timestep'],'notes':rows,'sumDuration':sum(r['duration'] for r in rows),'inferenceSeconds':time.perf_counter()-start,'scriptSha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),'sourceScoreVerified':False,'syllableTimingApproved':False,'harmonyApproved':False,'catalogRegistrationApproved':False,'limitations':['Predicted notes are not lyrics or approved score','No thresholds changed to match the reference','No original PCM shift, transpose or overwrite','No physical listening or commercial model adoption']}
+report['randomSeed']=a.seed;report['seedScope']='ONNX Runtime global seed set before session creation in this isolated process; exact reproducibility requires measurement, not guaranteed'
 a.output.write_text(json.dumps(report,indent=2),encoding='utf-8');print(json.dumps(report),flush=True)
