@@ -1,3 +1,21 @@
+추가 실제 구절: 같은 원곡50.0–58.5초의 “우리 함께 불러요”7음절 후보는55.03184/55.17217/55.37264/55.81368/56.83608/57.29717/58.01887초, 정답/오답 평균 path score0.32430/0.10871이다. ‘러’는0.02907로 낮아 미확정이며 원곡 전체로 일반화하지 않는다. child exit0/resourceStopped=false/13.305초, GPU allocation1433041920bytes. script의 expected score/hash 검사는 모델 생성 전으로 옮겼으며 최종 script로 실제 두 번째 원곡 구절을 검증했다. 새 생성·Part/catalog 연결은 수행하지 않았다.
+
+### R6 다국어 음절 강제 정렬 후보 실제 검증 — 2026-10-12
+
+기존 Whisper BPE/한국어 speech CTC 실패를 반복하지 않고 [PyTorch MMS_FA 공식 정렬](https://docs.pytorch.org/audio/2.8/tutorials/forced_alignment_for_multilingual_data_tutorial.html)의 uroman/CTC 경로를 별도 진단했다. 기존 GPU torch2.8.0+cu126/Python3.13.5를 보존하고 runtime/mms-deps에 공식 torchaudio2.8.0+cu126·uroman1.3.1만 target 설치했다. pip는 uroman1.3.1이 문서 업데이트 이유로 yanked임을 경고했으며 기존 설치·로그를 보존했다. 공식 checkpoint1262047414bytes/SHA25620ef12963ab4924bef49ac4fc7f58ad5da2ee43b2c11bc8c853c9b90ecdbc680를 스트리밍 받아 별도 runtime에 보존했다. CC-BY-NC4.0이며 상업적 앱 연결은 승인되지 않았다. 새 UI/전체 라이브러리/기존 환경 변경 없음.
+
+유지 qa/probe-korean-syllable-alignment.py: 입력10초 제한·고정 checksum/버전·weights_only+mmap/meta load·저자 normalize/log_softmax·한국어 음절별 uroman·정답/오답 동일 emission 정렬·출처 hash/nullable 결과·승인false를 기록한다. 라이브러리의 forced_align은2.8 deprecated/2.9 제거 경고가 있어 버전을 pin하며 앱 의존성으로 넣지 않는다. 각 실행은 기존 live RAM guard로 순차 진행했다.
+
+기존7초 “오늘도 함께해요”의 시작 후보는 요청 score 대비−0.0756~+0.0814초, 정답/오답 평균 path score0.20420/0.04197. 다른7초 “우리 함께 불러요”는−0.11645~+0.06140초 및0.38904/0.12504다. 요청 score는 실제 acoustic ground truth가 아니며 path score는 보정된 정확도 확률이 아니다. 틀린 가사도 결과가 나오는 것을 명시적으로 확인했다.
+
+실제 기존 원곡 vocal hash b2f4d47811276a4254fa17c694395e7ddb10b30df853c6c31070ac229b9dcd25의31.7–39.7초에서7음절 시작 후보34.0258/34.1662/34.3667/35.8103/36.0709/36.7927/37.1536초, 정답/오답0.57590/0.05042다.33.3–38.5초 crop 비교의 최대 시작 차이0.01704초였다. 기존 confident pYIN frames와 대조한 ‘오’는0/null, 나머지는11/6/10/11/4/11frames 및58.9/60.25/57.0/58.9/57.0/57.1 MIDI다. 짧은 phonetic span을 완전한 음표 길이로 사용하지 않으며 null을 채우지 않는다.
+
+4실행 실제 child exit0/resourceStopped=false, guard free minimum9.04476/8.04559/8.40606/8.08153GiB, child RAM peak0.85509/1.24717/1.08636/1.71706GiB. inference/관측 wall3.8–5.8초대·GPU allocation 약1.4GB. JSON/오답/monitor/원본은 repo 밖 runtime에 보존한다. 음절 onset 후보의 좁은 진전이며 sourceScoreVerified/syllableTimingApproved/harmonyApproved/catalogRegistrationApproved=false 유지. 다음은 다른 실제 구절·crop 안정성·원곡 음표 지속 길이/화성 근거를 확보하는 검증이며 지금 자료를 확정 Part나 승인된 가사 Guide로 연결하지 않는다.
+
+최종 배포 기록: 118b9933b9f42bf446955f21eac74f0e31a9d9ad main/origin 일치, Git Integration6999701358 success. production HTTP200/JS index-CgOHNiJG.js SHA256D979022C12D178073060E2822695CF990F24B41B91362D371D6CACEDF145CDFC local exact. 수정된 recorder-session/legacy draft owner3종 QA 모두 production 통과. 작업 후 free RAM9.82GiB/Python worker 없음. 작은 증거 전용 commit은 만들지 않고 다음 의미 있는 묶음까지 기록 보존.
+
+R6 추가 원본 조사: PyTorch 공식 다국어 강제 정렬 문서(https://docs.pytorch.org/audio/2.8/tutorials/forced_alignment_for_multilingual_data_tutorial.html)는 비라틴 문자의 romanization/segmentation을 전제로 한다. MMS_FA 모델의 공식 라이선스 안내는 CC-BY-NC4.0(https://docs.pytorch.org/audio/2.4.0/generated/torchaudio.pipelines.MMS_FA.html). LyricsSync 저자 README(https://github.com/elecpure2/LyricsSync)는 MMS/uroman 및 수동 교정을 사용한다. 문서 설명을 가창 성능 검증이나 상업 사용 승인으로 간주하지 않는다. 기존 GPU Python metadata 조회는 torchaudio PackageNotFoundError, 해당 pipeline source 경로도 없음으로 확인했다. 환경 변경/새 대형 모델 다운로드/원문 강제 정렬의 자동 승인은 실행하지 않았다. 다음 후보를 사용할 경우 기존 정확한 synthetic score의 알려진 경계와 틀린 transcript 대조에서 실패 감지/경계 오차부터 검증해야 하며, 원곡의 확정 음절 타이밍이나 화음 승인으로 바꾸지 않는다. 현재 노출된 Notion/figma-desktop 도구는 없으며 Source of Truth 웹 UI 우회 없음.
+
 Production: f77b337ef9250eb57dedfc67fec4b3d6aa1987bd/Git Integration6999654843, JS index-CgOHNiJG.js SHA256D979022C12D178073060E2822695CF990F24B41B91362D371D6CACEDF145CDFC local exact. Recorder QA의 async Draft 준비 전 click/legacy QA의 환경 URL에서 workspace query 누락으로 각각 record-pause/record-part timeout이 발생했다. 준비 완료 대기와 명시 workspace query만 테스트에 반영했으며 동일 production recorder session/legacy owner3종 모두 통과했다. 앱을 QA에 맞춰 되돌리지 않았다. 다음 묶음에 유지 QA 수정과 실제 증거를 포함한다.
 
 ### R6 잘못된 score 입력의 모델 로딩 전 거부 — 2026-10-12
