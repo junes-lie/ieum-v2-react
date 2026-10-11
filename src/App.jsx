@@ -92,10 +92,10 @@ const loadUserState = () => {
       vocalSaves:Array.isArray(parsed.vocalSaves) ? parsed.vocalSaves : [],
       createdProjects:Array.isArray(parsed.createdProjects) ? parsed.createdProjects : [],
       projectActivity:parsed.projectActivity && typeof parsed.projectActivity==='object' ? parsed.projectActivity : {},
-      delayNotified:parsed.delayNotified && typeof parsed.delayNotified==='object' ? parsed.delayNotified : {}, songSaves
+      delayNotified:parsed.delayNotified && typeof parsed.delayNotified==='object' ? parsed.delayNotified : {}, songSaves, storageReadFailed:false
     }
   }
-  catch { return { joined:false, joinedPart:USER_PART_ID, invited:false, invitedVocalId:null, candidateAccepted:false, projectLikes:[], vocalSaves:[], songSaves:[], createdProjects:[], projectActivity:{}, delayNotified:{} } }
+  catch { return { joined:false, joinedPart:USER_PART_ID, invited:false, invitedVocalId:null, candidateAccepted:false, projectLikes:[], vocalSaves:[], songSaves:[], createdProjects:[], projectActivity:{}, delayNotified:{}, storageReadFailed:true } }
 }
 const saveUserState = value => writeLocalUserState(localStorage,APP_STATE_KEY,value)
 const midiToNote = midi => {
@@ -1359,8 +1359,10 @@ export default function App() {
   const activeProjectRef = useRef(persisted.activeCreatedProjectId || PROJECT_ID)
   const [projectTracks,setProjectTracks] = useState({})
   const [tracksReady,setTracksReady] = useState(false)
-  const [tracksLoadError,setTracksLoadError] = useState('')
+  const [tracksLoadError,setTracksLoadError] = useState(persisted.storageReadFailed ? '저장한 사용자 상태를 읽지 못했어요. 원본을 유지하고 다시 시도해 주세요.' : '')
   const [tracksLoadAttempt,setTracksLoadAttempt] = useState(0)
+  const [stateSaveError,setStateSaveError] = useState(false)
+  const [stateSaveAttempt,setStateSaveAttempt] = useState(0)
   const [mainKeyLocked,setMainKeyLocked]=useState(Boolean(persisted.mainKeyLocked))
   const [joinedPart,setJoinedPart]=useState(persisted.joinedPart || USER_PART_ID)
   const [recordingPart,setRecordingPart] = useState(USER_PART_ID)
@@ -1567,8 +1569,12 @@ export default function App() {
   }, [screen])
 
   useEffect(() => {
-    saveUserState({joined,joinedPart,mainKeyLocked,invited,invitedVocalId,candidateAccepted,projectLikes,vocalSaves,songSaves,createdProjects,activeCreatedProjectId,projectActivity,delayNotified})
-  }, [joined,joinedPart,mainKeyLocked,invited,invitedVocalId,candidateAccepted,projectLikes,vocalSaves,songSaves,createdProjects,activeCreatedProjectId,projectActivity,delayNotified])
+    if(persisted.storageReadFailed)return
+    try {
+      saveUserState({joined,joinedPart,mainKeyLocked,invited,invitedVocalId,candidateAccepted,projectLikes,vocalSaves,songSaves,createdProjects,activeCreatedProjectId,projectActivity,delayNotified})
+      setStateSaveError(false)
+    } catch { setStateSaveError(true) }
+  }, [joined,joinedPart,mainKeyLocked,invited,invitedVocalId,candidateAccepted,projectLikes,vocalSaves,songSaves,createdProjects,activeCreatedProjectId,projectActivity,delayNotified,stateSaveAttempt])
 
   useEffect(() => {
     const timer=window.setInterval(()=>setActivityClock(Date.now()),60000)
@@ -1637,6 +1643,7 @@ export default function App() {
   },[screen,mixStatus,mix,activeCreatedProject])
 
   useEffect(() => {
+    if(persisted.storageReadFailed)return
     let active = true
     const bootstrap = async () => {
       setTracksLoadError('')
@@ -1695,7 +1702,7 @@ export default function App() {
     }
   }, [screen,profile,joined,invited,candidateAccepted,projectLiked,projectLikes,vocalSaves,songSaved,songSaves,projectTracks,mix,mixStatus,mixProgress,readyForMix,recordingPart,projectActivity,delayedProjectIds.join(',')])
 
-  if (!tracksReady) return <div className="screen"><TopBar meta="TRACKS LOADING"/><main className="loading-state"><p>{tracksLoadError || '실제 Track 분석값을 불러오는 중…'}</p>{tracksLoadError&&<div role="alert"><button className="secondary" data-action="tracks-load-retry" onClick={()=>setTracksLoadAttempt(value=>value+1)}>저장한 데이터 다시 불러오기</button></div>}</main></div>
+  if (!tracksReady) return <div className="screen"><TopBar meta="TRACKS LOADING"/><main className="loading-state"><p>{tracksLoadError || '실제 Track 분석값을 불러오는 중…'}</p>{tracksLoadError&&<div role="alert"><button className="secondary" data-action="tracks-load-retry" onClick={()=>{if(persisted.storageReadFailed)window.location.reload();else setTracksLoadAttempt(value=>value+1)}}>저장한 데이터 다시 불러오기</button></div>}</main></div>
 
   let content
   if (screen==='home') content=<Home openSong={openSong} layers={layers} projectTracks={projectTracks} profile={profile} mix={mix} openCreateProject={()=>startCreateProject(null)} openComplete={()=>go('complete')}/>
@@ -1712,7 +1719,7 @@ export default function App() {
   else content=<Home openSong={openSong} layers={layers} projectTracks={projectTracks} profile={profile} mix={mix} openCreateProject={()=>startCreateProject(null)} openComplete={()=>go('complete')}/>
   const navCurrent = screen==='home'?'home':screen==='collection'?'bookmark':screen==='my'?'user':'folder'
   const showBottomNav = screen!=='record'
-  return <>{content}{showBottomNav && <BottomNav current={navCurrent} go={go}/>}</>
+  return <>{stateSaveError&&<div className="permission-error" role="alert" data-state="user-state-save-error" style={{position:'fixed',top:0,left:'50%',transform:'translateX(-50%)',width:'min(430px,100%)',zIndex:100}}><span>참여·저장 상태를 저장하지 못했어요. 이 화면의 변경은 유지됩니다. 저장하기 전에는 새로고침하지 마세요.</span><button className="secondary" data-action="user-state-save-retry" onClick={()=>setStateSaveAttempt(value=>value+1)}>저장 다시 시도</button></div>}{content}{showBottomNav && <BottomNav current={navCurrent} go={go}/>}</>
 }
 
 export { Workspace, Recorder, Complete, Detail, PersonalArea }

@@ -1,8 +1,21 @@
+## 2026-10-12 R1 사용자 상태 원본 및 진행 중 녹음 보존
+
+src/App.jsx에서 사용자 상태 읽기 실패를 기본값 정상 복구와 구분했다. 실패 원본을 자동 저장으로 덮지 않고 DB 초기화/진입을 차단한다. 저장 quota/권한 실패는 catch로 화면과 녹음을 유지하며 최신 상태 저장 재시도를 제공한다. 기존 화면/스타일을 재사용하고 frame 크기는 유지한다.
+
+build34modules/Node user-journey 통과. qa/verify-user-state-recovery.mjs 실제 실행 passed=true: 손상 JSON/shape 원본 유지, write0/DBopen0, 일시적 읽기 retry 복구, quota retry 중 Recorder 동일 mount/mic1/frame 동일 및 최신 상태 저장 확인. fake microphone/격리 Storage 근거이며 실기기 청취·전체 R1 완료·실제 서버 연결로 확대하지 않는다. 기존 server 미커밋3파일 보존/제외. Git Integration/production 검증은 배포 후 별도로 기록한다.
+
+## 2026-10-12 음악 구성 기준 변경 — 옥상달빛 「수고했어, 오늘도」
+
+사용자 지시에 따라 기존 docs/IMPLEMENTATION_PLAN_2026-10-07.md의 R6에 공동 가창 참고 기준을 반영했다. 구절·호흡·명확한 진입·실제 음역·2–4 Part 역할/결합·보컬/반주 균형을 기존 실제 AI 곡 검증에 연결한다. 기존 단계와 완료 증거는 보존했다. 참고곡의 실제 BPM·조성·화성·파트 분석 및 청취는 미검증이며, 앱 음원 변경·원곡 복제·catalog 등록을 실행한 것으로 기록하지 않는다. 다음 음악 작업은 해당 구성 기준을 적용할 실제 score/음절 타이밍·화성 근거 확보다.
+
 ## 2026-10-12 R1 앱 시작 데이터 복구 실패 / 재시도
 
 App bootstrap이 저장 Track/Profile/생성 Project 읽기 또는 초기 asset 로딩 실패를 catch에서 tracksReady=true로 처리하던 경로를 수정했다. 복구 실패는 ready와 구분하고 기존 loading 영역에서 원본 보존 안내·읽기 재시도를 제공한다. 복구 완료 전 녹음·제출·자동 Mix·앱 탐색 진입을 막으며 새 IA/디자인 토큰/서버 정책은 추가하지 않는다. 정상 bootstrap·기존 저장 원본·대표 Sample·전역4탭은 재사용한다.
 
 build34modules/기존 Node user-journey 통과. 유지 qa/verify-bootstrap-recovery.mjs 실제 native IndexedDB getAll 실패·반복 실패·재시도에서 앱 진입 차단, put0/mic0, 원본 record ID/kind/origin/Blob SHA256 exact·복구 후2Tracks 확인. 첫 QA는 참여하지 않은 Home에서 record-part 버튼을 기다려 timeout했으므로 실제 복구 공통 전역 nav를 확인하도록 바로잡았고 재실행 통과했다. 기존 draft-restoration 및 profile-editing native QA도 통과. isolated 렌더/DB 증거이며 실기기·청취·디자인 인수는 미검증이다. npm qa:drafts에 기존 도구와 함께 연결했다. 서버 미커밋3파일은 보존/제외.
+
+f361caddbb1fbf46cf565b5b9333f9e847595e31 main/origin 일치, Git Integration6999154495 success/동일 commit 확인. production HTTP200/index-CplJ26cc.js SHA256700A7584A8FAA6F45044688907E5E263D1934D855A44E3A5CD066E48A6A4E61A 로컬 exact. production의 native bootstrap-recovery와 draft-restoration QA 모두 통과. 해당 QA preview session 종료, 실제 확인 시 Python worker 없음/여유 RAM10.51GiB. 이 배포 확인 기록은 다음 의미 있는 변경 묶음에 포함하기 위해 로컬 문서에 보존하며 추가 작은 commit은 만들지 않는다.
+
 
 ## 2026-10-12 R6 실제 원곡 음절 타이밍 선행 검증 — 미확정
 
