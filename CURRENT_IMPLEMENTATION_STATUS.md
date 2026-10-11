@@ -1,3 +1,15 @@
+## 2026-10-11 단계3 — 원곡 mix 조건 실제 생성과 GPU 캐시 반환
+
+단계3 실제 Part 기술 작업을 이어갔다. 동일 Base revision/FP32/seed65359/50-step/19초/세 줄 가사·caption에서 조건 입력을 원곡31.7–50.7초의 분리 반주에서 원곡 mix로 바꾼 시험이다. WAV SHA2569327cc0176f0153637d8925576ffd6ff941fd67a8d5cc420b096847297a7724c, 실제 UVR47.302초/합 residual0이다. Small/Turbo 모두0.976744이며 ‘오늘도 함께해요 우리 함께 걸어요 자 작은 노래 모아서’로 인식해 normalizedLyricsExact=false다. 실제 Small 줄 시작0/8.14/14.90초와 같은 원곡 창 대비0/−0.16/+0.90초를 관측했으나 첫 경계검열true/entryTimingAccepted=false를 유지한다. 실제 동시 voiced530frames/음높이 차이 중앙값−3반음/유니슨31.32%/낮은 frame63.58%/PCM상관0.039758과 실제 반주 chroma share0.078190은 화성 승인 근거가 아니다. 별도 energy 비교의 전체 최고 상관0.227589/lag+0.009977초와 구간별 최고lag0/+1.736054/−1.057596초도 음절 동기화나 고정 offset을 승인하지 않는다.
+
+첫 생성은395.054초 뒤 WAV/latent/report를 저장했으나 마지막 출력 후 프로세스가 RAM약6GB를 유지하며 종료 지연을 보였다. WAV hash와 고유 명령줄/결과 경로를 확인한 이번 생성 PID39620만 종료했고 wrapper의 실제 오류는 GPU generation failed: -1이었다. 기존 CPU 작업/모델/원본은 보존했다. 이 실행을 정상 종료 성공으로 표시하지 않는다. RAM 약1GB 관측과 GPU host cache3150917760bytes 보관을 분리하며, 종료 지연의 단일 원인으로 단정하지 않는다.
+
+cuda_disk_offload.py에 native offload 완료를 확인한 뒤 host cache만 반환하는 release_cuda_lossless_cache를 구현했다. weak reference로 cache group을 추적하고 전부 검증한 뒤 반환한다. native disk 가중치와 CPU 경로는 보존한다. generator는 GPU opt-in cache의 성공 저장 직전 반환 결과를 별도 gpuCacheRelease에 기록한다. 유지 QA의 실제 CUDA7회 출력/반환 후 GPU exact parity·disk byte 보존·반복 반환·정밀도 fallback·오류 후 재시도와 기존 CPU cache4회 exact 출력 검증을 통과했다. 같은 입력 재생성226.657초/전체312.601초/exit0/monitorErrors0/264samples에서 WAV SHA가 첫 결과와 exact 일치했고13groups/3150917760host bytes를 반환했다. 전체 GPU 사용량 최대5515MiB/75%는 다른 앱 포함이며 own peak2354321920bytes와 구분한다. 서로 다른 부하/준비 상태의 시간은 통제 속도 비교가 아니다.
+
+확인된 추가 ‘자’를 줄이기 위한 native Repaint13.4–19초/선택 가사줄2 시험도 동일seed/50-step으로 실제 수행했다. mask[1,475,64]/335–475exclusive/hash ca53af3324fad10fe4f05f472fec6b844726cba14ec8b542ddc880eb3ac9d558, 출력 SHA2569f06c1ac8980862dc4983577a92b98c197afba23709235fb88215b21fd5c0948이다.173.665초/전체304.747초/exit0/monitorErrors0/host cache 반환을 확인했다. Small/Turbo 모두0.8/‘작은 도울에’로 마지막 줄을 인식해 정확한 가사는 실패다. 구간 밖 PCM도 rmsDifference0.024612/pcmExact=false였다. 자동0.8 통과를 품질 승인으로 올리지 않고 수동 splicing/가사 변경/임의 shift/transpose/catalog 등록하지 않는다.
+
+새 결과/로그/spec는 repository 밖 .ieum-gpu-ssd-runtime에 보존한다. React·앱 음원·사용자 Track·디자인 worktree는 변경하지 않았다. Python3파일 문법/build34modules/Project audio contract/atomic submission QA 통과다. 이번 의미 있는 실행 환경 보완은 QA3파일과 현재 상태/계획 문서로 마감한다. 실제 정확한 가사·원곡 화음·진입·실기기 인수 및 개인 Identity 통합은 여전히 미완료이며 단계4/5 신규 구현으로 넘어가지 않는다.
+
 ## 2026-10-11 단계3 — 실제 보컬 에너지와 시간차 독립 대조
 
 단계3을 유지한다. compare-ai-vocal-part.py의 opt-in acoustic-envelope-only는 기존 원곡/Part/분리 보컬 SHA256을 검증한 동일31.7–50.7초 창에서 실제 log RMS 변화의 상관을 측정한다(22050Hz, frame660/hop220, ±3초). ASR 텍스트를 입력하지 않으며 양의 lag는 후보가 원곡보다 늦다는 뜻이다. 기존 pitch/PCM/mask 분석 경로는 유지한다. 실제 baseline GPU50-step 후보의 전체 최고 상관0.207052/lag−1.915646초, 앞0–6초0.418015/−1.915646초, 중간6–12초0.299392/−1.945578초, 끝12–19초0.222550/+2.394558초다. 이 값은 활동 에너지의 관측이며 동일 음절이나 진입 승인·화음 적합성·고정 offset의 근거가 아니다. entryTimingAccepted=false/approvedEntryTime=null/catalogRegistrationApproved=false를 유지한다. 원곡·Part·Guide·앱 음원·디자인을 변경하지 않았다.

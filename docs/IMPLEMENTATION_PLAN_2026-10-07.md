@@ -1,3 +1,13 @@
+## 2026-10-11 단계3 — 실제 mix 조건/구간 복원 검증과 실행 환경 보완
+
+현재 단계3/기존 단계 gate를 유지한다. 독립 파형 분석 뒤 실제 생성까지 진행했다. 기존 Base/FP32/seed65359/50-step/19초/가사/caption 조건을 유지하고 원곡31.7–50.7초 mix 입력을 시험했다. Small/Turbo0.976744에서 추가 ‘자’를 함께 인식해 exact lyrics=false다. 실제 줄 시작0/8.14/14.90초·원곡 대비0/−0.16/+0.90초, 중앙 음높이 차이−3반음/유니슨31.32%를 관측했다. 첫 경계검열과 원곡 화음·음절 동기화 미승인을 유지한다. 전체 에너지 상관0.227589·구간별 다른 최고lag도 입력이나 Guide를 shift할 근거가 아니다.
+
+GPU 실행 환경의 성공 후 host cache 반환을 보완했다. 첫 생성은 WAV/보고서 저장 뒤 종료 지연/RAM 점유가 발생해 검증한 해당 생성 PID만 종료했고 wrapper 오류−1을 기록했다. cache 반환 보완 뒤 같은 입력·seed 재생성은 WAV SHA2569327cc0176f0153637d8925576ffd6ff941fd67a8d5cc420b096847297a7724c exact 재현/exit0/monitorErrors0/13groups3150917760bytes 반환을 확인했다. 실제 CUDA 반환 후 exact 출력/disk파일 보존/재사용·반복 반환 및 기존 CPU4회 exact QA를 통과했다. 단일 입력의 재현 검증을 모든 음악 입력의 품질/재현 보장으로 확장하지 않는다.
+
+추가 ‘자’를 대상으로 native Repaint13.4–19초/선택줄2/동일seed50-step 시험을 실제 수행했다.173.665초/exit0/monitorErrors0/host cache 반환이지만 Small/Turbo모두0.8·‘작은 도울에’로 정확한 마지막 가사 실패다. 구간 밖 PCM차이 RMS0.024612도 관측했다. 자동QA 경계 통과와 exact 가사/원본구간 보존을 구분하며 곡/Part로 등록하지 않는다. 원본·중간·실패 후보와 모니터/분석/spec를 repository 밖에 보존한다.
+
+기존 생성→분리→ASR→음역/원곡 대조→승인된 음원만 catalog/Guide 연결 순서를 유지한다. 현재 모델/조건에서 정확한 가사·화음·음절 동기화가 함께 미충족이다. 무작위 seed 반복/수동 splicing/transpose/QA 문턱 변경으로 완료하지 않는다. 이번 변경은 GPU resource 처리와 유지 QA/현재 문서이며 React·시각 디자인·앱 음원·Track를 변경하지 않는다. 단계4/5 신규 구현은 앞당기지 않는다. 다음 기술 작업은 모델의 실제 가사/음절·화음 제어 가능성을 확보하는 것이며 현재 후보의 앱 연결은 보류한다.
+
 ## 2026-10-11 단계3 — 실제 파형 대조와 남은 생성 조건
 
 기존 단계/의존관계/완료 상태를 유지한다. compare-ai-vocal-part.py의 acoustic-envelope-only로 ASR와 독립적인 실제 보컬 에너지 변화 대조를 수행했다. 원곡31.7–50.7초와 기존 GPU50-step Part/보컬 hash를 검증하고 동일 시간축의 log RMS 변화/±3초 lag를 측정했다. 전체 최고 상관0.207052/−1.915646초, 앞·중간·끝 최고 lag−1.915646/−1.945578/+2.394558초다. 최대 상관값이나 활동 에너지의 일치가 음절 진입·화음·Key를 승인하지 않으므로 고정 offset 적용/원본 shift/Guide 재작성/catalog 등록은 하지 않는다. entryTimingAccepted=false와 catalogRegistrationApproved=false를 유지한다.

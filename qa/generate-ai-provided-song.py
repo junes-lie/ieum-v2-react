@@ -241,5 +241,8 @@ report.update(executionDevice=args.device,torchVersion=torch.__version__,compute
 report['gpuInferenceCache']=cuda_lossless_cache_stats() if args.lossless_gpu_cache else None
 if args.device=='cuda':
  report.update(transformerStorage='native CUDA block disk offload with CUDA-only CPU-placeholder release; CPU inference hooks excluded',textEncoderStorage='released after complete native encoding' if args.task in ('lego','repaint') else 'native CUDA leaf group offload',lyricEmbeddingStorage='released after complete native encoding' if args.task in ('lego','repaint') else 'native CUDA leaf group offload',conditionEncoderStorage='parameters released after complete native encoding; buffers preserved' if args.task in ('lego','repaint') else 'native CUDA leaf group offload',vaeNormalizedWeightParityModules=normalized_vae_weights,gpu={'name':torch.cuda.get_device_name(),'capability':torch.cuda.get_device_capability(),'peakAllocatedBytes':torch.cuda.max_memory_allocated(),'peakReservedBytes':torch.cuda.max_memory_reserved(),'cudaRuntime':torch.version.cuda})
+if args.device=='cuda' and args.lossless_gpu_cache:
+ from cuda_disk_offload import release_cuda_lossless_cache
+ report['gpuCacheRelease']=release_cuda_lossless_cache()
 (args.output_dir/'song-generation-report.json').write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding='utf-8')
 print(json.dumps(report,ensure_ascii=False),flush=True)

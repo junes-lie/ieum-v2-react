@@ -1,11 +1,26 @@
 """Release CPU placeholders only for native CUDA disk-offloaded groups."""
-import torch
+import torch,weakref
 from diffusers.hooks.group_offloading import ModuleGroup
 
 _cache_stats={'groups':0,'originalBytes':0,'residentBytes':0,'packedTensors':0,'originalFormatTensors':0}
+_cached_group_refs=[]
 
 def cuda_lossless_cache_stats():
     return dict(_cache_stats)
+
+def release_cuda_lossless_cache():
+    """Return host cache after inference; native persisted weights remain reusable."""
+    groups=[ref() for ref in _cached_group_refs if ref() is not None]
+    groups=[group for group in groups if hasattr(group,'_ieum_cuda_packed')]
+    # Validate all groups before modifying any: never release an active forward.
+    for group in groups:
+        assert group._is_offloaded_to_disk and all(tensor.numel()==0 for tensor in group.tensor_to_key),'Release CUDA cache only after complete native offload'
+    released=sum(value.numel()*value.element_size() for group in groups for value in group._ieum_cuda_packed.values())
+    for group in groups:
+        for name in ('_ieum_cuda_packed','_ieum_cuda_dtypes','_ieum_cuda_shapes'):
+            delattr(group,name)
+    _cached_group_refs.clear()
+    return {'groups':len(groups),'releasedHostBytes':released,'nativeDiskWeightsPreserved':True}
 
 def enable_cuda_lossless_cache():
     """Cache after first CUDA load; restore original compute dtype on CUDA."""
@@ -36,6 +51,7 @@ def enable_cuda_lossless_cache():
             _cache_stats['residentBytes']+=stored.numel()*stored.element_size()
             _cache_stats['packedTensors' if stored.element_size()<value.element_size() else 'originalFormatTensors']+=1
         group._ieum_cuda_packed=packed;group._ieum_cuda_dtypes=dtypes;group._ieum_cuda_shapes=shapes
+        _cached_group_refs.append(weakref.ref(group))
         _cache_stats['groups']+=1
     def offload(group):
         if not eligible(group) or not hasattr(group,'_ieum_cuda_packed'):return original_offload(group)
