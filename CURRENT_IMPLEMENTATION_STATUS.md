@@ -1,3 +1,11 @@
+### R2 대표 Sample 교체 후 이전 URL 해제 — 2026-10-12
+
+641a4fe14848212b8594d9d0f5ff8d9e265bb919 main/origin 일치 및 Git Integration7002981955 success/production HTTP200/index--srv8LMR.js SHA C7BBC09EA9B967C45108E1FDCE7C42CDC314243091180A9E4FDBD5637B1D0D22 local/remote exact를 확인했다. production 반복 Draft3회 URL 해제/제출 실패 Review 재생/재시도 성공 URL 전달/원본 hash/reload exact/pageerror0도 통과했다.
+
+다음 native 대표 Sample 편집 QA에서 저장 성공 후 기존 Profile Sample URL이 미해제라는 assertion 실패를 재현했다. App의 현재 profile.sampleUrl 소유권 effect를 추가하여 실제 Sample URL 교체 또는 App 종료 때만 이전 URL을 해제한다. 범위/취향 편집은 같은 URL을 유지하고 저장 실패·취소에서도 기존 원본을 해제하지 않는다. IndexedDB Sample 삭제·형상 재생성·Profile 정책 변경 없음.
+
+보강한 기존 qa/verify-profile-editing.mjs에서 범위/취향 편집·취소·Sample 저장 실패/중복 요청1회·재시도 성공·이전 URL 해제·새 URL 미해제 및 fetch 재생·분석 버전/reload·Project Track 수/원본 유지·초기 Setup 복귀/pageerror0을 통과했다. build34modules/index-DxPQ6ex0.js, atomic Profile 저장 rollback/retry 및 single App Node 회귀도 통과했다. 물리 발성/청취·PC 전체 RAM 감소량은 별도 미검증이다. 수정된 앱·QA와 active docs만 검토/commit/main 자동배포→production 같은 QA로 마감하며 사용자 서버3파일과 디자인/음악/서비스 gate를 유지한다.
+
 ### R1 반복 Draft 복원 Review URL 해제 — 2026-10-12
 
 직전8dc45a8c80dc40e7fb283d02ac00badbf6005dca Git Integration7002932392 success/production HTTP200/index-DpeDJVz-.js를 확인했다. 현재 앱에서 저장 Draft를3회 복원→Review→작업실로 나가면 생성된 URL3개 모두 미해제인 native assertion 실패를 재현했다. 최초 probe의 home/작업실 진입 조건 오류는 기존 단일 App의 ?design=figma workspace 초기 조건으로 교정한 뒤 실제 누적을 확인했다.

@@ -1,3 +1,7 @@
+### R2 대표 Sample 재생 자원의 교체 수명 — 2026-10-12
+
+성공 Sample 교체 후 이전 Profile URL이 남는 native 결함을 재현하고 현재 Sample URL이 바뀔 때만 이전 자원을 해제한다. 범위/취향 편집·취소·저장 실패/원본 및 새 Sample 재생은 유지한다. 기존 Profile 편집 QA에 소유권 assertion을 추가하고 실제 실패→수정 후 전체 편집/초기 복귀·reload 및 build/atomic 저장 회귀를 통과했다. 관련 묶음만 자동배포 후 production 동일 QA로 확인한다. 사용자 Sample/Track 삭제나 미정 형상 정책 변경, 실제 기기·서버/R6 완료 확대는 없다. 상세 증거는 상태 문서 참조.
+
 ### R1 임시 Review URL의 반복 복원 수명 — 2026-10-12
 
 저장 Draft3회 복원/작업실 이탈의 URL 누적을 실제 재현하고 Recorder cleanup에 소유권 해제를 연결했다. 제출 실패 Review와 성공 제출 Track 플레이어의 URL/원본은 보존한다. native 반복 이탈·실패/재시도·제출/reload bytes exact와 관련 build/녹음 회귀를 확인했다. 검증된 묶음만 자동배포→production 같은 QA로 마감하며 물리 입력·전체 R1/R6·서비스 완료로 확대하지 않는다. 상세 실패/결과는 상태 문서 참조. 디자인과 외부 정책은 변경하지 않는다.

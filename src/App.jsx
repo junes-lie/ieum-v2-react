@@ -1372,6 +1372,10 @@ export default function App() {
   const [voiceEditMode,setVoiceEditMode]=useState(null)
   const [voiceReturnScreen,setVoiceReturnScreen]=useState('detail')
   const [profile,setProfile] = useState(null)
+  useEffect(() => {
+    const url=profile?.sampleUrl
+    return () => { if(url)URL.revokeObjectURL(url) }
+  },[profile?.sampleUrl])
   const [joined,setJoined] = useState(Boolean(persisted.joined))
   const [invited,setInvited] = useState(Boolean(persisted.invited))
   const [invitedVocalId,setInvitedVocalId] = useState(persisted.invitedVocalId || 'luna')
