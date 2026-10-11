@@ -4,7 +4,7 @@ const require=createRequire('C:/Users/LEE/.cache/codex-runtimes/codex-primary-ru
 const {chromium}=require('playwright')
 const browser=await chromium.launch({headless:true,executablePath:'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe'})
 try {
- const context=await browser.newContext(),page=await context.newPage(),errors=[]
+ const context=await browser.newContext({viewport:{width:430,height:320}}),page=await context.newPage(),errors=[]
  page.on('pageerror',e=>errors.push(e.message))
  await context.addInitScript(()=>{
   const other={id:'qa-other-project',seed:'qa-other-seed',songId:'a-thousand-years',title:'Other QA project',name:'Other Group',partCount:2,ownerPartId:'free-0',key:'C major',status:'RECORDING',progress:0,parts:[{id:'free-0',name:'Voice 1',participantId:'jisun',participant:'JISUN',status:'ready'},{id:'free-1',name:'Voice 2',status:'open'}]}
@@ -20,7 +20,24 @@ try {
  await page.getByRole('button',{name:'프로젝트 Like 취소',exact:true}).click()
  assert.equal(await page.evaluate(()=>window.__IEUM_V2__.state.joined),true)
  assert.equal(await page.evaluate(()=>Object.keys(window.__IEUM_V2__.state.projectTracks).length),tracks)
- await page.locator('[data-action="collection-tab-songs"]').click();await page.locator('[data-action="open-song-save"]').click()
+ await page.evaluate(()=>window.scrollTo(0,40))
+ const projectScroll=await page.evaluate(()=>window.scrollY)
+ assert.ok(projectScroll>0,'Fixture must genuinely scroll in browser')
+ await page.evaluate(()=>document.querySelector('[data-action="collection-tab-songs"]').click())
+ await page.waitForFunction(()=>window.scrollY===0)
+ await page.evaluate(()=>window.scrollTo(0,60))
+ const songScroll=await page.evaluate(()=>window.scrollY)
+ assert.ok(songScroll>0)
+ await page.evaluate(()=>document.querySelector('[data-action="collection-tab-projects"]').click())
+ await page.waitForFunction(position=>window.scrollY===position,projectScroll)
+ await page.evaluate(()=>document.querySelector('[data-action="collection-tab-songs"]').click())
+ await page.waitForFunction(position=>window.scrollY===position,songScroll)
+ await page.evaluate(()=>document.querySelector('[data-nav="user"]').click())
+ await page.waitForFunction(()=>window.__IEUM_V2__.state.screen==='my')
+ await page.evaluate(()=>document.querySelector('[data-nav="bookmark"]').click())
+ await page.waitForFunction(position=>window.scrollY===position,songScroll)
+ assert.equal(await page.locator('[data-action="collection-tab-songs"]').getAttribute('aria-selected'),'true')
+ await page.locator('[data-action="open-song-save"]').click()
  await page.waitForSelector('.detail-screen');assert.equal(await page.locator('.song-identity h1').textContent(),'A Thousand Years')
  await page.locator('[data-action="back"]').click();await page.waitForSelector('.collection-summary')
  assert.equal(await page.locator('[data-action="collection-tab-songs"]').getAttribute('aria-selected'),'true')
@@ -32,6 +49,6 @@ try {
  assert.equal(await page.evaluate(()=>document.activeElement?.id),'recruiting-projects')
  assert.equal(await page.evaluate(()=>window.__IEUM_V2__.state.screen),'home')
  assert.deepEqual(errors,[])
- console.log(JSON.stringify({passed:true,correctSavedProject:true,unsavePreservesParticipationAndTracks:true,songVocalTabReturn:true,noInvitationFromSave:true,homeRecruitingFocus:true,errors,limits:'Isolated local state fixture; no shared service claim.'}))
+ console.log(JSON.stringify({passed:true,correctSavedProject:true,unsavePreservesParticipationAndTracks:true,songVocalTabReturn:true,independentTabScrollAndGlobalReturn:true,noInvitationFromSave:true,homeRecruitingFocus:true,errors,limits:'Isolated local state fixture; no shared service claim.'}))
  await context.close()
 }finally{await browser.close()}

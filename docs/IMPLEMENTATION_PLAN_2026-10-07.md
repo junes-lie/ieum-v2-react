@@ -19,6 +19,8 @@
 
 R2 첫 묶음 a285933은 Finder 필터/정렬/Profile 왕복·목록스크롤 및 08 filter Empty/초기화로 build/Node QA·Git Integration success/production asset hash 일치를 확인했다. 후속은 02 비교Project 선택의 05A 왕복 복원이다. 전체 단계4 완료로 계산하지 않는다. 사용자는 기존 서비스가 없으며 구성안을 준비하라고 답했다. R3 추천 구성·데이터 권한·업로드/동시성·가격/cron 제한·실제 연결 순서는 기존 docs/SERVICE_CONNECTION.md에 기록했다. 제공자/인증 방식은 아직 확정되지 않았고 계정 접근·실제 자원이 필요한 연결은 blocker다.
 
+R2 Collection B01 후속: 기존 App ref에 탭별 스크롤을 독립 보관해 탭 전환/전역 왕복을 복원했다. build/Node9 suites와 Headless Edge 실제 스크롤·native Back 회귀 통과. 새로고침 후 위치/실기기/전체 단계4 인수는 미확인이다. 기존 서버·Identity·AI 품질 gate를 유지한다.
+
 ### RAM 운영 — 최신 사용자 지시
 
 로컬 대형 AI를 일괄 금지하지 않는다. 매 실행 직전에 실제 RAM/VRAM 여유·CPU/GPU 부하·동시 작업을 확인하여 결정한다. 검증된 해당 경로의 peak와 로딩/변환 중 peak 및 다른 작업의 여유분까지 감당할 때만 하나의 무거운 작업을 실행한다. 필요한 peak를 모르는 경로나 여유가 부족한 경로는 시작하지 않는다. 실행 중 자원 압박 시 해당 Codex 작업만 안전하게 중단하고 결과/원본 보존·중단 상태를 기록한다. Figma/다른 작업 종료·OS/pagefile 변경·CPU affinity를 RAM 제한으로 간주하는 처리 없음. 완료 후 해당 worker/캐시 종료를 확인한다. 현재 16GB PC에서 8GB 이상 실제 점유한 변환과 6GB 점유한 검증을 병렬 재실행하지 않는다.

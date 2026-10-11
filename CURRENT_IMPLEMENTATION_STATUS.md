@@ -1,3 +1,13 @@
+## 2026-10-11 R2 Collection 탭별 스크롤 보존
+
+화면명세 B01의 탭별 목록/스크롤 복원 조건을 기존 App/Collection에 연결했다. App 수명 동안 프로젝트·보컬·곡별 위치를 독립 보관하고 탭 전환 및 전역 탭 왕복에서 복원한다. 저장 객체·참여·Track·Mix·스타일·디자인 worktree는 변경하지 않았다. 새로고침 후 스크롤 보존은 이번 완료 범위가 아니다.
+
+production build 및 npm run qa 9 suites exit0. Node journey에서 탭별121px/73px와 전역 왕복·제출3개 유지 통과. Headless Edge 430×320의 실제 window scroll40px/60px·독립 탭 복원·전역 왕복, 저장취소 시 참여/Track 보존·Song/05A native Back 및 pageerror 없음 통과. 격리 데이터 검증이며 실기기 청취/마이크/디자인/서버 인수가 아니다.
+
+첫 브라우저 접속은 sandbox preview와 escalated Edge 사이 ERR_CONNECTION_TIMED_OUT으로 실패해 해당 QA preview만 같은 실행 환경으로 재시작했다. Project 생성 QA 첫 추가 실행은 작업실 query URL에서 Home selector Timeout30000ms였고 Home URL에서2–4 Part 생성/중복확정 방지/재접속 검증을 통과했다. 실패를 앱 성공이나 새 정책으로 대체하지 않았다.
+
+RAM 여유7.67GiB/GPU492MiB를 확인했다. 기존 모델 변환8.3GB·검증6.3GB 관측과 다른 작업 여유를 고려해 대형 AI를 실행하지 않았다. 브라우저는 하나씩 실행한다. 기존 미검증 SFT3파일은 보존하고 기능 commit에서 제외한다. Git Integration/production 결과는 실제 확인 후 보고한다. R2 전체·R3 실제 서비스·R5 그래픽·R6 음악 품질·R7 실기기 완료로 확대하지 않는다.
+
 ## 2026-10-11 R2 후속 및 R3 구성 준비
 
 02의 선택 비교 Project를 기존 App selectedProjectId에 연결했다. 05A 왕복 후 첫 Project로 돌아가던 것을 막고 기존 history의 Song/Project/스크롤 복원을 재사용한다. Node journey에서 Warm Duet→참여자05A→기록된 popstate 복귀의 동일Project/214px스크롤/제출3개/신규Project0개 보존을 통과했다. 08 전체Empty의 OPEN Part 찾기는 화면명세/유저플로우 J05 기준대로 Home 탐색에 복귀하며 고정 Project 상세로 직행하지 않는다. 미참여/Project0개 유지 QA도 통과했다. 물리 입력/native history/시각 인수와 구분한다.
