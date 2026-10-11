@@ -62,7 +62,20 @@ try{
  check('App bootstrap restores submitted Blob, project seed and exact deterministic Layer; pending invitation does not create a Track')
  assert.equal(state().profile.sampleSong,'QA personal sample');assert.equal(state().profile.rangeData.lowMidi,48);assert.equal(state().songSaves.length,1)
  check('Profile range, personal sample and collection restore from isolated persistence')
- await click('[data-action="record-part"]');assert.equal(state().screen,'record');assert.ok(document.querySelector('[data-action="record-submit"]'));assert.ok(!document.querySelector('[data-action="record-start"]'))
+ const originalGet=IDBObjectStore.prototype.get
+ try {
+  IDBObjectStore.prototype.get=function(key,...args){if(key===draftId)throw new Error('QA draft read failure');return originalGet.call(this,key,...args)}
+  await click('[data-action="record-part"]')
+  assert.equal(state().screen,'record')
+  assert.equal(document.querySelector('[data-action="record-start"]').disabled,true)
+  assert.ok(document.querySelector('[data-action="draft-restore-retry"]'))
+  assert.equal(document.querySelector('[data-action="record-submit"]'),null)
+  assert.ok(document.body.textContent.includes('저장한 녹음을 불러오지 못했어요.'))
+ } finally {IDBObjectStore.prototype.get=originalGet}
+ assert.equal(await (await loadTrack(draftId)).blob.text(),await blob.text())
+ await click('[data-action="draft-restore-retry"]')
+ assert.equal(state().screen,'record');assert.ok(document.querySelector('[data-action="record-submit"]'));assert.ok(!document.querySelector('[data-action="record-start"]'))
+ check('Draft read failure blocks new recording and retry restores the existing Blob into Review without replacing it')
  assert.equal(await (await loadTrack(draftId)).blob.text(),await blob.text())
  check('Recorder restores saved draft into Review without microphone access or replacement')
  const originalPut=IDBObjectStore.prototype.put

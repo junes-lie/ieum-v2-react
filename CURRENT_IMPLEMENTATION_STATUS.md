@@ -1,8 +1,26 @@
+## 2026-10-12 R1 녹음 복구 확인 전 새 녹음 차단 / 재시도
+
+Recorder의 기존 Draft 로딩은 비동기 확인 전에도 녹음 시작을 허용하고 로딩 실패를 무시했다. 복구 loading/ready/error를 구분해 로딩 중·실패 후에는 마이크 시작을 막는다. 기존 오류 영역의 “저장한 녹음 다시 불러오기”는 읽기만 재시도하며 원본을 삭제/교체하지 않는다. 정상 복구는 기존 Review/직접 제출 흐름을 그대로 사용한다. 새 화면·디자인 토큰·제품 정책·서비스 연결 변경은 없다.
+
+검증: Node React/격리 DB의 실제 get 실패와 재시도, 제출 실패/정리 실패·원본 보존·2–4 Part 재로드 통합 QA 통과. 새 유지 qa/verify-draft-restoration.mjs에서 실제 렌더/native IndexedDB 읽기 실패 뒤 mic request0, 시작 disabled, 재시도 Review 복원, SHA256 원본 동일, 제출수2 유지·pageerror0 확인. 기존 recorder-session/retake-lifecycle 실제 렌더 QA 통과. build34modules 통과. npm preview 인자 전달 오류(dist 없음) 후 같은 Vite CLI의 명시 인자로 재실행했고, sandbox loopback timeout/refused는 preview와 browser QA를 동일 승인 실행 경계에서4194로 제공해 동일 QA를 통과했다. Computer Use/원본 웹 UI 접근 없음. synthetic/격리 DB 결과이며 실기기 청취·최신 디자인 승인이 아니다.
+
+현재 서버 미커밋3파일은 보존/제외한다. 앞선 실제 R6 실패 증거도 현재 계획/상태에 보존한다. 배포는 해당 기능 묶음의 main push→Git Integration으로만 진행한다.
+
+## 2026-10-12 R6 장시간 작업 우선 — 한 구절 실제 제어 시험 결과
+
+사용자가 현재 실기기 검증을 할 수 없어 오래 걸리는 독립 작업을 먼저 실행하라고 지시했다. 기존 전체 곡/가사는 보존하고 별도 진단 spec의 첫 구절 “오늘도 함께해요”만 사용했다. 같은 Base revision/FP32/CUDA/seed65359/50step와 native 기본 guidance7, 원곡31.7–39.7초8초 mix 조건에서 실제 생성했다. 짧은 구절의 제어 가능성을 확인한 것이며 전체 곡 요구를 줄인 것이 아니다.
+
+생성 exit0, 추론396.283초/전체447.813초, WAV SHA256 e8ffa89ac144bcd2aa2705efa7314e4fbc363c13a0015f8f026006f6626cc470. 자체 CUDA allocation peak1153922560bytes. 실행 전 RAM 약10.6GiB 여유/VRAM520MiB 확인, 실제 child 포함140개 감시 표본에서 점유 최고8.26GiB/여유 최저2.42GiB. 여유1.25GiB 미만 연속3회 해당 작업 중단 조건은 미발동. 다른 사용자 프로세스·CPU 환경·기존 결과·디자인 worktree를 변경하지 않았다. 짧은8초 입력에서도 추론 시간이 이전19초 경로와 비슷해 시간 해결 경로로 판단하지 않는다.
+
+분리25.032초/합 residual0. Small 빈 인식/정규화 유사도0, Turbo “2분 후” 반복/유사도0·exit2로 exact 가사false. 원곡대조 source voiced264/Part voiced0/paired0, 음높이 차이는 null이다. 미측정 음높이를 숫자로 채우지 않으며 화음·진입·catalog 승인false 유지. 자동 ASR 결과는 실제 청취 판정이 아니다.
+
+결과/spec/감시/분리/ASR/원곡 pitch 자료는 repository 밖 ../.ieum-gpu-ssd-runtime/results/base-one-phrase-feasibility-20261012와 one-phrase-feasibility-20261012.json에 보존했다. 실패 결과를 앱 Guide/Track/catalog에 등록하지 않았다. R6는 현재 Base 음성 제어 경로의 기술 blocker다. 새 제어 경로의 근거 없이 같은 seed/guidance/구절 반복 시험을 하지 않는다. 실제 AI 요구는 유지하고 독립 앱 기능 마감은 계속 가능하다. 다른 모델/제어 경로는 지원·라이선스·실제 RAM/VRAM을 확인한 뒤 선택하며 사용 가능한 결과를 얻기 전 완료로 기록하지 않는다.
+
 ## 2026-10-12 재계획 / R1 제출 후 Draft 정리 실패 분리
 
 기존 구현계획 파일을 직접 수정했다. 앱 기능 마감/배포와 AI 음악 연구의 의존성을 분리하며 기존 단계·완료 증거·AI 요구를 보존한다. 첫 기능 수정은 Recorder의 제출 성공 뒤 Draft 삭제 처리다. IndexedDB 정리가 실제 완료된 뒤에만 Draft 표시를 해제한다. 정리 실패는 확정 Track의 실패로 바꾸지 않고 원본·제출수·Workspace 이동을 유지한다.
 
-검증: React/격리 IndexedDB에 삭제 실패를 주입해 확정 Track과 Draft Blob 보존, 2→3 제출수, 중복 제출 화면 없음, Draft 표시 해제 콜백 미호출, 정리 재시도 후 제출수 불변을 확인했다. 기존 2–4 Part 제출/재로드·탐색/Profile/Collection 복귀 통합 QA와 atomic Draft cleanup QA, production build34modules 통과. 하드웨어 마이크/음질/시각 인수 결과가 아니다. production 배포 상태는 commit 후 확인한다.
+검증: React/격리 IndexedDB에 삭제 실패를 주입해 확정 Track과 Draft Blob 보존, 2→3 제출수, 중복 제출 화면 없음, Draft 표시 해제 콜백 미호출, 정리 재시도 후 제출수 불변을 확인했다. 기존 2–4 Part 제출/재로드·탐색/Profile/Collection 복귀 통합 QA와 atomic Draft cleanup QA, production build34modules 통과. 하드웨어 마이크/음질/시각 인수 결과가 아니다. a42be86 Git Integration6998195586 success 및 production JS SHA2561FE70EE50EC2E7724BA3DD7F12E7FD4D34A2093A7AC515FDCEEBAE344D297C5B exact 확인. production recorder-session/profile-editing QA도 통과했다.
 
 실제 협업 계정/환경·최신 정책 확인, AI 정확한 가사/화음/진입, 보류된 Identity 디자인·실기기 검증은 남았다. Notion 전용 도구는 현재 세션에 노출되지 않아 읽었다고 주장하지 않는다. 이번 수정은 저장 결과 분리이며 새 UX/제품 정책/디자인 변경은 없다. 기존 미커밋 서버 HTTP 보완3파일은 보존/commit 제외.
 

@@ -996,6 +996,8 @@ function Recorder({ go, submit, onRecordingStart, partId, projectTracks, layers,
   const startingRef=useRef(false)
   const stoppingRef=useRef(false)
   const [recordingBusy,setRecordingBusy]=useState(false)
+  const [restoreState,setRestoreState]=useState('loading')
+  const [restoreAttempt,setRestoreAttempt]=useState(0)
   const [confirmAction,setConfirmAction] = useState(null)
   const timer = useRef(null)
   const inputLevels=useRef([])
@@ -1007,7 +1009,7 @@ function Recorder({ go, submit, onRecordingStart, partId, projectTracks, layers,
   const lyricIndex = project.lyrics?.length ? project.lyrics.findLastIndex(line=>seconds>=line.time) : 0
   const lyrics = project.lyrics?.length ? project.lyrics.map(line=>line.text) : ['가사 없음']
   const begin = async () => {
-    if(startingRef.current)return
+    if(startingRef.current || restoreState!=='ready')return
     startingRef.current=true;setRecordingBusy(true)
     let audioReady=false
     try {
@@ -1074,15 +1076,19 @@ function Recorder({ go, submit, onRecordingStart, partId, projectTracks, layers,
   }
   useEffect(() => {
     let active=true
+    setRestoreState('loading')
+    setError('')
     loadTrack(`${project.id}:${currentPart.id}`).then(submitted=>submitted?.origin==='live-microphone-recording'?null:loadTrack(draftId).then(async stored=>stored || await loadTrack(legacyDraftId))).then(stored=>{
       if (!active || stored?.kind!=='temporary-recording' || !stored.blob) return
       const restored={...stored,url:URL.createObjectURL(stored.blob)}
       if(stored.userId && stored.userId!==CURRENT_USER_ID)return
       if(stored.guides)setGuides(stored.guides)
       setDraft({...restored,id:draftId,userId:CURRENT_USER_ID}); setSeconds(restored.duration||0); setNoiseFloor(restored.noiseFloor||0); setStatus('review'); onDraftChange?.(true)
-    }).catch(()=>{})
+    }).then(()=>{if(active)setRestoreState('ready')}).catch(()=>{
+      if(active){setRestoreState('error');setError('저장한 녹음을 불러오지 못했어요. 원본을 확인한 뒤 다시 녹음할 수 있어요.')}
+    })
     return ()=>{active=false}
-  },[draftId])
+  },[draftId,restoreAttempt])
   useEffect(() => () => { startingRef.current=false; clearInterval(timer.current); cancelRecording(); stopMicrophone() }, [])
   useEffect(()=>{if(status==='recording'||status==='paused')updateRecordingGuides(guides)},[guides])
   const provisionalLayer = draft?.features ? buildVoiceLayer(project.seed,currentPart.id,draft.features) : null
@@ -1103,10 +1109,10 @@ function Recorder({ go, submit, onRecordingStart, partId, projectTracks, layers,
       <div className="recording-timeline" aria-label="녹음 시간"><div><span>RECORD TIME</span><b>{fmt(seconds)} / {fmt(recordingWindow)}</b></div><div className="time-progress"><span style={{width:`${Math.min(100,seconds/recordingWindow*100)}%`}}/></div></div>
       <div className="meter-row"><span>MIC {inputRms>0?`${Math.max(-96,Math.round(20*Math.log10(inputRms)))} dBFS`:"— dBFS"}</span><div className={`input-meter ${peak>.9?'clip':''}`} aria-label="마이크 입력 볼륨"><span style={{width:`${Math.max(2,level*100)}%`}}/><i style={{left:`${Math.min(98,peak*100)}%`}}/></div><b>{peak>.9?'CLIP':level>.08?'GOOD':'LOW'}</b></div>{noiseFloor>0&&<p className={`noise-status ${noiseFloor>.08?'warning':''}`}>주변 소음 · {noiseFloor>.08?'높음 — Review에서 다시 녹음을 선택할 수 있어요.':'양호'} ({Math.round(noiseFloor*100)}%)</p>}
 
-      {error && (microphoneFailure&&status!=='review'?<MicrophonePermissionNotice error={error} onRetry={begin} permissionDenied={permissionDenied}/>:<div className="permission-error" role="alert"><span>{error}</span></div>)}
+      {error && (microphoneFailure&&status!=='review'?<MicrophonePermissionNotice error={error} onRetry={begin} permissionDenied={permissionDenied}/>:<div className="permission-error" role="alert"><span>{error}</span>{restoreState==='error'&&<button className="secondary" data-action="draft-restore-retry" onClick={()=>{setRestoreState('loading');setRestoreAttempt(value=>value+1)}}>저장한 녹음 다시 불러오기</button>}</div>)}
       {status === 'review' ? <section className="record-review"><p className="kicker">녹음 확인 · {fmt(draft?.duration)}</p><h2>{draft?.features?.peak > .92 ? '일부 구간이 너무 크게 녹음됐어요.' : noiseFloor>.08?'주변 소음이 함께 녹음됐을 수 있어요.':'제출할 Track을 확인해 주세요.'}</h2><p>{noiseFloor>.08?'다시 녹음을 권하지만 제출을 막지는 않습니다. 제출 후 기본 노이즈 정리를 적용합니다. ':''}{draft?.features ? `에너지 ${Math.round(draft.features.energy*100)} · 밝기 ${Math.round(draft.features.brightness*100)} · 거칠기 ${Math.round(draft.features.roughness*100)} · 특징 ${draft.features.fingerprint}` : '오디오 분석을 완료하지 못했지만 재생 후 제출할 수 있어요.'}</p><Player source={draft?.url} durationHint={draft?.duration} playing={reviewPlaying} setPlaying={setReviewPlaying}/><div className="review-actions"><button className="secondary" data-action="record-retry" disabled={submitting||recordingBusy} onClick={()=>setConfirmAction('retry')}>다시 녹음</button><button className="primary" data-action="record-submit" disabled={submitting||recordingBusy} onClick={send}>{submitting?'제출 중…':'녹음 제출'}</button></div></section>
       : <div className="recorder-controls">
-          {status === 'ready' && <button className="record-btn" data-action="record-start" disabled={recordingBusy} aria-label="녹음 시작" onClick={begin}><Icon name="mic" size={28}/></button>}
+          {status === 'ready' && <button className="record-btn" data-action="record-start" disabled={recordingBusy||restoreState!=='ready'} aria-label="녹음 시작" onClick={begin}><Icon name="mic" size={28}/></button>}
           {status === 'recording' && <><div className="record-control"><button className="round-secondary" aria-label="다시 녹음" disabled={recordingBusy} onClick={()=>setConfirmAction("retry")}><img src={figmaAssets.imgFaFaRotateRight} alt="" aria-hidden="true"/></button><span>다시 녹음</span></div><div className="record-control"><button className="record-btn stop" data-action="record-stop" disabled={recordingBusy} aria-label="녹음 정지" onClick={stop}><img src={figmaAssets.imgFaFaStop} alt="" aria-hidden="true"/></button><span>정지</span></div><div className="record-control"><button className="round-secondary" data-action="record-pause" aria-label="녹음 일시정지" onClick={pause}><img src={figmaAssets.imgFaFaPause} alt="" aria-hidden="true"/></button><span>일시정지</span></div></>}
           {status === 'paused' && <><div className="record-control"><button className="round-secondary" aria-label="다시 녹음" disabled={recordingBusy} onClick={()=>setConfirmAction("retry")}><img src={figmaAssets.imgFaFaRotateRight} alt="" aria-hidden="true"/></button><span>다시 녹음</span></div><div className="record-control"><button className="record-btn stop" data-action="record-stop" disabled={recordingBusy} aria-label="녹음 정지" onClick={stop}><img src={figmaAssets.imgFaFaStop} alt="" aria-hidden="true"/></button><span>정지</span></div><div className="record-control"><button className="round-secondary" data-action="record-resume" aria-label="녹음 이어서" onClick={resume}><img src={figmaAssets.imgFaFaPlay} alt="" aria-hidden="true"/></button><span>이어서 녹음</span></div></>}
             </div>}
