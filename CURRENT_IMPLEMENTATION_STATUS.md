@@ -1,3 +1,17 @@
+## 2026-10-12 R6 우선 재개 — 실제 GPU guidance 비교와 RAM 감시
+
+사용자의 RAM 확보/AI 우선 지시에 따라 서버 후속 수정은 보류하고 실제 음악 시험을 순차 실행했다. 시작 시 RAM9.72GiB 여유/GTX1660SUPER511MiB/Python 없음 확인. 기존 CPU 환경·원곡·실패 후보·디자인 worktree를 보존했다. generate-ai-provided-song.py에 비Turbo native guidance-scale 진단 인자를 추가했다. 미지정 Base/SFT7.0·Turbo1.0 기존 유효 기본값은 유지하며, 유한1–20만 허용한다. 실제 사용 값을 report에 기록한다. 앱/음원/QA 기준 변경은 없다.
+
+같은 Base revision/FP32/seed65359/50step/19초/가사·caption·원곡mix31.7–50.7초에서 guidance만3과1로 바꿨다. RAM을 많이 점유했던 host cache는 사용하지 않았다. 결과는 각각 부모 .ieum-gpu-ssd-runtime/results/base-guidance3-original-mix-20261012 및 base-guidance1-original-mix-20261012에 보존했다. 3은 추론397.854초/전체456.800초/exit0/WAV SHA25666dbc73b2fa966d326c278014eeb51c5fdb0def4cc26aad4a7bb8a4e66794d90, 1은399.273초/전체460.616초/exit0/SHA2560f073a771335cac474f1652ff7c5b3f4a47040cb56c607229106110a98130c1e이다. 두 경로 모두 own GPU allocation peak2354321920bytes였다. 보정 계산을 끈 것만으로 실제 시간/peak 문제가 해결됐다는 근거는 없다. 통제된 하드웨어 benchmark나 모든 입력의 속도 보장으로 확장하지 않는다.
+
+Windows venv launcher와 실제 Python child를 구분해 감시했다. 첫 trial의 초기 resource-monitor workingGiB는 launcher 값이므로 AI 점유로 사용하지 않는다. 별도 python-resource-monitor125표본에서 실제 child 최고8.330GiB/여유 최저1.622GiB를 관측했다. 두 번째는 처음부터 child를137표본 감시해 최고8.330GiB/여유 최저2.490GiB였다. 3초 간격·여유1.25GiB 미만3회 시 해당 생성 child만 중단하는 조건은 발생하지 않았다. 완전한 peak 보장은 아니며 생성 후 RAM11.2GiB 반환을 확인하고 UVR/ASR를 하나씩 실행했다.
+
+두 UVR 분리의 합 residual0. guidance3은 Small0.888889/Turbo0.933333이며 마지막 줄을 각각 ‘작은 노래멀에 모아놨어’/‘작은 노래 모래 모아놔서’로 인식했다. 자동0.8 경계와 정확한 가사는 다르며 normalizedLyricsExact=false다. guidance1은 Small0/빈 인식, Turbo0.066667/‘다음 영상에서 만나요.’로 둘 다 검증 exit2다. ASR 증거는 실제 청취의 대체가 아니다. 원곡 대응 voiced frame의 pitch 중앙 차이는3에서−4.85반음/유니슨15.38%,1에서−2.10반음/유니슨28.70%였고 실제 화성 승인은false다. 파형 에너지 최고상관은 각각0.147344/lag+0.029932초와0.133852/lag−0.748299초로 음절 진입 승인/원본shift 근거가 아니다.
+
+두 후보는 catalog/Guide/Track에 등록하지 않았다. R6·기존 단계3 전체는 미완료다. 다음 음악 작업은 native 가사/음절·화성 제어 가능성을 확보하는 것이다. 같은 실패 조건의 seed 반복·가사 변경·수동 splicing/transpose·QA 문턱 완화로 완료하지 않는다. R3 미커밋 HTTP 보완3파일은 삭제하지 않고 이번 AI commit에서 제외한다. 직전 e76bf2a 서버 준비는 Git Integration6997587089 success/실제 production401·503·405/JS·CSS exact 확인된 범위만 유지한다.
+
+마감 검증: generator Python 문법, 실제 NaN guidance의 model weight loading/output 생성 전 거부, production build34modules, audio foundation 및 Project audio contract 회귀를 통과했다. 앱 bundle/음원은 기존 결과를 유지한다. Git Integration과 production 확인은 해당 AI 작업 commit 이후 실제 결과로 보고한다.
+
 ## 2026-10-12 R3 인증·직접 업로드·서버 원본 검증 묶음
 
 api/capabilities.js와 api/me/session.js를 기존 Vite/Vercel 프로젝트에 추가했다. capabilities는 준비 단계/기능false를 명시한다. session은 Bearer 누락/잘못된 형식을401로 거부하고, 선택한 Supabase의 Auth /user 검증 결과에만 사용자 ID를 부여한다. 설정 없으면503이며 사용자 ID/JWT 내용만으로 로그인 성공을 만들지 않는다. private/no-store·Authorization Vary를 적용하고 upstream 본문/키/이메일은 응답에 노출하지 않는다. 로그인 UI·방식/현재 App 사용자·새 화면은 변경하지 않았다.

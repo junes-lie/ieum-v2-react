@@ -31,6 +31,7 @@ parser.add_argument('--generation-start',type=float,help='Native generation mask
 parser.add_argument('--generation-end',type=float)
 parser.add_argument('--region-lyric-line',type=int,help='Repaint only: condition on a source candidate lyric line; keep full expected output lyrics for independent QA')
 parser.add_argument('--steps',type=int)
+parser.add_argument('--guidance-scale',type=float,help='Explicit non-turbo native APG diagnostic; default preserves 7.0')
 parser.add_argument('--lossless-cpu-cache',action='store_true',help='Opt-in one-shot Base lego inference with exact CPU weight restoration')
 args=parser.parse_args()
 assert (args.generation_start is None)==(args.generation_end is None),'Specify both generation mask boundaries'
@@ -52,6 +53,8 @@ assert args.source_song or args.source_start==0,'Source offset requires source a
 assert args.source_song or args.source_stem=='mix','Source stem requires source audio'
 model_config=json.loads((args.model_dir/'transformer'/'config.json').read_text(encoding='utf-8'))
 is_base=not model_config.get('is_turbo',False)
+assert args.guidance_scale is None or (is_base and np.isfinite(args.guidance_scale) and 1<=args.guidance_scale<=20),'Explicit guidance requires non-turbo and a finite scale from 1 to 20'
+guidance_scale=args.guidance_scale if args.guidance_scale is not None else (7.0 if is_base else 1.0)
 assert not (args.device=='cuda' and is_base and args.compute_dtype=='float16'),'Non-turbo CUDA FP16 is not validated; use FP32 (Base FP16 produced non-finite actual latents)'
 assert not args.lossless_gpu_cache or (is_base and args.task in ('lego','repaint') and args.compute_dtype=='float32'),'GPU cache requires verified non-turbo FP32 audio conditioning'
 if args.task=='repaint':
@@ -215,7 +218,7 @@ def progress(pipeline,step,timestep,values):
  if step==steps-1:
   torch.save(values['latents'].detach().cpu(),args.output_dir/'actual-generated-latents.pt')
  return values
-result=pipe(callback_on_step_end=progress,prompt=prompt,lyrics=model_lyrics,vocal_language=spec['language'],audio_duration=args.duration,num_inference_steps=steps,bpm=spec['bpm'],keyscale=spec['key'],timesignature=spec['timesignature'],task_type=args.task if args.source_song else ('cover' if code_report else 'text2music'),track_name='vocals' if args.task=='lego' else None,src_audio=source_audio,audio_codes=code_report['audioCodes'] if code_report else None,audio_cover_strength=args.audio_cover_strength,generator=torch.Generator(args.device).manual_seed(args.seed),repainting_start=args.generation_start,repainting_end=args.generation_end)
+result=pipe(callback_on_step_end=progress,prompt=prompt,lyrics=model_lyrics,vocal_language=spec['language'],audio_duration=args.duration,num_inference_steps=steps,guidance_scale=guidance_scale,bpm=spec['bpm'],keyscale=spec['key'],timesignature=spec['timesignature'],task_type=args.task if args.source_song else ('cover' if code_report else 'text2music'),track_name='vocals' if args.task=='lego' else None,src_audio=source_audio,audio_codes=code_report['audioCodes'] if code_report else None,audio_cover_strength=args.audio_cover_strength,generator=torch.Generator(args.device).manual_seed(args.seed),repainting_start=args.generation_start,repainting_end=args.generation_end)
 audio=result.audios[0].detach().float().cpu().numpy().T
 assert np.isfinite(audio).all() and audio.ndim==2 and audio.shape[1]==2
 assert np.sqrt(np.mean(audio**2))>1e-5,'Model output is silent'
@@ -231,7 +234,7 @@ if source_report:
  report['nativeGenerationWindow']={'start':args.generation_start,'end':args.generation_end} if args.generation_start is not None else None
  report['outsideGenerationWindowPcmPreserved']=None
  report['nativeGenerationMask']=mask_report
-report.update(model=model_id,revision=model_revision,inferenceSteps=steps,modelLineageSha256=hashlib.sha256(args.model_lineage.read_bytes()).hexdigest() if lineage else None,generatorScriptSha256=script_sha,guidanceScale=7.0 if is_base else None)
+report.update(model=model_id,revision=model_revision,inferenceSteps=steps,modelLineageSha256=hashlib.sha256(args.model_lineage.read_bytes()).hexdigest() if lineage else None,generatorScriptSha256=script_sha,guidanceScale=guidance_scale if is_base else None)
 report.update(modelLyrics=model_lyrics,regionLyricLineIndex=args.region_lyric_line,fullExpectedLyricsUnchanged=True)
 if args.region_lyric_line is not None:
  report['limitations'].append('Region repair uses modelLyrics for the selected line; lyrics retains all expected output lines for independent ASR. No automatic syllable/timing/harmony approval.')

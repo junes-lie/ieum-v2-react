@@ -13,7 +13,7 @@
 | R6 실제 AI 곡·Part 품질 / 단계1·3 | 기존 실제 원곡/반주와 검증·등록 도구 보존 | 정확한 가사·화음·진입 제어 검증, 통과 결과만 연결 | R2/R3의 독립 기능 구현을 막지 않음. 로컬/외부 실제 실행 근거 필요. 모델 성공과 음악 품질 승인 구분 |
 | R7 종합 인수 / 단계6 | 이미 검증된 계약·경로 재사용 | UF01–12·실기기 마이크/지연/청취·디자인 통합·실제 협업 전수 | R1–R6 각 해당 gate와 실제 배포 증거 충족 후 전체 완료 판정 |
 
-현재 실행은 R0→R2의 복귀 기능 묶음이다. R1은 자동 검증된 범위만 재사용하며 전체 단계3은 미완료다. R3 환경 조회는 독립 준비 가능하지만 실제 제공자/권한이 없는 부분은 blocker로 표시하고 R2의 다른 기능을 계속한다. 디자인 작업은 별도 worktree 유지, 새 IA/화면/가짜 성공/관련 없는 refactor 없음.
+현재 실행은 사용자의 RAM 확보/AI 우선 지시에 따른 R6 실제 음악 제어 검증이다. R1/R2는 자동 검증된 범위만 재사용하며 전체 단계3/4는 미완료다. R3 서버 후속은 보류하고 실제 제공자/권한이 없는 부분은 blocker로 유지한다. 디자인 작업은 별도 worktree 유지, 새 IA/화면/가짜 성공/관련 없는 refactor 없음.
 
 ### R2 진행 근거 / R3 준비
 
@@ -30,6 +30,8 @@ R3 전송 순서 후속: 기존 transport를 재사용하는 transferAndSubmitTr
 R3 2026-10-12 후속 묶음: capability/session Web API, 선택적인 서버 Auth 검증·signed Storage uploader·private bucket/원본 스트림 검증 adapter를 작성했다. 동일 원본 서버 receipt만 재업로드를 생략한다. 기본QA13 suites/실제 loopback5MB 전송·실패/재시도/API401·503·405를 통과했다. 로그인 방식 미정은 로그인 UI의 결정 항목이며 서버 Auth 검증 준비와 혼동하지 않는다. 실제 계정/환경 접근·RLS/DB transaction/두 사용자 검증은 별도 gate로 남겨두고 capabilities는false를 유지한다. 기존 React/디자인/음원/IA를 변경하지 않았다.
 
 ### RAM 운영 — 최신 사용자 지시
+
+2026-10-12 R6 실제 비교: 기존 generator에 선택적인 non-Turbo guidance 진단을 연결하고 같은 원곡mix/seed/50step/19초를3·1로 순차 실행했다. 둘 다 정상 exit0이나3의 Small/Turbo 정확한 가사는false,1은 두 ASR exit2다. own GPU allocation peak는 동일하며 추론397.854/399.273초로 속도 해결 근거가 없다. 실제 child RAM 표본 peak는 둘 다8.33GiB이며 여유 최소1.622/2.490GiB,1.25GiB 연속3회 중단 조건은 미발동이다. 기존 host cache/CPU 환경/원본/실패 결과를 보존했다. 실제 pitch/envelope 대조는 화성/진입 승인false를 유지한다. 다음은 native 가사·음절/화성 제어 검증이며 실패 후보를 앱에 등록하거나 기본값/QA 문턱을 바꾸지 않는다. 상세 hash·실행/검사 증거는 CURRENT_IMPLEMENTATION_STATUS.md 최신 항목에 기록했다.
 
 로컬 대형 AI를 일괄 금지하지 않는다. 매 실행 직전에 실제 RAM/VRAM 여유·CPU/GPU 부하·동시 작업을 확인하여 결정한다. 검증된 해당 경로의 peak와 로딩/변환 중 peak 및 다른 작업의 여유분까지 감당할 때만 하나의 무거운 작업을 실행한다. 필요한 peak를 모르는 경로나 여유가 부족한 경로는 시작하지 않는다. 실행 중 자원 압박 시 해당 Codex 작업만 안전하게 중단하고 결과/원본 보존·중단 상태를 기록한다. Figma/다른 작업 종료·OS/pagefile 변경·CPU affinity를 RAM 제한으로 간주하는 처리 없음. 완료 후 해당 worker/캐시 종료를 확인한다. 현재 16GB PC에서 8GB 이상 실제 점유한 변환과 6GB 점유한 검증을 병렬 재실행하지 않는다.
 
