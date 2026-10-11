@@ -21,6 +21,8 @@ R2 첫 묶음 a285933은 Finder 필터/정렬/Profile 왕복·목록스크롤 �
 
 R2 Collection B01 후속: 기존 App ref에 탭별 스크롤을 독립 보관해 탭 전환/전역 왕복을 복원했다. build/Node9 suites와 Headless Edge 실제 스크롤·native Back 회귀 통과. 새로고침 후 위치/실기기/전체 단계4 인수는 미확인이다. 기존 서버·Identity·AI 품질 gate를 유지한다.
 
+R6 후속 실제 시험: SFT FP32 CUDA disk offload19초/50step 생성은 정상 종료했지만 Small/Turbo 가사 검사가 모두 실패했다. host cache 실행은 RAM0.47GiB에서 해당worker만 중단했다. 현재 PC에서는 이 SFT cache 경로를 성공 경로로 간주하지 않는다. qa/compare-ai-vocal-part.py의 검증된 중간 parent 계보로 원곡 구간을 대조한다. Base 기본677tensor 변환 parity와 기존 direct PCM 비교는 회귀 통과. 다음 음악 gate는 정확한 가사·실제 원곡 화성/진입을 함께 제어할 수 있는 경로 검증이며, seed 반복/QA 문턱 완화/실패 음원 등록으로 완료하지 않는다. 상세 증거는 CURRENT_IMPLEMENTATION_STATUS.md 최신 항목 참조.
+
 ### RAM 운영 — 최신 사용자 지시
 
 로컬 대형 AI를 일괄 금지하지 않는다. 매 실행 직전에 실제 RAM/VRAM 여유·CPU/GPU 부하·동시 작업을 확인하여 결정한다. 검증된 해당 경로의 peak와 로딩/변환 중 peak 및 다른 작업의 여유분까지 감당할 때만 하나의 무거운 작업을 실행한다. 필요한 peak를 모르는 경로나 여유가 부족한 경로는 시작하지 않는다. 실행 중 자원 압박 시 해당 Codex 작업만 안전하게 중단하고 결과/원본 보존·중단 상태를 기록한다. Figma/다른 작업 종료·OS/pagefile 변경·CPU affinity를 RAM 제한으로 간주하는 처리 없음. 완료 후 해당 worker/캐시 종료를 확인한다. 현재 16GB PC에서 8GB 이상 실제 점유한 변환과 6GB 점유한 검증을 병렬 재실행하지 않는다.

@@ -8,6 +8,7 @@ import librosa
 p=argparse.ArgumentParser()
 p.add_argument('--song-dir',type=Path,required=True)
 p.add_argument('--source-song',type=Path,required=True)
+p.add_argument('--parent-song',type=Path,help='Verified intermediate candidate when comparing a repair against its original song')
 p.add_argument('--output-dir',type=Path,required=True)
 p.add_argument('--source-alignment',type=Path)
 p.add_argument('--part-alignment',type=Path)
@@ -23,7 +24,28 @@ read=lambda folder,name:json.loads((folder/name).read_text(encoding='utf-8'))
 part=read(a.song_dir,'song-generation-report.json')
 source=read(a.source_song,'song-generation-report.json')
 assert part['taskType'] in ('lego','repaint') and part['trackName']=='vocals'
-assert part['conditioningSourceSha256']==source['outputSha256']
+window=part['conditioningSourceWindow']
+parent_evidence=None
+if a.parent_song:
+    assert not a.generation_window_only,'PCM mask comparison must use the immediate parent'
+    parent=read(a.parent_song,'song-generation-report.json')
+    parent_report_hash=hashlib.sha256((a.parent_song/'song-generation-report.json').read_bytes()).hexdigest()
+    source_report_hash=hashlib.sha256((a.source_song/'song-generation-report.json').read_bytes()).hexdigest()
+    assert part['conditioningSourceSha256']==parent['outputSha256']
+    assert part['conditioningReportSha256']==parent_report_hash
+    assert hashlib.sha256((a.parent_song/parent['outputFile']).read_bytes()).hexdigest()==parent['outputSha256']
+    assert parent['conditioningSourceSha256']==source['outputSha256']
+    assert parent['conditioningReportSha256']==source_report_hash
+    ancestry=part['conditioningParentAncestry']
+    assert ancestry['conditioningSourceSha256']==source['outputSha256']
+    assert ancestry['conditioningReportSha256']==source_report_hash
+    assert ancestry['conditioningSourceWindow']==parent['conditioningSourceWindow']
+    parent_window=parent['conditioningSourceWindow']
+    assert 0<=window['start']<window['end']<=parent_window['end']-parent_window['start']+.001
+    window={'start':parent_window['start']+window['start'],'end':parent_window['start']+window['end']}
+    parent_evidence={'parentSha256':parent['outputSha256'],'parentReportSha256':parent_report_hash,'sourceReportSha256':source_report_hash,'originalSourceWindow':window}
+else:
+    assert part['conditioningSourceSha256']==source['outputSha256']
 for folder,report in [(a.song_dir,part),(a.source_song,source)]:
     file=folder/report['outputFile']
     assert hashlib.sha256(file.read_bytes()).hexdigest()==report['outputSha256']
@@ -64,7 +86,6 @@ def vocal(folder,report):
 
 reference,reference_hash=vocal(a.source_song,source)
 candidate,candidate_hash=vocal(a.song_dir,part)
-window=part['conditioningSourceWindow']
 reference=reference[round(window['start']*22050):round(window['end']*22050)]
 assert abs(len(reference)-len(candidate))<=2,'Compare the actual corresponding source window'
 length=min(len(reference),len(candidate))
@@ -94,6 +115,7 @@ if a.acoustic_envelope_only:
         ranked=sorted(scores,key=lambda item:item['correlation'],reverse=True)
         regions.append({'sourceWindowRelativeStart':start,'sourceWindowRelativeEnd':end,'zeroLag':next((score for score in scores if score['candidateMinusSourceSeconds']==0),None),'highestCorrelations':ranked[:5]})
     result={'analysisVersion':'ieum-vocal-energy-change-v1','analysisScriptSha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),'sourceSha256':source['outputSha256'],'partSha256':part['outputSha256'],'sourceVocalSha256':reference_hash,'partVocalSha256':candidate_hash,'sourceWindow':window,'sampleRate':22050,'frameSamples':frame,'hopSamples':hop,'regions':regions,'entryTimingAccepted':False,'approvedEntryTime':None,'musicalHarmonyApproved':False,'catalogRegistrationApproved':False,'limits':['Log RMS differences measure energy changes, not phonemes, lyric onset or consonance','Different melody, separation leakage and breathing can change envelope correspondence','Maximum correlation over a bounded lag search is diagnostic and must not shift originals or Guide times','First entry may precede the conditioned source window; this comparison cannot recover excluded context']}
+    result['verifiedIntermediateParent']=parent_evidence
     a.output_dir.mkdir(parents=True,exist_ok=True)
     target.write_text(json.dumps(result,ensure_ascii=False,indent=2),encoding='utf-8')
     print(json.dumps(result,ensure_ascii=False),flush=True)
@@ -133,6 +155,7 @@ a.output_dir.mkdir(parents=True,exist_ok=True)
 result['actualBackingToneObservations']=tone_energy
 result['analysisVersion']='ieum-part-pair-signal-v2'
 result['analysisScriptSha256']=hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
+result['verifiedIntermediateParent']=parent_evidence
 if a.source_alignment:
  source_alignment=json.loads(a.source_alignment.read_text(encoding='utf-8'))
  part_alignment=json.loads(a.part_alignment.read_text(encoding='utf-8'))

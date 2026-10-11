@@ -1,14 +1,17 @@
-"""Verify pinned Base conversion tensors before enabling audio-conditioned Part trials."""
+"""Verify pinned non-turbo conversion tensors before actual audio diagnostics."""
 import argparse,contextlib,hashlib,json
 from pathlib import Path
 import torch
 from safetensors import safe_open
+from ai_music_models import PINNED_AUDIO_MODELS
 
 p=argparse.ArgumentParser()
 p.add_argument('--raw-dir',type=Path,required=True)
 p.add_argument('--pipeline-dir',type=Path,required=True)
 p.add_argument('--output',type=Path,required=True)
+p.add_argument('--model-variant',choices=list(PINNED_AUDIO_MODELS),default='base')
 a=p.parse_args()
+policy=PINNED_AUDIO_MODELS[a.model_variant]
 assert not a.output.exists(),'Preserve prior conversion evidence'
 torch.set_num_threads(2)
 def sha(file):
@@ -17,9 +20,9 @@ def sha(file):
   for chunk in iter(lambda:f.read(16*1024*1024),b''):h.update(chunk)
  return h.hexdigest()
 raw_sha=sha(a.raw_dir/'model.safetensors')
-assert raw_sha=='4177f600501a6d4bd81cadaa0abac557ffd15c54e5c8cb52053cdb24a0844d6b'
+assert raw_sha==policy['weightsSha256'],'Unverified checkpoint weights'
 config=json.loads((a.pipeline_dir/'transformer/config.json').read_text(encoding='utf-8'))
-assert config['is_turbo'] is False,'Base task requires Base weights'
+assert config['is_turbo'] is False,'Expected pinned non-turbo weights'
 renames=[('.q_proj.','.to_q.'),('.k_proj.','.to_k.'),('.v_proj.','.to_v.'),('.o_proj.','.to_out.0.'),('.q_norm.','.norm_q.'),('.k_norm.','.norm_k.')]
 with contextlib.ExitStack() as stack:
  raw=stack.enter_context(safe_open(a.raw_dir/'model.safetensors',framework='pt',device='cpu'))
@@ -53,7 +56,7 @@ with contextlib.ExitStack() as stack:
  count=sum(len(keys) for keys in matched.values())
  assert count==len(raw.keys())
 hashes={str(file.relative_to(a.pipeline_dir)).replace('\\','/'):sha(file) for file in a.pipeline_dir.rglob('*') if file.is_file() and file.suffix in ['.json','.safetensors','.txt','.model']}
-report={'model':'ACE-Step/acestep-v15-base','revision':'e432212fec32b8965a14ffa57ae653438d6abd14','rawWeightsSha256':raw_sha,'tensorParityVerified':True,'matchedRawTensors':count,'componentTensorCounts':{name:len(keys) for name,keys in matched.items()},'componentHashes':hashes,'limits':['Conversion parity is not Part quality or lyric/entry approval','No production inference service or catalog registration']}
+report={'model':policy['model'],'revision':policy['revision'],'rawWeightsSha256':raw_sha,'tensorParityVerified':True,'matchedRawTensors':count,'componentTensorCounts':{name:len(keys) for name,keys in matched.items()},'componentHashes':hashes,'allowedDiagnosticTasks':list(policy['tasks']),'limits':['Conversion parity is not Part quality or lyric/entry approval','No production inference service or catalog registration']}
 a.output.parent.mkdir(parents=True,exist_ok=True)
 a.output.write_text(json.dumps(report,indent=2),encoding='utf-8')
 print(json.dumps({k:v for k,v in report.items() if k!='componentHashes'}),flush=True)

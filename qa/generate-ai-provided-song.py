@@ -9,6 +9,7 @@ from scipy.signal import resample_poly
 import torch
 from diffusers import AceStepPipeline,AceStepTransformer1DModel
 from transformers import AutoModel
+from ai_music_models import PINNED_AUDIO_MODELS
 parser=argparse.ArgumentParser()
 parser.add_argument('--model-dir',type=Path,required=True)
 parser.add_argument('--device',choices=['cpu','cuda'],default='cpu')
@@ -23,7 +24,7 @@ parser.add_argument('--audio-cover-strength',type=float,default=1.0)
 parser.add_argument('--offload-dir',type=Path)
 parser.add_argument('--source-song',type=Path,help='Verified generated source directory for an audio-conditioned vocal Part candidate')
 parser.add_argument('--task',choices=['text2music','lego','repaint'],default='text2music')
-parser.add_argument('--model-lineage',type=Path,help='Verified Base conversion manifest; required for Base inference')
+parser.add_argument('--model-lineage',type=Path,help='Verified pinned Base/SFT conversion manifest; required for non-turbo inference')
 parser.add_argument('--source-start',type=float,default=0,help='Actual source window start; output retains its duration and source offset')
 parser.add_argument('--source-stem',choices=['mix','backing'],default='mix',help='Verified original mix or its actual separated backing as Lego context')
 parser.add_argument('--generation-start',type=float,help='Native generation mask start within the actual input window; diagnostic only')
@@ -51,19 +52,21 @@ assert args.source_song or args.source_start==0,'Source offset requires source a
 assert args.source_song or args.source_stem=='mix','Source stem requires source audio'
 model_config=json.loads((args.model_dir/'transformer'/'config.json').read_text(encoding='utf-8'))
 is_base=not model_config.get('is_turbo',False)
-assert not (args.device=='cuda' and is_base and args.compute_dtype=='float16'),'Base CUDA FP16 produced non-finite actual latents; use validated FP32 path'
-assert not args.lossless_gpu_cache or (is_base and args.task in ('lego','repaint') and args.compute_dtype=='float32'),'GPU cache requires FP32 Base audio conditioning'
+assert not (args.device=='cuda' and is_base and args.compute_dtype=='float16'),'Non-turbo CUDA FP16 is not validated; use FP32 (Base FP16 produced non-finite actual latents)'
+assert not args.lossless_gpu_cache or (is_base and args.task in ('lego','repaint') and args.compute_dtype=='float32'),'GPU cache requires verified non-turbo FP32 audio conditioning'
 if args.task=='repaint':
- assert is_base and args.device=='cuda' and args.compute_dtype=='float32' and args.generation_start is not None,'Repaint diagnostic requires Base CUDA FP32 and explicit native mask'
+ assert is_base and args.device=='cuda' and args.compute_dtype=='float32' and args.generation_start is not None,'Repaint diagnostic requires verified non-turbo CUDA FP32 and explicit native mask'
 assert not args.lossless_cpu_cache or (is_base and args.task=='lego'),'Lossless one-shot cache is validated for Base lego only'
 if args.task=='lego' and not is_base:raise ValueError('lego requires verified Base weights; installed Turbo does not support lego')
 model_id='ACE-Step/Ace-Step1.5';model_revision='19671f406d603126926c1b7e2adc169acbcade22'
 lineage=None
 if is_base:
- assert args.model_lineage,'Base inference requires verified conversion lineage'
+ assert args.model_lineage,'Non-turbo inference requires verified conversion lineage'
  lineage=json.loads(args.model_lineage.read_text(encoding='utf-8'))
- assert lineage['model']=='ACE-Step/acestep-v15-base' and lineage['revision']=='e432212fec32b8965a14ffa57ae653438d6abd14'
- assert lineage['rawWeightsSha256']=='4177f600501a6d4bd81cadaa0abac557ffd15c54e5c8cb52053cdb24a0844d6b' and lineage['tensorParityVerified']
+ policy=next((item for item in PINNED_AUDIO_MODELS.values() if item['model']==lineage['model']),None)
+ assert policy and lineage['revision']==policy['revision'],'Unverified model revision'
+ assert args.task in policy['tasks'],f"{lineage['model']} does not support {args.task}; preserve Base Lego"
+ assert lineage['rawWeightsSha256']==policy['weightsSha256'] and lineage['tensorParityVerified']
  for component,expected in lineage['componentHashes'].items():
   assert '..' not in component and not Path(component).is_absolute()
   h=hashlib.sha256()

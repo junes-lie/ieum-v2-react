@@ -1,3 +1,15 @@
+## 2026-10-11 R6 실제 SFT GPU 생성·품질 검사
+
+사용자의 대형 AI 실행 지시 후 실제 RAM7.98GiB 여유/CPU6%/GTX1660SUPER VRAM525MiB 사용/Python 없음 확인. 기존 CPU 환경과 원곡 보존, GPU worker 하나씩 실행했다. SFT FP32+host cache 시험은 실제 worker RAM9.00GiB/시스템 여유0.47GiB에서 명령줄·PID10196 확인 후 그 worker만 중단했다. monitor exit4294967295, 정상 생성 성공 아님. 결과/모델/원본은 삭제하지 않았다.
+
+같은 SFT revision/seed65359/50step/19초/가사/13.4–19초 Repaint를 host cache 없이 CUDA disk offload로 재실행했다. 실제 정상 exit0, 추론396.569초/전체453.874초, GPU 할당 peak2354080256bytes/예약3214934016bytes, NVIDIA 전체VRAM peak3655MiB·최고util84%. 초기 RAM여유1.50GiB 관측, 이후98개 RAM 관측은 여유1.904–4.810GiB/worker working-set 최고8.514GiB이며 완전한 RAM peak 측정은 아니다. 3초 간격 감시와0.75GiB 연속3회 시 해당worker만 중단 조건을 사용했고 재실행에서는 발동하지 않았다. 정상 종료 후 Python 없음/RAM10.46GiB 여유 확인. CPU 작업과 Windows 설정 변경 없음.
+
+새 원본은 부모 .ieum-gpu-ssd-runtime/results/sft-50step-last-phrase-20261011-disk/에 보존. WAV SHA256655468bee3b8db4731cdebb65fa5ca24592c5cbec2af5d251b2ad66cbddab427. 실제 UVR50.625초·stem 합 residual0. Small ASR0.731707/Turbo0.697674, 둘 다 lyricAcceptance=false/normalizedLyricsExact=false. 마지막 줄 오인식으로 품질 실패다. 기준 가사·QA 문턱을 변경하거나 앱 음원에 등록하지 않았다. native mask 밖 PCM 보존false도 유지한다.
+
+qa/compare-ai-vocal-part.py에 --parent-song을 추가했다. 실제 중간 WAV·보고서 해시와 원곡 보고서/ancestry 해시·창 일치를 확인한 뒤 실제 원곡31.7–50.7초로 비교한다. 원곡→중간 후보→Repaint 구분을 보존하고 직접 parent PCM 경로는 그대로다. 실제 root pitch/envelope 및 기존 PCM 회귀 exit0. 동시 voiced407frames/중앙값−2반음/유니슨38.57%/원곡반주 pitch-class share0.078717은 화성 승인 증거가 아니다. entryTimingAccepted/arrangement/catalog 승인 모두false. 틀린 중간 parent를 주면 결과 생성 전 AssertionError로 거부했다.
+
+기존 미커밋 SFT registry/생성기/변환 검증을 검토했다. Base 기본 변환 회귀 실제677tensor+silence/hash parity exit0로 기존 Lego 경로 보존 확인. SFT의 이전677tensor 변환 증거와 이번 실제 CUDA Repaint를 분리한다. 공식 모델 표의 SFT Repaint 지원/Lego 미지원 범위만 등록했다: https://huggingface.co/ACE-Step/acestep-v15-sft . 모델 로딩 성공은 가사·화음·박자 완료가 아니다. R6/전체 단계3 완료로 표시하지 않는다.
+
 ## 2026-10-11 R2 Collection 탭별 스크롤 보존
 
 화면명세 B01의 탭별 목록/스크롤 복원 조건을 기존 App/Collection에 연결했다. App 수명 동안 프로젝트·보컬·곡별 위치를 독립 보관하고 탭 전환 및 전역 탭 왕복에서 복원한다. 저장 객체·참여·Track·Mix·스타일·디자인 worktree는 변경하지 않았다. 새로고침 후 스크롤 보존은 이번 완료 범위가 아니다.
