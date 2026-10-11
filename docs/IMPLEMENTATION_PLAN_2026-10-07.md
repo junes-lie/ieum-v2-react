@@ -1,3 +1,7 @@
+### R2 Sample Review의 Profile handoff와 이탈 — 2026-10-12
+
+저장하지 않은 새 Sample Review 이탈의 URL 미해제를 native 재현했다. 종료된 Review는 URL을 해제하고 Profile 저장 handoff는 유지하며 저장 실패가 이탈 뒤 도착하는 경우 별도로 해제한다. 기존 Sample/프로젝트 원본/성공 저장 플레이어는 보존한다. 두 실제 이탈/지연 오류 조건과 기존 정상·실패 Profile 편집/reload·늦은 decode·build/atomic 저장 회귀를 통과했다. 수정 묶음은 main 자동배포 후 production 같은 오류/정상 QA로 마감하며 전체 R2/물리 인수·R3/R4 실제 서비스·R5 정책/디자인·R6 음악 승인은 그대로 남긴다. 상세 증거는 상태 문서 참조.
+
 ### R2 대표 Sample 재생 자원의 교체 수명 — 2026-10-12
 
 성공 Sample 교체 후 이전 Profile URL이 남는 native 결함을 재현하고 현재 Sample URL이 바뀔 때만 이전 자원을 해제한다. 범위/취향 편집·취소·저장 실패/원본 및 새 Sample 재생은 유지한다. 기존 Profile 편집 QA에 소유권 assertion을 추가하고 실제 실패→수정 후 전체 편집/초기 복귀·reload 및 build/atomic 저장 회귀를 통과했다. 관련 묶음만 자동배포 후 production 동일 QA로 확인한다. 사용자 Sample/Track 삭제나 미정 형상 정책 변경, 실제 기기·서버/R6 완료 확대는 없다. 상세 증거는 상태 문서 참조.

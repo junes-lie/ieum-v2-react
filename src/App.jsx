@@ -759,11 +759,18 @@ function VoiceSetup({ complete, go, back, existing, editMode }) {
   const [saving,setSaving]=useState(false)
   const [saveFailure,setSaveFailure]=useState(false)
   const savingRef=useRef(false)
+  const sampleProfileHandoffRef=useRef(false)
   const finish=async value=>{
     if(savingRef.current)return
+    const lifecycle=sampleLifecycleRef.current
+    sampleProfileHandoffRef.current=Boolean(value.sample?.url)
     savingRef.current=true;setSaving(true);setError('');setSaveFailure(false)
-    try{await complete(value)}catch(reason){setSaveFailure(true);setError(reason?.message || '프로필 저장 실패: 기존 프로필을 유지합니다.')}
-    finally{savingRef.current=false;setSaving(false)}
+    try{await complete(value)}catch(reason){
+      sampleProfileHandoffRef.current=false
+      if(lifecycle!==sampleLifecycleRef.current){if(value.sample?.url)URL.revokeObjectURL(value.sample.url);return}
+      setSaveFailure(true);setError(reason?.message || '프로필 저장 실패: 기존 프로필을 유지합니다.')
+    }
+    finally{savingRef.current=false;if(lifecycle===sampleLifecycleRef.current)setSaving(false)}
   }
   const [pitchDiagnostics, setPitchDiagnostics] = useState({ checked:0, accepted:0, rms:0, confidence:0, reason:'waiting' })
   const timer = useRef(null)
@@ -851,6 +858,10 @@ function VoiceSetup({ complete, go, back, existing, editMode }) {
   const chooseSampleSong = song => {setSampleGuidePlaying(false);if(sampleDraft&&song.id!==sampleSong.id){pendingSampleSong.current=song;setSampleAction('discard-song');return}setSampleSong(song)}
   const retrySample = () => { cancelRecording(); if(sampleDraft?.url)URL.revokeObjectURL(sampleDraft.url); setSampleDraft(null); setSampleStatus('ready'); setSeconds(0); setError('') }
   useEffect(() => () => { sampleLifecycleRef.current++;clearInterval(timer.current); cancelRecording(); stopMicrophone() }, [])
+  useEffect(() => {
+    const url=sampleDraft?.url
+    return () => { if(url && !sampleProfileHandoffRef.current)URL.revokeObjectURL(url) }
+  },[sampleDraft?.url])
   return <div className="screen voice-screen">
     <TopBar title={['sample-select','sample','complete'].includes(step) ? 'VOICE PROFILE' : 'VOICE RANGE'} back={() => {if(saving||sampleBusy)return;if(step==='sample'&&sampleStatus==='recording'){setSampleAction('stop');return}if(step==='sample')setStep('sample-select');else if(step==='sample-select'&&!editMode)setStep('range-result');else if(step==='complete')setStep('sample');else back()}} meta={step === 'complete' ? 'READY' : ['sample-select','sample'].includes(step) ? 'PROFILE AUDIO' : 'RANGE CHECK'} />
     <main className="voice-main">

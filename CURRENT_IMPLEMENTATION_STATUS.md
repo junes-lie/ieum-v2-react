@@ -1,3 +1,13 @@
+### R2 저장하지 않은 Sample Review 이탈 수명 — 2026-10-12
+
+43693b528d606bd21c7d9466186bd5c7a896f95e Git Integration7003016406 success/production HTTP200/index-DxPQ6ex0.js local/remote SHA87C0813CC48AA1508FF8A44DC445CFDA028685FECE59182E35ACF8FEC748AC70 exact를 확인했다. production 기존 Profile 편집/저장 실패/재시도/이전 URL 해제/새 URL 재생/reload/Project 보존/pageerror0을 통과했다.
+
+후속 native에서 새 Sample Review를 저장하지 않고 My로 이탈하면 임시 URL 미해제라는 assertion 실패를 재현했다. VoiceSetup이 Sample draft URL을 소유하며 이탈/변경 때 해제하되, Profile 저장 요청의 URL은 명시 handoff ref로 유지한다. 저장 실패는 handoff를 취소한다. 화면이 이미 종료된 뒤 저장 실패가 도착하면 해당 URL을 해제하고 종료된 화면 상태를 갱신하지 않는다. 성공 저장 URL은 현재 Profile 플레이어로 전달한다. 기존 Sample/Track/IndexedDB 원본·Profile 정책은 바꾸지 않는다.
+
+새 유지 qa/verify-sample-review-navigation.mjs는 unsaved Review 이탈 및 IndexedDB open success 전달 지연→My 이탈→voice-sample put 오류의 실제 두 조건에서 URL 해제/기존 Protected Profile/reload 원본 오디오 SHA256 exact/stream·분석 참조 해제/pageerror0을 확인한다. qa:profile에 연결했다. build34modules/index-9LEKbVCu.js, 기존 native Profile 편집 성공·실패/재시도·새 URL 재생/초기복귀/reload와 늦은 Stop decode/navigation QA, atomic Profile 저장 rollback/retry 및 audio foundation Node 회귀를 통과했다. 여유 RAM9.085GiB였고 대형 모델을 새로 실행하지 않았다. 실제 전체 PC RAM 감소량·물리 발성/청취는 검증하지 않았다.
+
+이번 최소 앱/QA/package/active docs 묶음만 main 자동배포→production 동일 이탈/실패 및 정상 저장 QA로 확인한다. 보류 서버3파일/디자인/실제 서비스·음악·미정 생성 정책/실기기 완료 gate는 유지한다.
+
 ### R2 대표 Sample 교체 후 이전 URL 해제 — 2026-10-12
 
 641a4fe14848212b8594d9d0f5ff8d9e265bb919 main/origin 일치 및 Git Integration7002981955 success/production HTTP200/index--srv8LMR.js SHA C7BBC09EA9B967C45108E1FDCE7C42CDC314243091180A9E4FDBD5637B1D0D22 local/remote exact를 확인했다. production 반복 Draft3회 URL 해제/제출 실패 Review 재생/재시도 성공 URL 전달/원본 hash/reload exact/pageerror0도 통과했다.
