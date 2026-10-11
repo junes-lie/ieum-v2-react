@@ -1,3 +1,13 @@
+## 2026-10-12 R6 음표 인덱스 교정 / 지원 음역·두 번째 가사 실제 검증
+
+저자 pinned main9beec10의 Pattern_Generator.py 679–692줄 Note_Predictor에서 `440 * 2 ** ((notes - 69 - 12) / 12)` 및 index0=휴지를 실제 확인했다. 따라서 모델 index72는 MIDI60이다. 이전 진단의 notesMidi 필드명과 약−12반음 차이라는 해석은 일반 MIDI와 모델 인덱스를 혼동한 것이었다. WAV나 모델 출력을 transpose하지 않고 메타데이터를 modelNoteIndices/expectedMidi/noteEncoding으로 구분했다. 원본 공식 source는 부모 runtime에 SHA256dc63fa44da989f8ebd994994bfef7bba9bf7948545474359aea6af6ced975a2c로 보존했다. 기존 보고서·WAV는 수정하지 않고 explicit --legacy-model-index/별도 calibrated-analysis로 재측정했다.
+
+기존 정상 출력 expected MIDI60–67의7음절 실제 오차는−0.2~+0.3반음이다. 중간 입력 index66–73(expected MIDI54–61)은7음절 측정, 오차−1.1~+0.5반음이며 일부 confident frame3개에 불과하다. 실제 Small ASR exact1.0/exit0이지만 지원 음역 전체 승인으로 계산하지 않는다. 낮은 index60–67(expected MIDI48–55)은5음절이40.8에 머무르고2음절null로 실패/미채택. 높은 index84–91(expected MIDI72–79)은5음절 오차−0.2~+0.1, 함/께null을 그대로 유지한다. 인덱스 보정만으로 저음 실패·모든 Part 음역이 해결됐다고 주장하지 않는다.
+
+별도 두 번째7초 구절 “우리 함께 불러요”를 기존 실제 원곡 report의 가사에서 참조하고 동일 합성 melody로 생성했다. 가사 원본 report/WAV hash를 spec에 보존했지만 원곡 melody·화음 연결은 false다. 실제 WAV SHA256842fcacbd1966d177f216de88f59d2405d9b4719d289ae5b6ac1ded7386b7415, Small ASR exact1.0/exit0,7음절 오차−0.4~+0.2반음, peak.939880/rms.162076. 생성과 ASR의 실제 자원 표본은 child peak1.25972/1.60000GiB, free min9.34809/9.01279GiB이며 live guard 중단 없음. 중간 음역 생성/ASR도 child peak1.23179/1.58567GiB, free min9.45536/9.08693GiB였다. 모두 순차 실행했고 기존 CPU 작업·Figma·다른 프로세스·환경·음원은 보존했다.
+
+유지 측정 도구는 원본 샘플레이트로 resample 비율을 계산하고 입력 PCM finite/shape·pinned encoding 적용 모델·버전·길이·원본 hash를 확인한다. 새 metadata와 기존 index 명시 재해석을 실제 GPU 생성/4개 기존 출력 재측정으로 검증했다. 원곡 음절별 실제 timing/melody·화음·2–4 Part·실기기 청취·checkpoint 배포 권한은 미완료다. sourceSongConnected/catalogRegistrationApproved/musicalHarmonyApproved=false 유지. 다음 R6은 원곡의 실제 음절 타이밍/멜로디 출처를 확보한 score와 지원 음역을 대조하는 선행 검증이며 낮은 음역 실패를 다른 seed 반복으로 우회하지 않는다.
+
 ## 2026-10-12 R6 새 제어 경로 — 한국어 가사/음표/길이 입력의 실제 진단
 
 Base의 같은 조건 반복 대신 [CODEJIN/DiffSingerKR 원본](https://github.com/CODEJIN/DiffSingerKR)과 [저자 checkpoint Space](https://huggingface.co/spaces/codejin/diffsingerkr/tree/26f95ac2554b6a6725706ed2a7991a62f7f714a9)을 확인했다. 코드 main9beec10ffe3dd1068913b0f65827d31134f9460e/MIT, Space26f95ac2554b6a6725706ed2a7991a62f7f714a9로 pin했다. checkpoint682529563bytes/SHA2566482992a43b8a98554e7ef9e487a381c2717c5828d564e6dfc6cac16a0e16092, vocoder55884400bytes/SHA2565b47a5d03d744861f94ee973294317f738ccc6dc6d27bafa5d8db5ed18f95566 실제 확인. 상업적 checkpoint/data 권한·목소리 선택의 제품 승인은 별도 미확정이다.

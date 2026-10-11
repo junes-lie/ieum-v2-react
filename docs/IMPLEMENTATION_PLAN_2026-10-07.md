@@ -1,3 +1,9 @@
+### R6 음표 입력 정의 교정 / 지원 음역 gate — 2026-10-12
+
+저자 pinned 학습 코드의 Note_Predictor는 모델 index=MIDI+12(index0 휴지)다. 이전 notesMidi 이름/−12반음 해석을 교정하고 원본 출력·실패 증거는 보존한다. 유지 generator는 modelNoteIndices/expectedMidi와 공식 코드/version을 별도 기록하며 측정은 explicit legacy 재해석을 별도 폴더에 저장한다. 정상 index72–79의7음절은 expected MIDI60–67 대비−0.2~+0.3반음, 두 번째 원곡 가사 “우리 함께 불러요”/합성 melody는 Small exact1.0 및−0.4~+0.2반음으로 실제 검증했다. 중간 index66–73은 exact1.0이나 일부 frame 부족/마지막−1.1반음, 낮은 index60–67은 실제 pitch 실패/미채택, 높은 입력의2음절null도 유지한다. 상단 약−12반음 설명은 교정 전 해석이며 실제 모델 pitch 오류의 확정값이 아니다.
+
+선행 검증 순서: (1) pinned index 규칙/출력 PCM·hash 확인(완료 범위) → (2) 원곡 실제 음절 timing·melody 출처 확보 및 지원 음역과 대조 → (3) 원곡 화성에 근거한2–4 Part 개별 exact 가사·음역·진입 검증 → (4) 실제 결합/청취·rights 검증 → 등록/배포. synthetic melody나 ASR 문장 경계를 원곡 음절 타이밍으로 표시하지 않는다. 저음 실패·미측정값 때문에 전체 Part gate를 통과 처리하지 않는다. 모든 테스트 resource guard 순차 실행, 앱 및 기존 곡은 변경하지 않음. R1/R2/R3/R5/R7 상태와 기존 단계 의존관계 유지.
+
 ## 2026-10-12 실행계획 수정 — 앱 기능 구현과 AI 음악 연구 분리
 
 사용자의 “계획을 다시짜고 구현해” 지시에 따른 현재 실행 기준이다. 기존 R0–R7/단계 번호와 완료 증거를 보존한다. 아래 순서가 과거의 AI 시험 우선 실행 지시보다 우선한다. AI 생성 요구를 삭제하거나 실패 음원을 승인하지 않는다.
