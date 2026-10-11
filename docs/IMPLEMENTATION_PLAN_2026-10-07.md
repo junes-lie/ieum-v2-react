@@ -1,3 +1,8 @@
+### R1 Auto Mix 실패 산출물 소유권 — 2026-10-12
+
+기존 저장 실패 경로에서 게시되지 않은 생성 오디오 URL이 남는 production 결함을 재현했다. App의 main/created job이 성공한 URL을 넘기기 전에는 소유하도록 최소 수정했다. 저장 실패/취소의 미게시 결과만 finally 해제한다. 정상2–4/main Mix 및 저장/reload·제출 원본 보존과 native 실패 URL release/Node 회귀·build 통과. 의미 있는 이 묶음만 diff→commit→main push→Git Integration→production 실패/정상 QA를 수행한다. 새 실패 UX/재시도·디자인/IA·Track 삭제·실제 서버 변경 없음. 단계 전체 인수를 확대하지 않는다.
+
+R6 화성의 고정0.5초 구간 비교는 일부G 근거와 후반 B minor vs D/F#/A 차이를 보여줬다. 원문/음원 hash와 구간/처리의 정확성을 먼저 확인하며 note activation/triad template를 화음 승인으로 쓰지 않는다. 기존 AI 가사/진입·실제2–4Part·권한/청취 gate는 유지한다. 사용자 PC RAM guard와 실패 기록 보존을 계속 적용한다.
 ### R6 반주 polyphonic 교차 검증 — 2026-10-12
 
 기존 R6에 공식 Basic Pitch 고정 원문/230KB ONNX를 활용한 독립 반주 관측을 통합했다. 유지 도구는 runtime-dir/원본/crop/new output을 받아 source6개 hash/최대10초/CPU2threads와 공식 기본 처리 경로를 보존한다. 설치/상주 모델/새 앱/별도 음악 기능 없음. 실제 CSD9note 중6matching·같은 pitch merge/onset/pitch 불일치가 있어 결과를 정답 score로 쓰지 않는다. 실제 반주 중간 구절의 CQT와 일부 G/D/B 근거가 겹치지만 마지막 D/F# vs G major 후보 차이도 남았다. mixed instrument 한계와 timing/음절 경계·휴지 불확실성을 분리하고, 전체 chord/key/2–4Part 승인 및 catalog/Guide 연결은 보류한다. 상세 hash·자원·실패·fresh-process exact 결과는 CURRENT_IMPLEMENTATION_STATUS 최신 항목 참조.

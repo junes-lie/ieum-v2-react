@@ -1,3 +1,14 @@
+### R1 게시되지 않은 Auto Mix URL 해제 — 2026-10-12
+
+production native Auto Mix 저장에 IndexedDB 오류를 주입해 결과 Blob URL이 revoke되지 않는 결함을 재현했다. 첫 QA는 created-project debug snapshot이 이전 idle 상태여서 timeout이었다. 실제 생성/실패 URL을 기준으로 기다리고 작업실 진입 후 현재 제출 상태를 검사하도록 시험을 수정하자 unpublished URL release assertion=false로 결함이 확인됐다. 임의 원본 삭제나 저장 실패 성공 처리 없음.
+
+기존 App.jsx의 main/created Auto Mix 경로에 생성 결과 URL의 미게시 소유권만 추가했다. 저장 실패와 main job 취소 후 결과는 finally에서 revoke하며, 성공하여 상태에 전달한 URL은 해제하지 않는다. 기존 제출 Track/Draft/Profile/완성 결과와 mix 실패·재시도 정책은 유지한다. RAM 전체 감소량을 측정한 것으로 주장하지 않는다.
+
+build34modules 통과. 유지 qa/verify-failed-mix-release.mjs의 created2/main4 native 실패는 URL revoke/제출2·4개 보존/완성 Mix 미게시를 통과했다. 정상 native2/3/4/main Mix 생성·저장·reload/원본·seed 검증과 제출/그래픽 분리, Node audio foundation/single-app render/user journey 통과. 실제 기기·청취/시각/서버 인수 미완료, 보류 서버3파일 stage 제외.
+
+R6 실제 반주0.5초16구간 CQT를 Basic Pitch 기존68note와 대조했다. 34.2–36.7초의 G 후보는 일부G/D/B 근거와 겹치지만37.7–39.7초 CQT top은 B minor이며 polyphonic D/F#/A와 달랐다. 전이·제3음/배음·bass 맥락의 불확실성을 더 분리해야 한다. 첫 연구 스크립트는 CRLF 문자열 치환 실패로 기존7음절 구간이 실행됐고 그 결과를 보존했다. 실제16구간으로 수정한 별도 v2 결과만 이 관측에 썼다. guard v2 exit0/중단false/wall4.792초, 화음/score/catalog approval=false, 새 음원 연결 없음.
+
+f0766b7fcf43339779753dd45353934f09c0b8e1 Git Integration7001304172 success/production HTTP200/index-6DXQCBbY.js SHA2568D5429B8A6F9259D1AF6E656AABF7860A9EB4D0B2D3CB985008F017D2A2B2D7A은 당시 앱 build와 일치했다. 이번 변경 build로 로컬 asset이 교체됐으므로 새 commit의 자동배포/production 실패·정상 경로 검증을 이어서 확인한다.
 ### R6 경량 polyphonic ONNX 교차 관측 / R1 production 확인 — 2026-10-12
 
 R1 a6d1161c5293cd2b2d01c018658ce32a29bbf272은 Git Integration7001154692 success이며 production HTTP200/index-6DXQCBbY.js remote/local SHA2568D5429B8A6F9259D1AF6E656AABF7860A9EB4D0B2D3CB985008F017D2A2B2D7A 일치. production 정상 종료·decoder failure·paused decoder failure3조건에서 원본 Review/Draft hash/길이 보존과 pageerror0을 확인했다. 실제 물리 마이크·모바일 인수와 구분한다.

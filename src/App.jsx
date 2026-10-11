@@ -1603,15 +1603,20 @@ export default function App() {
     let cancelled = false
     setMixStatus('processing'); setMixProgress(0)
     const run = async () => {
+      let unpublishedUrl = null
       try {
         const value = await createAutoMix({ tracks:PARTS.map(part=>projectTracks[part.id]), duration:Math.max(...Object.values(projectTracks).map(track=>track.duration||0)), onProgress:value=>!cancelled&&setMixProgress(value) })
+        unpublishedUrl = value.url
         if (cancelled) return
         const record = { id:MIX_RECORD_ID, projectId:PROJECT_ID, kind:'auto-mix', blob:value.blob, mimeType:value.blob.type || 'audio/wav', duration:value.duration, bytes:value.bytes, origin:value.origin, processing:value.processing, createdAt:new Date().toISOString() }
         await saveTrack(record)
         if (cancelled) return
         setMix({...record,url:value.url}); setMixStatus('complete'); setMixProgress(100)
+        unpublishedUrl = null
       } catch (error) {
         if (!cancelled) { console.error(error); setMixStatus('error') }
+      } finally {
+        if (unpublishedUrl) URL.revokeObjectURL(unpublishedUrl)
       }
     }
     const timer = window.setTimeout(run,500)
@@ -1628,17 +1633,21 @@ export default function App() {
       createdMixJobs.current.add(project.id)
       setCreatedMixStates(current=>({...current,[project.id]:'processing'}))
       ;(async()=>{
+        let unpublishedUrl = null
         try {
           assertProjectTrackAudio(project,required.map(part=>tracks[part.id]))
           const backingBlob=await loadProjectBacking(project)
           const value=await createAutoMix({tracks:required.map(part=>tracks[part.id]),backingBlob,duration:Math.max(project.recordingDuration||0,...required.map(part=>tracks[part.id].duration || 0))})
+          unpublishedUrl = value.url
           const record={id:project.id+':auto-mix',projectId:project.id,kind:'auto-mix',audioSourceRef:projectAudioReference(project),blob:value.blob,mimeType:'audio/wav',duration:value.duration,bytes:value.bytes,origin:value.origin,processing:value.processing,createdAt:new Date().toISOString()}
           await saveTrack(record)
           setCreatedMixes(current=>({...current,[project.id]:{...record,url:value.url}}))
+          unpublishedUrl = null
           setCreatedMixStates(current=>({...current,[project.id]:'complete'}))
           setCreatedProjects(current=>current.map(item=>item.id===project.id?{...item,status:'COMPLETE',progress:required.length}:item))
           if(screenRef.current==='workspace'&&activeProjectRef.current===project.id){setScreen('complete');setHistory([])}
         } catch(error){console.error(error);setCreatedMixStates(current=>({...current,[project.id]:'error'}))}
+        finally {if(unpublishedUrl)URL.revokeObjectURL(unpublishedUrl)}
       })()
     })
   },[tracksReady,createdProjects,createdProjectTracks,createdMixes])
