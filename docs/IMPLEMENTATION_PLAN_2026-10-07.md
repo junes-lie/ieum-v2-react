@@ -1,3 +1,6 @@
+### R1 현재 원본의 native 재생 길이 — 2026-10-12
+
+Current Mix→native Take 선택에서 WebM duration metadata가 없는 경우 이전 Mix 길이가 남는 production 결함을 재현했다. 기존 Player의 표시 time/known duration만 현재 source 기준으로 갱신한다. 실제1.2초 Take와 slider 일치/Mix11.978571초 복귀, Sample/정상2–4/main Mix 회귀·build/Node 통과. 관련 묶음만 commit/push→Git Integration→production 전환 QA로 마감하며 자동재생 정책·녹음 타임라인·새 IA/디자인은 바꾸지 않는다. 실제 AI 곡·서버·실기기 gate는 계속 별도다.
 ### R6 이식 정확성과 음악 정확도 분리 — 2026-10-12
 
 공식 Basic Pitch의 단일 실제9.097823초/고정 계산 golden을 사용한 유지 호환성 QA를 추가했다. 실제 ONNX/window/unwrap/note postprocessing3tensor와28events는 공식1e-4 tolerance 안이었다. 수동 annotation 검증과 구분하며 pitch bends/전체 SDK·Korean 지원/화음 승인으로 확대하지 않는다. 원곡의6/9 matching·mixed backing·전이 ambiguity는 해결되지 않았다. 다음은 실제 source 음절/note/rest와 화성 근거를 보존한 음악 제어 검증이며, 임의 모델 seed/threshold/transpose로 정답을 만들지 않는다. 모델/fixture/result는 기존 runtime에 보존하고 유지 QA만 repository에 포함한다.

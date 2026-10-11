@@ -1,3 +1,10 @@
+### R1 native Take로 전환할 때 재생 길이 — 2026-10-12
+
+production에서 실제 fake microphone Take를 녹음·제출한 뒤 Current Mix→개별 Tenor로 전환했다. rendered WAV preview11.978571초를 표시하던 Player가 native WebM의 duration이 nonfinite인 경우 Take의 저장 길이1.2초 대신 이전11.978571초 slider max를 유지하는 결함을 재현했다. 첫 QA는 Home에서 작업실 버튼을 기다려 timeout이었고 기존 단일 앱의 workspace query를 명시하자 실제 길이 assertion이 실패했다. 테스트 조건 문제와 앱 결함을 분리한다.
+
+기존 Player가 source/알려진 길이 변경 시 표시 time과 fallback duration을 현재 원본 기준으로 초기화하도록4줄만 보완했다. 자동 play/pause, native audio·녹음 타임라인·음원·시각/UX 정책은 유지한다. qa/verify-native-track-player-duration.mjs에서 실제 WebM duration unavailable·저장1.2초·slider1.2초 일치 및 rendered Mix11.978571초 복귀를 통과했다. build34modules, Node single-app render/user journey 및 native Sample 소유권·정상2–4/main Mix 생성/저장/reload 회귀 통과. 물리 지연/청취·실기기 인수와 구분한다.
+
+c106f4d064f7b1079c70dba0c4791af782685d7b Git Integration7001566287 success, production HTTP200/index-CmEtuFQt.js SHA2566CB43DBC6253A935F9D9CB8F974DA89A9258C1EBC9027545A0A98287CC684F28은 직전10f3e78 검증 앱과 같은 asset이다. 이번 Player build로 local asset은 바뀌었으므로 새 commit 자동배포/production의 실제 길이 전환을 이어서 검증한다. 보류 서버3파일·디자인/실제 AI 품질 gate 유지.
 ### R6 공식 계산 출력 호환성 / R1·R2 production — 2026-10-12
 
 10f3e78579f6ab773b7e5a477bb374bf35ebb695 Git Integration7001466306 success. production HTTP200/index-CmEtuFQt.js remote/local SHA2566CB43DBC6253A935F9D9CB8F974DA89A9258C1EBC9027545A0A98287CC684F28 exact. production Sample 짧은 거부/정상 Review/폐기 취소·확인·기존 Profile 보존과 Recorder recording/paused/review 삭제 실패 원본 보존·폐기 성공 URL 해제·timer 회귀 모두 passed/pageerror0. 실제 물리 입력/모바일/청취 인수와 구분한다.

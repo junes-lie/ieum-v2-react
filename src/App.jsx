@@ -1143,6 +1143,10 @@ function Player({ source, playing, setPlaying, duration: durationProp = 18, dura
   const audioRef = useRef(null)
   const duration = Number.isFinite(mediaDuration) && mediaDuration > 0 ? mediaDuration : durationProp
   useEffect(() => {
+    setTime(0)
+    setMediaDuration(durationHint || durationProp)
+  }, [source,durationHint,durationProp])
+  useEffect(() => {
     const audio = audioRef.current
     if (source && audio) {
       if (playing) audio.play().catch(() => setPlaying(false))
