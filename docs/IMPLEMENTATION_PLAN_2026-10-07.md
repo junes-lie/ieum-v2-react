@@ -1,3 +1,9 @@
+### R1 제출 경쟁 / R6 원곡 지속 구간 후속 — 2026-10-12
+
+R1: Review 중 다른 탭 최초 제출을 기존 atomic store의 반환 원본으로 공통 상태 반영한다. 메인/새 Project의 분석없는 원본을 복원 목록에서 누락시키지 않고 기존 실제 PCM 분석 경로를 사용한다. production 경쟁 상태 누락과 local null-features 재접속 실패를 재현했고 수정 후 원본 hash/제출수3/reload/2–4·main Mix/zero-graphics·missing-analysis 모드를 통과했다. 전체 R1·실기기·공유 서버 완료 상태는 변경하지 않는다.
+
+R6: 실제 source의 짧은 phonetic span은 완전한 음표 길이가 아니다. 인접 음절까지의 실제 confident F0로 첫 MIDI55 후보와 한 음절 내60→62 변화를 관측했으며 이전0/null을 보존한다. STFT/CQT 반주 root 후보가 대체로 겹치지만 일부 major/minor 후보가 근접/불일치하여 화음 승인은false다. 다음 선행 검증은 실제 지속 구간·melisma·휴지와 화성 근거 분리이며 이를 정식 score/가사 Guide/2–4 Part 완료로 바꾸지 않는다. runtime evidence·RAMguard·원본보존과 기존 단계/의존관계 유지. 상세 관측/자원/배포는 CURRENT_IMPLEMENTATION_STATUS 최신 항목 참조.
+
 추가 실제 구절: 같은 원곡50.0–58.5초의 “우리 함께 불러요”7음절 후보는55.03184/55.17217/55.37264/55.81368/56.83608/57.29717/58.01887초, 정답/오답 평균 path score0.32430/0.10871이다. ‘러’는0.02907로 낮아 미확정이며 원곡 전체로 일반화하지 않는다. child exit0/resourceStopped=false/13.305초, GPU allocation1433041920bytes. script의 expected score/hash 검사는 모델 생성 전으로 옮겼으며 최종 script로 실제 두 번째 원곡 구절을 검증했다. 새 생성·Part/catalog 연결은 수행하지 않았다.
 
 ### R6 다국어 음절 강제 정렬 후보 실제 검증 — 2026-10-12

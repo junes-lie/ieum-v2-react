@@ -54,3 +54,44 @@ if(process.env.IEUM_QA_SOURCE_URL) {
     console.log(JSON.stringify({passed:true,nativeTwoTabSubmission:true,...preserved,limits:'Isolated same-device IndexedDB; no multi-user server or physical microphone claim'}))
   } finally {await browser.close()}
 }
+
+// A second tab can commit after this tab enters Review; the current UI must use that winner.
+if(process.env.IEUM_QA_URL) {
+ const {createRequire}=await import('node:module')
+ const require=createRequire('C:/Users/LEE/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright/package.json')
+ const {chromium}=require('playwright')
+ const browser=await chromium.launch({headless:true,executablePath:'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe'})
+ try {
+  const context=await browser.newContext(),page=await context.newPage(),errors=[]
+  page.on('pageerror',error=>errors.push(error.message))
+  await context.addInitScript(()=>localStorage.setItem('ieum-v2:user-state:v7',JSON.stringify({joined:true,joinedPart:'tenor'})))
+  const url=new URL(process.env.IEUM_QA_URL);url.searchParams.set('design','figma');await page.goto(url.href)
+  await page.waitForFunction(()=>Object.keys(window.__IEUM_V2__?.state?.projectTracks||{}).length===2)
+  await page.evaluate(async()=>{
+   const projectId='ieum-thousand-years-v7',blob=await (await fetch('/demo-stems/soprano.wav')).blob()
+   const db=await new Promise((resolve,reject)=>{const r=indexedDB.open('ieum-v2-records',1);r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})
+   await new Promise((resolve,reject)=>{const tx=db.transaction('tracks','readwrite');tx.objectStore('tracks').put({id:`jisun:${projectId}:tenor:temporary-recording`,projectId,partId:'tenor',kind:'temporary-recording',userId:'jisun',blob,duration:7});tx.oncomplete=resolve;tx.onabort=()=>reject(tx.error)})
+   db.close()
+  })
+  await page.locator('[data-action="record-part"]').click();await page.waitForSelector('[data-action="record-submit"]')
+  const winner=await page.evaluate(async()=>{
+   const projectId='ieum-thousand-years-v7',blob=await (await fetch('/demo-stems/alto.wav')).blob()
+   const track={id:`${projectId}:tenor`,projectId,partId:'tenor',participantId:'jisun',participant:'JISUN',origin:'live-microphone-recording',blob,duration:7,createdAt:'qa-other-tab-winner',features:null,layer:null}
+   const db=await new Promise((resolve,reject)=>{const r=indexedDB.open('ieum-v2-records',1);r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})
+   await new Promise((resolve,reject)=>{const tx=db.transaction('tracks','readwrite');tx.objectStore('tracks').put(track);tx.oncomplete=resolve;tx.onabort=()=>reject(tx.error)})
+   db.close()
+   return Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',await blob.arrayBuffer()))).join(',')
+  })
+  await page.locator('[data-action="record-submit"]').click()
+  await page.waitForFunction(()=>window.__IEUM_V2__?.state?.projectTracks?.tenor?.createdAt==='qa-other-tab-winner',{},{timeout:5000})
+  const actual=await page.evaluate(async()=>{
+   const track=window.__IEUM_V2__.state.projectTracks.tenor
+   const blob=await (await fetch(track.url)).blob()
+   return {count:Object.keys(window.__IEUM_V2__.state.projectTracks).length,hash:Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',await blob.arrayBuffer()))).join(','),createdAt:track.createdAt}
+  })
+  assert.equal(actual.count,3);assert.equal(actual.hash,winner);assert.deepEqual(errors,[])
+  await page.reload();await page.waitForFunction(()=>window.__IEUM_V2__?.state?.projectTracks?.tenor?.createdAt==='qa-other-tab-winner')
+  assert.equal(await page.evaluate(()=>Object.keys(window.__IEUM_V2__.state.projectTracks).length),3)
+  console.log(JSON.stringify({passed:true,reviewRaceWinnerReflected:true,originalPlaybackHashPreserved:true,reloadCount:3,errors,limits:'Isolated native IndexedDB and actual React; same-device race fixture, no shared server or physical capture claim'}))
+ } finally {await browser.close()}
+}

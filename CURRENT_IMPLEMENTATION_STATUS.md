@@ -1,3 +1,17 @@
+### R1 경쟁 제출 및 분석 없는 원본 복원 — 2026-10-12
+
+Review에 진입한 뒤 다른 탭에서 같은 Part 원본을 먼저 확정하면 현재 화면이 workspace로만 돌아가 제출수/Track을 반영하지 않던 경로를 실제 production에서 Timeout5000ms로 재현했다. 별도 사전 조회/조기 반환을 없애고 기존 원자적 saveSubmittedTrack이 반환한 최초 원본을 공통 상태 반영/재생 경로에 연결한다. 이어 null features 원본이 재접속 목록에서 제외되어 Timeout30000ms였던 실제 경로를 확인하고 메인/새 Project의 features 필터만 제거했다. 기존 refreshTrackAnalysis가 실제 저장 PCM을 분석하며 원본을 임의 수치로 채우지 않는다. 새 UX/디자인/서비스 정책 변경 없음.
+
+build34modules 및 제출 계약/graphics 분리/재녹음 보존 통과. 유지 verify-submission-atomic의 native React Review 경쟁에서 최초 원본 SHA256 재생 동일/제출수3/재접속3/pageerror0 확인. 기존 zero-graphics 2/3/4/main Auto Mix QA와 새 missing-analysis 모드의 같은4조건도 실제 PCM 분석→제출수/seed/저장 Mix/reload 통과. 격리 fixture/합성 음성 검사이며 다중 사용자 서버·물리 마이크·청취 인수는 아니다. 보류 서버3파일은 이 묶음에서 제외한다. Git Integration/production은 push 후 확인한다.
+
+### R6 음절·음표·반주 근거 분리 — 2026-10-12
+
+실제 원곡 vocal/backing hash를 보존하며 별도 runtime에서 pYIN1024/128·1536/128 분석을 순차 실행했다. 기존 짧은 phonetic span의 첫 '오'는 두 조건 모두0/null 그대로다. 인접 음절 onset까지의 별도 후보 구간에서는7/11 confident frames 및 MIDI55를 관측했다. '도'는 MIDI60 약0.070/0.087초와 MIDI62 약0.598/0.615초의 연속 frame support가 있어 음절 중앙값 하나를 악보로 사용할 수 없다. '함/께'에서도 변화가 관측됐다. frame support·반올림 pitch run·40ms 표시 필터는 실제 음표 onset/end/지속 승인으로 간주하지 않는다. 이전 null/실패 결과를 수정하지 않았다.
+
+반주는 같은 실제8초 PCM을 STFT chroma24triad 및 HPSS harmonic CQT36bins/octave로 대조했다. 대체로 D/G root 후보가 같지만 '늘'은 STFT Eminor/Cmajor/Gmajor와 CQT Gmajor/Gminor가 근접하며, major/minor 구분 여유도 일부 작다. 일곱째/sus/전위·보이스리딩을 커버하지 않는 간단 후보라 화음 확정/Part 생성 입력으로 채택하지 않는다. 각 순차 child exit0/resourceStopped=false: F0해상도13.443초·STFT3.636초·CQT9.694초·인접구간F013.416초. 앞3작업 freeRAM 표본9.497/9.599/9.556GiB, child 표본 약0.24GiB 이하. 마지막 확인 PCfree9.78GiB였다. 원본/JSON/scripts/guard 로그는 repo 밖 runtime에 보존하며 sourceScore/harmony/catalog 승인false 유지.
+
+선행 alignment 도구 aef843746c75944fe1726a3638b14a4a96e46906: main/origin 일치, Git Integration6999876147 success, production HTTP200/JS index-CgOHNiJG.js SHA256D979022C12D178073060E2822695CF990F24B41B91362D371D6CACEDF145CDFC local exact 확인. 다음 R6은 지속/다음 음절 구간을 구분한 실제 melody 근거와 원곡 화성 검증이며 중앙값/장르 preset/임의 transpose로 gate를 대체하지 않는다.
+
 추가 실제 구절: 같은 원곡50.0–58.5초의 “우리 함께 불러요”7음절 후보는55.03184/55.17217/55.37264/55.81368/56.83608/57.29717/58.01887초, 정답/오답 평균 path score0.32430/0.10871이다. ‘러’는0.02907로 낮아 미확정이며 원곡 전체로 일반화하지 않는다. child exit0/resourceStopped=false/13.305초, GPU allocation1433041920bytes. script의 expected score/hash 검사는 모델 생성 전으로 옮겼으며 최종 script로 실제 두 번째 원곡 구절을 검증했다. 새 생성·Part/catalog 연결은 수행하지 않았다.
 
 ### R6 다국어 음절 강제 정렬 후보 실제 검증 — 2026-10-12

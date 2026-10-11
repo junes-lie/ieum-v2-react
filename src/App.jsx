@@ -1491,8 +1491,6 @@ export default function App() {
     if (!draft?.blob || part?.id !== recordingPart) throw new Error('제출할 녹음 원본을 찾지 못했어요.')
     if (activeCreatedProject ? part.id!==activeCreatedProject.ownerPartId : (!joined || part.id!==joinedPart)) throw new Error('내가 맡은 Part만 제출할 수 있어요.')
     assertProjectTrackAudio(targetProject,[draft])
-    const existing=await loadTrack(`${targetProject.id}:${part.id}`)
-    if(existing?.origin==='live-microphone-recording'){setScreen('workspace');setHistory([]);return existing}
     const candidate = {
       id:`${targetProject.id}:${part.id}`,
       projectId:targetProject.id,
@@ -1659,7 +1657,7 @@ export default function App() {
         fetch('/demo-stems/manifest.json').then(response=>response.ok?response.json():Promise.reject(new Error('데모 Track manifest 없음')))
       ])
       const stored = await Promise.all(projectStored
-        .filter(track => ['live-microphone-recording','local-formant-singing-demo'].includes(track.origin) && track.blob && track.features)
+        .filter(track => ['live-microphone-recording','local-formant-singing-demo'].includes(track.origin) && track.blob)
         .map(async track => ({
           ...await refreshTrackAnalysis(track,PROJECT_SEED),
           participantId:track.participantId || personFromName(track.participant)?.id || null
@@ -1683,7 +1681,7 @@ export default function App() {
       const createdTrackEntries = await Promise.all(createdProjects.map(async project=>{
         const records = await loadProjectTracks(project.id)
         const tracks = await Promise.all(records
-          .filter(track=>!['auto-mix','temporary-recording'].includes(track.kind)&&track.blob&&track.features)
+          .filter(track=>!['auto-mix','temporary-recording'].includes(track.kind)&&track.blob)
           .map(async track=>{const refreshed=await refreshTrackAnalysis(track,project.seed);return {...refreshed,url:restoredUrl(refreshed.blob)}}))
         const storedMix=records.find(track=>track.kind==='auto-mix'&&track.blob)
         if(storedMix){setCreatedMixes(current=>({...current,[project.id]:{...storedMix,url:restoredUrl(storedMix.blob)}}));setCreatedMixStates(current=>({...current,[project.id]:'complete'}))}
