@@ -1,3 +1,9 @@
+### R1 복구 재시도 Blob URL 소유권 — 2026-10-12
+
+후반 생성 Project 읽기 실패 전에 복구한 Track/Sample/Mix의 Blob URL이 재시도마다 남는 경로를 수정했다. bootstrap별 생성 URL만 추적하고 실패·취소·effect 종료 때 반환한다. 실패 뒤 진행 중인 비동기 분석도 새 URL을 만들지 못한다. 정상 복구 URL은 앱 수명 동안 유지하며 저장 Blob/파일·다른 녹음 URL은 삭제하지 않는다.
+
+build 및 native bootstrap QA: 초기/후반 읽기 실패·반복 재시도에서 owned URL 전부 반환, 성공 뒤2개 live URL 실제 fetch 가능, 원본 hash 동일/write0/mic0 확인. user-state 복구 QA 회귀 통과. 첫 추가 QA는 parts가 빈 불완전 Project fixture로 렌더 id 오류/timeout하여 기존 Project 구조를 사용하도록 수정했다. 앱을 잘못된 fixture에 맞추지 않았다. 전체 PC RAM 절감량/실기기 청취를 측정한 것으로 표시하지 않는다.
+
 ### R1 사용자 상태 읽기/저장 실패 보호 — 2026-10-12
 
 localStorage 읽기·JSON/shape 실패 후 기본값을 자동 저장하여 원본을 덮는 경로를 차단한다. 복구 전 bootstrap/DB 초기화·앱 진입을 막고 기존 읽기 재시도는 reload로 원본을 다시 읽는다. 저장 quota/권한 실패는 현재 화면과 녹음을 유지한 채 기존 오류 표현으로 표시하며 재시도는 최신 메모리 상태만 저장한다. 녹음 컴포넌트를 다시 mount하지 않는다.

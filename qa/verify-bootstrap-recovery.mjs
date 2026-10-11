@@ -37,5 +37,27 @@ try {
  assert.equal(await page.evaluate(()=>window.qaBootstrapMic),0)
  assert.deepEqual(await snapshot(),original)
  assert.deepEqual(errors,[])
- console.log(JSON.stringify({passed:true,failedReadBlocksApp:true,repeatedFailureStaysBlocked:true,retryRestoresSavedTracks:true,noWritesOrMic:true,originalHashesPreserved:true,limits:'Isolated rendered app/native IndexedDB; no physical mic, listening, design or backend acceptance.'}))
+ await page.evaluate(()=>{const key='ieum-v2:user-state:v7',state=JSON.parse(localStorage.getItem(key));state.createdProjects=[{...window.__IEUM_V2__.state.activeProject,id:'qa-late-read',seed:'qa-preserved-seed',ownerPartId:'tenor'}];localStorage.setItem(key,JSON.stringify(state))})
+ await page.addInitScript(()=>{
+  window.qaFailBootstrap=false;window.qaFailLateRead=true;window.qaReadCount=0;window.qaCreatedUrls=[];window.qaRevokedUrls=[]
+  const read=IDBObjectStore.prototype.getAll,create=URL.createObjectURL,revoke=URL.revokeObjectURL
+  IDBObjectStore.prototype.getAll=function(...args){window.qaReadCount++;if(window.qaFailLateRead&&window.qaReadCount%3===0)throw new Error('QA late project read failure');return read.apply(this,args)}
+  URL.createObjectURL=function(blob){const url=create.call(this,blob);window.qaCreatedUrls.push(url);return url}
+  URL.revokeObjectURL=function(url){window.qaRevokedUrls.push(url);return revoke.call(this,url)}
+ })
+ await page.reload();await page.waitForSelector('[data-action="tracks-load-retry"]')
+ assert.equal(await page.evaluate(()=>window.qaCreatedUrls.length),2)
+ assert.deepEqual(await page.evaluate(()=>window.qaRevokedUrls),await page.evaluate(()=>window.qaCreatedUrls))
+ await page.locator('[data-action="tracks-load-retry"]').click()
+ await page.waitForFunction(()=>window.qaCreatedUrls.length===4&&window.qaRevokedUrls.length===4)
+ assert.equal(await page.locator('[data-nav]').count(),0)
+ await page.evaluate(()=>{window.qaFailLateRead=false})
+ await page.locator('[data-action="tracks-load-retry"]').click();await page.waitForSelector('[data-nav="user"]')
+ assert.equal(await page.evaluate(()=>window.qaCreatedUrls.length-window.qaRevokedUrls.length),2)
+ assert.equal(await page.evaluate(()=>window.qaBootstrapWrites),0)
+ assert.deepEqual(await snapshot(),original)
+ const liveUrls=await page.evaluate(()=>Object.values(window.__IEUM_V2__.state.projectTracks).map(track=>track.url))
+ assert.equal(await page.evaluate(async urls=>(await Promise.all(urls.map(url=>fetch(url).then(response=>response.ok)))).every(Boolean),liveUrls),true)
+ assert.deepEqual(errors,[])
+ console.log(JSON.stringify({passed:true,failedReadBlocksApp:true,repeatedFailureStaysBlocked:true,retryRestoresSavedTracks:true,noWritesOrMic:true,originalHashesPreserved:true,lateFailureReleasesOnlyOwnedUrls:true,repeatedRetryDoesNotAccumulateUrls:true,successfulRecoveryKeepsPlayableUrls:true,limits:'Isolated rendered app/native IndexedDB; no physical mic, listening, design or backend acceptance.'}))
 } finally {await browser.close()}

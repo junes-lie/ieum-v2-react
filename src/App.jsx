@@ -1645,6 +1645,12 @@ export default function App() {
   useEffect(() => {
     if(persisted.storageReadFailed)return
     let active = true
+    const restoredUrls=new Set()
+    const releaseRestoredUrls=()=>{for(const url of restoredUrls)URL.revokeObjectURL(url);restoredUrls.clear()}
+    const restoredUrl=blob=>{
+      if(!active)throw new Error('Data recovery cancelled')
+      const url=URL.createObjectURL(blob);restoredUrls.add(url);return url
+    }
     const bootstrap = async () => {
       setTracksLoadError('')
       const [projectStored, profileStored, demoManifest] = await Promise.all([
@@ -1665,22 +1671,22 @@ export default function App() {
         stored.push(demoTrack)
       }
       if (!active) return
-      setProjectTracks(Object.fromEntries(stored.map(track=>[track.partId,{...track,url:URL.createObjectURL(track.blob)}])))
+      setProjectTracks(Object.fromEntries(stored.map(track=>[track.partId,{...track,url:restoredUrl(track.blob)}])))
       const mainDrafts=projectStored.filter(item=>item.kind==='temporary-recording'&&item.blob)
       setDraftKeys(current=>({...current,...Object.fromEntries(mainDrafts.map(item=>[`${item.projectId}:${item.partId}`,true]))}))
       const rangeRecord = profileStored.find(item=>item.kind==='voice-range')
       const sampleRecord = profileStored.find(item=>item.kind==='voice-sample' && item.blob)
       const preferenceRecord=profileStored.find(item=>item.kind==='voice-preferences')
       const mixRecord = projectStored.find(item=>item.kind==='auto-mix' && item.blob)
-      if (rangeRecord && sampleRecord) setProfile({name:'JISUN',voiceType:'Warm middle',range:rangeRecord.range,rangeData:rangeRecord.rangeData,sampleSong:sampleRecord.songLabel,roles:['Middle harmony','Support'],genres:['Indie','Ballad'],taste:['Acoustic','Film soundtrack'],sampleUrl:URL.createObjectURL(sampleRecord.blob),sampleDuration:sampleRecord.duration,sampleFeatures:sampleRecord.features,identity:{status:'blocked',reason:'free-local-generative-model-not-connected'},...preferenceRecord?.preferences})
-      if (mixRecord) { setMix({...mixRecord,url:URL.createObjectURL(mixRecord.blob)}); setMixStatus('complete'); setMixProgress(100) }
+      if (rangeRecord && sampleRecord) setProfile({name:'JISUN',voiceType:'Warm middle',range:rangeRecord.range,rangeData:rangeRecord.rangeData,sampleSong:sampleRecord.songLabel,roles:['Middle harmony','Support'],genres:['Indie','Ballad'],taste:['Acoustic','Film soundtrack'],sampleUrl:restoredUrl(sampleRecord.blob),sampleDuration:sampleRecord.duration,sampleFeatures:sampleRecord.features,identity:{status:'blocked',reason:'free-local-generative-model-not-connected'},...preferenceRecord?.preferences})
+      if (mixRecord) { setMix({...mixRecord,url:restoredUrl(mixRecord.blob)}); setMixStatus('complete'); setMixProgress(100) }
       const createdTrackEntries = await Promise.all(createdProjects.map(async project=>{
         const records = await loadProjectTracks(project.id)
         const tracks = await Promise.all(records
           .filter(track=>!['auto-mix','temporary-recording'].includes(track.kind)&&track.blob&&track.features)
-          .map(async track=>{const refreshed=await refreshTrackAnalysis(track,project.seed);return {...refreshed,url:URL.createObjectURL(refreshed.blob)}}))
+          .map(async track=>{const refreshed=await refreshTrackAnalysis(track,project.seed);return {...refreshed,url:restoredUrl(refreshed.blob)}}))
         const storedMix=records.find(track=>track.kind==='auto-mix'&&track.blob)
-        if(storedMix){setCreatedMixes(current=>({...current,[project.id]:{...storedMix,url:URL.createObjectURL(storedMix.blob)}}));setCreatedMixStates(current=>({...current,[project.id]:'complete'}))}
+        if(storedMix){setCreatedMixes(current=>({...current,[project.id]:{...storedMix,url:restoredUrl(storedMix.blob)}}));setCreatedMixStates(current=>({...current,[project.id]:'complete'}))}
         const drafts=records.filter(track=>track.kind==='temporary-recording'&&track.blob)
         if(drafts.length)setDraftKeys(current=>({...current,...Object.fromEntries(drafts.map(item=>[`${item.projectId}:${item.partId}`,true]))}))
         return [project.id,Object.fromEntries(tracks.map(track=>[track.partId,track]))]
@@ -1689,8 +1695,8 @@ export default function App() {
       setCreatedProjectTracks(Object.fromEntries(createdTrackEntries))
       setTracksReady(true)
     }
-    bootstrap().catch(error=>{ console.error(error); if(active)setTracksLoadError('저장한 데이터를 불러오지 못했어요. 원본을 유지하고 다시 시도해 주세요.') })
-    return () => { active=false }
+    bootstrap().catch(error=>{ const wasActive=active;active=false;releaseRestoredUrls(); console.error(error); if(wasActive)setTracksLoadError('저장한 데이터를 불러오지 못했어요. 원본을 유지하고 다시 시도해 주세요.') })
+    return () => { active=false;releaseRestoredUrls() }
   },[tracksLoadAttempt])
 
   useEffect(() => {
