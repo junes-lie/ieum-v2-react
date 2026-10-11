@@ -1,3 +1,9 @@
+### R1/R2 녹음 세션 잔여 참조 정리 — 2026-10-12
+
+cancelRecording이 세션 소유 decoded/recordingBlob/lastAnalysis/URL 문자열 참조를 반환하도록 보완한다. Review·Profile·저장 Track이 독립적으로 가진 Blob/재생 URL을 revoke하거나 삭제하지 않는다. 다른 사용자 legacy Draft는 소유권 확인 후에만 URL을 만들도록 순서를 고친다. 기존 녹음/Setup/Review/제출 UX와 데이터 스키마는 유지한다.
+
+Node audio foundation에서 세션 정리 후 독립 Take URL fetch/원본 bytes 보존과 분석 참조 반환을 확인했다. 초기 Node fixture에 cancelAnimationFrame이 없어 ReferenceError였으며 테스트의 브라우저 API fixture만 보완했다. build34modules 통과. 전체 PC RAM 절감량이나 실기기 청취 성공으로 확대하지 않는다. native legacy Draft의 소유권/원본 보존(다른 사용자 URL0 포함), sample lifecycle의 취소/Take 보존, recorder session의 mic1/타이머1/Review 유지 QA 모두 통과했다. 자동배포/Production 검증은 배포 후 별도로 기록한다.
+
 ### R1 복구 재시도 Blob URL 소유권 — 2026-10-12
 
 후반 생성 Project 읽기 실패 전에 복구한 Track/Sample/Mix의 Blob URL이 재시도마다 남는 경로를 수정했다. bootstrap별 생성 URL만 추적하고 실패·취소·effect 종료 때 반환한다. 실패 뒤 진행 중인 비동기 분석도 새 URL을 만들지 못한다. 정상 복구 URL은 앱 수명 동안 유지하며 저장 Blob/파일·다른 녹음 URL은 삭제하지 않는다.

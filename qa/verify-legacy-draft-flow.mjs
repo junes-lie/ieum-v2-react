@@ -18,10 +18,13 @@ try {
    await new Promise((resolve,reject)=>{const tx=db.transaction('tracks','readwrite');tx.objectStore('tracks').put({id,projectId,partId:'tenor',kind:'temporary-recording',userId:owner,blob,duration:7,guides:{backing:false,parts:[false,false,false,false]}});tx.oncomplete=resolve;tx.onabort=()=>reject(tx.error)})
    db.close()
   },owner)
+  await page.evaluate(()=>{window.qaRestoredUrls=0;const create=URL.createObjectURL;URL.createObjectURL=function(...args){window.qaRestoredUrls++;return create.apply(this,args)}})
   await page.locator('[data-action="record-part"]').click()
   await page.waitForFunction(()=>document.querySelector('[data-action="record-submit"]')||document.querySelector('[data-action="record-start"]'))
   if(owner==='another-user') {
    assert.equal(await page.locator('[data-action="record-submit"]').count(),0)
+   await page.waitForFunction(()=>!document.querySelector('[data-action="record-start"]')?.disabled)
+   assert.equal(await page.evaluate(()=>window.qaRestoredUrls),0,'Foreign draft must not allocate a playback URL')
   } else {
    await page.waitForSelector('[data-action="record-submit"]')
    assert.equal(await page.locator('.lyrics .active').textContent(),'가사 없음')

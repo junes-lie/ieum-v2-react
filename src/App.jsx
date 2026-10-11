@@ -1080,8 +1080,8 @@ function Recorder({ go, submit, onRecordingStart, partId, projectTracks, layers,
     setError('')
     loadTrack(`${project.id}:${currentPart.id}`).then(submitted=>submitted?.origin==='live-microphone-recording'?null:loadTrack(draftId).then(async stored=>stored || await loadTrack(legacyDraftId))).then(stored=>{
       if (!active || stored?.kind!=='temporary-recording' || !stored.blob) return
-      const restored={...stored,url:URL.createObjectURL(stored.blob)}
       if(stored.userId && stored.userId!==CURRENT_USER_ID)return
+      const restored={...stored,url:URL.createObjectURL(stored.blob)}
       if(stored.guides)setGuides(stored.guides)
       setDraft({...restored,id:draftId,userId:CURRENT_USER_ID}); setSeconds(restored.duration||0); setNoiseFloor(restored.noiseFloor||0); setStatus('review'); onDraftChange?.(true)
     }).then(()=>{if(active)setRestoreState('ready')}).catch(()=>{

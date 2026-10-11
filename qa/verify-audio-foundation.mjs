@@ -12,7 +12,7 @@ assert.equal(evaluatePartFit({rangeData:{lowMidi:48,highMidi:67,comfortableRange
 assert.equal(evaluatePartFit({rangeData:{lowMidi:48,highMidi:67},part:{range:'C3–G4'}}).tessituraFit,null)
 
 globalThis.window = {AudioContext:class {}}
-const {limitBufferPeak,audioRuntime,getRecordingTimeline,pauseRecording,resumeRecording,updateRecordingGuides} = await import('../src/audio.js')
+const {limitBufferPeak,cancelRecording,audioRuntime,getRecordingTimeline,pauseRecording,resumeRecording,updateRecordingGuides} = await import('../src/audio.js')
 for (const count of [2,3,4]) {
   const channels=[Float32Array.from([count*.7,-count*.8,.02]),Float32Array.from([count*.5,-.1,.2])]
   const result=limitBufferPeak({numberOfChannels:2,getChannelData:index=>channels[index]})
@@ -67,3 +67,17 @@ const beforeEnd=scheduled.length
 updateRecordingGuides({backing:true,parts:[false]})
 assert.equal(scheduled.length,beforeEnd,'A finished actual backing neither restarts nor falls back to synthetic audio')
 console.log('Audio foundation: range/key gates, missing metadata, 2/3/4-track master peak safety, pause/resume timeline and actual backing continuity passed.')
+
+globalThis.cancelAnimationFrame=()=>{}
+const retainedTake=new Blob(['original persisted Take'],{type:'audio/webm'})
+const retainedUrl=URL.createObjectURL(retainedTake)
+audioRuntime.recorder={state:'inactive'}
+audioRuntime.recordingBlob=retainedTake;audioRuntime.recordingUrl=retainedUrl
+audioRuntime.decoded={duration:90};audioRuntime.lastAnalysis={features:{rms:.1}}
+cancelRecording()
+assert.equal(audioRuntime.decoded,null)
+assert.equal(audioRuntime.recordingBlob,null)
+assert.equal(audioRuntime.lastAnalysis,null)
+assert.equal(await (await fetch(retainedUrl)).text(),'original persisted Take','Session cleanup must preserve independently owned Review/Profile audio')
+URL.revokeObjectURL(retainedUrl)
+console.log('PASS session cleanup releases analysis references while preserving independently owned Take bytes and playable URL')

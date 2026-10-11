@@ -465,6 +465,11 @@ export function cancelRecording() {
   runtime.chunks = []
   runtime.recordingGuideState = null
   runtime.activeElapsedSec = 0
+  // Review/Profile own the returned Blob and URL independently of this session.
+  runtime.decoded = null
+  runtime.recordingBlob = null
+  runtime.recordingUrl = ''
+  runtime.lastAnalysis = null
 }
 
 export async function playCurrentMix({ included, tracks = [], backingBlob = null, duration = 18, onEnded }) {
