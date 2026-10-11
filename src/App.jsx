@@ -914,10 +914,14 @@ function OtherVocalProfile({ vocal, back, saved, toggleSave, sampleUrl, sampleDu
   </div>
 }
 
-function Finder({ go, invite, invitedVocalIds = [], part, vocalSaves, toggleVocalSave, openVocalProfile, selectedVocalId, setSelectedVocalId }) {
-  const [sort, setSort] = useState('종합 추천순')
-  const [filterOpen,setFilterOpen] = useState(false)
-  const [roleOnly,setRoleOnly] = useState(false)
+function Finder({ back, preferences, updatePreferences, invite, invitedVocalIds = [], part, vocalSaves, toggleVocalSave, openVocalProfile, selectedVocalId, setSelectedVocalId }) {
+  const {sort='종합 추천순',filterOpen=false,roleOnly=false,scrollTop=0}=preferences || {}
+  const setSort=value=>updatePreferences({sort:value})
+  const setRoleOnly=value=>updatePreferences({roleOnly:value})
+  const returnToList=()=>{
+    setSelectedVocalId(null)
+    requestAnimationFrame(()=>{const surface=document.querySelector('.finder-screen');if(surface)surface.scrollTop=scrollTop;window.scrollTo(0,scrollTop)})
+  }
   const keyBySort = {'종합 추천순':'overall','음역 적합순':'range','음색 조화순':'timbre','역할 보완순':'role','곡 취향 유사순':'taste'}
   const partName = part?.name || 'Bass'
   const roleHints = {Soprano:['Upper harmony','Main'],Alto:['Support','Middle harmony'],Tenor:['Middle harmony','Support'],Bass:['Bass foundation','Low harmony']}
@@ -935,15 +939,15 @@ function Finder({ go, invite, invitedVocalIds = [], part, vocalSaves, toggleVoca
     .filter(candidate=>!roleOnly || candidate.roles?.some(role=>preferredRoles.includes(role)))
     .sort((a,b)=>score(b,keyBySort[sort])-score(a,keyBySort[sort]))
   const selected = selectedVocalId ? PERSON_BY_ID[selectedVocalId] : null
-  if (selected) return <MatchDetail vocal={selected} back={() => setSelectedVocalId(null)} openProfile={openVocalProfile} invite={invite} invitedVocalIds={invitedVocalIds} part={part}/>
+  if (selected) return <MatchDetail vocal={selected} back={returnToList} openProfile={openVocalProfile} invite={invite} invitedVocalIds={invitedVocalIds} part={part}/>
   return <div className="screen finder-screen">
-    <TopBar title={`${partName.toUpperCase()} · VOCAL FINDER`} back={() => go('workspace')} action={filterOpen?'닫기':'필터'} onAction={()=>setFilterOpen(value=>!value)}/>
+    <TopBar title={`${partName.toUpperCase()} · VOCAL FINDER`} back={back} action={filterOpen?'닫기':'필터'} onAction={()=>updatePreferences({filterOpen:!filterOpen})}/>
     <main>
       <p className="kicker">등록된 샘플 음역 기준 · {candidates.length} vocals</p><h1>{partName}를 끝까지<br/>부를 수 있는 보컬</h1>
       {filterOpen && <section className="finder-filters"><label><input type="checkbox" checked={roleOnly} onChange={event=>setRoleOnly(event.target.checked)}/><span>{partName} 선호 역할</span></label><p>전체 보컬 중 현재 Part의 역할을 선호하는 후보만 좁혀 봅니다.</p></section>}
       <div className="sort-row">{Object.keys(keyBySort).map(item => <button key={item} className={sort === item ? 'active' : ''} onClick={() => setSort(item)}>{item}</button>)}</div>
       {candidates.length===0 && <section className="empty-state"><p>이 조건에 맞는 보컬이 없어요. 필터를 바꿔 다시 찾아보세요.</p><button className="secondary" data-action="reset-finder" onClick={()=>{setRoleOnly(false);setSort("종합 추천순")}}>조건 초기화</button></section>}
-      <div className="candidate-list">{candidates.map(candidate => <div key={candidate.id} className="candidate-row"><button className="candidate-open" data-action="candidate" onClick={() => setSelectedVocalId(candidate.id)}><VoiceIdentity identity={candidate.identity}/><span><strong>{candidate.name}</strong><small>{candidate.range} · {candidate.role}</small><em>{candidate.matchReason || `${partName} 후보 · ${candidate.roles?.join(' · ')}`}</em></span><b>↗</b></button><button className={`candidate-save ${vocalSaves.some(item=>item.vocalId===candidate.id)?'active':''}`} aria-label={`${candidate.name} 보컬 저장`} aria-pressed={vocalSaves.some(item=>item.vocalId===candidate.id)} onClick={()=>toggleVocalSave(candidate.id)}><Icon name="star" size={17}/></button></div>)}</div>
+      <div className="candidate-list">{candidates.map(candidate => <div key={candidate.id} className="candidate-row"><button className="candidate-open" data-action="candidate" onClick={() => {updatePreferences({scrollTop:document.querySelector('.screen')?.scrollTop || window.scrollY});setSelectedVocalId(candidate.id);scrollToTop()}}><VoiceIdentity identity={candidate.identity}/><span><strong>{candidate.name}</strong><small>{candidate.range} · {candidate.role}</small><em>{candidate.matchReason || `${partName} 후보 · ${candidate.roles?.join(' · ')}`}</em></span><b>↗</b></button><button className={`candidate-save ${vocalSaves.some(item=>item.vocalId===candidate.id)?'active':''}`} aria-label={`${candidate.name} 보컬 저장`} aria-pressed={vocalSaves.some(item=>item.vocalId===candidate.id)} onClick={()=>toggleVocalSave(candidate.id)}><Icon name="star" size={17}/></button></div>)}</div>
     </main>
   </div>
 }
@@ -1281,9 +1285,12 @@ function PersonalArea({ type, go, editVoice, updatePreferences, createdProjectTr
   const hasProject = joined || createdProjects.length > 0
   const lifecycle = mix ? 'complete' : readyForMix ? 'mixing' : 'recording'
   const projectVisible = projectFilter==='all' || projectFilter===lifecycle
+  const filteredCreatedProjects=createdProjects.filter(project=>projectFilter==='all'||projectFilter===project.status.toLowerCase())
+  const projectFilterEmpty=hasProject&&!(joined&&projectVisible)&&filteredCreatedProjects.length===0
   const projectLiked = projectLikes.some(item=>item.projectId===PROJECT_ID)
   return <div className="screen simple-screen"><TopBar meta="IEUM"/><main><p className="kicker">Personal area</p><h1>{titles[type]}</h1>
     {type==='projects' && <><div className="object-tabs project-tabs" aria-label="프로젝트 상태 필터">{[['all','전체'],['recruiting','모집'],['recording','녹음'],['mixing','믹싱'],['complete','완성']].map(([value,label])=><button key={value} className={projectFilter===value?'active':''} aria-pressed={projectFilter===value} onClick={()=>setProjectFilter(value)}>{label}</button>)}</div>{joined && projectVisible && <section className="saved-card"><ResonanceRecord layers={layers} compact/><div>{delayedProjectIds.includes(PROJECT_ID)&&<span className="completion-delay-badge">녹음 필요 · 7일</span>}<div className="saved-card-title"><strong>A Thousand Years</strong><button className={projectLiked?'active':''} aria-label={projectLiked?'프로젝트 Like 취소':'프로젝트 Like'} onClick={toggleProjectLike}><Icon name="heart" size={18}/></button></div><p>{trackCount}/4 Tracks · {lifecycle.toUpperCase()}</p><button className="secondary" data-action="resume-project" onClick={()=>openMainWorkspace(mix?'complete':readyForMix?'multitrack':'workspace')}>{mix?'완성곡 열기':readyForMix?'믹싱 확인':'작업실 계속하기'}</button></div></section>}{createdProjects.filter(project=>projectFilter==='all'||projectFilter===project.status.toLowerCase()).map(project=><section className="saved-card created-project-card" key={project.id}><div className="empty-record-mark"><span>{String(project.progress||0).padStart(2,'0')}</span><small>/{String(project.partCount).padStart(2,'0')}</small></div><div>{delayedProjectIds.includes(project.id)&&<span className="completion-delay-badge">녹음 필요 · 7일</span>}<div className="saved-card-title"><strong>{project.title}</strong></div><p>{project.name} · {project.status}</p><button className="secondary" data-action="open-created-project" onClick={()=>openCreatedProject(project.id)}>작업실 열기</button></div></section>)}{!hasProject && <section className="empty-state"><p>참여하거나 만든 프로젝트가 아직 없어요.</p><button className="primary" onClick={()=>go('detail')}>OPEN Part 찾기</button><button className="secondary" onClick={()=>go('create-project')}>새 프로젝트 만들기</button></section>}</>}
+    {type==='projects'&&projectFilterEmpty&&<section className="empty-state"><p>이 상태의 프로젝트가 없어요.</p><button className="secondary" data-action="reset-project-filter" onClick={()=>setProjectFilter('all')}>필터 초기화</button></section>}
     {type==='collection' && <CollectionArea go={go} openMainWorkspace={openMainWorkspace} openSong={openSong} createdProjects={createdProjects} createdProjectTracks={createdProjectTracks} createdMixes={createdMixes} openCreatedProject={openCreatedProject} toggleProjectById={toggleProjectById} projectLikes={projectLikes} vocalSaves={vocalSaves} songSaves={songSaves} toggleProjectLike={toggleProjectLike} toggleVocalSave={toggleVocalSave} toggleSongSave={toggleSongSave} openVocalProfile={openVocalProfile} layers={layers} trackCount={trackCount} mix={mix} joined={joined}/>}
     {type==='my' && <>{profile ? <><section className="profile-card"><VoiceIdentity identity={profile.identity}/><div><p className="kicker">Voice profile</p><h2>{profile.name} · {profile.range}</h2><p>{profile.voiceType}<br/>Voice Identity 생성형 AI는 미검증</p>{profile.sampleUrl && <ProfileSamplePlayer source={profile.sampleUrl} duration={profile.sampleDuration}/>}</div></section><ProfilePreferences profile={profile} save={updatePreferences}/><section className="my-voice-details"><div><span>Voice Range</span><b>{profile.range}</b><button onClick={()=>editVoice("range")}>다시 측정</button></div><div><span>Voice Sample</span><b>{profile.sampleSong}</b><button onClick={()=>editVoice("sample")}>다시 등록</button></div><div><span>선호 역할</span><b>{profile.roles?.join(' · ')}</b></div><div><span>장르</span><b>{profile.genres?.join(' · ')}</b></div><div><span>음악 취향</span><b>{profile.taste?.join(' · ')}</b></div><div><span>Voice Identity</span><b>무료·로컬 생성 모델 미연결</b><button disabled>대기</button></div></section></> : <section className="empty-state"><p>등록된 Voice Profile이 없어요.</p><button className="primary" onClick={()=>go('voice')}>내 목소리 알아보기</button></section>}<section className="demo-reset"><div><strong>처음부터 다시 검증하기</strong><p>내 Voice Profile, 참여·초대 상태와 녹음을 초기화합니다. 출처가 표시된 Soprano·Alto 시연 Track 2개만 다시 준비되어 2/4에서 시작합니다.</p></div><button className="secondary" data-action="reset-demo" onClick={resetDemo}>시연 상태 초기화</button></section></>}
   </main></div>
@@ -1327,6 +1334,7 @@ export default function App() {
   const [selectedProjectId,setSelectedProjectId] = useState(null)
   const [activeCreatedProjectId,setActiveCreatedProjectId] = useState(persisted.activeCreatedProjectId || null)
   const [finderPartId,setFinderPartId] = useState('bass')
+  const [finderPreferences,setFinderPreferences] = useState({})
   const [createProjectSongId,setCreateProjectSongId] = useState(null)
   const [mix,setMix] = useState(null)
   const [mixStatus,setMixStatus] = useState('idle')
@@ -1355,6 +1363,7 @@ export default function App() {
   const activeMixStatus=activeCreatedProject?(createdMixStates[activeProject.id] || 'idle'):mixStatus
   const activeProjectLiked = projectLikes.some(entry=>entry.projectId===activeProject.id)
   const activeFinderPart = activeParts.find(part=>part.id===finderPartId) || activeParts.find(part=>!part.participantId) || activeParts[0]
+  const finderContextKey=JSON.stringify([activeProject.id,activeFinderPart?.id])
   const touchProjectActivity = projectId => {
     setProjectActivity(current=>({...current,[projectId]:new Date().toISOString()}))
     setDelayNotified(current=>{const next={...current};delete next[projectId];return next})
@@ -1656,7 +1665,7 @@ export default function App() {
   else if (screen==='create-project') content=<CreateProject back={()=>back(createProjectSongId?'detail':'home')} complete={createProject} initialSongId={createProjectSongId}/>
   else if (screen==='voice') content=<VoiceSetup key={voiceEditMode || "setup"} existing={profile} editMode={voiceEditMode} go={go} back={()=>{setVoiceEditMode(null);back(voiceReturnScreen)}} complete={completeProfile}/>
   else if (screen==='workspace') content=<Workspace go={go} project={activeProject} song={activeSong} isCreated={Boolean(activeCreatedProject)} ownerPartId={activeCreatedProject?.ownerPartId || joinedPart} findVocal={openFinder} joined={joined} invited={invited} invitedPerson={invitedPerson} candidateAccepted={candidateAccepted} candidateArrivalStatus={candidateArrivalStatus} projectTracks={activeTracks} layers={activeLayers} recordPart={recordPart} projectLiked={activeProjectLiked} toggleProjectLike={toggleActiveProjectLike} openVocalProfile={openVocalProfile} mix={activeMix} mixStatus={activeMixStatus} completionDelayed={delayedProjectIds.includes(activeProject.id)} hasDraft={Boolean(draftKeys[`${activeProject.id}:${activeCreatedProject?.ownerPartId||joinedPart}`])}/>
-  else if (screen==='finder') content=<Finder go={go} invite={activeTracks[finderPartId]||activeFinderPart?.status==='accepted'?null:invite} invitedVocalIds={activeCreatedProject?(activeFinderPart?.invitations||[]).map(item=>item.vocalId):(invited?[invitedVocalId]:[])} part={activeFinderPart} vocalSaves={vocalSaves} toggleVocalSave={toggleVocalSave} openVocalProfile={openVocalProfile} selectedVocalId={selectedMatchVocalId} setSelectedVocalId={setSelectedMatchVocalId}/>
+  else if (screen==='finder') content=<Finder back={()=>back('workspace')} preferences={finderPreferences[finderContextKey]} updatePreferences={patch=>setFinderPreferences(current=>({...current,[finderContextKey]:{...current[finderContextKey],...patch}}))} invite={activeTracks[finderPartId]||activeFinderPart?.status==='accepted'?null:invite} invitedVocalIds={activeCreatedProject?(activeFinderPart?.invitations||[]).map(item=>item.vocalId):(invited?[invitedVocalId]:[])} part={activeFinderPart} vocalSaves={vocalSaves} toggleVocalSave={toggleVocalSave} openVocalProfile={openVocalProfile} selectedVocalId={selectedMatchVocalId} setSelectedVocalId={setSelectedMatchVocalId}/>
   else if (screen==='vocal-profile') content=<OtherVocalProfile vocal={selectedVocal} back={()=>back('collection')} saved={vocalSaves.some(item=>item.vocalId===selectedVocalId)} toggleSave={toggleVocalSave} sampleUrl={selectedVocal.sampleUrl} sampleDuration={selectedVocal.sampleDuration}/>
   else if (screen==='record') content=<Recorder go={go} submit={submit} onRecordingStart={()=>{touchProjectActivity(activeProject.id);if(!activeCreatedProject)setMainKeyLocked(true);if(activeCreatedProject)setCreatedProjects(current=>current.map(project=>project.id===activeProject.id?{...project,keyLocked:true}:project))}} partId={recordingPart} projectTracks={activeTracks} layers={activeLayers} project={{...activeProject,songTitle:activeSong.title,recordingDuration:activeProject.audioSource?.duration || activeSong.duration.split(":").reduce((total,value)=>total*60+Number(value),0)}} parts={activeParts} onDraftChange={present=>setDraftKeys(current=>({...current,[`${activeProject.id}:${recordingPart}`]:present}))}/>
   else if (screen==='complete') content=<Complete go={go} project={activeProject} song={activeSong} mix={activeMix} layers={activeLayers} projectTracks={activeTracks} projectLiked={activeProjectLiked} toggleProjectLike={toggleActiveProjectLike} openVocalProfile={openVocalProfile}/>

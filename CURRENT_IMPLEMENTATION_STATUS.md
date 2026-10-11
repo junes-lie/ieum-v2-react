@@ -1,3 +1,15 @@
+## 2026-10-11 재계획 실행 — R2 탐색 복귀 및 필터 Empty
+
+현재 실행 기준은 기존 구현계획 상단의 R0–R7이다. 사용자의 재계획/지속 실행 지시에 따라 단계3 전체 완료를 주장하지 않고 독립적인 단계4 기능 묶음 R2를 실행한다. AI 품질·Identity·디자인·실기기·실제 서버 gate는 남아 있다. 과거의 단계3 전체 완료까지 단계4/5 신규 구현 정지 지시는 이번 의존관계 재정렬로 대체한다.
+
+사용자가 지정한 Notion 내용의 실제 파일은 부모 노션/ 폴더에 있다. 유저플로우 — IEUM_261009.md의 실제 진입 화면·목록 필터/탭/스크롤 복귀 및 08 필터Empty J04 초기화 계약, 화면명세/PRD/IA 관련 항목을 현재 React 코드와 대조했다. 현재 세션 Notion 전용 도구는 노출되지 않았고 Connector 직접 조회를 주장하지 않는다. 시각/스타일/디자인 worktree는 변경하지 않았다.
+
+Finder→Match→05A→Match→Finder에서 필터/정렬을 프로젝트·Part별 App 상태로 보존한다. 후보 진입 전 목록 스크롤을 보관하고 Match Back에서 복원한다. Finder Back은 고정 작업실 이동 대신 실제 history 진입 문맥을 따른다. 08 상태 필터 결과가 비어 있으면 기존 Empty 스타일로 안내·초기화를 제공한다. 저장·참여·초대·제출수·음원은 변경하지 않는다.
+
+검증: build34modules, Node journey의 Profile 왕복 필터/정렬/스크롤 및 제출수 보존, 프로젝트 filter Empty/초기화/Mix 보존 회귀 통과. Project service 계약 QA(stub), Profile transaction 실패/rollback QA, 단일 React 2–4 화면 렌더 QA 통과. Node DOM의 history traversal은 popstate 주입이며 실제 브라우저/실기기 성공으로 확장하지 않는다. 첫 QA selector 오류는 실제 .text-action selector로 정정하고 동일 QA를 통과했다.
+
+로컬 대형 AI는 최신 사용자 지시에 따라 실행 전/중 PC 작업·RAM·VRAM·부하를 확인해 결정한다. 이번 RAM 여유0.95GiB/GPU0%에서는 실행하지 않았다. build/Node QA를 순차 실행했고 Node old-space256MiB 옵션은 전체 RAM hard limit가 아니다. 이전 미검증 SFT QA 수정/원본은 유지하고 이 기능 commit에서 제외한다. Git Integration/production은 실제 확인 후 기록한다. 다음은 R2 잔여 분기와 R3 실제 서비스 환경 확인이며 실제 서버 없는 상태를 완료 처리하지 않는다.
+
 ## 2026-10-11 단계3 — 원곡 mix 조건 실제 생성과 GPU 캐시 반환
 
 단계3 실제 Part 기술 작업을 이어갔다. 동일 Base revision/FP32/seed65359/50-step/19초/세 줄 가사·caption에서 조건 입력을 원곡31.7–50.7초의 분리 반주에서 원곡 mix로 바꾼 시험이다. WAV SHA2569327cc0176f0153637d8925576ffd6ff941fd67a8d5cc420b096847297a7724c, 실제 UVR47.302초/합 residual0이다. Small/Turbo 모두0.976744이며 ‘오늘도 함께해요 우리 함께 걸어요 자 작은 노래 모아서’로 인식해 normalizedLyricsExact=false다. 실제 Small 줄 시작0/8.14/14.90초와 같은 원곡 창 대비0/−0.16/+0.90초를 관측했으나 첫 경계검열true/entryTimingAccepted=false를 유지한다. 실제 동시 voiced530frames/음높이 차이 중앙값−3반음/유니슨31.32%/낮은 frame63.58%/PCM상관0.039758과 실제 반주 chroma share0.078190은 화성 승인 근거가 아니다. 별도 energy 비교의 전체 최고 상관0.227589/lag+0.009977초와 구간별 최고lag0/+1.736054/−1.057596초도 음절 동기화나 고정 offset을 승인하지 않는다.
@@ -511,3 +523,10 @@ Node 테스트 성공은 모듈 계약과 수치 처리의 근거다. HTTP 테�
 - 입력 그래픽은 기존 analyser의 실제 waveform buffer와 RMS를 전달받는다. 입력 입자는 가로 방향으로 움직이고 MIC dBFS는 실제 RMS로 계산한다. 새 생성형 AI를 브라우저에 연결했다는 의미는 아니다. 기존 Record palette/path/입자 수와 저장 Layer를 보존했다.
 - 로컬 검증: production build와 전체 7개 QA 통과. 별도 유지 `qa:layout`에서 360/390/430px 세 화면의 실제 WebGL/가로 overflow/Guide toggle/합성 마이크 pause-resume-Review/저장된 합성 Mix 복원/native audio/탭 표시를 확인했다. desktop 1200×1100에서 frame 430×932 및 내부 scroll을 확인했다. `qa:motion` 실제 10초간 5프레임이 서로 다르고 console error 0이다. QA는 개인 브라우저/DB와 분리됐다. 일회성 결과는 TEMP/기존 ignore에 보관한다.
 - 잔여 차이/미검증: 기존 절차 Record는 Figma 원본의 광택·발광·가는 결과 동일하지 않다. 실제 AI 생성 Layer→motion renderer/서비스 연결, 실제 모바일 touch/safe-area·물리 마이크·청취는 미완료다. layout QA는 Figma pixel 일치나 실제 기기 인수를 대체하지 않는다. 전체 단계 2 완료로 표시하지 않는다. 검증된 시각 통합 수정은 Git 자동배포하여 같은 production에서 확인 가능하게 한다.
+## 2026-10-11 RAM 제약에 따른 AI 실행 보류
+
+이 기록 당시 앱 코드/음원 등록 변경은 없었다. 현재 실행은 위 재계획 기록을 따른다. 단계3 전체는 미완료이며 기존 검증된 녹음·Draft·직접 제출·2–4 Track Mix 구현을 보존한다. 최신 사용자 지시에 따라 PC 자원 확인 후 로컬 AI 실행 여부를 결정한다.
+
+실제 프로세스 확인에서 음악 생성/변환 검증 Python 작업은 없었다. 시스템 RAM은 15.95GiB, 여유는 1.08GiB로 확인됐다. 다른 앱 종료나 Windows/pagefile 설정 변경은 수행하지 않았다. 모델·결과 파일과 미커밋 SFT 지원 QA 수정은 보존하며, SFT의 실제 GPU 생성·품질 및 Base 회귀 검증 완료를 주장하지 않는다.
+
+자원/일정 운영 변경은 기존 구현계획의 2026-10-11 항목을 따른다. 단계4/5 착수 gate는 변경하지 않았다. 외부 추론 기술 검토와 독립적인 잔여 기능 조사는 가능하지만, 유료 환경 생성이나 현재 단계 완료 처리는 하지 않는다.
