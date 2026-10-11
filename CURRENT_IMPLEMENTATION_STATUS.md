@@ -1,3 +1,13 @@
+## 2026-10-11 R2 후속 및 R3 구성 준비
+
+02의 선택 비교 Project를 기존 App selectedProjectId에 연결했다. 05A 왕복 후 첫 Project로 돌아가던 것을 막고 기존 history의 Song/Project/스크롤 복원을 재사용한다. Node journey에서 Warm Duet→참여자05A→기록된 popstate 복귀의 동일Project/214px스크롤/제출3개/신규Project0개 보존을 통과했다. 08 전체Empty의 OPEN Part 찾기는 화면명세/유저플로우 J05 기준대로 Home 탐색에 복귀하며 고정 Project 상세로 직행하지 않는다. 미참여/Project0개 유지 QA도 통과했다. 물리 입력/native history/시각 인수와 구분한다.
+
+이전 R2 묶음 a285933a41190ebc89d065536359fe47955e994c는 origin/main 일치·GitHub Production deployment6995894058 success·HTTP200·JS index-C67bCfJS.js/CSS index-DtsPXy24.css의 local build SHA256 exact 일치를 확인했다. Node HTTPS의 UNABLE_TO_VERIFY_LEAF_SIGNATURE는 Windows 정상 인증서 검증으로 같은 asset 검사를 통과했으며 TLS 검증을 끄지 않았다.
+
+R3 확인: .env.example에는 설정 키가 없고 api/에는 파일이 없다. 설치 vercel CLI 및 현재 세션 Notion/Vercel 전용 도구도 확인되지 않았다. 사용자가 기존 서비스 없음/구성안 준비라고 답했다. docs/SERVICE_CONNECTION.md에 현재 Vercel + Supabase Auth/Postgres/private Storage 추천, 권한/atomic transaction/직접 upload/비용·scheduler 제한과 실제 연결 순서를 작성했다. 제공자·로그인 방식·유료 자원을 확정/생성하거나 실제 서버 완료로 표시하지 않는다. 계정 접근 수단이 없는 실제 연결은 blocker이며 독립 기능 검증은 계속한다.
+
+후속 R2 마감 검증: production build34modules(JS index-CJLJ8d-3.js), npm run qa의9개 suite 전체 exit0. Node old-space256MiB로 순차 실행했고 대형 AI·추가 브라우저를 실행하지 않았다. 미검증 SFT3파일은 이 기능/구성안 commit에서 제외한다.
+
 ## 2026-10-11 재계획 실행 — R2 탐색 복귀 및 필터 Empty
 
 현재 실행 기준은 기존 구현계획 상단의 R0–R7이다. 사용자의 재계획/지속 실행 지시에 따라 단계3 전체 완료를 주장하지 않고 독립적인 단계4 기능 묶음 R2를 실행한다. AI 품질·Identity·디자인·실기기·실제 서버 gate는 남아 있다. 과거의 단계3 전체 완료까지 단계4/5 신규 구현 정지 지시는 이번 의존관계 재정렬로 대체한다.

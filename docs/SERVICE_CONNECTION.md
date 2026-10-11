@@ -1,5 +1,54 @@
 # 단일 앱 서비스 연결 계약
 
+## 2026-10-11 R3 실제 서비스 구성안 — 준비 완료, 제공자 미확정
+
+사용자는 기존 서비스가 없으며 구성안을 준비하라고 답했다. 아래는 검토 가능한 추천안이며 계정/서비스 생성·연결 성공·사용자 확정으로 기록하지 않는다. 기존 Vite React와 Vercel Git Integration을 유지한다. 새 앱, 로컬 DB/Docker 상주, 로컬 대형 모델을 추가하지 않는다.
+
+### 추천 구성
+
+| 역할 | 제안 | 현재 코드 연결 지점 |
+| --- | --- | --- |
+| 프런트엔드 | 현재 Vercel 배포 그대로 | src/App.jsx/기존4탭·녹음·Mix |
+| 사용자 인증 | Supabase Auth | CURRENT_USER_ID를 실제 세션 사용자로 연결. 탐색/감상 전에 로그인·Profile을 강제하지 않음 |
+| 공유 데이터 | Supabase Postgres + RLS | projectModel/voiceIdentityContract와 기존 projectService 계약 |
+| 원본 오디오·대표 Sample·확정 결과 | Supabase private Storage, 권한 확인된 signed URL | trackStore 로컬 Draft 유지, 제출 파일/결과 공유만 원격 |
+| HTTP 경계 | 같은 Vercel 프로젝트의 Node Functions /api | 기존 remote transport; native React 앱 유지 |
+| 7일 안내 | DB due 상태 + 인증된 scheduled 함수 + Web Push | 활동/revision·기간별 dedupe, 기존08 badge/03 banner |
+| AI 생성 | 별도 기술 검증 경로 | Auth/DB 서비스를 음악 생성 GPU로 간주하지 않음 |
+
+추천 이유: 인증·Postgres·파일 저장을 한 제공자에 묶어 세 서비스를 따로 구현/연결하는 작업을 줄이고 PC에 서버를 상주시키지 않는다. 비교안은 Neon DB + 별도 Auth + Blob이지만 계정/권한/파일 연계가 늘어난다. 로그인 방식(소셜/이메일)과 연결 UI는 제품 판단이므로 아직 확정하지 않는다. 이메일 Magic Link를 선택하면 기본 메일 발송을 일반 사용자용 SMTP 준비 완료로 간주하지 않는다. [Supabase React/Auth](https://supabase.com/docs/guides/getting-started/tutorials/with-react), [메일 제공 조건](https://supabase.com/docs/guides/auth/auth-smtp).
+
+### 비용·배포 제약
+
+2026-10-11 공식 가격표 기준 Supabase Free는 $0/월, DB500MB·파일1GB·egress5GB이며 비활동1주 후 pause될 수 있다. 초기 두 사용자 검증 후보이고 서비스 운영 용량/가용성 보장은 아니다. 기존 Vercel 플랜과 사용량도 연결 전 확인한다. 자동 유료 전환·별도 유료 Mix API는 도입하지 않는다. [Supabase 가격](https://supabase.com/pricing).
+
+Vercel Function 요청/응답4.5MB 제한 때문에 원본 WAV를 기존 multipart 요청 그대로 Function에 보내는 안은 채택하지 않는다. 인증된 upload 준비→Storage 직접 업로드→파일 존재/소유자/크기/hash 검증→메타데이터 제출 확정의 계약으로 수정한다. 업로드만으로 제출수/Layer/Mix가 증가하지 않는다. [Vercel payload 제한](https://vercel.com/docs/functions/limitations), [Supabase signed upload](https://supabase.com/docs/reference/javascript/storage-from-createsigneduploadurl).
+
+Vercel Hobby Cron은 하루1회 제약이 있으므로 이를 정확히7일 시각에 발송된다고 표시하지 않는다. 요구하는 발송 정밀도를 만족하는 scheduler를 연결/검증하기 전 Push 완료 판정 금지. [Cron 운영 제한](https://vercel.com/docs/cron-jobs/manage-cron-jobs).
+
+### 데이터·권한 준비안
+
+- profiles/profile_revisions: 실제 auth user 연결, range/sample의 독립 source/revision·분석 출처. 사용자 원문 ID를 공개 그래픽 URL에 넣지 않음.
+- projects/project_parts: 기존 seed, song/audio reference, 실제2–4 Part, key lock, revision, assigned user, lastValidActivityAt. owner 전용 초대 권한으로 축소하지 않음.
+- tracks/upload_intents: 개인 Track ID/Part/파일 참조·실제 duration/offset·hash/identity revision. 프로젝트+Part 최종 제출 unique. upload_intent는 진행률에서 제외. 원본/임시본은 제출 성공 응답 전 보존.
+- invitations: 발신/수신 사용자·Project/Part·sent/accepted/declined/closed. accept 시 Part row lock→OPEN 및 수신자/fit 재검사→배정+경쟁 초대 closed를 동일 DB transaction. decline은 해당 초대만 변경. Profile 저장/초대 수락으로 Track 생성 없음.
+- operation_results: 실제 사용자+operation+idempotency key unique, 재요청에 최초 확정 결과 반환. 임의 클라이언트 participantId로 권한 판정하지 않음.
+- results/mix_jobs: 확정 Track snapshot/revision·실제파일/hash/duration·processing status. 마지막 필수 제출 성공 후 하나의 Mix job. 기존 native Mix를 재사용하되 파일 저장/검증 성공 이후에만 completed. 브라우저 Mix와 서버 job의 실행 소유/중복 방지는 연결 단계에서 검증하며 무거운 서버 Mix 제공자를 확정했다고 주장하지 않음.
+- saved_objects/push_subscriptions/notification_runs: 사용자별 객체 독립 저장, 실제 subscription, 사용자+Project+활동기간 dedupe. 참여/탈퇴/원본 삭제와 분리.
+- identity_artifacts/track_layers: 기존 G1–G5 입력·analysis/generator version·확정 결과 참조. Profile 저장/그래픽 생성/Track 제출/Mix 성공을 독립 보존.
+
+RLS는 모든 사용자 데이터에서 기본 거부하고 본인/Project 권한별 허용한다. 원본/대표 Sample bucket은 private, 공개 결과에는 필요한 Credits/완성 Mix만 제공한다. signed URL/token/서비스 키를 로그나 공개 metadata에 출력하지 않는다. service secret은 Vercel 서버 환경에만, publishable key도 RLS 없는 권한으로 사용하지 않는다. [RLS](https://supabase.com/docs/guides/database/postgres/row-level-security), [Storage 권한](https://supabase.com/docs/guides/storage/security/access-control).
+
+### 실제 연결 실행 순서와 완료 조건
+
+1. 제공자·로그인 방식·계정 접근·무료 quota/운영 범위 확인. 원격 자원 생성은 이 구성안 기준의 승인/실제 접근 수단 확보 후 실행.
+2. 기존 repo에 DB migration/RLS·Storage 권한·API를 작성하고 두 실제 사용자 allow/deny/동시성 테스트. 로컬 Docker/PyTorch를 QA 전제로 추가하지 않음.
+3. App 사용자/session 경계와 기존 transport 연결. 시연 로컬 자료를 사용자 원격 Track으로 자동 업로드하지 않음. 기존 Draft·음원·디자인 worktree 보존.
+4. upload/submit/join/invitation transaction→마지막 제출/Mix job→실제 result file 검증을 순차 연결. invalid JWT/다른 사용자/중복 제출/동시 수락/업로드 성공 후 DB 실패에도 원본 보존 확인.
+5. 두 사용자·다른 기기 result 재접속·실제 Push/활동 dedupe 검증 후 capabilities를 각각 true로 판정. 미지원 항목은 false 유지.
+
+현재 준비 상태: 구조/연결 순서와 제한 검토 완료. 실제 Supabase 프로젝트/credentials/DB/Storage/API/Auth/Push는 생성·연결하지 않았다. 새 로그인 UX·공유 권한 미정 정책은 추천을 확정으로 바꾸지 않는다.
+
 2026-10-07. 준비 단계이며 실제 서버 연결 완료를 의미하지 않는다. 기존 React 앱의 화면·Record·녹음 엔진을 공유한다. 서비스 연결을 위한 별도 앱은 만들지 않는다.
 
 ## 현재 상태

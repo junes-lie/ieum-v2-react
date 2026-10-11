@@ -117,6 +117,25 @@ try{
  assert.equal(document.querySelector('.finder-screen').scrollTop,187)
  assert.equal(Object.keys(state().projectTracks).length,3)
  check('Finder→Match→Profile→Match→Finder preserves sort/filter/list scroll without adding submitted Tracks')
+ await click('[data-nav="bookmark"]')
+ await click('[data-action="collection-tab-songs"]')
+ await click('[data-action="open-song-save"]')
+ await click('.project-carousel button:nth-child(2)')
+ assert.ok(document.querySelector('.project-carousel button.active').textContent.includes('Warm Duet'))
+ let detailReturn
+ const replaceState=window.history.replaceState.bind(window.history)
+ window.history.replaceState=(value,...args)=>{if(value.ieumScreen==='detail'&&value.selectedProjectId)detailReturn=value;return replaceState(value,...args)}
+ document.querySelector('.detail-screen').scrollTop=214
+ await click('.detail-screen .row-participant')
+ assert.equal(state().screen,'vocal-profile')
+ assert.equal(detailReturn.selectedProjectId,'a-thousand-warm-duet')
+ await act(async()=>window.dispatchEvent(new window.PopStateEvent('popstate',{state:detailReturn})));await settle()
+ window.history.replaceState=replaceState
+ assert.ok(document.querySelector('.project-carousel button.active').textContent.includes('Warm Duet'))
+ assert.equal(document.querySelector('.detail-screen').scrollTop,214)
+ assert.equal(Object.keys(state().projectTracks).length,3)
+ assert.equal(state().createdProjects.length,0)
+ check('Song Detail records selected comparison Project and restores it with scroll after participant Profile without creating or joining a Project')
  await act(async()=>root.unmount())
  await saveTrack(track('bass'));await saveTrack({id:projectId+':auto-mix',projectId,kind:'auto-mix',blob,duration:7,origin:'qa-saved-mix'})
  root=createRoot(container);await act(async()=>root.render(React.createElement(App)));await settle();await settle()
@@ -222,6 +241,16 @@ try{
   await clearProjectTracks(customId)
   check(`${count}-Part owned project preserves project/part/user/seed/Blob and Record layer through draft submit and reload`)
  }
+ await act(async()=>root.unmount())
+ localStorage.setItem('ieum-v2:user-state:v7',JSON.stringify({joined:false,createdProjects:[],projectLikes:[],vocalSaves:[],songSaves:[]}))
+ root=createRoot(container);await act(async()=>root.render(React.createElement(App)));await settle();await settle()
+ await click('[data-nav="folder"]')
+ assert.ok(document.querySelector('[data-action="browse-open-projects"]'))
+ await click('[data-action="browse-open-projects"]')
+ assert.equal(state().screen,'home')
+ assert.equal(state().joined,false)
+ assert.equal(state().createdProjects.length,0)
+ check('Empty My Projects returns to Home discovery without selecting a fixed Project, assigning a Part or creating a Project')
  assert.deepEqual(errors,[],'Unexpected App console errors')
  console.log('Node integration passed. No claim of visual fidelity, GPU rendering, microphone capture, audible playback, real AI/backend or physical mobile verification.')
 }finally{
