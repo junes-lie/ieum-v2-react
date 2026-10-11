@@ -1,3 +1,12 @@
+### R6 공식 계산 출력 호환성 / R1·R2 production — 2026-10-12
+
+10f3e78579f6ab773b7e5a477bb374bf35ebb695 Git Integration7001466306 success. production HTTP200/index-CmEtuFQt.js remote/local SHA2566CB43DBC6253A935F9D9CB8F974DA89A9258C1EBC9027545A0A98287CC684F28 exact. production Sample 짧은 거부/정상 Review/폐기 취소·확인·기존 Profile 보존과 Recorder recording/paused/review 삭제 실패 원본 보존·폐기 성공 URL 해제·timer 회귀 모두 passed/pageerror0. 실제 물리 입력/모바일/청취 인수와 구분한다.
+
+Basic Pitch 고정 공식 tests/resources의 단일9.097823초 Vocadito WAV802472bytes와 계산된 model_output1385749bytes/note_events19044bytes만 받아 size/Git blob/SHA 대조했다. 원문 NOTICE의 Vocadito CC-BY4.0 및 코드Apache2.0 범위를 구분했다. 공식 test_inference.py는 허용오차1e-4/rtol0로 golden 결과를 비교한다. 이 파일은 수동 악보 정답이 아닌 공식 계산 출력이므로 음악 정확도·Korean 지원 근거로 쓰지 않는다. waveform SHA0978bde1c130ae26a9cfcd90012f12fdaf9877bbe45cf21c5237ba7ac9b8703b/model output45bf29f260cd37db50a198fb9897e6c6c1b21454f22424a3b527345422260a1b/events1766c000d40c6f1bf6230200ba83a07ce41bef46a0aacfdd2fb8bb141946447a.
+
+기존 유지 경량 도구의 실제 ONNX tensor note/onset/contour shape가 공식 golden과 같고 max abs차9.06e-6/3.39e-5/2.14e-5로 공식 tolerance 안이었다. 28events의 start/end/midi/meanActivation도 정렬 순서를 맞춰 최대6.32e-6이며 pitch bends는 비교하지 않았다. qa/verify-polyphonic-golden.py로 고정3fixture hash/new output/제한된 NumPy 숫자 재구성만 허용하는 읽기·실제 probe 실행/비교를 재사용한다. 새 디렉터리별 결과를 보존하고 실패 결과도 기록 후 nonzero 종료한다. 모델/fixture/계산된 JSON은 기존 repository 밖 runtime 보존.
+
+최종 유지 golden 실제 실행 passed=true·guard exit0/중단false/wall3.635초/free최소9.109GiB/owned peak0.203GiB. 앞선 runtime 비교도 동일수치로 exit0/wall4.844초/free9.103/owned0.202GiB. 유지 반주8초 별도 process의68nativeNotes도 이전결과 exact·추론0.191초/guard4.830초/free9.154/owned0.199GiB. waveform/threshold를 반복 조정한 결과가 아니다. system Python에는 NumPy가 없어 첫 --help가 ModuleNotFoundError였으며 argparse/help·hash validation 뒤 import하도록 수정했다. 실제 추론은 기존 검증된 환경만 사용한다. 원곡의6/9 수동 matching과 화성/전이 차이는 여전히 남으며, 이 호환성 통과로 sourceScore/2–4Part/catalog·권한/청취 gate를 완료하지 않는다.
 ### R1/R2 채택하지 않은 Take의 자원 해제 — 2026-10-12
 
 기존 최소3초 규칙에 따라 Review에 채택되지 않는 Sample에서 URL 미해제를 production assertion으로 재현했다. 기존 확인 후 Sample 폐기와 Recorder 재녹음의 성공 경로에서도 URL 미해제를 local native assertion으로 재현했다. 짧은 Sample의 새 URL/임시 runtime 참조만 해제하고, 확인된 Sample 폐기 및 임시본 삭제 성공 후 Review URL을 해제한다. 삭제 실패/취소·기존 Profile·제출 Track·정상 Review/성공 저장의 URL은 유지한다. 길이·저장·재시도·UX 정책 변경 없음. 실제 RAM 절약량 측정으로 주장하지 않는다.

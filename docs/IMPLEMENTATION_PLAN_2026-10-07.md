@@ -1,3 +1,8 @@
+### R6 이식 정확성과 음악 정확도 분리 — 2026-10-12
+
+공식 Basic Pitch의 단일 실제9.097823초/고정 계산 golden을 사용한 유지 호환성 QA를 추가했다. 실제 ONNX/window/unwrap/note postprocessing3tensor와28events는 공식1e-4 tolerance 안이었다. 수동 annotation 검증과 구분하며 pitch bends/전체 SDK·Korean 지원/화음 승인으로 확대하지 않는다. 원곡의6/9 matching·mixed backing·전이 ambiguity는 해결되지 않았다. 다음은 실제 source 음절/note/rest와 화성 근거를 보존한 음악 제어 검증이며, 임의 모델 seed/threshold/transpose로 정답을 만들지 않는다. 모델/fixture/result는 기존 runtime에 보존하고 유지 QA만 repository에 포함한다.
+
+R1/R2 10f3e78 자동배포 success/production asset local exact와 Sample·재녹음 성공/실패 원본·URL 경계 QA 통과를 기록했다. 앱 변경 없는 이번 연구 도구 묶음에서는 같은 앱의 build/native 인수를 재실행하지 않고 Git Integration commit/HTTP/asset 일치를 확인한다. 디자인 보류·실제 서버3파일 제외·물리 청취/전체 단계 gate는 유지한다.
 ### R1/R2 거부·폐기 Take의 URL 소유권 — 2026-10-12
 
 기존3초 미달 Sample 거부, 확인된 Sample 폐기와 Recorder 임시본 삭제 성공에서 소유자가 없어진 URL을 해제하도록 최소 보완했다. 기존 Profile/제출/정상 Review URL과 삭제 실패·취소는 유지한다. native 유지 QA로 각 실패 재현→수정 성공 및 legacy/late-chunk/편집 저장 회귀, build/Node 통과. 관련 묶음만 commit/push→Git Integration→production Sample·재녹음 QA로 마감한다. 기존 단계 전체 인수·제품/UX/디자인·실제 서버 gate는 보존하며 보류3파일을 포함하지 않는다. 상세 production6608216 및 자원 관측은 상태 문서 최신 항목 참조.
