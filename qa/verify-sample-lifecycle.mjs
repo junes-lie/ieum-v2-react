@@ -11,6 +11,10 @@ try {
   navigator.mediaDevices.getUserMedia=async(...args)=>{window.qaMicRequests++;await new Promise(resolve=>setTimeout(resolve,150));return get(...args)}
   window.setInterval=(fn,delay,...args)=>{const id=set(fn,delay,...args);if(delay===1000)window.qaSampleTimers.add(id);return id}
   window.clearInterval=id=>{window.qaSampleTimers.delete(id);clear(id)}
+  const create=URL.createObjectURL.bind(URL),revoke=URL.revokeObjectURL.bind(URL)
+  window.qaSampleUrls=[];window.qaSampleRevoked=[]
+  URL.createObjectURL=blob=>{const url=create(blob);if(blob.type.includes('webm'))window.qaSampleUrls.push(url);return url}
+  URL.revokeObjectURL=url=>{window.qaSampleRevoked.push(url);return revoke(url)}
  })
  const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message))
  await page.goto(process.env.IEUM_QA_URL||'http://127.0.0.1:4193/')
@@ -25,6 +29,12 @@ try {
  await page.locator('.sample-select-stage > button.primary').click()
  const providedSource=await page.locator('.sample-stage audio').getAttribute('src')
  await page.locator('[data-action="sample-start"]').click()
+ await page.waitForSelector('[data-action="sample-stop"]');await page.waitForTimeout(600)
+ await page.locator('[data-action="sample-stop"]').click();await page.waitForSelector('[data-action="sample-start"]')
+ assert.equal(await page.evaluate(()=>window.qaSampleRevoked.includes(window.qaSampleUrls.at(-1))),true,'Rejected short Sample must release its unowned recording URL')
+ assert.equal(await page.evaluate(()=>window.__IEUM_V2__.state.profile.sampleSong),'Original sample','Short Sample must not replace the existing Profile')
+ assert.equal(await page.locator('.sample-stage audio').getAttribute('src'),providedSource)
+ await page.locator('[data-action="sample-start"]').click()
  await page.waitForSelector('[data-action="sample-stop"]');await page.waitForTimeout(3400)
  await page.locator('.voice-screen [data-action="back"]').click()
  assert.equal(await page.locator('dialog[open]').count(),1,'Leaving a live sample must require confirmation')
@@ -35,6 +45,7 @@ try {
  assert.equal(await page.evaluate(()=>window.__IEUM_V2__.audioRuntime.recorder.state),'inactive')
  assert.equal(await page.evaluate(()=>window.qaSampleTimers.size),0)
  const originalUrl=await page.locator('.sample-stage audio').getAttribute('src')
+ assert.equal(await page.evaluate(url=>window.qaSampleRevoked.includes(url),originalUrl),false,'Valid Review Sample must retain its playable URL')
  await page.locator('[data-action="sample-retry"]').click();assert.equal(await page.locator('dialog[open]').count(),1)
  await page.keyboard.press('Escape');assert.equal(await page.locator('.sample-stage audio').getAttribute('src'),originalUrl)
  assert.equal(await page.evaluate(()=>window.__IEUM_V2__.state.profile.sampleSong),'Original sample')
@@ -47,6 +58,7 @@ try {
  await page.locator('[data-action="sample-retry"]').click();await page.locator('[data-action="confirm-sample-discard"]').click()
  await page.waitForSelector('[data-action="sample-start"]')
  assert.equal(await page.locator('.sample-stage audio').getAttribute('src'),providedSource,'Discarded Take must be replaced by the selected original preview')
+ assert.equal(await page.evaluate(url=>window.qaSampleRevoked.includes(url),originalUrl),true,'Confirmed discard must release the discarded Sample URL')
  assert.notEqual(providedSource,originalUrl)
  await page.evaluate(()=>{const b=document.querySelector('[data-action="sample-start"]');b.click();b.click()})
  await page.waitForFunction(()=>window.__IEUM_V2__.audioRuntime.recorder.state==='recording')
@@ -55,6 +67,6 @@ try {
  await page.waitForTimeout(3400);await page.locator('[data-action="sample-stop"]').click();await page.waitForSelector('[data-action="voice-complete"]')
  assert.equal(await page.evaluate(()=>window.__IEUM_V2__.state.profile.sampleSong),'Original sample')
  assert.deepEqual(errors,[])
- console.log(JSON.stringify({passed:true,leaveConfirmation:true,stopKeepsTake:true,discardCancelKeepsTake:true,songChangeCancelKeepsTakeMetadata:true,discardDoesNotDeleteProfile:true,oneTimer:true,errors,limits:'Isolated synthetic microphone; no physical sample, supplied music or server acceptance.'}))
+ console.log(JSON.stringify({passed:true,rejectedShortSampleReleased:true,validReviewUrlPreserved:true,leaveConfirmation:true,stopKeepsTake:true,discardCancelKeepsTake:true,songChangeCancelKeepsTakeMetadata:true,discardDoesNotDeleteProfile:true,oneTimer:true,errors,limits:'Isolated synthetic microphone; no physical sample, supplied music or server acceptance.'}))
  await context.close()
 }finally{await browser.close()}

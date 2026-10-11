@@ -1,3 +1,6 @@
+### R1/R2 거부·폐기 Take의 URL 소유권 — 2026-10-12
+
+기존3초 미달 Sample 거부, 확인된 Sample 폐기와 Recorder 임시본 삭제 성공에서 소유자가 없어진 URL을 해제하도록 최소 보완했다. 기존 Profile/제출/정상 Review URL과 삭제 실패·취소는 유지한다. native 유지 QA로 각 실패 재현→수정 성공 및 legacy/late-chunk/편집 저장 회귀, build/Node 통과. 관련 묶음만 commit/push→Git Integration→production Sample·재녹음 QA로 마감한다. 기존 단계 전체 인수·제품/UX/디자인·실제 서버 gate는 보존하며 보류3파일을 포함하지 않는다. 상세 production6608216 및 자원 관측은 상태 문서 최신 항목 참조.
 ### R1 Auto Mix 실패 산출물 소유권 — 2026-10-12
 
 기존 저장 실패 경로에서 게시되지 않은 생성 오디오 URL이 남는 production 결함을 재현했다. App의 main/created job이 성공한 URL을 넘기기 전에는 소유하도록 최소 수정했다. 저장 실패/취소의 미게시 결과만 finally 해제한다. 정상2–4/main Mix 및 저장/reload·제출 원본 보존과 native 실패 URL release/Node 회귀·build 통과. 의미 있는 이 묶음만 diff→commit→main push→Git Integration→production 실패/정상 QA를 수행한다. 새 실패 UX/재시도·디자인/IA·Track 삭제·실제 서버 변경 없음. 단계 전체 인수를 확대하지 않는다.

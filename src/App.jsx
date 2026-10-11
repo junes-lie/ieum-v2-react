@@ -832,12 +832,16 @@ function VoiceSetup({ complete, go, back, existing, editMode }) {
     try {
     clearInterval(timer.current)
     const draft = await stopRecording()
-    if (!draft?.blob || draft.duration < 3) { setError('대표 Voice Sample은 최소 3초 이상 녹음해 주세요.'); setSampleStatus('ready'); return }
+    if (!draft?.blob || draft.duration < 3) {
+      if(draft?.url)URL.revokeObjectURL(draft.url)
+      cancelRecording()
+      setError('대표 Voice Sample은 최소 3초 이상 녹음해 주세요.'); setSampleStatus('ready'); return
+    }
     setSampleDraft(draft); setSampleStatus('review'); setSamplePlaying(false)
     } finally {sampleStoppingRef.current=false;setSampleBusy(false);setSampleAction(null)}
   }
   const chooseSampleSong = song => {setSampleGuidePlaying(false);if(sampleDraft&&song.id!==sampleSong.id){pendingSampleSong.current=song;setSampleAction('discard-song');return}setSampleSong(song)}
-  const retrySample = () => { cancelRecording(); setSampleDraft(null); setSampleStatus('ready'); setSeconds(0); setError('') }
+  const retrySample = () => { cancelRecording(); if(sampleDraft?.url)URL.revokeObjectURL(sampleDraft.url); setSampleDraft(null); setSampleStatus('ready'); setSeconds(0); setError('') }
   useEffect(() => () => { sampleLifecycleRef.current++;clearInterval(timer.current); cancelRecording(); stopMicrophone() }, [])
   return <div className="screen voice-screen">
     <TopBar title={['sample-select','sample','complete'].includes(step) ? 'VOICE PROFILE' : 'VOICE RANGE'} back={() => {if(saving||sampleBusy)return;if(step==='sample'&&sampleStatus==='recording'){setSampleAction('stop');return}if(step==='sample')setStep('sample-select');else if(step==='sample-select'&&!editMode)setStep('range-result');else if(step==='complete')setStep('sample');else back()}} meta={step === 'complete' ? 'READY' : ['sample-select','sample'].includes(step) ? 'PROFILE AUDIO' : 'RANGE CHECK'} />
@@ -1060,6 +1064,7 @@ function Recorder({ go, submit, onRecordingStart, partId, projectTracks, layers,
     try {
       await deleteRecordingDraft({userId:CURRENT_USER_ID,projectId:project.id,partId:currentPart.id})
       clearInterval(timer.current); cancelRecording()
+      if(draft?.url)URL.revokeObjectURL(draft.url)
       onDraftChange?.(false); setDraft(null); setReviewPlaying(false); setStatus('ready'); setSeconds(0); setLevel(0); setConfirmAction(null)
     } catch {
       setConfirmAction(null); setError('녹음을 지우지 못했어요. 현재 녹음은 유지됩니다. 다시 시도해 주세요.')

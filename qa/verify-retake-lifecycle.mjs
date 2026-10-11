@@ -11,6 +11,8 @@ try {
   const set=window.setInterval.bind(window),clear=window.clearInterval.bind(window)
   window.setInterval=(fn,delay,...args)=>{const id=set(fn,delay,...args);if(delay===100)window.qaRecordingTimers.add(id);return id}
   window.clearInterval=id=>{window.qaRecordingTimers.delete(id);clear(id)}
+  const revoke=URL.revokeObjectURL.bind(URL);window.qaRetakeRevoked=[]
+  URL.revokeObjectURL=url=>{window.qaRetakeRevoked.push(url);return revoke(url)}
   const remove=IDBObjectStore.prototype.delete
   IDBObjectStore.prototype.delete=function(key){if(window.qaFailDraftDelete&&String(key).endsWith(':temporary-recording'))throw new Error('QA draft deletion failure');return remove.call(this,key)}
  })
@@ -37,9 +39,11 @@ try {
  await page.locator('[data-action="record-stop"]').click();await page.waitForSelector('[data-action="record-submit"]')
  const originalUrl=await page.locator('.record-review audio').getAttribute('src')
  await failedRetake('review');assert.equal(await page.locator('.record-review audio').getAttribute('src'),originalUrl)
+ assert.equal(await page.evaluate(url=>window.qaRetakeRevoked.includes(url),originalUrl),false,'Failed discard must keep the original Review URL playable')
  await page.evaluate(()=>{window.qaFailDraftDelete=false})
  await page.getByRole('button',{name:'다시 녹음',exact:true}).click();await page.locator('[data-action="confirm-retry"]').click()
  await page.waitForSelector('[data-action="record-start"]')
+ assert.equal(await page.evaluate(url=>window.qaRetakeRevoked.includes(url),originalUrl),true,'Successful confirmed discard must release the former Review URL')
  await page.locator('[data-action="record-start"]').click();await page.waitForSelector('[data-action="record-pause"]')
  assert.equal(await page.evaluate(()=>window.qaRecordingTimers.size),1)
  await page.getByRole('button',{name:'다시 녹음',exact:true}).click();await page.locator('[data-action="confirm-retry"]').click()

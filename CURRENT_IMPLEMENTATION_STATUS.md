@@ -1,3 +1,10 @@
+### R1/R2 채택하지 않은 Take의 자원 해제 — 2026-10-12
+
+기존 최소3초 규칙에 따라 Review에 채택되지 않는 Sample에서 URL 미해제를 production assertion으로 재현했다. 기존 확인 후 Sample 폐기와 Recorder 재녹음의 성공 경로에서도 URL 미해제를 local native assertion으로 재현했다. 짧은 Sample의 새 URL/임시 runtime 참조만 해제하고, 확인된 Sample 폐기 및 임시본 삭제 성공 후 Review URL을 해제한다. 삭제 실패/취소·기존 Profile·제출 Track·정상 Review/성공 저장의 URL은 유지한다. 길이·저장·재시도·UX 정책 변경 없음. 실제 RAM 절약량 측정으로 주장하지 않는다.
+
+build34modules·Node audio foundation/user journey/single-app 렌더 통과. 기존 유지 Sample QA에 짧은 거부 결과 해제/기존 Profile·원곡 preview 보존/정상 Take URL 유지/확인 폐기 해제를 연결했다. 기존 재녹음 QA는 recording/paused/review 삭제 실패 보존과 Review URL 미해제, 성공 폐기의 URL 해제·한 timer를 통과했다. Profile 편집 저장 실패·중복 방지·재시도/reload, legacy draft 본인/ownerless 복원·확인 폐기/타인 보존, discarded late chunk와 새 Take bytes exact도 통과했다. 물리 마이크/모바일·청취/서버 인수는 미완료다.
+
+660821627b3fa0d2537136973aaf911e06bd3ae8 Git Integration7001401490 success, production HTTP200/index-pA0BuH4D.js SHA25637FE92A53A289DBB7E60DFF0F0FA5FFB4A8B9FBEFF6C00FAED8E7C7F9FA06F2D 관측. production native 실패2/main4는 미게시 Mix URL revoke 및 제출 원본 SHA exact, 정상2/3/4/main Mix 생성·저장·reload 통과. 새 Sample build로 local asset이 교체된 뒤 관측이므로 현재 local hash exact와 구분한다. 현재 PC free9.28GiB/total15.95GiB·Python 모델 프로세스0을 확인했다. 한 native browser씩 실행하고 사용자 앱/Windows 설정은 변경하지 않았다.
 ### R1 게시되지 않은 Auto Mix URL 해제 — 2026-10-12
 
 production native Auto Mix 저장에 IndexedDB 오류를 주입해 결과 Blob URL이 revoke되지 않는 결함을 재현했다. 첫 QA는 created-project debug snapshot이 이전 idle 상태여서 timeout이었다. 실제 생성/실패 URL을 기준으로 기다리고 작업실 진입 후 현재 제출 상태를 검사하도록 시험을 수정하자 unpublished URL release assertion=false로 결함이 확인됐다. 임의 원본 삭제나 저장 실패 성공 처리 없음.
