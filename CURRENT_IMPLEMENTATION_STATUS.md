@@ -1,3 +1,12 @@
+### R5 분석 가능성 — 기존 pitch 함수의 실제 가창 관측 / 2026-10-12
+
+이미지·정책 변경 없이 src/pitch.js의 estimatePitch를 고정 실제 CSD3.9초 원본 rate44100Hz/mono·4096frame/hop1024에 적용했다. SF mono export687960bytes SHA1f787f4781ffa4ad31739f25b57761bdf1385e4aa8a2b78dd02103eb019741bb, waveform/source hash와 수동 annotation JSON SHA8064227cd1b597ca9081c36cc5bd068948e8f432ef635ad09eb13a94c596e4a5를 고정했다. amplitude normalization/output shift/새 합성/모델 설치 없음. 자료의 CC-BY-NC-SA4.0 연구 범위는 유지하며 오디오·annotation·결과는 repository 밖 기존 runtime에 보존한다.
+
+8음절 interior 진단 .30 correlation 조건에서 첫 표기59는3frames·median58.0668로 실제 lower onset을 관측했고, 나머지7음절 median59.1656/58.9420/65.9038/65.9498/67.8399/67.9627/67.8569였다. sample 수는3/3/10/13/13/13/3/3이며 sparse/max 값과 null을 그대로 보존했다. 고정 임계값은 진단 그룹화에만 사용했다. live Range UI에는 이 .30 필터가 없으므로 처음 붙인 existingAppConfidenceThreshold 라벨을 diagnosticConfidenceThreshold로 정정하고 최종 결과5ab9b91629fb1f58176a04b5d3995e62924e5d246a465ab9dbd1faf70c213485를 별도 보존했다. 기존 app 수집 정책은 바꾸지 않았다.
+
+qa/probe-annotated-voice-pitch.mjs를 재사용 도구로 추가했고 같은 actual PCM의 rows/frames exact를 확인했다. 최종 실행 순수Node 단일 CPU 약0.138초; 기존 pitch detector8/8 voice-like 수치 fixture·quiet rejection도 통과. 이는 함수 직접 관측이며 monitorInput의3frame throttling/350ms tracking·microphone processing·실제 Range collection/과학적 정확도/사용자 Profile 측정/개인 이미지 승인을 입증하지 않는다. measurementApproved/profileEnrolled/liveProfilePipelineVerified=false. 개인별 형태/정책·미지원 breathiness/vibrato 등의 검증된 추출값 부재는 그대로 남는다.
+
+c72b326b8279cd6dfc5b6128c6c6cb4bfc8fb4d9 Git Integration7001722951 success, production HTTP200/index-Bl8Ph6NX.js SHA256D3BE03C218574646E032A5E51738720FA46554FF5982685E702A019D30EF8FC5 local exact. 앱 변경 없는 측정 도구 묶음에서 동일 native 인수는 반복하지 않았다. 실제 서버3파일·디자인 보류/Notion 미정 정책·AI 화성/2–4Part·청취 gate 유지.
 ### R6 짧은 음절 측정 구간의 편향 / R1 production — 2026-10-12
 
 c65bcead911e84895447a2d2eaf8d372f59a4000 Git Integration7001631905 success, production HTTP200/index-Bl8Ph6NX.js remote/local SHA256D3BE03C218574646E032A5E51738720FA46554FF5982685E702A019D30EF8FC5 exact. production actual native fake Take 저장1.26초·WebM metadata nonfinite에서 slider1.26초 일치, rendered Mix11.978571초 복귀/pageerror0을 통과했다. 물리 입력·지연/청취 인수를 대신하지 않는다.

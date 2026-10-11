@@ -1,3 +1,6 @@
+### R5 선행 분석 함수 검증 — 2026-10-12
+
+기존 estimatePitch를 실제 고정 수동 가창 자료에 직접 대조하는 유지 probe를 추가했다. 같은 PCM/annotation·현재 extractor hash/new output을 보존하고 원본 pitch/gain·Profile·이미지·정책은 바꾸지 않는다. 같은 rows/frames 재현과 기존 수치 fixture 회귀 통과. 첫 lower onset/짧은3frame과 다른7음절의 관측을 분리하며 .30은 진단 그룹화로만 기록한다. 실제 live Range 수집·throttling/tracking·물리 입력·다양한 사용자 신뢰도는 미완료다. 새 평균음역/호흡량/비브라토 분석 성공이나 개인 Identicon 완료로 확대하지 않는다. 다음 선행 작업은 기존 수집 경로·source/revision의 기술 검증이며, 최신 정책 확인/보류 형태 확정이 필요한 제품·시각 구현은 실행하지 않는다. R1/R2 및 R6 증거/완료 gate·실제 서버3파일 제외는 보존한다.
 ### R6 측정 범위와 표기 음표 구분 — 2026-10-12
 
 실제 수동 note와 acoustic trajectory가 같은 정보를 뜻하지 않으며, 짧은 음절에서 고정80ms edge 제외가 lower onset의4/5frames만 남길 수 있음을 관측했다. 기존 측정/threshold·실패 값은 유지하고 전체 구간 분포와 표본 수를 병기하도록 유지 도구를 보완했다. 동일 waveform의 기존 interior 및 noteCurves event 수치 exact, fullInterval 추가 경로 검증을 통과했다. 어떤 window를 선택해 품질 gate를 통과시키지 않으며, 실제 음절/note/rest/화성의 불확실성을 보존한 제어 검증을 이어간다. R1 Player 수정의 Git Integration/production hash exact와 길이 전환 QA 통과는 상태 문서 최신 항목 참조. 실제 AI/2–4Part·권한/청취·서비스·디자인 인수는 완료로 확대하지 않는다.
