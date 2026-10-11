@@ -27,7 +27,10 @@ const iconsTemp=new URL('../src/.qa-user-journey-icons.mjs',import.meta.url)
 const projectId='ieum-thousand-years-v7',seed='ieum:thousand-years:original-c:0048',profileId='ieum-v2:voice-profile:v7'
 const blob=new Blob(['isolated synthetic recording bytes'],{type:'audio/wav'})
 const features={version:'ieum-basic-voice-v3',fingerprint:'qa-preserved',brightness:.5,low:.33,dynamicRange:.4,spectralFlux:.2,roughness:.3,energy:.5,activeRatio:.8,articulation:.2,pitchVariation:.1,envelope:[.2,.7,.4]}
-const track=partId=>({id:projectId+':'+partId,projectId,projectSeed:seed,partId,participantId:partId==='tenor'?'jisun':partId,participant:partId,blob,features,layer:buildVoiceLayer(seed,partId,features),duration:7,origin:'live-microphone-recording'})
+const track=partId=>{
+ const sourceFeatures=partId==='alto'?{...features,version:'ieum-basic-voice-v4',pitchAnalysisVersion:'normalized-difference-v1'}:features
+ return {id:projectId+':'+partId,projectId,projectSeed:seed,partId,participantId:partId==='tenor'?'jisun':partId,participant:partId,blob,features:sourceFeatures,layer:buildVoiceLayer(seed,partId,sourceFeatures),duration:7,origin:'live-microphone-recording'}
+}
 const draftId='jisun:'+projectId+':tenor:temporary-recording'
 let root
 const settle=async()=>{await act(async()=>{await new Promise(resolve=>setTimeout(resolve,35))})}
@@ -56,6 +59,9 @@ try{
  await act(async()=>root.render(React.createElement(App)));await settle();await settle()
  assert.equal(state().screen,'workspace');assert.equal(Object.keys(state().projectTracks).length,2);assert.equal(state().candidateAccepted,false)
  assert.equal(state().projectTracks.soprano.layer.signature,track('soprano').layer.signature)
+ assert.equal(state().projectTracks.alto.features.version,'ieum-basic-voice-v4')
+ assert.equal(state().projectTracks.alto.layer.signature,track('alto').layer.signature,'Stored v4 Track must not be reanalyzed on bootstrap')
+ assert.equal((await loadTrack(projectId+':alto')).features.version,'ieum-basic-voice-v4')
  assert.equal(await state().projectTracks.soprano.blob.text(),await blob.text())
  assert.equal((await loadTrack(projectId+':soprano')).origin,'live-microphone-recording')
  assert.equal(await (await loadTrack(projectId+':soprano')).blob.text(),await blob.text())

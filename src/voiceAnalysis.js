@@ -1,4 +1,9 @@
-import { estimatePitch } from './pitch.js'
+import { estimatePitch, PITCH_ANALYSIS_VERSION } from './pitch.js'
+
+export function isSupportedVoiceAnalysis(features) {
+  return features?.version === 'ieum-basic-voice-v3' ||
+    (features?.version === 'ieum-basic-voice-v4' && features.pitchAnalysisVersion === 'normalized-difference-v1')
+}
 
 const clamp01 = value => Math.max(0, Math.min(1, value))
 const round = (value, places = 5) => Number(value.toFixed(places))
@@ -150,7 +155,8 @@ export function analyzeAudioBuffer(audioBuffer) {
   const pitchRange = pitchMidis.length > 2 ? percentile(pitchMidis, .85) - percentile(pitchMidis, .15) : 0
   const pitchVariation = clamp01(pitchMotion / 3.5 * .62 + pitchRange / 20 * .38)
   const features = {
-    version: 'ieum-basic-voice-v3',
+    version: 'ieum-basic-voice-v4',
+    pitchAnalysisVersion: PITCH_ANALYSIS_VERSION,
     durationSec: round(audioBuffer.duration, 3),
     sampleRate,
     rms: round(rms),

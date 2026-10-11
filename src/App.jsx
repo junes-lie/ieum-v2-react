@@ -27,7 +27,7 @@ import {
 import { loadProjectBacking, projectAudioReference, assertProjectTrackAudio } from './projectAudio.js'
 import { readLocalUserState, writeLocalUserState } from './projectService.js'
 import { evaluatePartFit } from './matching.js'
-import { buildVoiceLayer, projectRecordSignature } from './voiceAnalysis.js'
+import { buildVoiceLayer, projectRecordSignature, isSupportedVoiceAnalysis } from './voiceAnalysis.js'
 import { clearProjectTracks, deleteTrack, deleteRecordingDraft, loadProjectTracks, loadTrack, saveTrack, saveTracks, saveSubmittedTrack } from './trackStore.js'
 import { createProjectModel, resolveRecordPartSlots, SUPPORTED_PART_COUNTS, submittedProjectTracks, allProjectTracksSubmitted } from './projectModel.js'
 import { CURRENT_USER_ID, PEOPLE, PERSON_BY_ID, SAMPLE_SONGS, personFromName } from './catalog.js'
@@ -162,7 +162,7 @@ async function loadDemoTrackByPart(partId) {
 
 async function refreshTrackAnalysis(track, projectSeed) {
   let features = track.features
-  if (features?.version !== 'ieum-basic-voice-v3') {
+  if (!isSupportedVoiceAnalysis(features)) {
     const analyzed = await analyzeBlob(track.blob)
     features = analyzed.features
   }

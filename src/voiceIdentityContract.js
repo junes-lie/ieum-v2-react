@@ -1,4 +1,5 @@
 // Input manifests only: no inferred identity, generated image, or fallback policy.
+import { isSupportedVoiceAnalysis } from './voiceAnalysis.js'
 export const IDENTITY_CONTRACT_VERSION = 'ieum-identity-input-v1'
 const SHA256 = /^[a-f0-9]{64}$/
 const CANDIDATES = ['averageRange', 'brightness', 'roughness', 'breathiness', 'vibrato', 'dynamics', 'bpm', 'actualRange', 'rhythmComplexity']
@@ -37,7 +38,7 @@ export function assessVoiceCandidates(features, purpose) {
   const unavailable = reason => ({status:'unsupported', value:null, confidence:null, reason})
   const result = Object.fromEntries(CANDIDATES.map(name => [name, unavailable('No validated extractor connected')]))
   // Current spectral features are proxies, not validated perceptual judgements.
-  if (features?.version === 'ieum-basic-voice-v3' && Number.isFinite(features.rms) && features.rms >= .0015) {
+  if (isSupportedVoiceAnalysis(features) && Number.isFinite(features.rms) && features.rms >= .0015) {
     for (const [name, field] of [['brightness','brightness'], ['roughness','roughness'], ['dynamics','dynamicRange']]) {
       const value = features[field]
       if (Number.isFinite(value) && value >= 0 && value <= 1) result[name] = {

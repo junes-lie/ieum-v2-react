@@ -1,3 +1,13 @@
+### R5 공유 분석기의 버전·기존 결과 호환 — 2026-10-12
+
+aa363fbbdaf54ca71a709a52829f13a77d871f48 Git Integration7002045989 success 및 production index-DGShlvLH.js에서 음역4조건을 확인했다: 무음0/거부, 실제 가창double tap1요청·126표본/B3–G♯4, tone-noise120→120/A3–A3, 준비 실패 후 retry127표본/B3–G♯4·stream 해제/미등록/pageerror0. R1 start/tracked 수정은 production에서도 통과했으며 물리 입력 검증은 아니다.
+
+기존 analyzeAudioBuffer도 estimatePitch를 공유하므로 새 Sample/Track 분석은 ieum-basic-voice-v4 및 pitchAnalysisVersion=normalized-difference-v1로 구분했다. fingerprint에도 이 메타데이터가 포함된다. 기존 v3 분석과 저장 Layer를 계속 인정하고, 정확한 v4/extractor 조합을 함께 읽도록 refreshTrackAnalysis·proxy assessment의 공통 검사만 보완했다. 기존 Profile/Track/완성 Record의 강제 재분석·재생성, renderer/형상/Generator 버전 변경은 없다. 버전 누락/불일치를 새 지원 결과로 위장하지 않으며 미지원 평균 음역/호흡량/비브라토/BPM/리듬 복잡도는 null로 유지한다.
+
+첫 v4 계약 시험은 v3 전용 검사 때문에 unsupported!=estimated로 실패했으며 해당 검사 범위를 보완한 뒤 통과했다. 동일 입력/버전 feature/fingerprint exact·legacy proxy 지원·잘못된 extractor 거부, 기존2–4 결합/서로 다른 Track/계보/제출-그래픽 상태 분리 회귀 통과. 실제 native Sample 저장/reload에서 v4와 extractor version을 보존했고 원래 Sample/범위·저장 실패/재시도도 유지했다. mixed v3/v4 Track의 exact Layer signature를 Node bootstrap과 native2/3/4Part Review→제출 실패/재시도→Mix→Credits 복귀→reload에서 확인했다. 첫 native assertion은 초기 debug snapshot의 createdTracks 갱신 전 대기로 timeout했고 실제 Review 진입 후 확인하도록 QA만 정정했다. 앱을 QA에 맞춰 바꾸지 않았다.
+
+build 및 관련 Node/native QA 검증 묶음이며 전체 R5 이미지/개인 생성·신뢰도 정책과 R6 실제 곡/화성·2–4AI Part, 실제 서버3파일·디자인/물리 인수는 남는다. 이 버전 구분은 이미 구현된 분석 결과의 출처 보존이고 미정 개인 Identicon 알고리즘 갱신 정책을 결정하지 않는다.
+
 ### R1 음역 측정 시작 중복 보호 — 2026-10-12
 
 마이크 준비150ms 동안 측정 시작을 double tap하면 getUserMedia2회가 발생하는 native 재현을 확인했다. VoiceSetup.startRange에 기존 녹음 시작과 같은 단일 진행 ref를 적용해 중복 요청을1회로 제한하고 finally에서 해제하여 준비 실패 후 재시도를 유지했다. 기존 source/session 취소·측정 절차/버튼·화면과 저장 정책 변경 없음.
