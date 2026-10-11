@@ -1,3 +1,9 @@
+### R1 시작 복구 / R6 원곡 음절 선행 검증 — 2026-10-12
+
+R1: bootstrap 읽기 실패를 ready로 처리하는 실제 경로를 수정했다. 기존 loading 영역에서 실패/재시도를 구분하며 원본 복구 완료 전 녹음·제출·Mix 진입을 차단한다. build/Node flow/native DB 반복 read failure·retry/원본 hash/put0·mic0/기존 profile·draft 회귀 통과. 기존 단계·이미 검증된 정상 복구를 유지하고 전체 R1 인수나 실기기 검증 완료로 계산하지 않는다. 유지 qa: drafts에 복구 QA 연결.
+
+R6: 실제 원곡8초에서 Whisper 가사는 exact이나 BPE token이 여러 음절을 포함한다. token 시각을 음절별로 나누지 않는다. 공식 pinned 한국어 speech CTC도 실제 가사 인식이 달라 미채택이며 원곡 sourceScore/syllableAlignment/harmony/2–4 Part gate는 유지한다. 연구 원본·환경·WAV·실패 evidence 보존, production 연결 없음. 다음은 검증 가능한 원곡 음절별 timing/melody 경로 확보이며 실패 음성 CTC나 synthetic melody를 실제 score로 대신하지 않는다.
+
 ### R6 음표 입력 정의 교정 / 지원 음역 gate — 2026-10-12
 
 저자 pinned 학습 코드의 Note_Predictor는 모델 index=MIDI+12(index0 휴지)다. 이전 notesMidi 이름/−12반음 해석을 교정하고 원본 출력·실패 증거는 보존한다. 유지 generator는 modelNoteIndices/expectedMidi와 공식 코드/version을 별도 기록하며 측정은 explicit legacy 재해석을 별도 폴더에 저장한다. 정상 index72–79의7음절은 expected MIDI60–67 대비−0.2~+0.3반음, 두 번째 원곡 가사 “우리 함께 불러요”/합성 melody는 Small exact1.0 및−0.4~+0.2반음으로 실제 검증했다. 중간 index66–73은 exact1.0이나 일부 frame 부족/마지막−1.1반음, 낮은 index60–67은 실제 pitch 실패/미채택, 높은 입력의2음절null도 유지한다. 상단 약−12반음 설명은 교정 전 해석이며 실제 모델 pitch 오류의 확정값이 아니다.

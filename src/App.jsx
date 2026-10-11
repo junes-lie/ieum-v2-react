@@ -1359,6 +1359,8 @@ export default function App() {
   const activeProjectRef = useRef(persisted.activeCreatedProjectId || PROJECT_ID)
   const [projectTracks,setProjectTracks] = useState({})
   const [tracksReady,setTracksReady] = useState(false)
+  const [tracksLoadError,setTracksLoadError] = useState('')
+  const [tracksLoadAttempt,setTracksLoadAttempt] = useState(0)
   const [mainKeyLocked,setMainKeyLocked]=useState(Boolean(persisted.mainKeyLocked))
   const [joinedPart,setJoinedPart]=useState(persisted.joinedPart || USER_PART_ID)
   const [recordingPart,setRecordingPart] = useState(USER_PART_ID)
@@ -1637,6 +1639,7 @@ export default function App() {
   useEffect(() => {
     let active = true
     const bootstrap = async () => {
+      setTracksLoadError('')
       const [projectStored, profileStored, demoManifest] = await Promise.all([
         loadProjectTracks(PROJECT_ID),
         loadProjectTracks(PROFILE_PROJECT_ID),
@@ -1679,9 +1682,9 @@ export default function App() {
       setCreatedProjectTracks(Object.fromEntries(createdTrackEntries))
       setTracksReady(true)
     }
-    bootstrap().catch(error=>{ console.error(error); setTracksReady(true) })
+    bootstrap().catch(error=>{ console.error(error); if(active)setTracksLoadError('저장한 데이터를 불러오지 못했어요. 원본을 유지하고 다시 시도해 주세요.') })
     return () => { active=false }
-  },[])
+  },[tracksLoadAttempt])
 
   useEffect(() => {
     window.__IEUM_V2__ = {
@@ -1692,7 +1695,7 @@ export default function App() {
     }
   }, [screen,profile,joined,invited,candidateAccepted,projectLiked,projectLikes,vocalSaves,songSaved,songSaves,projectTracks,mix,mixStatus,mixProgress,readyForMix,recordingPart,projectActivity,delayedProjectIds.join(',')])
 
-  if (!tracksReady) return <div className="screen"><TopBar meta="TRACKS LOADING"/><main className="loading-state"><p>실제 Track 분석값을 불러오는 중…</p></main></div>
+  if (!tracksReady) return <div className="screen"><TopBar meta="TRACKS LOADING"/><main className="loading-state"><p>{tracksLoadError || '실제 Track 분석값을 불러오는 중…'}</p>{tracksLoadError&&<div role="alert"><button className="secondary" data-action="tracks-load-retry" onClick={()=>setTracksLoadAttempt(value=>value+1)}>저장한 데이터 다시 불러오기</button></div>}</main></div>
 
   let content
   if (screen==='home') content=<Home openSong={openSong} layers={layers} projectTracks={projectTracks} profile={profile} mix={mix} openCreateProject={()=>startCreateProject(null)} openComplete={()=>go('complete')}/>

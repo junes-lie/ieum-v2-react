@@ -1,3 +1,17 @@
+## 2026-10-12 R1 앱 시작 데이터 복구 실패 / 재시도
+
+App bootstrap이 저장 Track/Profile/생성 Project 읽기 또는 초기 asset 로딩 실패를 catch에서 tracksReady=true로 처리하던 경로를 수정했다. 복구 실패는 ready와 구분하고 기존 loading 영역에서 원본 보존 안내·읽기 재시도를 제공한다. 복구 완료 전 녹음·제출·자동 Mix·앱 탐색 진입을 막으며 새 IA/디자인 토큰/서버 정책은 추가하지 않는다. 정상 bootstrap·기존 저장 원본·대표 Sample·전역4탭은 재사용한다.
+
+build34modules/기존 Node user-journey 통과. 유지 qa/verify-bootstrap-recovery.mjs 실제 native IndexedDB getAll 실패·반복 실패·재시도에서 앱 진입 차단, put0/mic0, 원본 record ID/kind/origin/Blob SHA256 exact·복구 후2Tracks 확인. 첫 QA는 참여하지 않은 Home에서 record-part 버튼을 기다려 timeout했으므로 실제 복구 공통 전역 nav를 확인하도록 바로잡았고 재실행 통과했다. 기존 draft-restoration 및 profile-editing native QA도 통과. isolated 렌더/DB 증거이며 실기기·청취·디자인 인수는 미검증이다. npm qa:drafts에 기존 도구와 함께 연결했다. 서버 미커밋3파일은 보존/제외.
+
+## 2026-10-12 R6 실제 원곡 음절 타이밍 선행 검증 — 미확정
+
+기존 실제 원곡7ef11d5e7d574134154c7fddc3022654feec474ac5cba70ed24c606232ca0eb9/분리 vocal b2f4d47811276a4254fa17c694395e7ddb10b30df853c6c31070ac229b9dcd25의31.7–39.7초 구간에서 실제 ASR token timestamp와 pYIN frame을 추출했다. 첫 진단은 Whisper generate 반환 dict를 속성으로 읽어 AttributeError로 종료해 증거를 보존했다. 반환 형식 수정 후 실제 exit0/20.672초, 가사는 “오늘도 함께해요”지만 token은 “오늘도/함께/해요”로 여러 음절이 묶였다. sourceTime34.36/36.28/37.48초는 token 추정이며 임의 균등 분할하거나 음절 시작으로 승인하지 않는다. 실제 confident pitch frame261개/unknown frame null 보존.
+
+일반 한국어 음성 CTC 후보 kresnik/wav2vec2-large-xlsr-korean을 공식 model card/API로 확인한 뒤 pinned629c9a3501c10ba128bf3fa1eebb12af3be03f61/safetensors1266747952bytes/SHA25629be111b9247cfc2c72f125c1b1f50021ecfded8f0d947bbfb7e31dc7f0ddd07/Apache2로 진단 runtime에만 준비했다. 최초 후보 jonatasgrosman URL API는 Invalid username or password, 부속 tokenizer.config 가정은 Entry not found였다. 기존 파일·실패 로그를 보존하고 실제 metadata의 tokenizer_config.json만 받아 기존 Python 환경을 수정하지 않았다. 8초 unforced CTC 실제 exit0/15.726초이나 “어느선 함께 남다”로 인식해 정확 가사·음절 timing 후보로 미채택. 원문을 강제 입력하거나 실패 posterior를 확정 score로 바꾸지 않았다. 저자 speech-trained model card의 일반 음성 CER/WER를 가창 성능으로 주장하지 않는다.
+
+Whisper/CTC 각 실제 감시 표본 child peak2.70040/1.66047GiB/free min7.91688/8.90389GiB, guard 중단 없음. 다운로드 전 여유 RAM10.58GiB/C111.03GiB/D1352.22GiB 확인. 모델·script·실패/측정 JSON은 부모 runtime 보존, production audio/앱/사용자 Voice Profile에 연결하지 않음. 원곡의 검증 가능한 음절별 timing·melody와 화성·실제2–4 Parts는 아직 미완료다. 새 환경 설치/다른 대형 모델의 반복 다운로드를 성공처럼 보고하지 않는다.
+
 ## 2026-10-12 R6 음표 인덱스 교정 / 지원 음역·두 번째 가사 실제 검증
 
 저자 pinned main9beec10의 Pattern_Generator.py 679–692줄 Note_Predictor에서 `440 * 2 ** ((notes - 69 - 12) / 12)` 및 index0=휴지를 실제 확인했다. 따라서 모델 index72는 MIDI60이다. 이전 진단의 notesMidi 필드명과 약−12반음 차이라는 해석은 일반 MIDI와 모델 인덱스를 혼동한 것이었다. WAV나 모델 출력을 transpose하지 않고 메타데이터를 modelNoteIndices/expectedMidi/noteEncoding으로 구분했다. 원본 공식 source는 부모 runtime에 SHA256dc63fa44da989f8ebd994994bfef7bba9bf7948545474359aea6af6ced975a2c로 보존했다. 기존 보고서·WAV는 수정하지 않고 explicit --legacy-model-index/별도 calibrated-analysis로 재측정했다.
