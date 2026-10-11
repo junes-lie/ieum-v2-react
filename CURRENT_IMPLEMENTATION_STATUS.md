@@ -1,3 +1,17 @@
+### R6 경량 가창 음표 추출 / R1 Production 확인 — 2026-10-12
+
+R1 845d37dcb373f63cc6286f837259b8af58b72805 main/origin 일치, Git Integration Production7000665875 success. production HTTP200/index-U1LmFjMk.js SHA2563416E3B50EC85C012FC8DE8447A793BB516BFEB42BEA95D856DF2ED09A89FED0 local exact. 실제 production 이전 recorder 지연 chunk 분리·새 Review 원본 exact 및 ended-mic 원본/Draft 복원 모두 통과.
+
+[GAME 공식 release](https://github.com/openvpi/GAME/releases/tag/v1.0.3)의 small ONNX45676364bytes만 스트리밍/공식 digest 확인했다. SHA25600ba0c64115b6b874d9ea4afd3e6cf822abda2a04e52569233b0a044fd40e4e8. [weight1.0 release](https://github.com/openvpi/GAME/releases/tag/v1.0.0)는 CC-BY-NC-SA4.0이며 code MIT와 구분한다. 공개 native map에 Korean은 없으므로 공식 unset/universal language0 연구로만 실행했다. poralis/copycat 및 svsv3 원본 HF는 실제401 Unauthorized라 weights/현재 조건을 확인하지 못했고 채택하지 않았다. 공식 GitHub Copycat 코드는 비상업/별도 vocoder 조건을 안내한다. 새로운 상업 AI/서비스 선택 없음.
+
+유지 qa/probe-singing-notes-onnx.py는 고정6파일 SHA/config·실제 입력10초·새 output 경로를 확인한다. 기존 ONNXRuntime1.30.0 CPUExecutionProvider/2intra·1inter threads, 공식 ONNX 추천 boundary0.2(별도 PyTorch schema 기본0.3과 구분)/presence0.2/radius2/8step t0=0을 명시했고 결과에 맞춰 조정하지 않았다. 실제 source/config/pinned 원문 f4239345f0fed21890d362c74a35fd857724aa82·WAV/JSON/모델은 repo 밖 runtime에 보존한다. numpy/모델 import 전11초/NaN 입력 거부도 확인.
+
+실제 CSD3.9초 수동 annotation은 끝의 partial note까지9개, 모델 voiced8개였다. 원문 schema의50ms/0.5반음 matching 허용 범위로8개를1대1 대응했고 첫 두 동일 pitch 음절을1note로 합쳐 한 경계가 누락됐다. 나머지 대응 onset 차이 절대값 최대20.8ms, pitch 차이 약−0.123~+0.150반음이며 첫 merged end 차이246.2ms는 보존한다. 이후 최종 도구에서 CSD 관측 notes exact 반복을 확인했지만 전체 정확도/모든 입력 재현성을 보장한 것은 아니다.
+
+원곡31.7–39.7초의 실제 음표 후보는 첫55·59·60.35→62와 중간 휴지/57→59·58.57→60·57을 구분했다. 첫16–23.5초는7voiced notes/55.13·58.99·62.03·57.03·57.02·54.98·55.05를 관측했다. 언어0·원곡 분리 오차/가사 consonant onset와 sung-note onset 차이·모델 누락은 미확정이며 확정 score/가사 Guide로 등록하지 않는다. inference CSD0.594초/원곡1.527·1.472초. guard exit0·중단false,3.655/4.863/4.840초, free 최소9.380/9.299/9.302GiB·owned peak0.209/0.307/0.295GiB. 대형 GPU/새 환경 설치 없음. 원곡 음역55의 기존 생성 실패/화음/2–4Part·청취·상업권한 gate는 유지한다.
+
+원곡 opening 최종 도구 재실행에서는 전체 segment9→10, voiced7은 유지됐지만19.19–19.39초의200ms 휴지가 추가되고 앞선62note 끝이200ms 빨라졌다. 동일 voiced onset 대응 MIDI 차이 최대0.00855반음도 관측됐다. 동일 입력/버전의 exact 결과 재현은 실패이며 CSD의 exact 관측을 전체 입력으로 확대하지 않는다. 최종 실행1.365초·guard free 최소9.305GiB/owned peak0.292GiB. 두 결과를 보존하고 원인 확인 전 확정 악보/Guide로 사용하지 않는다.
+
 ### R1 이전 녹음기의 지연 chunk 소유권 — 2026-10-12
 
 production에서 첫 Take를 취소/다시 시작한 뒤 이전 recorder의 실제 첫 chunk를 늦은 callback으로 전달했을 때 새 Take chunks가1→2로 증가하는 결함을 재현했다. recorder별 수집 배열을 보존하고 현재 recorder와 현재 배열이 모두 소유 일치할 때만 dataavailable bytes를 추가한다. 취소/확정 뒤 배열을 반환한 이전 요청은 새 Take에 쓸 수 없다. 원본/임시본/녹음·제출 UX와 디자인 변경 없음.

@@ -1,3 +1,11 @@
+### R6 가창 note 경계의 독립 모델 관측 — 2026-10-12
+
+기존 MMS phonetic onset/pYIN frame 관측과 구분하여 [공식 GAME small ONNX](https://github.com/openvpi/GAME/releases/tag/v1.0.3)를 연구용으로 검증했다. 모델45.7MB/기존 CPU2스레드에서 CSD0.594초·원곡 두 구절 약1.5초 추론, guard owned peak 약0.21–0.31GiB. native Korean map 없음(language0), weight CC-BY-NC-SA4.0·상업 채택false. 실제 수동9note 중8matching/동일 pitch 두 음절 경계 누락을 보존한다. 최종 유지 probe-singing-notes-onnx는 pinned6파일/hash/config/10초·output 보존 검사와 explicit ONNX 추천 threshold/8step을 사용하며 확정 flagsfalse.
+
+다음 R6은 동일 원곡의 음절·note·휴지·melisma/불확실 구간 연결 근거를 비교하고, 지원 음역/가사·원곡 화성/2–4Part 검증을 통과한 경로만 등록하는 것이다. 새 모델의 waveform 기반 note 결과를 가사 정답/화음 승인이나 기존 MIDI55 생성 실패의 해결로 오인하지 않는다. 기존 원본·실패 evidence·PC guard 유지, threshold/seed 반복으로 통과시키지 않는다. 앱 디자인/음원/Track 변경 및 단계 완료 확대 없음. 관련 실제 수치와 R1 자동배포는 현재 상태 문서 참조.
+
+원곡 동일 입력 최종 재실행에서 전체 segment9→10 및200ms 휴지/앞선note 끝 차이를 관측했다(voiced7 유지, MIDI 대응 차이 최대0.00855반음). exact 재현은 실패했다. CSD exact 사례로 원곡 재현성을 대신하지 않으며 불확실 경계와 반복 변동 원인 검증을 선행 작업으로 추가한다. 재생성/threshold 조정으로 결과를 맞추지 않는다.
+
 ### R1 재녹음 데이터 이벤트 소유권 — 2026-10-12
 
 이전 recorder의 늦은 dataavailable이 새 Take의 전역 chunks에 추가되는 실제 결함을 production에서 재현했다(1→2). recorder별 배열/현재 recorder·배열 소유권을 함께 확인하도록 최소 수정. 새 native QA의 Review SHA256 exact, 기존 종료 원본/Draft·중복 세션·Sample 보존·Node audio/build 통과. 관련 qa:record-errors에 유지 검증 연결, main push→Git Integration→production chunk QA를 수행한다. 물리 latency/청취·R1 전체 완료로 확대하지 않으며 IA/디자인/서버 작업은 제외한다.
