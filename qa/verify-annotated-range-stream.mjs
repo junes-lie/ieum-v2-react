@@ -14,13 +14,17 @@ const {chromium}=require('playwright')
 const browser=await chromium.launch({headless:true,executablePath:'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe'})
 try {
  const results=[]
- for(const mode of ['silence','annotated-singing','tone-noise']){
+ for(const mode of ['silence','annotated-singing','tone-noise','retry-start']){
   const context=await browser.newContext({viewport:{width:390,height:844}})
   await context.addInitScript(({pcm,mode})=>{
+   window.qaRangeRequests=0;window.qaRangeStreams=[]
    navigator.mediaDevices.getUserMedia=async()=>{
+    window.qaRangeRequests++
+    await new Promise(resolve=>setTimeout(resolve,150))
+    if(mode==='retry-start'&&window.qaRangeRequests===1)throw new DOMException('QA microphone busy','NotReadableError')
     const audio=new AudioContext({sampleRate:44100}),destination=audio.createMediaStreamDestination()
     const buffer=audio.createBuffer(1,pcm.length,44100)
-    if(mode==='annotated-singing')buffer.copyToChannel(Float32Array.from(pcm),0)
+    if(mode==='annotated-singing'||mode==='retry-start')buffer.copyToChannel(Float32Array.from(pcm),0)
     if(mode==='tone-noise'){
      const data=buffer.getChannelData(0);let seed=71
      for(let i=0;i<data.length;i++){
@@ -30,6 +34,7 @@ try {
     }
     const input=audio.createBufferSource();input.buffer=buffer;input.connect(destination)
     window.qaRangeInput={audio,input,stream:destination.stream,ended:false}
+    window.qaRangeStreams.push(destination.stream)
     input.onended=()=>{window.qaRangeInput.ended=true}
     await audio.resume();input.start(audio.currentTime+.25)
     return destination.stream
@@ -40,7 +45,15 @@ try {
   await page.waitForFunction(()=>window.__IEUM_V2__?.state?.projectTracks)
   await page.locator('[data-nav="user"]').click()
   await page.getByRole('button',{name:'내 목소리 알아보기',exact:true}).click()
-  await page.locator('[data-action="range-start"]').click()
+  if(mode==='annotated-singing')await page.locator('[data-action="range-start"]').dblclick()
+  else await page.locator('[data-action="range-start"]').click()
+  if(mode==='retry-start'){
+   await page.waitForSelector('.permission-error')
+   assert.equal(await page.locator('.result-block').count(),0)
+   await page.locator('.permission-error button').click()
+  }
+  await page.waitForSelector('[data-action="range-finish"]')
+  assert.equal(await page.evaluate(()=>window.qaRangeRequests),mode==='retry-start'?2:1,'Repeated start taps share one request; a failed preparation must allow retry')
   let trackedSamples=null
   if(mode==='tone-noise'){
    await page.waitForFunction(()=>document.querySelector('.pitch-diagnostics span:last-child')?.textContent==='tracked')
@@ -68,8 +81,8 @@ try {
    await page.waitForSelector('.result-block')
    range=await page.locator('.result-block').innerText()
    const label=await page.locator('.result-block h1 span').textContent()
-   if(mode==='annotated-singing')assert.match(label,/^[A-G][♯♭]?3–[A-G][♯♭]?4$/,'This bounded annotated singer must not acquire a false octave-5 upper range')
-   else assert.equal(label,'A3–A3')
+   if(mode==='tone-noise')assert.equal(label,'A3–A3')
+   else assert.match(label,/^[A-G][♯♭]?3–[A-G][♯♭]?4$/,'This bounded annotated singer must not acquire a false octave-5 upper range')
    assert.ok(range.includes(`${accepted}개의 유효 음정 표본`))
    assert.equal(await page.evaluate(()=>window.qaRangeInput.stream.getTracks().every(track=>track.readyState==='ended')),true,'Finishing range must stop the input stream')
   }

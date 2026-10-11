@@ -1,3 +1,11 @@
+### R1 음역 측정 시작 중복 보호 — 2026-10-12
+
+마이크 준비150ms 동안 측정 시작을 double tap하면 getUserMedia2회가 발생하는 native 재현을 확인했다. VoiceSetup.startRange에 기존 녹음 시작과 같은 단일 진행 ref를 적용해 중복 요청을1회로 제한하고 finally에서 해제하여 준비 실패 후 재시도를 유지했다. 기존 source/session 취소·측정 절차/버튼·화면과 저장 정책 변경 없음.
+
+최종 native 4조건: 무음0/거부, 실제 가창double tap1요청·126표본/B3–G♯4, tone-noise tracked119→119/A3–A3, NotReadableError 최초 실패 뒤 retry2번째 요청·128표본/B3–G♯4를 통과했다. 성공 종료 stream 해제/미등록/pageerror0, build34modules 및 Node pitch16/16·Profile atomic save failure/rollback/retry 회귀도 통과했다. user PC free RAM9666160KiB·Python worker 없음. 모델을 켜거나 서버3파일/디자인/미정 정책을 변경하지 않았다.
+
+직전 f0e1028c37dd2e00bcbc38ed72bc2c7627cb3868 Git Integration7002003291 success를 확인했다. 이번 중복 보호 묶음의 자동배포 후 production에서도 4조건과 빌드 hash를 확인하여 이전 tracking 교정까지 함께 검증하며, 물리 입력·청취/전체 단계 완료로 표시하지 않는다.
+
 ### R1/R5 추적 표시와 측정 표본 분리 — 2026-10-12
 
 18e48a4c15a39ff29210826a80b9e93c70a32988 Git Integration7001957166 success, production index-COo5wZ9E.js remote/local SHA256A023C8FE1FFB8F96FF9B1B1CEFE5D05B1D80F6D6487740464EBB09D827E52435 exact. production 무음 거부/실제 짧은 가창145표본·B3–G♯4·stream 종료/미등록, Profile 편집/analysisVersion 보존·저장 실패·재시도·복귀 회귀/pageerror0 통과.

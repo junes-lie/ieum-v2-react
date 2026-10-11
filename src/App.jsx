@@ -751,6 +751,7 @@ function VoiceSetup({ complete, go, back, existing, editMode }) {
   const [sampleBusy,setSampleBusy]=useState(false)
   const [sampleCountdown,setSampleCountdown]=useState(null)
   const sampleStartingRef=useRef(false)
+  const rangeStartingRef=useRef(false)
   const sampleStoppingRef=useRef(false)
   const sampleLifecycleRef=useRef(0)
   const pendingSampleSong=useRef(null)
@@ -770,6 +771,8 @@ function VoiceSetup({ complete, go, back, existing, editMode }) {
   const confidenceSamples = useRef([])
 
   const startRange = async () => {
+    if(rangeStartingRef.current)return
+    rangeStartingRef.current=true
     try {
       setError(''); setSaveFailure(false); await requestMicrophone(); setPermission('granted'); setStep('range-running')
       pitchSamples.current = []; confidenceSamples.current = []; setSeconds(0); setPitch(null)
@@ -795,6 +798,7 @@ function VoiceSetup({ complete, go, back, existing, editMode }) {
       }, { detectPitch:true })
       timer.current = window.setInterval(() => setSeconds(value => value + 1), 1000)
     } catch (e) { setPermission(isMicrophonePermissionError(e) ? 'denied' : 'error'); setError(microphoneErrorMessage(e)) }
+    finally {rangeStartingRef.current=false}
   }
   const finishRange = () => {
     const values = [...pitchSamples.current].sort((a,b)=>a-b)
