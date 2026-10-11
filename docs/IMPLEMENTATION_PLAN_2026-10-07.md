@@ -1,3 +1,9 @@
+### R6 한 음절 내 선율 제어 후속 — 2026-10-12
+
+원곡 F0에서 한 음절 내 여러 음이 관측되어, 기존 한 음/음절 입력을 선택적인 프레임 noteEvents로 확장하는 짧은 기술 검증을 통합했다. 현재 synthetic7초의 한 '도'에서 MIDI64→66 요청/실제64.2→66.0과 Small exact 가사를 검증했다. 기존 token·음절·duration과 default PCM SHA exact를 유지하며 출력 변조/중복 가사/별도 구현은 없다. 실제 양자화 사건·측정·실패 입력·버전/hash를 기존 유지 도구/report에 기록하고 원곡 harmony/sourceScore/catalog 승인은false다.
+
+다음 음악 선행 조건: 실제 source의 음절 onset 후보와 지속/휴지·선율 변화 근거를 대조 → 지원되는 실제 음역과 원곡 화성 근거 → 같은 가사·진입의 개별2–4 Part → 결합/청취·권리 확인. 모델 프레임 제어 통과가 원곡 score/실사용 Part 승인을 뜻하지 않는다. 기존 실패·null·단계/의존관계·디자인 보류·RAMguard를 유지하며 사용자 인수 대기로 독립 기능 작업을 멈추지 않는다.
+
 ### R1 제출 경쟁 / R6 원곡 지속 구간 후속 — 2026-10-12
 
 R1: Review 중 다른 탭 최초 제출을 기존 atomic store의 반환 원본으로 공통 상태 반영한다. 메인/새 Project의 분석없는 원본을 복원 목록에서 누락시키지 않고 기존 실제 PCM 분석 경로를 사용한다. production 경쟁 상태 누락과 local null-features 재접속 실패를 재현했고 수정 후 원본 hash/제출수3/reload/2–4·main Mix/zero-graphics·missing-analysis 모드를 통과했다. 전체 R1·실기기·공유 서버 완료 상태는 변경하지 않는다.

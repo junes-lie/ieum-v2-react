@@ -24,12 +24,21 @@ if encoded:
 expected=[n-12 if n else None for n in indices] if encoded else [n if n else None for n in indices]
 assert len(score['syllables'])==len(indices)==len(score['durationsSeconds'])
 position=0;observations=[]
-for syllable,note,expected_note,duration in zip(score['syllables'],indices,expected,score['durationsSeconds']):
+for index,(syllable,note,expected_note,duration) in enumerate(zip(score['syllables'],indices,expected,score['durationsSeconds'])):
+ curve=(score.get('noteCurves') or [None]*len(indices))[index]
+ varying=curve is not None and len({event['modelNoteIndex'] for event in curve})>1
+ if varying:expected_note=None
  selected=(times>=position+.08)&(times<position+duration-.08)&valid
  segment=audio[round(position*sr):round((position+duration)*sr)]
  observed=float(np.median(midi[selected])) if selected.any() else None
- observations.append({'syllable':syllable,'start':position,'end':position+duration,'modelNoteIndex':note if encoded else None,'expectedMidi':expected_note,'confidentFrames':int(selected.sum()),'observedMedianMidi':observed,'differenceSemitones':observed-expected_note if observed is not None and expected_note is not None else None,'rms':float(np.sqrt(np.mean(segment**2))) if segment.size else None})
+ observations.append({'syllable':syllable,'start':position,'end':position+duration,'modelNoteIndex':note if encoded and not varying else None,'expectedMidi':expected_note,'expectedPitchVaries':varying,'confidentFrames':int(selected.sum()),'observedMedianMidi':observed,'differenceSemitones':observed-expected_note if observed is not None and expected_note is not None else None,'rms':float(np.sqrt(np.mean(segment**2))) if segment.size else None})
  position+=duration
-result={'sourceSha256':report['outputSha256'],'inputDuration':position,'actualDuration':len(audio)/sr,'durationDifference':len(audio)/sr-position,'observations':observations,'inputEncoding':'pinned model index offset +12' if encoded else 'legacy uncalibrated MIDI label','legacyReinterpretation':a.legacy_model_index,'measurementScriptSha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),'analysis':'pYIN probability >= .75, excluding 80ms segment edges; measured output, not inferred input','musicalHarmonyApproved':False,'sourceSongConnected':False,'catalogRegistrationApproved':False,'limitations':['A synthetic diagnostic score; no original-song chord or syllable alignment validation','F0 estimates can contain octave/separation errors','No listening or voice identity acceptance']}
+event_observations=[]
+for event in score.get('expandedNoteEvents',[]):
+ start=event['actualStartSeconds'];end=event['actualEndSeconds']
+ selected=(times>=start+.08)&(times<end-.08)&valid
+ observed=float(np.median(midi[selected])) if selected.any() else None
+ event_observations.append({**event,'confidentFrames':int(selected.sum()),'observedMedianMidi':observed,'differenceSemitones':observed-event['expectedMidi'] if observed is not None else None})
+result={'sourceSha256':report['outputSha256'],'inputDuration':position,'actualDuration':len(audio)/sr,'durationDifference':len(audio)/sr-position,'observations':observations,'noteEventObservations':event_observations,'inputEncoding':'pinned model index offset +12' if encoded else 'legacy uncalibrated MIDI label','legacyReinterpretation':a.legacy_model_index,'measurementScriptSha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),'analysis':'pYIN probability >= .75, excluding 80ms segment edges; measured output, not inferred input','musicalHarmonyApproved':False,'sourceSongConnected':False,'catalogRegistrationApproved':False,'limitations':['A synthetic diagnostic score; no original-song chord or syllable alignment validation','F0 estimates can contain octave/separation errors','No listening or voice identity acceptance']}
 target.parent.mkdir(parents=True,exist_ok=True)
 target.write_text(json.dumps(result,ensure_ascii=False,indent=2),encoding='utf-8');print(json.dumps(result,ensure_ascii=False))

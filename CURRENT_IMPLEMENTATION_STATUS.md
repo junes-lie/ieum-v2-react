@@ -1,3 +1,13 @@
+### R6 한 음절 내 음표 변화 제어 — 2026-10-12
+
+실제 source의 한 음절 내 F0 변화를 중앙값 한 음으로 축소하지 않기 위해 기존 pinned DiffSingerKR encoder의 프레임별 note embedding 입력을 사용한 선택 noteCurves 진단을 추가했다. 저자 token/phoneme/duration 변환을 유지하고 모델에 전달하는 expanded note만 명시한 사건으로 바꾼다. 출력 transpose/splicing/가사 반복 없음. offset0·순서·유한값·정수/index·segment 범위·프레임 양자화 중복을 모델 생성 전 검사하며 잘못된 first-offset/unordered/NaN/bool-note4건은 system Python에서 numerical/model import 전 거부했다. 기존 기본 input/seed와 output은 보존한다.
+
+실제7초 synthetic score의 '도'에 index76→78 / expected MIDI64→66을 요청했다. 실제 frame189–215·215–241,2.19429–2.49615·2.49615–2.79800초로 양자화됐다. 실제 pYIN>=.75/각구간 양끝80ms 제외에서13/13frames·MIDI64.2/66.0·오차+0.2/0반음을 관측했다. 측정기는 변화 음절 전체의 단일 expectedMidi/difference를null로 분리하고 음표 사건별 실제 관측을 기록한다. WAV SHA256cd597da95de36d139dc44e85ac877b44e0fa6feafd5c308e2ea59f9da68a93a6, 추론1.30905초/GPU421700608bytes, Small ASR normalizedLyricsExact=true/textSimilarity1.0이다. independent diagnostic이며 원곡 score·화음·듣기·checkpoint 사용 권한을 승인하지 않는다.
+
+생성/측정/ASR guard exit0·중단false·7.291/7.323/21.834초, free minimum8.50680/9.45198/7.08207GiB 및 child peak1.23540/0.24309/2.56416GiB. 새 선택 입력 미지정 default 실제 재생성은 이전 WAV SHA25674b7053a89a8c9bcd4ec03954c0dddacf9361c6eb6463bc44afe147141fb1e5f와exact이며 free8.51788GiB/child1.24060GiB/guard7.335초·exit0. 기존 default의 새 측정도 별도 경로에서 구간·null/입력 의미를 보존한다. 원곡 두 번째8.5초 인접 onset F0도 두 해상도로 실제 측정했으며 미승인 시작/휴지/여러 음 조건을 유지한다(guard13.526초/free9.41016GiB/child0.25035GiB). 모든 원본·WAV·JSON·monitor는 repo 밖 runtime 보존. 앱 음원/catalog/Track·그래픽 변경 없음.
+
+R1 직전8a5c6e1d2b96d3dcfdca71640dde34e31edf9075 main/origin 일치, Git Integration Production7000070959 success. production HTTP200/JS index-P4gBmfM9.js SHA256513F0F3D7F39D0E0894EF0BB37C1BD12D0772BCAC67E6F2A3DABD9870B310586 local exact. 실제 production Review 경쟁 원본 hash/제출수3/reload 및 missing-analysis2/3/4/main Mix/native PCM 복원 모두 통과. 보류 서버3파일 유지.
+
 ### R1 경쟁 제출 및 분석 없는 원본 복원 — 2026-10-12
 
 Review에 진입한 뒤 다른 탭에서 같은 Part 원본을 먼저 확정하면 현재 화면이 workspace로만 돌아가 제출수/Track을 반영하지 않던 경로를 실제 production에서 Timeout5000ms로 재현했다. 별도 사전 조회/조기 반환을 없애고 기존 원자적 saveSubmittedTrack이 반환한 최초 원본을 공통 상태 반영/재생 경로에 연결한다. 이어 null features 원본이 재접속 목록에서 제외되어 Timeout30000ms였던 실제 경로를 확인하고 메인/새 Project의 features 필터만 제거했다. 기존 refreshTrackAnalysis가 실제 저장 PCM을 분석하며 원본을 임의 수치로 채우지 않는다. 새 UX/디자인/서비스 정책 변경 없음.
