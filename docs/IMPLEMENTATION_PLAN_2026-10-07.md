@@ -1,3 +1,9 @@
+### R6 상성부 제어 기술 검증 후속 — 2026-10-12
+
+기존 실제 opening 가사/길이·source hash를 보존한 상성부 가설 MIDI 입력으로 native linear 진단 생성→고정 pYIN→Whisper→MMS를 순차 실행했다. 요청7음표 median 최대.25반음/가사 exact와 onset mean42.62ms를 관측했다. 원곡에서 확인한 화음/score가 아니며 phonetic end와 지속음 길이가 다르고 wrong transcript path score 비교에도 한계가 남는다. 기존 lower 후보의 실패/가설·휴지 ambiguity를 폐기하거나 임계값/seed/output shift로 승인하지 않는다. sourceScore/harmony/catalog/전체2–4Part·물리 청취 gate는 유지한다.
+
+유지 생성/측정 QA는 입력 목적을 report에 별도 보존하여 합성 진단/원곡 연결 가설/승인 여부를 구분한다. numeric 관측 exact 및 invalid purpose의 모델 import 전 거부를 확인했다. 기존 단계·의존관계·앱/renderer는 변경하지 않는다. 상세 source/output/hash/자원과 직전 v5 production 인수는 상태 문서 참조. 다음 R6 선행은 원곡 음절·휴지·실제 음표/화성 근거의 불일치를 검토하고, 확정된 입력만으로 Part별 실제 생성·동시 음향/가사/음역을 검증하는 것이다. 미확정 악보/권리·사용자 청취를 임의 확정하지 않는다. 모델은 free RAM/live guard를 만족할 때에만 단독 실행하며 동일 입력의 반복 생성은 하지 않는다.
+
 ### R5 저음 Track 분석 선행 교정 — 2026-10-12
 
 spectral1024 창 때문에82Hz 음정 표본이0이던 재현을 교정했다. pitch4096 창을 독립 사용하고 v5/extractor/window를 보존하며 저장v3/v4/v5는 재분석하지 않는다. 저음65–440Hz×44.1/48kHz14조건·안정/변화·같은 입력 재현, 실제 연구 PCM의 spectral/level exact, native Sample 저장 및 mixed2–4Part/제출/Mix/reload 계보를 검증했다. 분석 CPU 시간 증가와 실제 mobile/다양한 목소리 신뢰도는 별도 인수로 남긴다. shape/renderer/개인 정책 변경이나 평균음역/비브라토 추출 승인 없음. 직전 production 버전/계보 검증 증거와 R5/R6/서비스 완료 gate는 상태 문서에 보존한다. 이번 묶음도 자동배포 후 관련 결과를 확인한다.

@@ -1,3 +1,15 @@
+### R6 상성부 입력 제어와 출처 보존 — 2026-10-12
+
+직전 516037f49e72e18580adcd9f0887364e0a2fe90b는 Git Integration7002279909 success, production HTTP200/index-BuphXm9v.js remote/local SHA256055D5EACB4845416A24FD3E56F72BDC5D47B34B4016D100C29CA6942326533D1 exact를 확인했다. production 새 Sample v5/window4096 저장·reload 및 mixed v3/v4/v5의 native2/3/4Part exact Layer/제출 실패·재시도/Mix/Credits/reload/pageerror0을 통과했다.
+
+기존 원곡 연결 opening 후보의 가사·길이·출처를 보존한 별도 상성부 가설 입력을 기존 runtime에 생성했다. 실제 MIDI59/62/66/62/62/59/59를 모델 입력 index71/74/78/74/74/71/71로 전달했다. 추출·승인된 원곡 음표/화음이 아니며 output pitch shift를 사용하지 않았다. 같은 고정 DiffSingerKR/seed65359의 native linear 진단 경로에서 실제5.456708333초 WAV SHA297bd4d3985343837625c2e1294541ec83ff47b7e13a26ee5be3ed8c90276132, inference.5568459초/GPU396221952bytes/peak.8712179/RMS.1848184를 관측했다. linear 결과를 diffusion 품질 대체나 완성 Part로 채택하지 않는다.
+
+기존 pYIN .75/80ms interior 조건에서 7음절 median58.9/61.75/65.9/61.9/62/58.9/59, 유효 표본20/8/53/24/28/9/31, 최대 중앙값 오차.25반음이었다. full interval/min/max와 rest 잔여 RMS도 보존했다. 기존 CPU WhisperSmall의 가사 천천히걸어가요 exact/similarity1을 확인했다. MMS forced alignment의 요청 onset 대비 mean absolute42.62ms/max64.11ms지만 마지막 음절 phonetic end4.0725009는 요청 note end4.4681818과 다르다. CTC 음절 끝을 지속음 길이로 쓰지 않으며 잘못된 transcript 일부 path score가 더 높아 score를 신뢰도/음악 승인으로 사용하지 않는다. 원곡 화음·음절/휴지 score, 청취, 실제2–4AI Part 및 권리/등록은 미완료다.
+
+유지 QA report에 입력의 목적(inputPurpose)을 따로 보존하고 generic diagnostic 목적과 승인 여부를 구분했다. 기존 scoreCalibration 출처와 성공/실패 결과는 유지한다. metadata-aware 재측정에서 기존 observations/noteEventObservations numeric exact, 잘못된 boolean purpose는 모델 import 전에 거부하고 output 미생성을 확인했다. 분석 창/threshold/모델/math/앱 코드는 변경하지 않았다.
+
+한 번에 한 모델을 RAM guard로 순차 실행했다. 생성/측정/ASR/MMS의 최소 free RAM8.108/8.929/7.599/8.297GiB, 해당 Python 최대 working set.753/.234/1.578/.854GiB, wall7.300/7.305/20.802/12.158초, 모두 exit0/resourceStopped=false였다. GPU peak와 process working set은 별도 지표다. 결과/오디오/입력은 repository 밖 기존 runtime에 보존하며 서버3파일·디자인·기존 실패 기록을 유지한다. 이번 QA metadata/docs 묶음은 main 자동배포 후 동일 앱 asset을 확인하고 변경 없는 native/build 전체를 반복하지 않는다.
+
 ### R5 Track/Sample 저음 주기 창 — 2026-10-12
 
 00bb5d015f0359e0b522b3dec8388161355cb256 Git Integration7002148063 success, production index-Du-vkZ30.js remote/local SHA25622433135801A50839F2DFC91D3E0E8FD2AA8532DEB22494264152F2F72D11368 exact. production Sample 분석 버전 저장/reload·범위/Sample 유지·실패/재시도, mixed v3/v4의 native2/3/4Part exact Layer signature/Review 제출/Mix/Credits 복귀/reload/pageerror0을 통과했다. native Current Mix 화면 이탈 시 paused=true·재생 시간 정지도 확인하여 재생기에 추가 수정하지 않았다.
