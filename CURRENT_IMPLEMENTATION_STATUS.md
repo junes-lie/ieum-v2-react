@@ -1,3 +1,11 @@
+### R1 녹음 시작 실패의 마이크 소유권 반환 — 2026-10-12
+
+production에서 MediaRecorder constructor 실패 뒤 실제 획득 stream의 track.readyState가 live인 것을 재현했다(false != true). start 실패와 새 requestMicrophone의 AudioContext.resume 실패도 확인했으며 후자는 첫 수정 전 같은 assertion 실패였다. 기존 stream/세션 소유권과 generation을 검사하여 실패한 시작 요청의 recorder/RAF/Guide/마이크만 정리하고 최초 오류를 그대로 반환한다. 다른 시작 요청·기존 Take/URL/DB는 삭제하지 않는다. 제품/시각/권한 UX는 기존 경로를 유지한다.
+
+build34modules/Node audio foundation 통과. 새 유지 verify-recorder-start-failure.mjs의 native constructor/start/context-resume3조건 모두 획득 track ended·runtime.stream null·허위 Review 없음·새 microphone2번째 요청·재시도 Review URL/pageerror0 확인. 기존 native recorder-session의 중복 시작/정지·mic1·타이머1·Review와 sample-lifecycle의 취소/Take/metadata 보존·타이머 정리도 통과했다. qa:record-errors에 유지 검증 연결. 격리 fake microphone/주입 오류이며 실기기 마이크/전체PC RAM 절감/청취 인수는 미검증이다. 서버 보류3파일 유지/제외, Git Integration/production은 push 후 확인한다.
+
+R6 앞선 c454bc2de759838d526c4f5ae1409fd9427514bd main 자동배포 Production7000164817 success/production HTTP200/앱 asset index-P4gBmfM9.js 유지 확인. 선택적인 noteCurves는 기술 진단에만 있고 앱 음원/catalog에 등록하지 않았다.
+
 ### R6 한 음절 내 음표 변화 제어 — 2026-10-12
 
 실제 source의 한 음절 내 F0 변화를 중앙값 한 음으로 축소하지 않기 위해 기존 pinned DiffSingerKR encoder의 프레임별 note embedding 입력을 사용한 선택 noteCurves 진단을 추가했다. 저자 token/phoneme/duration 변환을 유지하고 모델에 전달하는 expanded note만 명시한 사건으로 바꾼다. 출력 transpose/splicing/가사 반복 없음. offset0·순서·유한값·정수/index·segment 범위·프레임 양자화 중복을 모델 생성 전 검사하며 잘못된 first-offset/unordered/NaN/bool-note4건은 system Python에서 numerical/model import 전 거부했다. 기존 기본 input/seed와 output은 보존한다.

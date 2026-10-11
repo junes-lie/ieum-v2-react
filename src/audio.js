@@ -128,6 +128,7 @@ export async function requestMicrophone({ voiceProcessing = null } = {}) {
     mediaRecorder: Boolean(window.MediaRecorder),
     measuredAt: new Date().toISOString()
   }
+  try {
   const ctx = context()
   await ctx.resume()
   assertMicrophoneSession(generation,stream)
@@ -137,6 +138,11 @@ export async function requestMicrophone({ voiceProcessing = null } = {}) {
   runtime.analyser.smoothingTimeConstant = 0.55
   runtime.source.connect(runtime.analyser)
   return stream
+  } catch(error) {
+    if(runtime.stream===stream && generation===runtime.microphoneGeneration)stopMicrophone()
+    else stream.getTracks().forEach(track=>track.stop())
+    throw error
+  }
 }
 
 export function monitorInput(onFrame, { detectPitch = false } = {}) {
@@ -342,11 +348,13 @@ export async function startRecording({ onFrame, guides = {backing:false,parts:[]
   }
   assertMicrophoneSession(generation,stream)
   if(runtime.preparationRecorder || (runtime.recorder&&runtime.recorder.state!=='inactive'))throw new Error('이미 녹음 중이에요.')
+  let recorder
+  try {
   runtime.chunks = []
   const mime = ['audio/webm;codecs=opus','audio/webm','audio/mp4'].find(type => MediaRecorder.isTypeSupported(type)) || ''
   runtime.recorder = new MediaRecorder(stream, mime ? { mimeType: mime } : undefined)
   runtime.recorder.ondataavailable = event => { if (event.data.size) runtime.chunks.push(event.data) }
-  const recorder=runtime.recorder
+  recorder=runtime.recorder
   const prepareSeconds=decodedPreparation ? preparationDuration : 0
   const beginCapture=()=>{
     recorder.start(180)
@@ -390,6 +398,15 @@ export async function startRecording({ onFrame, guides = {backing:false,parts:[]
     } finally {if(runtime.preparationRecorder===recorder)runtime.preparationRecorder=null}
   }
   return { mimeType: recorder.mimeType, scheduledAt: start }
+  } catch(error) {
+    // A failed constructor/start/schedule must not leave its microphone running.
+    if(recorder && runtime.recorder===recorder) {
+      try { cancelRecording() } catch { /* Keep the original startup error. */ }
+    }
+    if(runtime.stream===stream && generation===runtime.microphoneGeneration)stopMicrophone()
+    else stream.getTracks().forEach(track=>track.stop())
+    throw error
+  }
 }
 
 export function pauseRecording() {

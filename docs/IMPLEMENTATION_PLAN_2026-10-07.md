@@ -1,3 +1,7 @@
+### R1 녹음 시작 실패 자원 후속 — 2026-10-12
+
+MediaRecorder 생성/시작 또는 AudioContext.resume 실패 시 열린 마이크가 남는 실제 경로를 재현하고 소유 요청의 자원만 반환한다. native3오류의 ended/null·신선한 retry/Review와 기존 Recorder/Profile Sample 정상·취소 보존 QA 통과. 기존 화면·녹음 정책/Take/원본·단계 gate는 유지하며 전체 R1/실기기/PC RAM 절감을 완료로 표시하지 않는다. 관련 유지 qa:record-errors에 오류 자원 QA를 통합하며 검증된 묶음 main push→Git 자동배포→Production을 확인한다.
+
 ### R6 한 음절 내 선율 제어 후속 — 2026-10-12
 
 원곡 F0에서 한 음절 내 여러 음이 관측되어, 기존 한 음/음절 입력을 선택적인 프레임 noteEvents로 확장하는 짧은 기술 검증을 통합했다. 현재 synthetic7초의 한 '도'에서 MIDI64→66 요청/실제64.2→66.0과 Small exact 가사를 검증했다. 기존 token·음절·duration과 default PCM SHA exact를 유지하며 출력 변조/중복 가사/별도 구현은 없다. 실제 양자화 사건·측정·실패 입력·버전/hash를 기존 유지 도구/report에 기록하고 원곡 harmony/sourceScore/catalog 승인은false다.
