@@ -4,7 +4,7 @@ The caller must apply live RAM monitoring; this script does not manage other pro
 """
 import argparse,hashlib,json,math,sys,time
 from pathlib import Path
-p=argparse.ArgumentParser();p.add_argument('--runtime-dir',type=Path,required=True);p.add_argument('--preflight',action='store_true');p.add_argument('--output-dir',type=Path);p.add_argument('--score-spec',type=Path);a=p.parse_args()
+p=argparse.ArgumentParser();p.add_argument('--runtime-dir',type=Path,required=True);p.add_argument('--preflight',action='store_true');p.add_argument('--output-dir',type=Path);p.add_argument('--score-spec',type=Path);p.add_argument('--generation-stage',choices=['diffusion','linear'],default='diffusion');a=p.parse_args()
 root=a.runtime_dir.resolve()
 syllables=['<X>','오','늘','도','함','께','해','요','<X>']
 notes=[0,72,74,76,79,77,76,72,0]
@@ -92,7 +92,10 @@ torch.cuda.reset_peak_memory_stats()
 inputs=dict(tokens=torch.tensor([[token_dict[value] for value in tokens]],device='cuda'),notes=torch.tensor([expanded_notes],device='cuda'),durations=torch.tensor([expanded_durations],device='cuda'),lengths=torch.tensor([len(tokens)],device='cuda'),singers=torch.tensor([0],device='cuda'),genres=torch.tensor([0],device='cuda'),ddim_steps=50)
 start=time.perf_counter()
 with torch.inference_mode():
- _,mel,_,_=model(**inputs)
+ if a.generation_stage=='linear':
+  _,mel=model.encoder(**{key:value for key,value in inputs.items() if key!='ddim_steps'})
+ else:
+  _,mel,_,_=model(**inputs)
  ranges=yaml.safe_load((root/'YAML/Mel_Range_Info.yaml').read_text(encoding='utf-8'))['CSD']
  mel=(mel.clamp(-1,1)+1)/2*(ranges['Max']-ranges['Min'])+ranges['Min']
  audio=vocoder(mel).reshape(-1)[:len(tokens)*hp.Sound.Frame_Shift].cpu().numpy()
@@ -108,4 +111,6 @@ file=a.output_dir/'ieum-original-song.wav';sf.write(file,audio,48000,subtype='PC
 report={'status':'actual-model-inference','model':'CODEJIN/DiffSingerKR','revision':'26f95ac2554b6a6725706ed2a7991a62f7f714a9','checkpointSha256':'6482992a43b8a98554e7ef9e487a381c2717c5828d564e6dfc6cac16a0e16092','outputSha256':hashlib.sha256(file.read_bytes()).hexdigest(),'outputFile':file.name,'duration':len(audio)/48000,'sampleRate':48000,'lyrics':'오늘도 함께해요','score':{'syllables':syllables,'modelNoteIndices':notes,'expectedMidi':[n-12 if n else None for n in notes],'noteEncoding':{'version':'diffsingerkr-main9beec10-note-index-v1','formula':'440 * 2 ** ((index - 69 - 12) / 12); index 0 is rest','source':'https://github.com/CODEJIN/DiffSingerKR/blob/9beec10ffe3dd1068913b0f65827d31134f9460e/Pattern_Generator.py#L679-L692'},'durationsSeconds':seconds,'purpose':'Explicit synthetic diagnostic score, not measured original melody or approved harmony'},'inferenceSeconds':time.perf_counter()-start,'parameterBytes':parameter_bytes,'ownGpuPeakAllocatedBytes':torch.cuda.max_memory_allocated(),'executionDevice':'cuda','seed':65359,'steps':50,'sourceSongConnected':False,'catalogRegistrationApproved':False,'limitations':['Pretrained CSD single singer diagnostic, not user voice or selected singer identity','Explicit score is a feasibility input, not original-song harmony approval','No physical listening, lyric accuracy or production license approval']}
 report.update(lyrics=''.join(s for s in syllables if s!='<X>'),scoreSpecSha256=file_hash(a.score_spec) if a.score_spec else None,scoreCalibration=score_spec,generatorScriptSha256=file_hash(Path(__file__)),modelCodeCommit='9beec10ffe3dd1068913b0f65827d31134f9460e',runtimeSourceHashes={path.relative_to(root/'probe-source').as_posix():file_hash(path) for path in (root/'probe-source').rglob('*.py')},vocoderOutputDtype=vocoder_dtype,pcmScale=pcm_scale,peak=float(np.max(np.abs(audio))),rms=float(np.sqrt(np.mean(audio**2))))
 report['score'].update(noteCurves=note_curves,expandedNoteEvents=expanded_note_events,noteCurveScope='Diagnostic frame-level note embedding input; no output pitch shift or original-song score approval')
+report.update(generationStage=a.generation_stage,steps=50 if a.generation_stage=='diffusion' else None,diffusionExecuted=a.generation_stage=='diffusion')
+if a.generation_stage=='linear':report['limitations'].append('Intermediate native linear prediction diagnostic; not approved as a quality replacement for diffusion')
 (a.output_dir/'song-generation-report.json').write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding='utf-8');print(json.dumps(report,ensure_ascii=False),flush=True)

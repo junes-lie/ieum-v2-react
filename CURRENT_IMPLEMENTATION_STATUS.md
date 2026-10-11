@@ -1,3 +1,15 @@
+### R6 저음 실패의 단계 분리 — 2026-10-12
+
+고정9beec10 공식 meldataset/Pattern_Generator 원문을 읽고 기존 vocoder에 실제 원곡16–23.5초 mel을 입력했다. 공식 source peak0.95 전처리 gain2.781017을 연구 입력에만 적용/기록했다. 원곡/vocoder hash는 유지하고 output aae6d437a267d47977510d1e4cd540455e387bd1bff37272ad0de1f5ee37cdb7·7.488435초를 별도 보존했다. 실제7voiced 구간 source-vocoder F0 중앙값 차이0~0.2반음, 첫 MIDI55.3→55.35로 저음 복원이 관측됐다. vocoder만의 저음 지원 실패라는 설명은 이 사례에서 지지되지 않지만 전체 음질·화음 승인은 아니다.
+
+첫 로딩은 한글 filename의 RuntimeError: open file failed because of errno42 on fopen: Illegal byte sequence로 exit1이었다. 실패 로그를 유지하고 기존 유지 generator와 같은 binary stream torch.jit.load로 수정한 동일 시험은 exit0·추론0.866초/GPU193399296bytes였다. guard free 최소8.625GiB/owned0.954GiB, pitch 검사 exit0·12.170초/free9.315GiB/owned0.245GiB. 공식 mel STFT의 deprecated return_complex=False 경고도 보존한다. 새 환경/모델 설치·원곡 교체 없음.
+
+기존 실패 score/seed/input을 변경하지 않고 linear/diffusion mel[1,80,470]을 관찰했다. 최종 실패 PCM6d88ec9f…는 exact 재현됐다. 중간 linear-only32defb58c9dc5a56660aab75b0ca4334ea0bfb7a0f236cc4824f1988fac0701a는 실제7음절 F0 모두13/14/26/14/24/12/16 frames를 관측(마지막−0.5반음, 나머지−0.1~+0.05반음), Whisper Small exact1.0이었다. 중간 관찰 보고서의 일부 inference/peak 필드는 부모 diffusion metadata를 상속했으므로 해당 수치로 linear 성능을 판단하지 않는다.
+
+유지 probe-korean-score-synthesis에 선택적 --generation-stage linear 진단을 추가했다. 기본 diffusion/50step은 기존6d88ec9f… exact 유지, linear는 실제 native encoder 예측+같은 vocoder이고 steps=null/diffusionExecuted=false로 구분한다. 유지 결과 bf8abd154c19d27dde9bff87a44989a615cee988c21b64d9afb199585907aa5b·5.456708초/추론0.610초/GPU396221952bytes. 중간 관찰본과523844 PCM sample 중566개가 최대1int16 단위 달라 hash exact는 실패했다. 새 PCM을 다시 F0/ASR 측정해 같은7음절 관측과 exact1.0을 확인했으며 이전 결과 재사용으로 대체하지 않았다. generation-stage invalid는 import 전 거부. guard exit0/중단false, linear free8.623GiB/owned0.963GiB·ASR free6.907GiB/owned2.568GiB. 물리 청취·원곡 실제 timing/score·화성/2–4Part·권한 검증 전 intermediate를 최종 품질 대체로 승인하거나 catalog에 등록하지 않는다.
+
+앞선34255b9f23f387cc6d5839679a7d6582a724e794 main/origin 일치, Git Integration7000903157 success. production HTTP200/index-U1LmFjMk.js SHA2563416E3B50EC85C012FC8DE8447A793BB516BFEB42BEA95D856DF2ED09A89FED0 local exact. 앱 변경 없이 음악 연구 도구/문서만 추가하는 범위다.
+
 ### R6 분석 난수 원인과 실행 seed 검증 — 2026-10-12
 
 기존 pinned ONNX graph를 [공식 protobuf schema](https://raw.githubusercontent.com/onnx/onnx/main/onnx/onnx.proto)의 Model.graph/Graph.node/Node.op_type·attribute로 읽었다. segmenter의 /RandomUniformLike는 dtype1만 있고 명시 seed가 없었다. 나머지4개 graph에는 조사한 random op가 없었다. 원본 model/hash를 변경하거나 새 onnx 패키지를 설치하지 않았다. 관측 원인 후보를 실제 graph로 확인한 것이며 모든 변동 원인을 배제한 것은 아니다.

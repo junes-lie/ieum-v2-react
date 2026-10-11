@@ -1,3 +1,7 @@
+### R6 저음 실패 단계 분리와 유지 진단 — 2026-10-12
+
+실제 원곡 mel→기존 vocoder의7구간 F0 차이0~0.2반음으로 이 사례의 저음 복원을 확인했다. 같은 실패 score의 native linear 중간 출력은7음절 F0를 관측했고 ASR exact1.0이었다. 유지 generator에 선택적 linear 진단을 연결/steps=null·diffusionExecuted=false로 기록하며 기본50step diffusion PCM exact를 보존했다. 별도 linear 실행은 관찰본과 최대1int16/566samples 차이가 있어 exact 재현으로 표시하지 않으며 새 PCM의 F0/ASR을 독립 확인했다. 마지막 음절−0.5반음, 청취/음절·휴지 길이/화성·2–4Part/권한은 미완료다. 실제 sourceScore를 확정하거나 intermediate를 품질 대체로 승인하지 않는다. 다음은 실제 음표/음절·melisma 제어와 불확실 timing·화성의 대조이며 동일 기능의 병렬 앱/음원 교체는 만들지 않는다. 오류/자원/hash 상세는 현재 상태에 기록.
+
 ### R6 실행 난수 재현성 선행 검증 — 2026-10-12
 
 실제 segmenter graph의 seed 없는 RandomUniformLike를 확인했다. 공식 ONNXRuntime set_seed를 session 생성 전에 선택적으로 적용/결과 기록하도록 유지 도구를 보완했다. 첫 값0의 두 독립 프로세스에서 동일 원곡7.5초·10segments notes exact 반복을 확인했다(추론 약1.3초/owned0.282GiB/free9.315GiB 이상). seed 미지정 기존 경로와 실패 증거는 보존한다. 모델 변경/threshold·seed 품질 탐색/새 환경 설치 없음. 이 사례의 실행 재현성 검증은 통과했으나 phonetic-note 경계·누락·화음·지원 음역·2–4Part·권한/청취 gate는 계속 미완료다. 다음은 재현 입력과 불확실 음절/note 연결의 근거를 함께 보존하며 실제 음악 조건을 검증하는 작업이다.
