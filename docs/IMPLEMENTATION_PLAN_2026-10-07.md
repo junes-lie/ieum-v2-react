@@ -1,3 +1,8 @@
+### R6 반주 polyphonic 교차 검증 — 2026-10-12
+
+기존 R6에 공식 Basic Pitch 고정 원문/230KB ONNX를 활용한 독립 반주 관측을 통합했다. 유지 도구는 runtime-dir/원본/crop/new output을 받아 source6개 hash/최대10초/CPU2threads와 공식 기본 처리 경로를 보존한다. 설치/상주 모델/새 앱/별도 음악 기능 없음. 실제 CSD9note 중6matching·같은 pitch merge/onset/pitch 불일치가 있어 결과를 정답 score로 쓰지 않는다. 실제 반주 중간 구절의 CQT와 일부 G/D/B 근거가 겹치지만 마지막 D/F# vs G major 후보 차이도 남았다. mixed instrument 한계와 timing/음절 경계·휴지 불확실성을 분리하고, 전체 chord/key/2–4Part 승인 및 catalog/Guide 연결은 보류한다. 상세 hash·자원·실패·fresh-process exact 결과는 CURRENT_IMPLEMENTATION_STATUS 최신 항목 참조.
+
+다음 독립 작업은 실제 전이 구간의 화성 근거와 모델 오차를 분리하는 검증 및 기존 앱의 원본/실패 복구 점검이다. 기존 완료 gate/진행 순서·디자인 보류·실제 서버 미연결을 확대 완료하지 않는다. R1 a6d1161 Git Integration success/production hash 일치 및 종료3조건 QA 통과를 기록했다. 무관한 보류 서버3파일은 stage에서 제외한다.
 ### R1 분석 실패 시 종료 길이 / R6 실제 구간 대조 — 2026-10-12
 
 R1: native mic 종료+decoder failure에서 Draft1.36초가0초로 저장되는 production 결함을 수정했다. 소유 recorder의 실제 stop 이벤트·활성 구간으로 기존 fallback 길이를 보존하고 pause/수동 정지/cancel의 중복 누적을 막는다. build/Node 및 native3조건 원본·길이/700ms 기다림·paused 제외/Draft 복원, 기존 세션·chunk 소유권·Sample 보존 통과. 검증 묶음만 main push→Git Integration→production을 진행한다. 물리 길이/실기기 전체 완료로 확대하지 않는다.

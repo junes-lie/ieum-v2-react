@@ -1,3 +1,14 @@
+### R6 경량 polyphonic ONNX 교차 관측 / R1 production 확인 — 2026-10-12
+
+R1 a6d1161c5293cd2b2d01c018658ce32a29bbf272은 Git Integration7001154692 success이며 production HTTP200/index-6DXQCBbY.js remote/local SHA2568D5429B8A6F9259D1AF6E656AABF7860A9EB4D0B2D3CB985008F017D2A2B2D7A 일치. production 정상 종료·decoder failure·paused decoder failure3조건에서 원본 Review/Draft hash/길이 보존과 pageerror0을 확인했다. 실제 물리 마이크·모바일 인수와 구분한다.
+
+[Spotify Basic Pitch](https://github.com/spotify/basic-pitch)의 fa5997af0a8210982619003269994a1be25eddf3 원문6파일만 bytes/Git blob/SHA 대조했다. ONNX230444bytes SHA2562c3c1d144bfa61ad236e92e169c13535c880469a12a047d4e73451f2c059a0ec이며 Apache2.0 LICENSE/NOTICE 보존. 기존 ONNXRuntime1.30 CPU2threads에서 공식 window/unwrap/postprocessing 함수와 기본 threshold를 사용했다. 공식 Python package는 설치하지 않았고 Python3.13 SDK 지원을 주장하지 않는다. 모델/원문/결과는 repository 밖 기존 runtime에 보존하고, 유지 도구 qa/probe-polyphonic-notes-onnx.py만 추가한다. 코드에 원문6개 hash를 고정하고 최대10초·새 output만 허용한다. thresholds/time correction 변경·실제 음원 shift/transpose 없음.
+
+CSD 수동9note/실제3.9초는8predictions 중6개만 onset50ms/pitch0.5semitone 일대일 matching에 맞았다. annotation0/1/6과 prediction0/1은 불일치, 마지막 annotation은 crop 밖까지 이어져 offset matching에 쓰지 않았다. 첫 pitch58 vs annotated59, 두 번째 onset 약97ms 차이 및 같은 pitch가 합쳐진 구간을 그대로 보존한다. 유지 도구의 별도 fresh process8nativeNotes는 이전 시험과 exact였다. 해당 diagnostic tolerance는 음악 승인 기준이 아니다.
+
+원곡 반주 SHA256e4a4f50f40b178d53c491b77aa6ebcd8533d74367bc28f6b02f67dc1431dbbfe의31.7–39.7초에서68note candidates를 관측했다. 기존 CQT와 동일7음절 spans로 대조하면 ‘도/함’은 G/D/B 관측이 G major 후보와 겹쳤으나 마지막 ‘요’는 D/F#가 두드러지는 반면 기존 CQT top은 G major였다. duration×activation은 확률/화음 정확도가 아니다. 공식 모델은 단일 악기에서 가장 잘 동작하므로 혼합 반주·전이 구간에서 전체 chord/key나2–4Part를 확정하지 않는다. comparison SHA2567122b7ef773f184e00e5a8ea0f45c84f482987ebbe347e723b01396010c3211c, score/harmony/catalog approval=false.
+
+처음 official source 읽기의 cp949 UnicodeDecodeError는 모델 추론 전에 발생/로그 보존했고 실제 UTF-8 명시 후 동일 입력은 성공했다. 비교 스크립트도 한글 JSON 읽기에서 같은 인코딩 오류가 발생하여 UTF-8 명시로 수정했다. CSD/backing/maintained guard는 exit0/중단false, wall3.608/3.657/3.636초·free최소9.258/9.295/9.297GiB·owned peak0.199/0.202/0.201GiB. 현재 background model 없음. 가사·진입 시각·실제 음역·화성·2–4Part·권한/청취 gate, 디자인 보류 및 실제 서버3파일 제외 유지.
 ### R1 마이크 종료와 분석 실패의 길이 보존 / R6 구간 대조 — 2026-10-12
 
 production에서 native 마이크 종료 뒤 decoder 실패를 함께 주입하면 실제 녹음 약1.36초의 Draft duration이0으로 저장되는 결함을 재현했다. 현재 recorder/수집 배열이 소유 일치하는 native stop에서 활성 구간 시간을 누적하고 pause/수동 Stop/cancel에서는 이미 마친 시간을 중복 누적하지 않는다. 종료 후 분석의 fallback 길이를 미리 보존한다. 원본 Blob/분석값·제출 정책/UX/디자인 변경 없음. 분석 실패를 실제 특징 수치로 채우지 않는다.
