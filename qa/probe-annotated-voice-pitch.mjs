@@ -1,6 +1,6 @@
 import {readFile,writeFile} from 'node:fs/promises'
 import {createHash} from 'node:crypto'
-import {estimatePitch} from '../src/pitch.js'
+import {estimatePitch,PITCH_ANALYSIS_VERSION} from '../src/pitch.js'
 import {parseArgs} from 'node:util'
 import {resolve,sep} from 'node:path'
 import {pathToFileURL} from 'node:url'
@@ -33,7 +33,7 @@ const rows=annotations.rows.map((annotation,index)=>{
          observedMinMidi:supported.length?Math.min(...supported.map(frame=>frame.measuredMidi)):null,
          observedMaxMidi:supported.length?Math.max(...supported.map(frame=>frame.measuredMidi)):null}
 })
-const result={source:manifest,annotationSha256,dataLicense:annotations.license,extractorSha256:createHash('sha256').update(await readFile(new URL('../src/pitch.js',import.meta.url))).digest('hex'),
+const result={source:manifest,annotationSha256,dataLicense:annotations.license,extractorVersion:PITCH_ANALYSIS_VERSION,extractorSha256:createHash('sha256').update(await readFile(new URL('../src/pitch.js',import.meta.url))).digest('hex'),
               frameLength:4096,hopLength:1024,diagnosticConfidenceThreshold:.30,edgeExclusionSeconds:.08,rows,frames,
               elapsedSeconds:(performance.now()-start)/1000,measurementApproved:false,profileEnrolled:false,liveProfilePipelineVerified:false,
               limits:['Direct estimatePitch only; no monitorInput throttling/350ms tracking or live range collection test','One manually annotated singer; not real microphone/device calibration','Score target differs from acoustic glides/vibrato','Null and sparse frames retained; no confidence interpreted as scientific accuracy']}

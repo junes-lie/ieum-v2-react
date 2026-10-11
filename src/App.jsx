@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import Icon from './Icons.jsx'
+import { PITCH_ANALYSIS_VERSION } from './pitch.js'
 import figmaAssets from './figmaAssets.json' with { type: 'json' }
 import {
   analyzeBlob,
@@ -802,7 +803,7 @@ function VoiceSetup({ complete, go, back, existing, editMode }) {
     const high = values[Math.min(values.length - 1, Math.floor(values.length * .92))]
     const confidence = confidenceSamples.current.reduce((sum,value)=>sum+value,0) / Math.max(1,confidenceSamples.current.length)
     const microphone = getMicrophoneDiagnostics()
-    const measured = { lowMidi:Math.round(low), highMidi:Math.round(high), label:`${midiToNote(low)}–${midiToNote(high)}`, sampleCount:values.length, confidence:Number(confidence.toFixed(3)), microphone }
+    const measured = { analysisVersion:PITCH_ANALYSIS_VERSION, lowMidi:Math.round(low), highMidi:Math.round(high), label:`${midiToNote(low)}–${midiToNote(high)}`, sampleCount:values.length, confidence:Number(confidence.toFixed(3)), microphone }
     setRange(measured); setError(''); setStep('range-result')
   }
   const startSample = async () => {

@@ -44,6 +44,7 @@ try {
  await page.locator('[data-action="range-finish"]').click();await page.waitForSelector('[data-action="sample-next"]')
  await page.locator('[data-action="sample-next"]').click();await page.waitForFunction(()=>window.__IEUM_V2__.state.screen==='my')
  assert.equal(await page.evaluate(()=>window.__IEUM_V2__.state.profile.sampleSong),original.sample)
+ assert.equal(await page.evaluate(()=>window.__IEUM_V2__.state.profile.rangeData.analysisVersion),'normalized-difference-v1','New measured range must retain its extractor version')
  original.range=await page.evaluate(()=>window.__IEUM_V2__.state.profile.range)
  await page.getByRole('button',{name:'다시 등록',exact:true}).click()
  await page.locator('.sample-select-stage > button.primary').click();await page.locator('[data-action="sample-start"]').click()

@@ -1,3 +1,13 @@
+### R1/R5 음역 상한 오검출 교정 — 2026-10-12
+
+4cae0daef744ce9db0ae2199b837ede2f92c8a47 Git Integration7001850558 success 및 production index-Bl8Ph6NX.js SHA256D3BE03C218574646E032A5E51738720FA46554FF5982685E702A019D30EF8FC5 local exact를 확인했다. 뒤이어 실제 CSD3.9초 PCM을 native MediaStream→WebAudio→monitorInput→VoiceSetup에 넣었더니 기존 측정 상한이 G♯5로 부풀었다. 직접 함수 전체 구간에서도 MIDI75 초과11frames, 일부는 첫 음표 전·일부는 annotation59/68 구간에 나타났다. 따라서 이전 음절별 interior 대조만으로 live 음역 측정 정확성을 승인하지 않는다.
+
+기존 earliest relative correlation peak를 cumulative normalized difference의 절대 periodicity 판정·첫 최소점/보간으로 교체했다. [YIN 원 논문](https://pubmed.ncbi.nlm.nih.gov/12002874/)을 알고리즘 참고로 사용하며 이 구현을 전체 YIN 논문 재현 또는 과학적 음색 판정으로 주장하지 않는다. microphone 요청/처리 설정·3frame 측정·350ms tracking·6표본 요구·8/92 percentile·화면/IA·기존 저장 Profile/대표 Sample은 그대로다. 새 저장 rangeData만 normalized-difference-v1 analysisVersion을 포함하고 이전 데이터를 재측정하지 않는다. confidence는 normalized periodicity 지표이며 과거 correlation 수치와 직접 비교하거나 정확도 확률로 사용하지 않는다.
+
+순수 Node16/16 합성 가창 fixture(44.1/48kHz)35cents 이내·무음/큰 비주기 noise/DC 거부·voiced DC offset 회귀 통과. 실제 CSD 직접 관측은 같은 PCM에서 높은 오검출0frames, 나머지 음절의 근접 관측을 유지하고 첫 lower onset57.9646과 sparse3/2frames를 숨기지 않았다. 격리 후보의 Vocadito9.1초와 기존 실제 AI vocal7.5초 대조에서는 유효 수집이 감소했고 changing-pitch 차이가 남아 정확도 승인으로 확대하지 않는다. 새 probe/hash 결과와 모든 이전 실패·후보 결과는 기존 runtime에 보존하며 오디오·모델·결과 JSON은 앱/Git에 넣지 않았다. 대형 AI는 실행하지 않았고 여유 RAM 약9GiB를 확인했다.
+
+최종 native QA에서 무음0표본/거부, 같은 실제 가창144표본·B3–G♯4·stream 종료·Profile 미등록/pageerror0을 통과했다. Profile 재측정 저장의 analysisVersion 보존, 대표 Sample 유지, 취소/저장 실패·재시도/복귀 회귀도 통과. build34modules 및 Node audio foundation/single app render/user journey 통과. 이는 8음절의 가창 자료를 공급한 입력 경로 검증이며 실제 사용자의 전체 편한 음역·장치/다양한 목소리·청취·모바일 인수를 대신하지 않는다. R5 미정 형태/정책과 R3/R4 실제 서비스·R6 AI/화성/2–4Part gate, 서버3파일 제외는 유지한다.
+
 ### R5 분석 가능성 — 기존 pitch 함수의 실제 가창 관측 / 2026-10-12
 
 이미지·정책 변경 없이 src/pitch.js의 estimatePitch를 고정 실제 CSD3.9초 원본 rate44100Hz/mono·4096frame/hop1024에 적용했다. SF mono export687960bytes SHA1f787f4781ffa4ad31739f25b57761bdf1385e4aa8a2b78dd02103eb019741bb, waveform/source hash와 수동 annotation JSON SHA8064227cd1b597ca9081c36cc5bd068948e8f432ef635ad09eb13a94c596e4a5를 고정했다. amplitude normalization/output shift/새 합성/모델 설치 없음. 자료의 CC-BY-NC-SA4.0 연구 범위는 유지하며 오디오·annotation·결과는 repository 밖 기존 runtime에 보존한다.

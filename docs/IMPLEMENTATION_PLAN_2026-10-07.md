@@ -1,3 +1,7 @@
+### R1/R5 현재 음역 측정의 입력 경로 후속 — 2026-10-12
+
+실제 짧은 가창을 native MediaStream/monitorInput에 넣는 독립 QA를 추가했고, 기존 상한 G♯5 오검출을 확인해 normalized-difference-v1 주기 판정으로 교정했다. 동일 자료의 native B3–G♯4, 무음 거부, 종료 시 stream 해제/미등록·새 rangeData 분석 버전 저장·기존 Sample 유지/저장 실패 회귀 및 build를 확인했다. 기존 Profile 재계산·측정 과제/IA/정책/형상 변경 없음. 개별 interior만으로 live 측정을 승인하던 해석을 금지하며 sparse/실제 acoustic glide·다른 가창 자료의 판정 차이를 유지한다. 다음은 실제 장치/다양한 목소리의 음역·입력 품질 인수이고, 물리 입력과 R5 개인 생성 이미지/미정 정책 완료 조건은 남는다. R6 모델/화성/2–4Part, 실제 서비스3파일 보류 및 단계 의존관계는 그대로다.
+
 ### R5 선행 분석 함수 검증 — 2026-10-12
 
 기존 estimatePitch를 실제 고정 수동 가창 자료에 직접 대조하는 유지 probe를 추가했다. 같은 PCM/annotation·현재 extractor hash/new output을 보존하고 원본 pitch/gain·Profile·이미지·정책은 바꾸지 않는다. 같은 rows/frames 재현과 기존 수치 fixture 회귀 통과. 첫 lower onset/짧은3frame과 다른7음절의 관측을 분리하며 .30은 진단 그룹화로만 기록한다. 실제 live Range 수집·throttling/tracking·물리 입력·다양한 사용자 신뢰도는 미완료다. 새 평균음역/호흡량/비브라토 분석 성공이나 개인 Identicon 완료로 확대하지 않는다. 다음 선행 작업은 기존 수집 경로·source/revision의 기술 검증이며, 최신 정책 확인/보류 형태 확정이 필요한 제품·시각 구현은 실행하지 않는다. R1/R2 및 R6 증거/완료 gate·실제 서버3파일 제외는 보존한다.
