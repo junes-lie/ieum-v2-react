@@ -26,6 +26,7 @@ const runtime = {
   preparationRecorder: null,
   activeElapsedSec: 0,
   activeStartedAt: 0,
+  recordingSegmentActive: false,
   playbackGeneration: 0
 }
 
@@ -358,12 +359,18 @@ export async function startRecording({ onFrame, guides = {backing:false,parts:[]
     if (runtime.recorder === recorder && runtime.chunks === chunks && event.data.size) chunks.push(event.data)
   }
   recorder=runtime.recorder
+  recorder.addEventListener('stop',()=>{
+    if(runtime.recorder!==recorder || runtime.chunks!==chunks || !runtime.recordingSegmentActive)return
+    runtime.activeElapsedSec+=Math.max(0,ctx.currentTime-runtime.activeStartedAt)
+    runtime.recordingSegmentActive=false
+  })
   const prepareSeconds=decodedPreparation ? preparationDuration : 0
   const beginCapture=()=>{
     recorder.start(180)
     runtime.startedAt = performance.now()
     runtime.activeElapsedSec = 0
     runtime.activeStartedAt = ctx.currentTime
+    runtime.recordingSegmentActive = true
     monitorInput(onFrame)
   }
   if(!prepareSeconds)beginCapture()
@@ -416,6 +423,7 @@ export function pauseRecording() {
   if (runtime.recorder?.state === 'recording') {
     runtime.recorder.pause()
     runtime.activeElapsedSec += Math.max(0, context().currentTime - runtime.activeStartedAt)
+    runtime.recordingSegmentActive = false
     stopGuides()
   }
 }
@@ -424,6 +432,7 @@ export function resumeRecording() {
   if (runtime.recorder?.state === 'paused') {
     runtime.recorder.resume()
     runtime.activeStartedAt = context().currentTime
+    runtime.recordingSegmentActive = true
     scheduleRecordingGuides(runtime.activeElapsedSec)
   }
 }
@@ -439,7 +448,8 @@ export function updateRecordingGuides(guides) {
 export async function stopRecording() {
   if (!runtime.recorder || (runtime.recorder.state === 'inactive' && !runtime.chunks.length)) return null
   const recorder = runtime.recorder
-  if (recorder.state === 'recording') runtime.activeElapsedSec += Math.max(0, context().currentTime - runtime.activeStartedAt)
+  if (runtime.recordingSegmentActive) runtime.activeElapsedSec += Math.max(0, context().currentTime - runtime.activeStartedAt)
+  runtime.recordingSegmentActive = false
   if (recorder.state !== 'inactive') await new Promise(resolve => {
     recorder.addEventListener('stop', resolve, { once: true })
     recorder.stop()
@@ -454,6 +464,7 @@ export async function stopRecording() {
   // makes that independently stored recording unplayable.
   runtime.recordingUrl = URL.createObjectURL(blob)
   runtime.recordingBlob = blob
+  const fallbackDuration = runtime.activeElapsedSec
   let decoded = null, features = null
   try {
     decoded = await context().decodeAudioData(await blob.arrayBuffer())
@@ -464,7 +475,7 @@ export async function stopRecording() {
   return {
     blob,
     url: runtime.recordingUrl,
-    duration: decoded?.duration || runtime.activeElapsedSec,
+    duration: decoded?.duration || fallbackDuration,
     features,
     bytes: blob.size,
     mimeType: blob.type,
@@ -480,6 +491,7 @@ export async function analyzeBlob(blob) {
 
 export function cancelRecording() {
   runtime.preparationRecorder=null
+  runtime.recordingSegmentActive=false
   cancelAnimationFrame(runtime.raf)
   stopGuides()
   if (runtime.recorder && runtime.recorder.state !== 'inactive') runtime.recorder.stop()

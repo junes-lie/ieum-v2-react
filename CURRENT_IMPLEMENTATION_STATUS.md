@@ -1,3 +1,15 @@
+### R1 마이크 종료와 분석 실패의 길이 보존 / R6 구간 대조 — 2026-10-12
+
+production에서 native 마이크 종료 뒤 decoder 실패를 함께 주입하면 실제 녹음 약1.36초의 Draft duration이0으로 저장되는 결함을 재현했다. 현재 recorder/수집 배열이 소유 일치하는 native stop에서 활성 구간 시간을 누적하고 pause/수동 Stop/cancel에서는 이미 마친 시간을 중복 누적하지 않는다. 종료 후 분석의 fallback 길이를 미리 보존한다. 원본 Blob/분석값·제출 정책/UX/디자인 변경 없음. 분석 실패를 실제 특징 수치로 채우지 않는다.
+
+build34modules와 Node audio foundation 통과. 기존 유지 ended-recording QA를 정상·decoder failure·paused decoder failure3조건으로 확대해 원본/Review/Draft 복원 hash exact·chunks 반환·종료 후700ms 기다림/paused700ms 제외 및 저장 길이 확인/pageerror0을 통과했다. 기존 native recorder session의 중복 시작/정지·timer, discarded chunk 소유권, Voice Sample 정상/취소·원본 보존 회귀도 통과. 가짜 마이크/주입한 decoder 오류이며 물리 종료/모바일/청취 인수는 미완료다. 보류 서버3파일은 이번 stage에서 제외한다.
+
+R6 linear noteCurves는 기존 synthetic 입력 ‘도’64→66의 실제13/13confident frames에서64.1→65.9를 관측, Whisper Small exact1.0. output81915e9716101e671b0c66964ebc5bbb745d3aa80bf28c92efc75f90e7dd6fc4·추론0.605초/GPU422625280bytes. guard 순차 exit0/중단false, 생성/측정/ASR free 최소8.549/9.265/6.998GiB·owned0.980/0.244/2.568GiB. synthetic 제어 검증을 원곡 score로 간주하지 않는다.
+
+동일 원곡·동일 구간의 실제 MMS token span과 seed0 GAME 후보를 대조했다(derived JSON SHA256613f48fe1cd0eb6e90f802fc7a42d148d4b4bc9cb818cf3faaf9cecac9287bbe). 7음절씩 opening/middle에서 다음 음절 시작까지의 구간은4/5개가 복수 note segment와 겹치며4/3개는 휴지도 포함했다. 같은 pitch의 별도 segment도 있으므로 이 수를 실제 melisma 수로 표시하지 않는다. 예를 들어 middle ‘도’ phonetic end 이후 다음 onset까지1.3233초가 있으나 약0.6403초 rest가 포함된다. 한 음절의 CTC 끝→다음 시작 전체를 sung-note 길이로 쓰지 않는다. assignedNote=null/durationApproved=false, 임의 단일 MIDI·가사 Guide 등록 없음. sourceWindow 끝까지의 마지막2.7072/2.4261초 gap도 다음 음절 간 gap과 구분한다. GAME middle seed0 guard exit0·4.844초/free9.272GiB/owned0.296GiB. 원곡 화성/실제2–4Part·상업권한/청취 gate 유지.
+
+앞선0484488d0781aa109a8156065cb04f6432649758 Git Integration7001037815 success, production HTTP200/index-U1LmFjMk.js SHA2563416E3B50EC85C012FC8DE8447A793BB516BFEB42BEA95D856DF2ED09A89FED0은 앞서 검증된 동일 앱 build hash와 일치. 새 R1 build로 이전 local 파일이 대체된 뒤의 원격 관측이며 현재 local asset exact 주장과 구분한다.
+
 ### R6 저음 실패의 단계 분리 — 2026-10-12
 
 고정9beec10 공식 meldataset/Pattern_Generator 원문을 읽고 기존 vocoder에 실제 원곡16–23.5초 mel을 입력했다. 공식 source peak0.95 전처리 gain2.781017을 연구 입력에만 적용/기록했다. 원곡/vocoder hash는 유지하고 output aae6d437a267d47977510d1e4cd540455e387bd1bff37272ad0de1f5ee37cdb7·7.488435초를 별도 보존했다. 실제7voiced 구간 source-vocoder F0 중앙값 차이0~0.2반음, 첫 MIDI55.3→55.35로 저음 복원이 관측됐다. vocoder만의 저음 지원 실패라는 설명은 이 사례에서 지지되지 않지만 전체 음질·화음 승인은 아니다.

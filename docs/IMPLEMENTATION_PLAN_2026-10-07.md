@@ -1,3 +1,9 @@
+### R1 분석 실패 시 종료 길이 / R6 실제 구간 대조 — 2026-10-12
+
+R1: native mic 종료+decoder failure에서 Draft1.36초가0초로 저장되는 production 결함을 수정했다. 소유 recorder의 실제 stop 이벤트·활성 구간으로 기존 fallback 길이를 보존하고 pause/수동 정지/cancel의 중복 누적을 막는다. build/Node 및 native3조건 원본·길이/700ms 기다림·paused 제외/Draft 복원, 기존 세션·chunk 소유권·Sample 보존 통과. 검증 묶음만 main push→Git Integration→production을 진행한다. 물리 길이/실기기 전체 완료로 확대하지 않는다.
+
+R6: linear 경로의 한 음절64→66 제어는 실제64.1→65.9/ASR exact1.0으로 확인했다. 그러나 실제 원곡의7음절씩 phonetic span↔note/rest 비교는 opening4/middle5개 복수 segment,4/3개 rest 포함을 보여줬다. 같은 pitch의 별도 segment·인접 음절 경계 차이를 melisma 정답으로 바꾸지 않는다. middle ‘도’의 다음 onset까지1.3233초 중 약0.6403초는 rest 후보다. 먼저 음절 끝/휴지·여러 음표의 불확실 구간을 보존하고, 자동으로 단일 note/held duration을 확정하지 않는다. 전체 화성/Part·청취·권한 gate와 디자인 보류 유지.
+
 ### R6 저음 실패 단계 분리와 유지 진단 — 2026-10-12
 
 실제 원곡 mel→기존 vocoder의7구간 F0 차이0~0.2반음으로 이 사례의 저음 복원을 확인했다. 같은 실패 score의 native linear 중간 출력은7음절 F0를 관측했고 ASR exact1.0이었다. 유지 generator에 선택적 linear 진단을 연결/steps=null·diffusionExecuted=false로 기록하며 기본50step diffusion PCM exact를 보존했다. 별도 linear 실행은 관찰본과 최대1int16/566samples 차이가 있어 exact 재현으로 표시하지 않으며 새 PCM의 F0/ASR을 독립 확인했다. 마지막 음절−0.5반음, 청취/음절·휴지 길이/화성·2–4Part/권한은 미완료다. 실제 sourceScore를 확정하거나 intermediate를 품질 대체로 승인하지 않는다. 다음은 실제 음표/음절·melisma 제어와 불확실 timing·화성의 대조이며 동일 기능의 병렬 앱/음원 교체는 만들지 않는다. 오류/자원/hash 상세는 현재 상태에 기록.
