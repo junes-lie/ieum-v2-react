@@ -1,3 +1,17 @@
+## 2026-10-12 R6 새 제어 경로 — 한국어 가사/음표/길이 입력의 실제 진단
+
+Base의 같은 조건 반복 대신 [CODEJIN/DiffSingerKR 원본](https://github.com/CODEJIN/DiffSingerKR)과 [저자 checkpoint Space](https://huggingface.co/spaces/codejin/diffsingerkr/tree/26f95ac2554b6a6725706ed2a7991a62f7f714a9)을 확인했다. 코드 main9beec10ffe3dd1068913b0f65827d31134f9460e/MIT, Space26f95ac2554b6a6725706ed2a7991a62f7f714a9로 pin했다. checkpoint682529563bytes/SHA2566482992a43b8a98554e7ef9e487a381c2717c5828d564e6dfc6cac16a0e16092, vocoder55884400bytes/SHA2565b47a5d03d744861f94ee973294317f738ccc6dc6d27bafa5d8db5ed18f95566 실제 확인. 상업적 checkpoint/data 권한·목소리 선택의 제품 승인은 별도 미확정이다.
+
+기존 CPU/GPU 환경을 수정하지 않고 부모 .ieum-diffsinger-runtime에 pinned source/weights/원본 checksum과 진단 deps hgtk0.2.1·six1.17.0만 보존했다. 원본 변환 함수 본문/모델 수식은 유지하고 별도 probe-source에서 사용하지 않는 training/DSP import만 제외했다. 파라미터232502428bytes를 사전 확인했고 weights_only/mmap·safe YAML을 사용했다. 시작 여유8GiB/여유4GiB 미만 연속3회 해당 PID만 중단하는 live guard를 적용했다.
+
+초기 사전 import에서 six 누락, 첫 모델 실행에서 state Model/DiffSinger KeyError가 발생해 실제 배포 로더의 DiffSVS key로 정정했다. 한글 경로 TorchScript fopen Illegal byte sequence는 같은 로더의 파일 스트림 인자로 수정했다. 감시 없는 재실행은 자동 승인 검토가 RAM 보호 조건 미충족으로 거부하여 실행되지 않았고 live guard를 복구한 새 실행만 승인됐다. v3은 int16 PCM 단위 누락으로 clipping되어 가사 실패했으므로 폐기 승인 없이 원본 보존/미채택. vocoder 실제 반환 코드에서 int16을 확인해32768로 정상 PCM 변환 후 resample했다. peak>1을 조용히 clip하지 않고 거부한다.
+
+v4의 독립7초 가사·음표·길이 진단: 실제 duration6.989208초/추론1.190540초/전체7.255072초/exit0/WAV SHA25674b7053a89a8c9bcd4ec03954c0dddacf9361c6eb6463bc44afe147141fb1e5f. own CUDA allocation peak421700608bytes.6표본 child RAM peak1.22GiB/free min9.64GiB. Small/Turbo 모두 “오늘도 함께해요” exact1.0/exit0. 검사별 실제 RAM peak1.69/3.92GiB/free min9.17/6.63GiB. 낮은 자동 ASR 경계를 완화하지 않았다. 유지 generator의 새 프로세스 재생성은 같은 WAV SHA256 exact이며 실제 측정 script도 정상 종료했다.
+
+입력은 합성 진단 score로 원곡 분석/화음 승인 자료가 아니다. pYIN probability>=.75/구간 양끝80ms 제외에서7음절의 중앙 pitch는 입력보다 약−12반음(−11.7~−12.2)이었다. 첫 silence/마지막 silence RMS 약.0477/.0411도 관측해 완전한 무음이라고 주장하지 않는다. 독립 octave-control은 입력만+12로 바꾸고 출력 transpose/splicing 없이 재생성해5개 측정 가능한 음절 실제+11.60~+12.20을 관측했다. 함/께는 confident frame 부족/null이며 PowerShell 초기 표시의 null subtraction은 측정치가 아니다. private comparison JSON은 null을 명시한다. absolute pitch mapping/지원 음역·휴지부/원곡 음절 진입·화음·2–4 Part·다른 가사/청취는 미검증이다. 모든 결과 sourceSongConnected/catalogRegistrationApproved/musicalHarmonyApproved=false 유지.
+
+유지 도구: qa/probe-korean-score-synthesis.py(--runtime-dir/--output-dir/선택 --score-spec,10초 이하 진단), qa/measure-korean-score-output.py(--song-dir), qa/run-ai-resource-guard.ps1. 실제 WAV/failed outputs/ASR/자원/비교 JSON/수정 전 source는 repository 밖 runtime에 보존한다. 웹 도구 일부 Cache miss/accessibility 실패 후 정확한 main ref/공식 HTTP metadata를 확인했으며 Notion/Figma UI/Computer Use를 사용하지 않았다. 앱 음원/Track/Identity·디자인에 새 모델 결과를 연결하지 않았다. R6 새 입력 제어의 좁은 가능성 검증이며 전체 기능 완료가 아니다.
+
 ## 2026-10-12 R6 RAM 경로 보완 — 선택적인 host cache 예산
 
 기존 cuda_disk_offload의 전체 exact host cache를 보존하고 선택적인 max_cache_bytes 상한을 추가했다. generator --lossless-gpu-cache --gpu-host-cache-mib와 연결하며 기본값은 기존과 같다. 그룹의 원래 tensor bytes가 잔여 예산을 넘으면 host 복사를 만들지 않고 기존 native disk 경로로 유지한다. 이미 cache가 있으면 같은 exact 복원 경로를 사용한다. liveResidentBytes/maxResidentBytes/skippedBudgetLoads를 누적 통계와 구분해 보고한다. active cache의 예산 변경은 release 전 거부하며 zero budget은 디스크 경로다.

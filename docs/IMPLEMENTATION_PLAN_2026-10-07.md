@@ -20,6 +20,12 @@
 
 Draft 비동기 확인 전/실패 후 새 녹음 시작을 막고 원본 읽기 재시도를 기존 오류 영역에 연결했다. Node/native IndexedDB 실패·재시도/원본 SHA256 보존, 기존 세션/재녹음 회귀와 build 통과. 해당 기능 묶음을 배포하며 전체 실기기/AI/단계3 완료로 확대하지 않는다. 유지 QA는 기존 qa:drafts에 연결한다.
 
+### R6 새로운 가사·score 제어 선행 검증 / 2026-10-12
+
+[저자 DiffSingerKR](https://github.com/CODEJIN/DiffSingerKR)의 pinned 한국어 단일 CSD checkpoint로 독립7초 score를 실제 생성했다. 정상 PCM의 Small/Turbo 가사 exact1.0, 새 프로세스 WAV exact 재현·약1.19초 추론/child RAM1.22GiB 표본을 확인했다. Base 실패를 축소하거나 현재 곡/Part 통과로 표시하지 않는다. 원곡에 아직 연결되지 않은 합성 입력이며 7음절 absolute pitch의 약−12반음 차이·휴지부 잔여 에너지가 있다. 독립+12 입력은5음절 실제+11.6~12.2를 확인했으나2음절 측정은null이다.
+
+다음 선행 gate: 독립 추정기로 absolute pitch 규칙/지원 음역 확인 → 원곡 음절 진입·화성에 근거한 score 입력 확보 → 실제 가사·음역/화음/진입·2–4 Part 검사 → 승인된 출력만 기존 catalog/Guide 연결. CSD 목소리/상업적 checkpoint 권한/청취를 미확정으로 분리한다. note mapping을 임의 확정하거나 출력 transpose/가짜 분석값으로 품질 gate를 통과시키지 않는다. 새 실행도 live RAM guard를 유지한다. 상세 hash/실패와 수정/증거는 현재 상태 문서 최신 항목에 기록했다.
+
 ### R6 자원 선행 보완 / 2026-10-12
 
 전체 host cache의 RAM 압박을 피하기 위해 opt-in cache MiB 상한을 기존 실행기에 연결했다. 실제 작은 CUDA 모델에서 예산 상한/정확한 출력/디스크 fallback/반환 회귀를 확인했다. 전체 모델의 RAM peak·속도 개선은 미측정이므로 이를 음악 제어 성공이나 작업기간 해결로 계산하지 않는다. 다음 실제 생성은 새 제어 경로 근거와 PC 자원 확인이 선행한다.
