@@ -304,6 +304,14 @@ function scheduleRecordingGuides(offsetSec = 0) {
   })
 }
 
+function trackSourceOffset(track, buffer) {
+  const milliseconds = track.syncOffsetMs ?? 0
+  if (!Number.isFinite(milliseconds) || milliseconds < 0 || milliseconds / 1000 >= buffer.duration) {
+    throw new Error('녹음 Track의 정렬 시간이 올바르지 않아요. 원본은 보존됩니다.')
+  }
+  return milliseconds / 1000
+}
+
 export async function startRecording({ onFrame, guides = {backing:false,parts:[]}, guideTracks = [], backingBlob = null, preparationBlob = null, preparationDuration = 0, onPreparation, duration = 35 }) {
   if (runtime.preparationRecorder || (runtime.recorder && runtime.recorder.state !== 'inactive')) throw new Error('이미 녹음 중이에요.')
   const generation=runtime.microphoneGeneration
@@ -319,7 +327,11 @@ export async function startRecording({ onFrame, guides = {backing:false,parts:[]
   let decodedGuides, decodedBacking, decodedPreparation
   try {
     await ctx.resume()
-    decodedGuides = await Promise.all(guideTracks.filter(track => track?.blob).map(async track => ({ track, buffer: await decodeBlob(ctx, track.blob) })))
+    decodedGuides = await Promise.all(guideTracks.filter(track => track?.blob).map(async track => {
+      const buffer = await decodeBlob(ctx, track.blob)
+      trackSourceOffset(track, buffer)
+      return { track, buffer }
+    }))
     decodedBacking = backingBlob ? await decodeBlob(ctx, backingBlob) : null
     decodedPreparation = preparationBlob ? await decodeBlob(ctx, preparationBlob) : null
     if(decodedPreparation && (!decodedBacking || preparationDuration!==3 || Math.abs(decodedPreparation.duration-preparationDuration)>.02))throw new Error('준비 반주 구간이 올바르지 않아요.')
@@ -461,10 +473,11 @@ export async function playCurrentMix({ included, tracks = [], backingBlob = null
   const ctx = context()
   await ctx.resume()
   const selected = await Promise.all(tracks.filter(track=>included.parts[Number(track.partIndex)] && track.blob).map(async track=>({track,buffer:await decodeBlob(ctx,track.blob)})))
+  selected.forEach(({track,buffer})=>trackSourceOffset(track,buffer))
   const decodedBacking = included.backing && backingBlob ? await decodeBlob(ctx, backingBlob) : null
   if (generation !== runtime.playbackGeneration) return () => {}
   if (!included.backing && !selected.length) throw new Error('들을 Track을 선택해 주세요.')
-  const sourceDuration=Math.max(decodedBacking?.duration || 0,...selected.map(({track,buffer})=>Math.max(0,buffer.duration-Math.max(0,(track.syncOffsetMs || 0)/1000))))
+  const sourceDuration=Math.max(decodedBacking?.duration || 0,...selected.map(({track,buffer})=>buffer.duration-trackSourceOffset(track,buffer)))
   const actualDuration=sourceDuration || duration
   const start = ctx.currentTime + 0.08
   if (included.backing) {
@@ -559,7 +572,8 @@ async function renderTrackMix({tracks,duration,onProgress,backing,backingBlob,mi
   let decodedBacking = null
   try { for (const track of tracks) {
     const buffer = await decodeContext.decodeAudioData(await track.blob.arrayBuffer())
-    decodedTracks.push({ track, buffer, cleanup:cleanAndMeasureBuffer(buffer,track.noiseFloor) })
+    const sourceOffset = trackSourceOffset(track,buffer)
+    decodedTracks.push({ track, buffer, sourceOffset, cleanup:cleanAndMeasureBuffer(buffer,track.noiseFloor) })
   }
     if (backing && backingBlob) decodedBacking = await decodeBlob(decodeContext,backingBlob)
   } finally { await decodeContext.close() }
@@ -574,7 +588,7 @@ async function renderTrackMix({tracks,duration,onProgress,backing,backingBlob,mi
     if (decodedBacking) scheduleBuffer(offline, master, decodedBacking, 0, 0, backingPlaybackGain(decodedBacking), 0, false)
     else scheduleBacking(offline, master, 0, actualDuration, 0.075)
   }
-  for (const {track,buffer:decoded,cleanup} of decodedTracks) {
+  for (const {track,buffer:decoded,sourceOffset,cleanup} of decodedTracks) {
     const source = offline.createBufferSource()
     const highpass = offline.createBiquadFilter()
     const presence = offline.createBiquadFilter()
@@ -588,7 +602,7 @@ async function renderTrackMix({tracks,duration,onProgress,backing,backingBlob,mi
     limiter.threshold.value = -3; limiter.knee.value = 0; limiter.ratio.value = 16; limiter.attack.value = 0.003
     gain.gain.value = cleanup.gain
     source.connect(highpass).connect(presence).connect(compressor).connect(gain).connect(limiter).connect(master)
-    source.start(0, Math.min((track.syncOffsetMs || 0) / 1000, Math.max(0, decoded.duration - 0.01)))
+    source.start(0, sourceOffset)
   }
   onProgress?.(54)
   const rendered = await offline.startRendering()

@@ -1,3 +1,13 @@
+## 2026-10-11 단계3 — 손상된 Track 정렬 값의 실패·원본 보존
+
+현재 단계3이다. 디자인은 별도 codex/ieum-design worktree에서 진행하며 이번 기능 작업은 main의 src/audio.js와 유지 QA만 수정했다. 새 IA/화면/스타일·Identity 형상·AI 음원은 변경하지 않았다.
+
+실제 Track의 syncOffsetMs가 음수/NaN/Infinity/문자열/실제 디코딩 길이 이상이면 녹음 Guide·Current Mix·Preview Mix·Auto Mix를 성공 처리하지 않는다. null/누락은 기존0초 호환을 유지한다. 이전 Auto Mix는 과도한 offset을 마지막0.01초로 조용히 clamp했고 다른 경로는 native 재생 오류/잘못된 길이를 만들 수 있었다. 실제 decoded duration 기준 공통 검사를 추가하고 검증된 값으로만 offline source를 예약한다. Guide 오류는 기존 startRecording 오류 정리 경로에서 마이크를 종료하며 Take/Track 원본을 변경하지 않는다.
+
+qa/verify-audio-lengths.mjs의 실제 Web Audio 실행에서6종 잘못된 offset × Current/Preview/Auto의18건 거부, 잘못된 Guide의 마이크 정리/Take 미생성, source hash 보존을 통과했다. 정상35초 Track/2초 Track 재생, 실제19초 AI 반주 전체와 끝부분 유지, 짧은 preview2초도 통과했다. recorder session 동시Start/Resume/Stop·Review 보존, audio foundation pause/resume·peak 검증 및 build34modules 통과다. synthetic microphone/격리 DB 검증이며 실기기 음질·지연을 확인한 것이 아니다.
+
+이 묶음은 단계3 원본 보존 보완이다. 정확한 AI 가사/화음/진입·실기기 인수와 개인→Track→Project 통합은 미완료이며 단계4/5 신규 구현으로 넘어가지 않는다. 모델·CPU/GPU 환경·실패 결과와 디자인 worktree를 보존한다. QA 서버는 npm port 인자 누락/4196 점유를 확인한 뒤 기존 서버를 건드리지 않고4201의 직접 Vite CLI에서 실행했다.
+
 ## 2026-10-10 기능 잔여 판정과 동일 구간 정렬
 
 현재 단계3을 유지한다. 단계0 기준 보존 완료, 단계1 P0 기술 검증/데이터 계약은 통과 범위만 보존하며 개인 Identity 최종 통합은 미완료, 단계2 기존3화면 통합은 있고 디자인 인수는 보류다. 단계3 로컬 녹음·임시본·직접 제출·실제2–4 Track Auto Mix/실패 보존은 자동 검증됐지만 실제 AI Part/화음/진입과 실기기 청취는 미완료다. 단계4 탐색·저장·Profile 편집·복귀의 기존 부분 구현을 보존하며 전체 경로/Identity 통합은 미완료다. 단계5 인증·공유 서버·원자적 초대 배정·결과 공유·7일 Push는 미구현이며 단계6 종합/실기기 인수는 미완료다. 단계를 통째로 완료 처리하거나4/5 신규 구현을 앞당기지 않는다.
