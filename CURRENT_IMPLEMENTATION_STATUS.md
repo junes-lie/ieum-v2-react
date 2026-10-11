@@ -1,3 +1,9 @@
+## 2026-10-11 R3 파일 전송→제출 순서와 원본 보존
+
+src/trackTransfer.js에 transferAndSubmitTrack을 추가했다. 기존 projectService의 업로드 준비/JSON 확정 제출을 재사용하고 제공자 uploadOriginal adapter는 주입받는다. 원본 Blob의 실제 SHA256·크기/MIME을 준비 요청에 보내며, 파일 전송이 uploaded=true로 확인된 뒤에만 제출을 요청한다. 제출 메타데이터와 intent ID를 await 이전/전송 이전 snapshot으로 보존하고 업로드/제출 재시도 키는 호출자가 동일하게 유지한다. 임시본 삭제·Track수·Layer·Mix·App UI·capabilities는 변경하지 않았다. 실제 provider adapter/서버 연결은 미구현이다.
+
+build34modules와 npm run qa10 suites exit0. 새 QA는 업로드 실패/잘못된 intent/제출 충돌/잘못된 입력·원본 hash/진행 중 메타데이터 변경을 확인했다. 기존 remote transport와 결합한 injected HTTP + 격리 IndexedDB에서409 뒤 원본 Draft 보존, 동일 키 재시도와 제출 응답 뒤에도 전송 모듈 자체는 Draft를 제거하지 않음을 통과했다. 첫 QA assertion의 잘못된 호출 인덱스 TypeError는 submit 호출 검색으로 정정 후 통과. 실제 Storage·두 사용자 서버·물리 마이크 완료로 표시하지 않는다. 현재 R3 실제 연결에는 제공자 계정 접근 및 미확정 로그인 방식이 필요하며, 독립 기술 보완만 수행했다.
+
 ## 2026-10-11 R3 업로드/제출 transport 선행 계약
 
 기존 projectService에 prepareTrackUpload와 submitUploadedTrack을 추가했다. 파일 크기·audio MIME·SHA256 검증 후 업로드 intent 준비를 요청하고, 확정 제출에서는 intent ID/길이/offset/분석/seed JSON만 보낸다. 원본 Blob은 Function 제출 payload에서 제외한다. 기존 multipart 제출·로컬 Draft·App 동작은 유지한다. 실제 Storage 업로드, intent 소유자/hash 서버 검증, DB 제출 transaction, UI 연결은 아직 없다. 준비 응답을 Track/Layer/Mix 성공으로 처리하는 코드는 추가하지 않았다.

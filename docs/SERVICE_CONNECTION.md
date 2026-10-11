@@ -110,3 +110,5 @@ P0 실제 모델 기술 검증과 기존 Record의 검증된 출력 표시 연�
 ## 2026-10-11 직접 업로드 transport 준비
 
 `prepareTrackUpload(projectId,partId,{size,contentType,sha256},key)`는 파일 metadata로 upload-intents를 요청한다. `submitUploadedTrack(projectId,partId,{uploadIntentId,duration,syncOffsetMs,features,projectSeed},key)`는 원본 Blob 없이 JSON 확정 제출을 요청한다. 서로 다른 idempotency 키를 사용하며 업로드 준비 성공은 제출 성공이 아니다. 실제 signed upload 실행/서버 intent 검증/권한/DB transaction/마지막 Mix/UI 연결은 미구현이다. 기존 multipart 경로는 별도 transport 호환으로 보존하며 Vercel 경로에 연결하지 않았다. Stub 계약 QA 통과만으로 capabilities를 true로 바꾸지 않는다.
+
+`src/trackTransfer.js`의 `transferAndSubmitTrack`은 실제 Blob hash→prepare→주입한 uploadOriginal→submit을 순차 처리한다. provider adapter는 업로드 성공 확인 시에만 `{uploaded:true}`를 반환해야 한다. 업로드 intent 응답은 `uploadIntentId`가 필수이며 서버가 원본/소유자/hash를 독립 검증해야 한다. 제출 실패 시 원본과 안정된 uploadKey/submissionKey를 유지해 재시도한다. 이 모듈은 로컬 Draft를 삭제하거나 응답의 제출 성공을 임의 판정하지 않는다. 실제 provider adapter/보안/DB transaction/검증된 제출 응답과 App 연결이 남아 있다. 단위·transport/격리 IndexedDB 회귀는 기본 `npm run qa`에 포함했다.

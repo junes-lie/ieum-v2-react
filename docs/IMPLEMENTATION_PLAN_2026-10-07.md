@@ -25,6 +25,8 @@ R6 후속 실제 시험: SFT FP32 CUDA disk offload19초/50step 생성은 정상
 
 R3 독립 선행 작업: projectService의 upload-intent 준비와 원본 Blob 없는 JSON 제출 transport·검증 QA를 추가했다. 실제 업로드/서버 검증/DB 확정/UI는 연결하지 않았으며 실제 서비스 gate는 유지한다. 기존 multipart/local 경로 보존.
 
+R3 전송 순서 후속: 기존 transport를 재사용하는 transferAndSubmitTrack을 추가했다. 원본 해시/metadata snapshot·업로드 성공 전 제출 금지·충돌 뒤 Draft 보존·동일 키 재시도를 injected HTTP/격리 DB에서 검증했다. provider adapter와 서버 권한/DB 제출·UI 연결은 미완료이며 R3 전체 완료가 아니다.
+
 ### RAM 운영 — 최신 사용자 지시
 
 로컬 대형 AI를 일괄 금지하지 않는다. 매 실행 직전에 실제 RAM/VRAM 여유·CPU/GPU 부하·동시 작업을 확인하여 결정한다. 검증된 해당 경로의 peak와 로딩/변환 중 peak 및 다른 작업의 여유분까지 감당할 때만 하나의 무거운 작업을 실행한다. 필요한 peak를 모르는 경로나 여유가 부족한 경로는 시작하지 않는다. 실행 중 자원 압박 시 해당 Codex 작업만 안전하게 중단하고 결과/원본 보존·중단 상태를 기록한다. Figma/다른 작업 종료·OS/pagefile 변경·CPU affinity를 RAM 제한으로 간주하는 처리 없음. 완료 후 해당 worker/캐시 종료를 확인한다. 현재 16GB PC에서 8GB 이상 실제 점유한 변환과 6GB 점유한 검증을 병렬 재실행하지 않는다.
