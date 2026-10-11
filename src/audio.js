@@ -471,8 +471,10 @@ export async function stopRecording() {
     decoded = await context().decodeAudioData(await blob.arrayBuffer())
     features = analyzeAudioBuffer(decoded)
   } catch {}
-  runtime.decoded = decoded
-  runtime.lastAnalysis = features ? { features, duration: decoded?.duration || 0 } : null
+  if(runtime.recorder===recorder && runtime.recordingUrl===recordingUrl){
+    runtime.decoded = decoded
+    runtime.lastAnalysis = features ? { features, duration: decoded?.duration || 0 } : null
+  }
   return {
     blob,
     url: recordingUrl,

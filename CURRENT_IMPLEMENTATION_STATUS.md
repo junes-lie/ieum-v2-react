@@ -1,3 +1,9 @@
+### R1 늦은 분석의 전역 버퍼 재부착 방지 — 2026-10-12
+
+0d078fc6a949138638df4e870e4d464610a976b1 Git Integration7002597560 success 및 production index-Blysb9GK.js를 확인했다. 해당 local/native Sample lifecycle·거부/Review URL/폐기취소·Profile 보존 회귀는 통과했다. 후속 delayed Stop QA에서 이탈 후 URL은 해제됐으나 decoded AudioBuffer와 lastAnalysis가 cleanup 이후 다시 붙는 실제 assertion 실패를 확인했다. 현재 recorder와 URL의 소유권이 유지된 경우에만 전역 분석 참조를 갱신하도록 제한했다. 반환되는 종료 Take의 blob/url/features/duration은 독립 결과로 유지한다.
+
+최종 native late decode/navigation/reload에서 임시 URL 해제·decoded/lastAnalysis null 유지·기존 Profile·stream 해제/pageerror0을 통과했다. 정상 Recorder late discarded callback/new Take bytes exact 및 build34modules/audio foundation·cleanup Node 회귀 통과. 후속 수정만 main push→Git Integration→production 동일 QA로 확인하며 물리 마이크/청취·R6 음악/서비스 gate를 확대하지 않는다. 사용자 서버3파일과 모든 원본은 보존한다.
+
 ### R1 Sample 종료 분석 중 이탈의 URL 소유권 — 2026-10-12
 
 4ad53c3734188735aec34f1717aa40567eec2785 Git Integration7002503941 success를 확인했다. 후속 native fake microphone에서 Sample Stop의 실제 decode 결과 전달을 지연하고 My로 이탈한 뒤 완료하면 새 임시 Blob URL이 미해제였다. 기존 Profile/stream 종료는 유지되었다. 초기 QA가 여러 decode를 지연해 release callback을 덮는 문제를 one-shot으로 수정하고 실제 컴포넌트 이탈 완료 조건을 명시했다. 교정된 QA에서도 이전 production 및 local 첫 최소 수정은 URL 해제 timeout으로 실패했다. 별도 Sample 회귀의 기본4193 연결 실패는 실제 preview4207을 지정해 해결했다.

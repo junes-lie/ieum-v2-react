@@ -1,3 +1,7 @@
+### R1 이탈 후 분석 버퍼 소유권 후속 — 2026-10-12
+
+Sample 늦은 종료 URL 교정 이후 cleanup된 decoded/lastAnalysis 재부착을 추가 재현했다. 같은 recorder+URL을 현재 세션이 소유할 때만 전역 참조를 갱신하며 반환 Take는 독립 보존한다. native 지연 결과/이탈/reload의 URL·buffer 해제와 기존 Profile·정상 Recorder bytes exact/build/Node 회귀를 통과했다. 관련 자동배포와 production 결과를 확인하고 전체 R1/R6·물리/서비스 완료 상태는 유지한다. 상세 실패·버전·직전 배포는 상태 문서 참조.
+
 ### R1 늦은 Sample 종료 결과의 소유권 후속 — 2026-10-12
 
 Sample Stop 분석 도중 My 이탈 후 새 임시 URL이 미해제되는 native 결함을 재현했다. 종료 Take의 local URL 보존과 종료된 VoiceSetup lifecycle 결과 해제만 최소 수정했다. 기존 Profile/정상 Review와 녹음 bytes를 유지한다. 실제 지연 decode/native 이탈·reload·Profile 보존/stream 해제 및 관련 build/Node/chunk 회귀 검증 뒤 main 자동배포→production 동일 지연 QA로 마감한다. 상세 QA 실패 교정과 기존 R6 actual backing51note/교차 관측의 한계는 상태 문서 참조. 현재 단계 전체 완료나 실제 기기/서비스·음악 승인으로 확대하지 않는다.

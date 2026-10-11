@@ -32,7 +32,8 @@ try {
  await page.waitForFunction(()=>window.qaStopUrls.length>0&&window.qaStopRevoked.includes(window.qaStopUrls.at(-1)),null,{timeout:5000}).catch(async error=>{console.log(JSON.stringify(await page.evaluate(()=>({urls:window.qaStopUrls,revoked:window.qaStopRevoked,released:window.qaStopReleased,delivered:window.qaStopDecodeDelivered,screen:window.__IEUM_V2__.state.screen,stream:!!window.__IEUM_V2__.audioRuntime.stream,asset:document.querySelector('script[type="module"]').src}))));throw error})
  assert.equal(await page.evaluate(()=>window.__IEUM_V2__.state.profile.sampleSong),'Protected sample')
  assert.equal(await page.evaluate(()=>window.__IEUM_V2__.audioRuntime.stream),null)
+ assert.deepEqual(await page.evaluate(()=>({decoded:window.__IEUM_V2__.audioRuntime.decoded,lastAnalysis:window.__IEUM_V2__.audioRuntime.lastAnalysis})),{decoded:null,lastAnalysis:null},'Late completion must not reattach cleared analysis buffers')
  assert.deepEqual(errors,[])
  await page.reload();await page.waitForFunction(()=>window.__IEUM_V2__?.state?.profile?.sampleSong==='Protected sample')
- console.log(JSON.stringify({passed:true,lateStopUnownedUrlReleased:true,existingProfilePreserved:true,streamReleased:true,limits:'Native browser/fake microphone; delayed decoding, no physical-device acceptance'}))
+ console.log(JSON.stringify({passed:true,lateStopUnownedUrlReleased:true,clearedAnalysisBuffersPreserved:true,existingProfilePreserved:true,streamReleased:true,limits:'Native browser/fake microphone; delayed decoding, no physical-device acceptance'}))
 }finally{await browser.close()}
