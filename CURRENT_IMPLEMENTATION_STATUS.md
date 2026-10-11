@@ -1,3 +1,11 @@
+### R1 Sample 종료 분석 중 이탈의 URL 소유권 — 2026-10-12
+
+4ad53c3734188735aec34f1717aa40567eec2785 Git Integration7002503941 success를 확인했다. 후속 native fake microphone에서 Sample Stop의 실제 decode 결과 전달을 지연하고 My로 이탈한 뒤 완료하면 새 임시 Blob URL이 미해제였다. 기존 Profile/stream 종료는 유지되었다. 초기 QA가 여러 decode를 지연해 release callback을 덮는 문제를 one-shot으로 수정하고 실제 컴포넌트 이탈 완료 조건을 명시했다. 교정된 QA에서도 이전 production 및 local 첫 최소 수정은 URL 해제 timeout으로 실패했다. 별도 Sample 회귀의 기본4193 연결 실패는 실제 preview4207을 지정해 해결했다.
+
+stopRecording은 URL 생성 후 분석 await 동안 cleanup이 전역 recordingUrl을 비우면 빈 주소를 반환했다. 해당 종료 Take의 URL을 local 변수로 반환하고 VoiceSetup.stopSample의 lifecycle이 끝난 늦은 결과만 revoke한다. 정상 Review/기존 Profile URL은 유지하고 새 Draft/정책/디자인을 추가하지 않는다. 최종 native delayed stop/navigation/reload에서 URL 해제·Protected sample 유지·stream 종료/pageerror0 통과. build34modules·Profile atomic save rollback/retry·single app render·audio foundation 및 late discarded callback/new Take bytes exact 회귀 통과. 기존 Sample lifecycle은 같은4207에서 순차 검증한다. 변경한 App/audio/유지 QA와 active docs만 배포하며 서버3파일을 포함하지 않는다.
+
+R6 독립 후속으로 동일 backing16–23.5초를 기존 공식 Basic Pitch230KB/기본 threshold에서 분석해51note candidates/inference.1890073초를 보존했다. 7음절 모두 G/B/D overlap 후보가 있으나 첫 B의 activation-weighted overlap.03055초와 CQT의 낮은 장·단 margin 차이는 불확실하다. 음표 후보/weighted overlap은 확률·협화도·악보 승인이 아니다. opening-backing-cross-method-observations.json을 기존 runtime에 보존하고 source/audio를 변경하지 않았다. wall4.8365초/free RAM최소8.933GiB/owned최대.190GiB/exit0/resourceStopped=false. 기존 R6 화음·휴지·2–4AI Part/권리·청취 gate와 디자인/서비스 보류를 유지한다.
+
 ### R6 기본 diffusion 상성부 및 실제 반주 대조 — 2026-10-12
 
 98c92f0675d1d8bc58153e93d824a337cf7ba3ec Git Integration7002454053 success/production HTTP200 및 index-BuphXm9v.js SHA055D5EACB4845416A24FD3E56F72BDC5D47B34B4016D100C29CA6942326533D1 exact를 확인했다. 앱 변경 없는 QA metadata 묶음으로 native/build 전체를 반복하지 않았다.

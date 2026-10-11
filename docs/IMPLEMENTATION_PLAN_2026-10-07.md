@@ -1,3 +1,7 @@
+### R1 늦은 Sample 종료 결과의 소유권 후속 — 2026-10-12
+
+Sample Stop 분석 도중 My 이탈 후 새 임시 URL이 미해제되는 native 결함을 재현했다. 종료 Take의 local URL 보존과 종료된 VoiceSetup lifecycle 결과 해제만 최소 수정했다. 기존 Profile/정상 Review와 녹음 bytes를 유지한다. 실제 지연 decode/native 이탈·reload·Profile 보존/stream 해제 및 관련 build/Node/chunk 회귀 검증 뒤 main 자동배포→production 동일 지연 QA로 마감한다. 상세 QA 실패 교정과 기존 R6 actual backing51note/교차 관측의 한계는 상태 문서 참조. 현재 단계 전체 완료나 실제 기기/서비스·음악 승인으로 확대하지 않는다.
+
 ### R6 기본 diffusion 검증과 화성 불확실 구간 — 2026-10-12
 
 상성부 가설의 기본50step 실제 생성에서7음절 최대 median.1반음·ASR exact를 관측했다. 첫 rest 낮은 음정4frames/양쪽 잔여 RMS와 phonetic end≠지속음 길이는 실패/미검증으로 보존한다. 원곡 opening 반주의 첫 두 음절은 triad margin.003/.007로 장·단 구분이 불명확하고 뒤 구간의 Gmajor 후보도 확정 악보가 아니다. 상성부 간격4/3/4/5/5/4/4는 입력 가설이며 원곡 harmony 추출로 표시하지 않는다. 기존 sourceScore/실제2–4Part/음악·권리/청취 gate와 독립 기능 검증을 유지한다. 상세 hash/자원/직전 자동배포 확인은 상태 문서 참조. 다음 검증은 특히 초기 화성·휴지/지속음과 원곡 음표 후보의 불일치 해결이며 불확실 입력을 catalog에 연결하지 않는다.

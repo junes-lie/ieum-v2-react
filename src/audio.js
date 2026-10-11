@@ -462,7 +462,8 @@ export async function stopRecording() {
   // A prior recording URL may still be used by the Voice Profile player.
   // Blob URLs are page-scoped and are released on navigation; revoking here
   // makes that independently stored recording unplayable.
-  runtime.recordingUrl = URL.createObjectURL(blob)
+  const recordingUrl = URL.createObjectURL(blob)
+  runtime.recordingUrl = recordingUrl
   runtime.recordingBlob = blob
   const fallbackDuration = runtime.activeElapsedSec
   let decoded = null, features = null
@@ -474,7 +475,7 @@ export async function stopRecording() {
   runtime.lastAnalysis = features ? { features, duration: decoded?.duration || 0 } : null
   return {
     blob,
-    url: runtime.recordingUrl,
+    url: recordingUrl,
     duration: decoded?.duration || fallbackDuration,
     features,
     bytes: blob.size,

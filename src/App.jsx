@@ -835,9 +835,11 @@ function VoiceSetup({ complete, go, back, existing, editMode }) {
   const stopSample = async () => {
     if(sampleStoppingRef.current)return
     sampleStoppingRef.current=true;setSampleBusy(true)
+    const lifecycle=sampleLifecycleRef.current
     try {
     clearInterval(timer.current)
     const draft = await stopRecording()
+    if(lifecycle!==sampleLifecycleRef.current){if(draft?.url)URL.revokeObjectURL(draft.url);return}
     if (!draft?.blob || draft.duration < 3) {
       if(draft?.url)URL.revokeObjectURL(draft.url)
       cancelRecording()
