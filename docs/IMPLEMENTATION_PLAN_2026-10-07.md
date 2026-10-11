@@ -1,3 +1,9 @@
+### R1 종료 원본 / R6 수동 annotation 검증 — 2026-10-12
+
+R1 최소 결함 수정: 마이크 종료로 이미 inactive인 recorder도 수집 chunks가 있으면 기존 Stop→Review→Draft로 보존한다. 원본 없는 inactive는 null 유지, 중복 stop 없음. Blob 확정 뒤 chunk 참조만 반환하며 다른 Take/URL/DB는 삭제하지 않는다. production Timeout5000ms 재현 뒤 build/Node/native session·sample 및 새 원본 hash/Draft 재진입 QA 통과. 시작 실패 QA는 Guide schedule까지4조건으로 확장했다. 변경 파일만 main push→Git Integration→production 관련2검증을 수행한다. 물리 마이크/청취는 R7에 남긴다. 디자인/IA/서버 보류3파일 유지.
+
+R6 첫 구절 후보 crop 차이 최대0.020132초, 실제 F0 중앙값55/59/62/57/57/55/55. source-informed 짧은 진단은 exact ASR이나 ‘가’null·‘요’-2반음으로 실패/미채택이다. seed 반복/임의 transpose/null 채움 없음. [공식 CSD1.1](https://zenodo.org/records/4916302)의 수동 note/음절 CSV·실제 WAV로 정렬 측정 자체의 오차를 검증한다. 데이터 CC-BY-NC-SA4.0와 [DiffSingerKR 코드](https://github.com/CODEJIN/DiffSingerKR) MIT 적용 범위를 구분한다. 가능한 bounded 단일 예제만 연구 runtime에 읽으며 전체 corpus 다운로드는 하지 않는다. 지원되지 않으면 실제 오류를 보존한다. 요청 시각/path score를 acoustic ground truth/정확도 확률로 간주하지 않는다. 앱 기능 진행과 기존 단계·gate는 유지한다.
+
 ### R1 녹음 시작 실패 자원 후속 — 2026-10-12
 
 MediaRecorder 생성/시작 또는 AudioContext.resume 실패 시 열린 마이크가 남는 실제 경로를 재현하고 소유 요청의 자원만 반환한다. native3오류의 ended/null·신선한 retry/Review와 기존 Recorder/Profile Sample 정상·취소 보존 QA 통과. 기존 화면·녹음 정책/Take/원본·단계 gate는 유지하며 전체 R1/실기기/PC RAM 절감을 완료로 표시하지 않는다. 관련 유지 qa:record-errors에 오류 자원 QA를 통합하며 검증된 묶음 main push→Git 자동배포→Production을 확인한다.

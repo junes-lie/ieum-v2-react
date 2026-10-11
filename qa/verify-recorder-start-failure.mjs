@@ -4,7 +4,7 @@ const require=createRequire('C:/Users/LEE/.cache/codex-runtimes/codex-primary-ru
 const {chromium}=require('playwright')
 const browser=await chromium.launch({headless:true,executablePath:'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',args:['--use-fake-ui-for-media-stream','--use-fake-device-for-media-stream']})
 try {
- for(const failure of ['constructor','start','context-resume']) {
+ for(const failure of ['constructor','start','context-resume','guide-schedule']) {
   const context=await browser.newContext({permissions:['microphone']})
   await context.addInitScript(failure=>{
    localStorage.setItem('ieum-v2:user-state:v7',JSON.stringify({joined:true,joinedPart:'tenor'}))
@@ -13,6 +13,8 @@ try {
    navigator.mediaDevices.getUserMedia=async(...args)=>{const stream=await get(...args);window.qaStreams.push(stream);return stream}
    const resume=AudioContext.prototype.resume
    AudioContext.prototype.resume=function(...args){if(window.qaFailure==='context-resume')return Promise.reject(new Error('QA audio context resume failure'));return resume.apply(this,args)}
+   const gain=AudioContext.prototype.createGain
+   AudioContext.prototype.createGain=function(...args){if(window.qaFailure==='guide-schedule')throw new DOMException('QA guide schedule failure','InvalidStateError');return gain.apply(this,args)}
    const Recorder=window.MediaRecorder
    window.MediaRecorder=class extends Recorder {
     constructor(...args){if(window.qaFailure==='constructor')throw new DOMException('QA recorder constructor failure','NotSupportedError');super(...args)}
@@ -26,6 +28,8 @@ try {
   await page.locator('[data-action="record-start"]').click();await page.waitForSelector('.permission-error')
   assert.equal(await page.evaluate(()=>window.qaStreams.every(stream=>stream.getTracks().every(track=>track.readyState==='ended'))),true,`${failure} failure must release acquired microphone tracks`)
   assert.equal(await page.evaluate(()=>window.__IEUM_V2__.audioRuntime.stream),null)
+  assert.equal(await page.evaluate(()=>window.__IEUM_V2__.audioRuntime.recordingGuideState),null)
+  assert.equal(await page.evaluate(()=>window.__IEUM_V2__.audioRuntime.guideNodes.length),0)
   assert.equal(await page.locator('[data-action="record-submit"]').count(),0)
   await page.evaluate(()=>{window.qaFailure=null})
   await page.locator('.permission-error button').click();await page.waitForSelector('[data-action="record-pause"]')

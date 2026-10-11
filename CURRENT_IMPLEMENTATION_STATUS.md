@@ -1,3 +1,15 @@
+### R1 마이크 종료 뒤 원본 Review/Draft 보존 — 2026-10-12
+
+production의 격리 native recorder에서 마이크 track 종료 후 inactive/chunks 보유 상태를 확인했다. 기존 Stop은 null을 반환하여 Review 진입 Timeout5000ms가 발생했다. 수집 원본이 있으면 기존 Stop으로 확정하고 inactive recorder에 stop을 다시 호출하지 않는다. Blob 확정 뒤 중복 encoded chunk 참조만 반환한다. 제품/시각/자동 제출 정책 변경 없음.
+
+build34modules, Node audio foundation, 기존 native recorder-session/sample-lifecycle 통과. 유지 verify-ended-recording-preservation에서 수집 SHA256=Review bytes=Workspace 이탈/재진입 Draft bytes, chunks0/pageerror0 확인. 시작 오류 QA는 Guide schedule까지4조건의 track ended/stream null/Guide 정리/새 마이크 재시도/Review를 확인했다. fake stream 오류 주입이며 물리 단선·청취 인수가 아니다. 이번 Git Integration/production은 push 후 기록한다. 서버 보류3파일 유지/제외.
+
+직전 df6160b11281132c98b0e367d315f8a7e6cb13a5 main/origin 일치, Production7000222988 success. production HTTP200/index-xzCShQmC.js SHA2563FDC1CEDEEBFD3AF6053AD45B6B8A515D334336C1A2A34A1B35D717F7A246419 local exact 및 시작 오류4조건 통과.
+
+R6 첫 원곡 구절: MMS crop16–23.5/17–22.5초 “천천히 걸어가요” onset 후보 최대 차이0.020132초. 실제 인접 onset F0 중앙값 약55/59/62/57/57/55/55. 미승인 후보의 DiffSinger 진단은 ASR exact1.0이나 ‘가’pitch0/null, ‘요’55요청→53관측으로 실패/미채택이다. WAV SHA2566d88ec9ffbe4b0e4dac1095ec075af7cc6a8bfddad0cdd91b0ff721846c4e43b, inference1.154초/GPU395500032bytes. 생성/측정/ASR guard exit0·중단false/free 최소8.351/9.379/7.001GiB. 원본/실패 evidence 보존, sourceScore/harmony/catalog 승인false.
+
+[공식 CSD1.1](https://zenodo.org/records/4916302)은 수동 미세 조정 note/음절 onset·offset CSV/WAV/MIDI와 CC-BY-NC-SA4.0 안내를 제공한다. [DiffSingerKR 저자 코드](https://github.com/CODEJIN/DiffSingerKR) MIT를 학습 데이터/weight 상업 사용 승인으로 확대하지 않는다. 다음 독립 검증은 공개 수동 annotation 대비 정렬 오차 측정이다. 합성 요청 시각을 acoustic ground truth로 사용하지 않는다. 전체1.9GB corpus 다운로드/앱 등록 없음.
+
 ### R1 녹음 시작 실패의 마이크 소유권 반환 — 2026-10-12
 
 production에서 MediaRecorder constructor 실패 뒤 실제 획득 stream의 track.readyState가 live인 것을 재현했다(false != true). start 실패와 새 requestMicrophone의 AudioContext.resume 실패도 확인했으며 후자는 첫 수정 전 같은 assertion 실패였다. 기존 stream/세션 소유권과 generation을 검사하여 실패한 시작 요청의 recorder/RAF/Guide/마이크만 정리하고 최초 오류를 그대로 반환한다. 다른 시작 요청·기존 Take/URL/DB는 삭제하지 않는다. 제품/시각/권한 UX는 기존 경로를 유지한다.

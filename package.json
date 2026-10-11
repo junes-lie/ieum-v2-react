@@ -22,7 +22,7 @@
     "qa:navigation": "node qa/verify-collection-navigation.mjs && node qa/verify-project-creation.mjs && node qa/verify-finder-empty.mjs && node qa/verify-finder-sorting.mjs",
     "qa:profile": "node qa/verify-profile-store.mjs && node qa/verify-profile-editing.mjs && node qa/verify-sample-lifecycle.mjs",
     "qa:drafts": "node qa/verify-draft-cleanup.mjs && node qa/verify-legacy-draft-flow.mjs && node qa/verify-draft-restoration.mjs && node qa/verify-bootstrap-recovery.mjs && node qa/verify-user-state-recovery.mjs",
-    "qa:record-errors": "node qa/verify-recorder-session.mjs && node qa/verify-recorder-start-failure.mjs && node qa/verify-microphone-errors.mjs && node qa/verify-retake-lifecycle.mjs && node qa/verify-project-screen-continuity.mjs",
+    "qa:record-errors": "node qa/verify-recorder-session.mjs && node qa/verify-recorder-start-failure.mjs && node qa/verify-ended-recording-preservation.mjs && node qa/verify-microphone-errors.mjs && node qa/verify-retake-lifecycle.mjs && node qa/verify-project-screen-continuity.mjs",
     "qa:project-backing": "node qa/verify-project-audio-contract.mjs && node qa/verify-project-backing.mjs"
   },
   "dependencies": {

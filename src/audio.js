@@ -434,10 +434,10 @@ export function updateRecordingGuides(guides) {
 }
 
 export async function stopRecording() {
-  if (!runtime.recorder || runtime.recorder.state === 'inactive') return null
+  if (!runtime.recorder || (runtime.recorder.state === 'inactive' && !runtime.chunks.length)) return null
   const recorder = runtime.recorder
   if (recorder.state === 'recording') runtime.activeElapsedSec += Math.max(0, context().currentTime - runtime.activeStartedAt)
-  await new Promise(resolve => {
+  if (recorder.state !== 'inactive') await new Promise(resolve => {
     recorder.addEventListener('stop', resolve, { once: true })
     recorder.stop()
   })
@@ -445,6 +445,7 @@ export async function stopRecording() {
   stopGuides()
   runtime.recordingGuideState = null
   const blob = new Blob(runtime.chunks, { type: recorder.mimeType || 'audio/webm' })
+  runtime.chunks = []
   // A prior recording URL may still be used by the Voice Profile player.
   // Blob URLs are page-scoped and are released on navigation; revoking here
   // makes that independently stored recording unplayable.
