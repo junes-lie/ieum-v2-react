@@ -12,8 +12,11 @@ p.add_argument('--output-dir',type=Path,required=True)
 p.add_argument('--source-alignment',type=Path)
 p.add_argument('--part-alignment',type=Path)
 p.add_argument('--generation-window-only',action='store_true',help='Measure actual PCM inside/outside a native mask; no Project harmony claims')
+p.add_argument('--acoustic-envelope-only',action='store_true',help='Compare actual vocal energy changes independently of ASR; diagnostic, never a lyric onset approval')
 a=p.parse_args()
 assert bool(a.source_alignment)==bool(a.part_alignment),'Compare two actual alignment reports together'
+assert not (a.generation_window_only and a.acoustic_envelope_only),'Select one diagnostic mode'
+assert not (a.acoustic_envelope_only and a.source_alignment),'Energy diagnostics do not consume ASR alignment'
 target=a.output_dir/'part-source-comparison.json'
 assert not target.exists(),'Preserve existing comparison evidence'
 read=lambda folder,name:json.loads((folder/name).read_text(encoding='utf-8'))
@@ -66,6 +69,35 @@ reference=reference[round(window['start']*22050):round(window['end']*22050)]
 assert abs(len(reference)-len(candidate))<=2,'Compare the actual corresponding source window'
 length=min(len(reference),len(candidate))
 reference=reference[:length];candidate=candidate[:length]
+
+if a.acoustic_envelope_only:
+    assert np.isfinite(reference).all() and np.isfinite(candidate).all(),'Reject non-finite vocal PCM'
+    # Positive lag means the candidate activity occurs later than the source.
+    # Energy correspondence is not a verified word/syllable correspondence.
+    hop=220;frame=660
+    def envelope(audio):
+        starts=np.arange(0,len(audio)-frame+1,hop)
+        squared=np.concatenate(([0.],np.cumsum(audio.astype(np.float64)**2)))
+        rms=np.sqrt((squared[starts+frame]-squared[starts])/frame)
+        return np.diff(np.log(np.maximum(rms,1e-7)))
+    lead_envelope=envelope(reference);part_envelope=envelope(candidate)
+    regions=[]
+    for start,end in [(0.,length/22050),(0.,6.),(6.,12.),(12.,length/22050)]:
+        scores=[]
+        for lag in range(-round(3*22050/hop),round(3*22050/hop)+1):
+            first=max(round(start*22050/hop),0,-lag)
+            last=min(round(end*22050/hop),len(lead_envelope),len(part_envelope)-lag)
+            if last-first<round(2*22050/hop):continue
+            x=lead_envelope[first:last];y=part_envelope[first+lag:last+lag]
+            if np.std(x)<1e-10 or np.std(y)<1e-10:continue
+            scores.append({'candidateMinusSourceSeconds':lag*hop/22050,'correlation':float(np.corrcoef(x,y)[0,1]),'overlapSeconds':(last-first)*hop/22050})
+        ranked=sorted(scores,key=lambda item:item['correlation'],reverse=True)
+        regions.append({'sourceWindowRelativeStart':start,'sourceWindowRelativeEnd':end,'zeroLag':next((score for score in scores if score['candidateMinusSourceSeconds']==0),None),'highestCorrelations':ranked[:5]})
+    result={'analysisVersion':'ieum-vocal-energy-change-v1','analysisScriptSha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),'sourceSha256':source['outputSha256'],'partSha256':part['outputSha256'],'sourceVocalSha256':reference_hash,'partVocalSha256':candidate_hash,'sourceWindow':window,'sampleRate':22050,'frameSamples':frame,'hopSamples':hop,'regions':regions,'entryTimingAccepted':False,'approvedEntryTime':None,'musicalHarmonyApproved':False,'catalogRegistrationApproved':False,'limits':['Log RMS differences measure energy changes, not phonemes, lyric onset or consonance','Different melody, separation leakage and breathing can change envelope correspondence','Maximum correlation over a bounded lag search is diagnostic and must not shift originals or Guide times','First entry may precede the conditioned source window; this comparison cannot recover excluded context']}
+    a.output_dir.mkdir(parents=True,exist_ok=True)
+    target.write_text(json.dumps(result,ensure_ascii=False,indent=2),encoding='utf-8')
+    print(json.dumps(result,ensure_ascii=False),flush=True)
+    raise SystemExit(0)
 
 def pitches(audio):
     f0,voiced,probability=librosa.pyin(audio,fmin=librosa.note_to_hz('C2'),fmax=librosa.note_to_hz('C6'),sr=22050,frame_length=2048,hop_length=256)

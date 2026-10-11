@@ -1,3 +1,11 @@
+## 2026-10-11 단계3 — 실제 보컬 에너지와 시간차 독립 대조
+
+단계3을 유지한다. compare-ai-vocal-part.py의 opt-in acoustic-envelope-only는 기존 원곡/Part/분리 보컬 SHA256을 검증한 동일31.7–50.7초 창에서 실제 log RMS 변화의 상관을 측정한다(22050Hz, frame660/hop220, ±3초). ASR 텍스트를 입력하지 않으며 양의 lag는 후보가 원곡보다 늦다는 뜻이다. 기존 pitch/PCM/mask 분석 경로는 유지한다. 실제 baseline GPU50-step 후보의 전체 최고 상관0.207052/lag−1.915646초, 앞0–6초0.418015/−1.915646초, 중간6–12초0.299392/−1.945578초, 끝12–19초0.222550/+2.394558초다. 이 값은 활동 에너지의 관측이며 동일 음절이나 진입 승인·화음 적합성·고정 offset의 근거가 아니다. entryTimingAccepted=false/approvedEntryTime=null/catalogRegistrationApproved=false를 유지한다. 원곡·Part·Guide·앱 음원·디자인을 변경하지 않았다.
+
+결과는 repository 밖 .ieum-gpu-ssd-runtime/results/baseline-acoustic-envelope에 보존했다. 별도 합성 검증 입력의 정확한 +0.498866초 지연을 상관1.0/동일 lag로 관측했다. 기존 결과 덮어쓰기 거부와 상충 모드 거부, Python 문법/build/Project audio contract QA를 통과했다. 첫 fixture 검사의 subprocess stderr는 Windows 비UTF8 오류 출력으로 UnicodeDecodeError/TypeError가 났다. 실제 결과를 보존한 채 UTF8 자식 프로세스와 byte 캡처로 동일 덮어쓰기/모드 거부 검사를 재실행해 통과했다. CPU 실행기의 기존 'Failed to find real location of C:\Python313\python.exe' 경고는 출력됐지만 실제 분석/검사는 exit0으로 완료됐다.
+
+다음 잔여는 실제 가사·음절에 맞는 독립 Part 생성과 원곡 화성 검증이다. 독립 파형 분석에서도 현재 후보의 시간차를 하나로 승인할 수 없으므로 임의 shift/transpose나 QA 기준 완화로 앱 연결하지 않는다. 단계4/5 신규 구현은 진행하지 않는다. 실기기 마이크·청취 및 개인 Identity 최종 연결은 여전히 미완료다. 이번 묶음은 검증 도구/상태 문서만의 변경이며 앱 기능 추가나 단계3 전체 완료가 아니다.
+
 ## 2026-10-11 단계3 — 동시 직접 제출의 원자적 원본 보존
 
 현재 실행은 단계3이다. 단계0 기준 보존 완료, 단계1 AI/개인 Identity는 기술 검증 범위만 통과, 단계2 기존3화면 통합은 있고 디자인은 별도 worktree에서 병렬 진행한다. 단계3 로컬 녹음·일시정지/재개·Draft·Review 직접 제출·2–4 Track Auto Mix/실패 원본 보존은 구현/자동 검증됐으나 실제 AI 가사/화음/진입·Identity 연결·실기기 인수는 미완료다. 단계4의 기존 탐색/저장/프로필 편집·복귀 부분 구현은 보존하며 잔여 통합/전수 검증, 단계5의 실제 인증·공유 저장·원자적 초대/배정·결과 공유·7일 Push, 단계6의 종합/실기기 인수가 남았다. 단계3 전체 gate를 축소하거나 다음 단계 신규 구현으로 넘어가지 않는다.

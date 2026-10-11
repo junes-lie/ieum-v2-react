@@ -1,3 +1,11 @@
+## 2026-10-11 단계3 — 실제 파형 대조와 남은 생성 조건
+
+기존 단계/의존관계/완료 상태를 유지한다. compare-ai-vocal-part.py의 acoustic-envelope-only로 ASR와 독립적인 실제 보컬 에너지 변화 대조를 수행했다. 원곡31.7–50.7초와 기존 GPU50-step Part/보컬 hash를 검증하고 동일 시간축의 log RMS 변화/±3초 lag를 측정했다. 전체 최고 상관0.207052/−1.915646초, 앞·중간·끝 최고 lag−1.915646/−1.945578/+2.394558초다. 최대 상관값이나 활동 에너지의 일치가 음절 진입·화음·Key를 승인하지 않으므로 고정 offset 적용/원본 shift/Guide 재작성/catalog 등록은 하지 않는다. entryTimingAccepted=false와 catalogRegistrationApproved=false를 유지한다.
+
+별도 합성 입력의 +0.498866초 지연/상관1.0, 결과 덮어쓰기 거부·상충 모드 거부를 실제 확인했고 Python 문법/build/Project audio contract QA를 통과했다. subprocess 비UTF8 stderr의 첫 fixture 검사 실패는 원본 결과를 유지하고 UTF8/byte 캡처로 동일 검사를 재실행해 해결했다. 실제 결과는 repository 밖 baseline-acoustic-envelope와 envelope-known-delay-fixture에 보존한다. 기존 CPU/GPU 환경·음원/실패 산출물·디자인 worktree는 유지한다.
+
+진행 가능한 독립 대조는 수행했으나 실제 사용 가능한 Part의 정확한 가사·원곡 화성·음절 동기화는 미충족이다. 다음 기술 작업은 이 조건을 함께 충족하는 생성 제어 검증이며, 확정된 음원만 기존 catalog/Guide에 연결한다. 현재 분석을 앱 기능 구현 완료로 표시하거나 단계4/5로 넘어가지 않는다. 이번 변경 범위는 유지 QA와 현재 계획/상태 기록이다.
+
 ## 2026-10-11 단계3 — 동시 직접 제출의 원자적 원본 보존
 
 현재 실행은 단계3이다. 단계0 기준 보존 완료, 단계1 AI/개인 Identity는 기술 검증 범위만 통과, 단계2 기존3화면 통합은 있고 디자인은 별도 worktree에서 병렬 진행한다. 단계3 로컬 녹음·일시정지/재개·Draft·Review 직접 제출·2–4 Track Auto Mix/실패 원본 보존은 구현/자동 검증됐으나 실제 AI 가사/화음/진입·Identity 연결·실기기 인수는 미완료다. 단계4의 기존 탐색/저장/프로필 편집·복귀 부분 구현은 보존하며 잔여 통합/전수 검증, 단계5의 실제 인증·공유 저장·원자적 초대/배정·결과 공유·7일 Push, 단계6의 종합/실기기 인수가 남았다. 단계3 전체 gate를 축소하거나 다음 단계 신규 구현으로 넘어가지 않는다.
