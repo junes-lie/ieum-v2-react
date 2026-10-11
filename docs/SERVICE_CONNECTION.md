@@ -53,7 +53,7 @@ RLS는 모든 사용자 데이터에서 기본 거부하고 본인/Project 권�
 
 ## 현재 상태
 
-React/Vite만 설치되어 있으며 `api/`는 비어 있다. 서버 인증·공유 DB·Object Storage·Push 스케줄러·AI 추론 모델은 현재 프로젝트에 없다. `.env.example`은 설명 주석만 있다. 외부 계정의 존재 여부는 프로젝트 파일로 판단할 수 없다. IndexedDB Track와 localStorage 상태는 같은 기기의 로컬 데이터다.
+기존 React/Vite를 유지한다. 현재 `api/capabilities.js` 및 `api/me/session.js`와 선택적인 server/Auth/Storage adapter가 있으며 공유 DB·실제 인증 계정·Object Storage·Push는 연결되지 않았다. `.env.example`에는 빈 server-only 설정 이름만 있고 실제 값을 저장하지 않았다. 외부 계정의 존재 여부는 프로젝트 파일로 판단할 수 없다. IndexedDB Track와 localStorage 상태는 같은 기기의 로컬 데이터다. 과거의 api/가 비어 있다는 날짜별 기록은 당시 상태다.
 
 `src/projectService.js`는 로컬 상태 읽기/쓰기와 Track 접근 경계, 명시적인 HTTP transport를 제공한다. 외부 서비스 주소를 자동 선정하거나 원격으로 조용히 전환하지 않는다. 원격 transport 생성 자체는 접속을 수행하지 않으며 성공 표시를 만들지 않는다. 실제 서버를 정하고 인증 토큰 공급 함수를 연결한 이후 `discover()`로 서버 응답을 확인해야 한다. 현재 UI가 모두 원격 transport에 연결된 상태도 아니다.
 
@@ -76,12 +76,14 @@ React/Vite만 설치되어 있으며 `api/`는 비어 있다. 서버 인증·공
 | 메서드·경로 | 요구 동작 |
 |---|---|
 | GET capabilities | public. sharedProjects/authenticated/publicResults/push/aiVoiceLayers 실제 지원 여부, 계약 버전 반환 |
+| GET me/session | Auth 서버가 검증한 사용자 ID만 반환. 미인증401·미설정503, private/no-store. 클라이언트 ID를 신뢰하지 않음 |
 | GET/PATCH me/profile | 본인 Profile 조회·부분 수정. 기존 값은 저장 성공 전 유지 |
 | GET projects/:id | 공유 Project, 배정, 제출 수와 revision |
 | POST projects | 곡 기반 2–4 Part, 작성자 배정, 나머지 OPEN, 제출 0개 |
 | POST projects/:id/parts/:partId/join | 음역 Gate와 OPEN 확인, 원자적 자리 배정 |
 | GET projects/:id/tracks | 실제 제출 Track 메타데이터·권한 있는 파일 URL |
-| POST projects/:id/parts/:partId/tracks | multipart audio+metadata, 맡은 Part 확인 후 파일 저장 성공과 제출 확정 |
+| POST projects/:id/parts/:partId/upload-intents | 원본 hash/size/MIME와 인증/Part 확인. 준비 성공만으로 제출수 증가 없음 |
+| POST projects/:id/parts/:partId/tracks | Vercel 경로는 uploadIntentId+metadata JSON. 서버 파일·소유자/hash 검증 및 맡은 Part 확인 후 DB 제출 확정. 기존 multipart transport는 호환용으로만 보존 |
 | GET me/invitations | 실제 수신 초대 조회 |
 | POST projects/:id/invitations | 확정 참여자만 OPEN Part에 후보 초대, 자리 배정 없음 |
 | POST invitations/:id/response | 본인 수신 초대 accept/decline, 첫 유효 accept 배정과 나머지 closed를 같은 트랜잭션에서 처리 |
@@ -112,3 +114,15 @@ P0 실제 모델 기술 검증과 기존 Record의 검증된 출력 표시 연�
 `prepareTrackUpload(projectId,partId,{size,contentType,sha256},key)`는 파일 metadata로 upload-intents를 요청한다. `submitUploadedTrack(projectId,partId,{uploadIntentId,duration,syncOffsetMs,features,projectSeed},key)`는 원본 Blob 없이 JSON 확정 제출을 요청한다. 서로 다른 idempotency 키를 사용하며 업로드 준비 성공은 제출 성공이 아니다. 실제 signed upload 실행/서버 intent 검증/권한/DB transaction/마지막 Mix/UI 연결은 미구현이다. 기존 multipart 경로는 별도 transport 호환으로 보존하며 Vercel 경로에 연결하지 않았다. Stub 계약 QA 통과만으로 capabilities를 true로 바꾸지 않는다.
 
 `src/trackTransfer.js`의 `transferAndSubmitTrack`은 실제 Blob hash→prepare→주입한 uploadOriginal→submit을 순차 처리한다. provider adapter는 업로드 성공 확인 시에만 `{uploaded:true}`를 반환해야 한다. 업로드 intent 응답은 `uploadIntentId`가 필수이며 서버가 원본/소유자/hash를 독립 검증해야 한다. 제출 실패 시 원본과 안정된 uploadKey/submissionKey를 유지해 재시도한다. 이 모듈은 로컬 Draft를 삭제하거나 응답의 제출 성공을 임의 판정하지 않는다. 실제 provider adapter/보안/DB transaction/검증된 제출 응답과 App 연결이 남아 있다. 단위·transport/격리 IndexedDB 회귀는 기본 `npm run qa`에 포함했다.
+
+## 2026-10-12 인증·Storage 준비 코드와 실제 연결 경계
+
+선택적인 Supabase adapter 코드는 작성했으나 제공자/로그인 방식을 확정하거나 원격 자원을 생성하지 않았다. `IEUM_AUTH_PROVIDER`, `IEUM_SUPABASE_URL`, `IEUM_SUPABASE_PUBLISHABLE_KEY`는 Auth 검증용 서버 설정이다. `IEUM_STORAGE_PROVIDER`, `IEUM_SUPABASE_SECRET_KEY`, `IEUM_AUDIO_BUCKET`은 private Storage 서버 전용이다. 빈 값은 미연결이며 실제 값은 Git/채팅/브라우저 VITE_ 환경에 두지 않는다. Preview에 Production credential을 복제하지 않는다. 환경을 읽기/변경/설치하는 작업은 수행하지 않았다.
+
+- `GET /api/capabilities`: 현재 preparation/모든capabilityfalse. endpoint 존재·환경변수 존재·session 코드만으로 실제 공유 서비스 완료를 표시하지 않음.
+- `GET /api/me/session`: 로그인 방식 선택과 독립적인 인증 검증 코드. Bearer 누락401, 서비스 미설정503. Auth /user가 확인한 id만 응답, 이메일/키/서명URL 미포함. [공식 getUser](https://supabase.com/docs/reference/javascript/auth-getuser).
+- `createSupabaseSignedAudioUploader({storageOrigin})`: 같은 허용origin의 signedUploadUrl에 원본PUT; API token/cookies/referrer/redirect 전달 없음. [공식 서명 업로드](https://supabase.com/docs/reference/javascript/storage-from-uploadtosignedurl).
+- `createSupabaseAudioStorage`: private bucket 확인, 별도로 할당한 opaque object ID의 no-upsert 서명 URL 준비·실제 스트림 해시/크기/MIME essence 검증. secret key는 apikey에만 사용하고 브라우저에 보내지 않음. 사용자·Part·intent 권한을 확인한 서버 경계에서만 호출해야 함. [공식 API key](https://supabase.com/docs/guides/getting-started/api-keys), [공식 Storage 소스](https://github.com/supabase/storage-js/blob/master/src/packages/StorageFileApi.ts).
+- 업로드 준비가 기존 파일을 재검증했다면 `{uploadIntentId,uploadStatus:'verified',verifiedFile:{sha256,size,contentType}}`로 응답할 수 있음. 정확히 같은 원본 receipt일 때만 재업로드를 건너뜀. 파일 존재나 클라이언트 uploaded=true만으로 이 응답을 만들면 안 됨.
+
+기본 QA13 suites와 `npm run qa:service-http`의 loopback5MB 전송은 실제 외부서비스 성공이 아니다. [Vercel Node Web handler](https://vercel.com/docs/functions/runtimes/node-js)를 기존 Vite 프로젝트의 api/에 사용한다. 로그인 UI/App 실제 사용자 경계·권한/RLS/DB transaction·실제 bucket quota·두 사용자 allow/deny/동시성·Mix job/result/Push는 계속 남아 있다.

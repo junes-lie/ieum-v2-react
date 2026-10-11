@@ -84,4 +84,7 @@ assert.deepEqual(await transferAndSubmitTrack(networkOptions), { status: 'submit
 assert.equal(network[0].init.headers['Idempotency-Key'], network[2].init.headers['Idempotency-Key'])
 assert.equal(network[1].init.headers['Idempotency-Key'], network[3].init.headers['Idempotency-Key'])
 assert.equal(await (await loadTrack(draftId)).blob.text(), await blob.text(), 'Transfer success alone must not remove local Draft')
+const webm = new Blob(['webm original bytes'], { type: 'audio/webm;codecs=opus' })
+await transferAndSubmitTrack({ ...options, take: { ...take, duration: 19, blob: webm }, uploadOriginal: async () => ({ uploaded: true }) })
+assert.equal(calls.filter(call => call[0] === 'prepare').at(-1)[3].contentType, 'audio/webm')
 console.log('Track transfer order, exact Blob hash, failure preservation, stable retry keys and metadata snapshot passed. Injected service/uploader; no live Storage or server claim.')

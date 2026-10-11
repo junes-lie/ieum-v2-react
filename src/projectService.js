@@ -72,6 +72,7 @@ export function createRemoteProjectService({ baseUrl, getAccessToken, fetchImpl 
     mode: 'remote',
     // Server response supplies capability evidence; construction does not imply availability.
     discover: () => request('capabilities', { publicRead: true }),
+    getSession: () => request('me/session'),
     getProfile: () => request('me/profile'),
     saveProfile: profile => request('me/profile', { method: 'PATCH', data: profile }),
     getProject: projectId => request(`projects/${id(projectId)}`),

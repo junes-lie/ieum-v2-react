@@ -11,13 +11,20 @@ export async function transferAndSubmitTrack({ service, projectId, partId, take,
   // Capture submission metadata before awaiting; edits cannot change what the
   // original upload is submitted as while the network operation is in flight.
   const original = take.blob
+  const contentType = original.type.split(';')[0].trim().toLowerCase()
   const metadata = structuredClone({ duration: take.duration, syncOffsetMs: take.syncOffsetMs ?? 0, features: take.features, projectSeed: take.projectSeed })
   const sha256 = [...new Uint8Array(await crypto.subtle.digest('SHA-256', await original.arrayBuffer()))].map(value => value.toString(16).padStart(2, '0')).join('')
-  const intent = await service.prepareTrackUpload(projectId, partId, { size: original.size, contentType: original.type, sha256 }, uploadKey)
+  const intent = await service.prepareTrackUpload(projectId, partId, { size: original.size, contentType, sha256 }, uploadKey)
   if (typeof intent?.uploadIntentId !== 'string' || !intent.uploadIntentId.trim()) throw new ServiceError('업로드 준비 응답을 확인할 수 없어요.', { code: 'INVALID_RESPONSE' })
   const uploadIntentId = intent.uploadIntentId
-  const receipt = await uploadOriginal(intent, original)
-  if (receipt?.uploaded !== true) throw new ServiceError('원본 파일 업로드를 완료하지 못했어요.', { code: 'UPLOAD_FAILED' })
+  if (intent.uploadStatus === 'verified') {
+    // A retry must not overwrite an immutable upload. Only a server-verified
+    // receipt for these exact original bytes may bypass the upload step.
+    if (intent.verifiedFile?.sha256 !== sha256 || intent.verifiedFile?.size !== original.size || intent.verifiedFile?.contentType !== contentType) throw new ServiceError('업로드한 원본 정보를 확인할 수 없어요.', { code: 'INVALID_RESPONSE' })
+  } else {
+    const receipt = await uploadOriginal(intent, original)
+    if (receipt?.uploaded !== true) throw new ServiceError('원본 파일 업로드를 완료하지 못했어요.', { code: 'UPLOAD_FAILED' })
+  }
   // The server must independently verify the intent, ownership and object hash.
   // Return its response unchanged; only the caller's verified submission path
   // may update counts or remove a Draft.

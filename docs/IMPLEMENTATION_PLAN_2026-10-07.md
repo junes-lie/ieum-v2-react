@@ -27,6 +27,8 @@ R3 독립 선행 작업: projectService의 upload-intent 준비와 원본 Blob �
 
 R3 전송 순서 후속: 기존 transport를 재사용하는 transferAndSubmitTrack을 추가했다. 원본 해시/metadata snapshot·업로드 성공 전 제출 금지·충돌 뒤 Draft 보존·동일 키 재시도를 injected HTTP/격리 DB에서 검증했다. provider adapter와 서버 권한/DB 제출·UI 연결은 미완료이며 R3 전체 완료가 아니다.
 
+R3 2026-10-12 후속 묶음: capability/session Web API, 선택적인 서버 Auth 검증·signed Storage uploader·private bucket/원본 스트림 검증 adapter를 작성했다. 동일 원본 서버 receipt만 재업로드를 생략한다. 기본QA13 suites/실제 loopback5MB 전송·실패/재시도/API401·503·405를 통과했다. 로그인 방식 미정은 로그인 UI의 결정 항목이며 서버 Auth 검증 준비와 혼동하지 않는다. 실제 계정/환경 접근·RLS/DB transaction/두 사용자 검증은 별도 gate로 남겨두고 capabilities는false를 유지한다. 기존 React/디자인/음원/IA를 변경하지 않았다.
+
 ### RAM 운영 — 최신 사용자 지시
 
 로컬 대형 AI를 일괄 금지하지 않는다. 매 실행 직전에 실제 RAM/VRAM 여유·CPU/GPU 부하·동시 작업을 확인하여 결정한다. 검증된 해당 경로의 peak와 로딩/변환 중 peak 및 다른 작업의 여유분까지 감당할 때만 하나의 무거운 작업을 실행한다. 필요한 peak를 모르는 경로나 여유가 부족한 경로는 시작하지 않는다. 실행 중 자원 압박 시 해당 Codex 작업만 안전하게 중단하고 결과/원본 보존·중단 상태를 기록한다. Figma/다른 작업 종료·OS/pagefile 변경·CPU affinity를 RAM 제한으로 간주하는 처리 없음. 완료 후 해당 worker/캐시 종료를 확인한다. 현재 16GB PC에서 8GB 이상 실제 점유한 변환과 6GB 점유한 검증을 병렬 재실행하지 않는다.

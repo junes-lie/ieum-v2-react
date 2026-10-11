@@ -1,3 +1,13 @@
+## 2026-10-12 R3 인증·직접 업로드·서버 원본 검증 묶음
+
+api/capabilities.js와 api/me/session.js를 기존 Vite/Vercel 프로젝트에 추가했다. capabilities는 준비 단계/기능false를 명시한다. session은 Bearer 누락/잘못된 형식을401로 거부하고, 선택한 Supabase의 Auth /user 검증 결과에만 사용자 ID를 부여한다. 설정 없으면503이며 사용자 ID/JWT 내용만으로 로그인 성공을 만들지 않는다. private/no-store·Authorization Vary를 적용하고 upstream 본문/키/이메일은 응답에 노출하지 않는다. 로그인 UI·방식/현재 App 사용자·새 화면은 변경하지 않았다.
+
+src/signedAudioUpload.js는 선택적으로 설정한 Storage origin의 서명 URL로 원본 Blob만PUT하고 API Bearer/cookie/referrer/redirect 전달을 막는다. server/audioStorage.js는 server-only 최신 secret(apikey header)으로 실제 비공개 bucket을 확인한 뒤 opaque object 경로의 서명 업로드를 준비하고 원본을 스트림으로 읽어 크기·MIME essence·SHA256을 검증한다. 공개/다른/상태불명 bucket, 원본 불일치/404/끊긴 스트림을 거부한다. 외부 계정·bucket·RLS·DB transaction은 만들지 않았고 이 adapter를 무제한 업로드 API로 노출하지 않았다.
+
+transferAndSubmitTrack은 준비 응답에 같은 원본의 서버검증 receipt가 있는 경우에만 재업로드를 생략한다. 제출 실패 뒤 immutable object 재업로드409 문제를 방지하고 안정된 두 idempotency 키를 보존한다. codec 매개변수가 있는 Blob도 MIME essence로 검증하며 원본 bytes는 유지한다. .env.example에는 빈 server-only 선택 설정만 추가했고 secrets/환경 설정을 변경하지 않았다.
+
+검증: production build34modules, 기본QA13 suites exit0, server-only secret/Storage marker의 client bundle 미포함 확인. qa:service-http의 실제 loopback HTTP5,242,880bytes 전송에서 API payload<1KB/업로드·제출 실패/검증 receipt 재시도·원본hash/Storage에 APItoken 미전송을 통과했다. 실제 API Web handler도 fixtureHTTP에서 capabilitiesfalse/미인증401/설정없음503/POST405를 통과했다. 외부 Supabase/실제사용자/공유DB/실기기 인수 증거가 아니다. RAM9.83GiB 여유/Python 없음/VRAM515MiB를 확인했으며 대형 AI를 실행하지 않았다. Git Integration 및 실제 production API 결과는 확인 후 보고한다. R3 전체는 미완료다.
+
 ## 2026-10-11 R3 파일 전송→제출 순서와 원본 보존
 
 src/trackTransfer.js에 transferAndSubmitTrack을 추가했다. 기존 projectService의 업로드 준비/JSON 확정 제출을 재사용하고 제공자 uploadOriginal adapter는 주입받는다. 원본 Blob의 실제 SHA256·크기/MIME을 준비 요청에 보내며, 파일 전송이 uploaded=true로 확인된 뒤에만 제출을 요청한다. 제출 메타데이터와 intent ID를 await 이전/전송 이전 snapshot으로 보존하고 업로드/제출 재시도 키는 호출자가 동일하게 유지한다. 임시본 삭제·Track수·Layer·Mix·App UI·capabilities는 변경하지 않았다. 실제 provider adapter/서버 연결은 미구현이다.
