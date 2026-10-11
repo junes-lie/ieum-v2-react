@@ -1,3 +1,13 @@
+### R6 기본 diffusion 상성부 및 실제 반주 대조 — 2026-10-12
+
+98c92f0675d1d8bc58153e93d824a337cf7ba3ec Git Integration7002454053 success/production HTTP200 및 index-BuphXm9v.js SHA055D5EACB4845416A24FD3E56F72BDC5D47B34B4016D100C29CA6942326533D1 exact를 확인했다. 앱 변경 없는 QA metadata 묶음으로 native/build 전체를 반복하지 않았다.
+
+같은 상성부 가설 입력을 기본50step diffusion/seed65359에서 한 번 실제 생성했다. output SHA8116d68c7794a813f1de9c00ceda48f8f7c588721fc6482caf75896fcd63348a,5.456708333초/inference1.5425859초/GPU395500032bytes/peak.8466043/RMS.1721535. 고정 pYIN의7음절 median58.9/61.9/65.9/61.9/62/59/59.1, 유효25/14/51/17/16/10/27frames/최대.1반음과 Whisper 가사 exact/similarity1을 관측했다. MMS onset mean absolute39.754ms/max64.107ms였으나 마지막 phonetic end4.0725009는 요청 지속음 끝과 다르고 첫 rest에는4유효frames/MIDI40.8·RMS.0350092, 마지막 rest RMS.0348616이 남았다. 휴지·가사 진입/지속음·청취 통과를 선언하지 않는다. sourceScore/harmony/Part arrangement/catalog는 false로 보존한다.
+
+실제 원곡 backing의16–23.5초 HPSS/CQT를 같은 source/alignment hash와24triad template로 관측했다. 첫 두 음절 top margin.003022/.006704로 G minor vs major/Em이 불명확하고 이후5구간의 G major 후보 margin.184657/.117949/.111374/.159812/.067123을 기록했다. chroma rank/triad similarity는 화음 정답/협화도 확률이 아니다. 상성부 입력의 원래 후보 대비 간격4/3/4/5/5/4/4반음도 명시해 자동 추출된 harmony로 오인하지 않는다. 첫 upper B pitch-class rank10과 낮은 margin, 원래 A 후보 rank7 등의 불일치도 숨기지 않는다. source-opening-backing-harmony-cqt-candidate.json 및 opening-upper-backing-evidence-comparison.json을 기존 runtime에 보존하며 앱 음원으로 등록하지 않았다.
+
+backing 관측/generation/pYIN/ASR/MMS 순차 wall4.843/7.315/7.328/17.154/12.169초, 최소 free RAM8.888/7.817/8.846/7.598/8.273GiB·최대 owned working set.215/1.261/.234/1.520/.855GiB, 모두 exit0/resourceStopped=false. 모델/threshold/input 반복 탐색·output shift·기존 파일 교체 없음. 기존 lower 실패/원곡 timing ambiguity와 R1–R7 완료 gate, 실제 서비스3파일/디자인 보류를 유지한다.
+
 ### R6 상성부 입력 제어와 출처 보존 — 2026-10-12
 
 직전 516037f49e72e18580adcd9f0887364e0a2fe90b는 Git Integration7002279909 success, production HTTP200/index-BuphXm9v.js remote/local SHA256055D5EACB4845416A24FD3E56F72BDC5D47B34B4016D100C29CA6942326533D1 exact를 확인했다. production 새 Sample v5/window4096 저장·reload 및 mixed v3/v4/v5의 native2/3/4Part exact Layer/제출 실패·재시도/Mix/Credits/reload/pageerror0을 통과했다.

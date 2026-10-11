@@ -1,3 +1,7 @@
+### R6 기본 diffusion 검증과 화성 불확실 구간 — 2026-10-12
+
+상성부 가설의 기본50step 실제 생성에서7음절 최대 median.1반음·ASR exact를 관측했다. 첫 rest 낮은 음정4frames/양쪽 잔여 RMS와 phonetic end≠지속음 길이는 실패/미검증으로 보존한다. 원곡 opening 반주의 첫 두 음절은 triad margin.003/.007로 장·단 구분이 불명확하고 뒤 구간의 Gmajor 후보도 확정 악보가 아니다. 상성부 간격4/3/4/5/5/4/4는 입력 가설이며 원곡 harmony 추출로 표시하지 않는다. 기존 sourceScore/실제2–4Part/음악·권리/청취 gate와 독립 기능 검증을 유지한다. 상세 hash/자원/직전 자동배포 확인은 상태 문서 참조. 다음 검증은 특히 초기 화성·휴지/지속음과 원곡 음표 후보의 불일치 해결이며 불확실 입력을 catalog에 연결하지 않는다.
+
 ### R6 상성부 제어 기술 검증 후속 — 2026-10-12
 
 기존 실제 opening 가사/길이·source hash를 보존한 상성부 가설 MIDI 입력으로 native linear 진단 생성→고정 pYIN→Whisper→MMS를 순차 실행했다. 요청7음표 median 최대.25반음/가사 exact와 onset mean42.62ms를 관측했다. 원곡에서 확인한 화음/score가 아니며 phonetic end와 지속음 길이가 다르고 wrong transcript path score 비교에도 한계가 남는다. 기존 lower 후보의 실패/가설·휴지 ambiguity를 폐기하거나 임계값/seed/output shift로 승인하지 않는다. sourceScore/harmony/catalog/전체2–4Part·물리 청취 gate는 유지한다.
