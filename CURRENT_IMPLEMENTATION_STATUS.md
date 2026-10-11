@@ -1,3 +1,15 @@
+### R2 선택적 탐색 캐시 실패 보호 — 2026-10-12
+
+production의 격리 sessionStorage.getItem 실패에서 Collection 진입 pageerror 'QA session cache read blocked'를 재현했다. Detail Part/Collection 탭/My Projects 필터의 선택적 hint 읽기·쓰기를 보호하고 잘못된 탭/필터 값은 기존 기본값으로 처리한다. React의 현재 선택/원본 DB·참여·저장 상태는 유지한다. 영구 저장 실패를 숨기거나 새 정책/화면/디자인을 추가하지 않는다.
+
+build34modules 및 native read/write/invalid3조건에서 Collection→곡 상세→Back→Projects 필터/초기화, 참여/Track수/저장수 보존/pageerror0 통과. 기존 Collection의 탭별 scroll/복귀·저장 해제 독립성, 2/3/4 Part 생성·0Track/reload도 통과했다. 처음 QA는 기존 버튼 식별자가 folder인데 projects로 작성해 Timeout30000ms였으며 QA만 교정했다. 초기 npm preview 인자 전달/격리 호스트 연결 오류도 같은 Vite preview 인자/호스트로 교정했고 앱을 변경하지 않았다. main/Git Integration/production은 해당 묶음 push 후 확인한다. 보류 서버3파일 유지/제외.
+
+앞선5390ed18ebf7c0398d4c86208ec0fa0939b84155 main/origin 일치, Production7000476012 success. production HTTP200/index-BjQow-cq.js SHA25681E7A7781CF70D02D7C4E7BF7C3A29AAF293981DDC30217B9A8F9F158D3FA972 local exact. production 종료 원본 Review/Draft/hash·chunks 반환 및 시작 실패4조건 통과.
+
+R6 수동 annotation 교정: 공식 CSD1.1 kr001a WAV/CSV/MIDI를 HTTP206 제한 Range로 총6247488bytes만 읽고 CRC/SHA를 보존했다(전체1851131390bytes 미수신). WAV ff301c73beb65da32a623a5c9628567c001e862f4ff954f821182a61d685254a, CSV dbfb596abc5ceeddac0f054ad769a427329335aa4465f0ccb0869b120feee508. 원본 lyric108자=CSV108행; 첫8음절은 원본 파일에서 직접 읽었다. 첫 수동 입력의 7번째 문자 오타는 별도 결과로 보존/비교에서 제외했다. 정확한 annotation 입력의 MMS onset 절대차 평균0.057591/최대0.137437초. phonetic end는 note offset보다 최대약0.378초 이르므로 지속 음표 길이로 사용하지 않는다.
+
+실제3.9초 가창 pYIN1024/1536 비교에서 대부분 note 중앙값은 annotation 대비−0.2~+0.2반음이지만 첫 짧은 음절은−1.3/−1.2반음(4/5frames), 7번째는0/null 및2frames다. 수동 score target과 실제 발성/추정의 차이를 구분하며 관측을 채우거나 전체 도구 정확도로 일반화하지 않는다. 정렬/F0 guard exit0·중단false,12.104/8.617초·free 최소8.772/9.257GiB·owned peak0.864/0.235GiB. 데이터·출력은 연구 runtime/Git 밖, 비상업 데이터·model license 유지, 앱 등록/원곡 timing·화음 승인false.
+
 ### R1 마이크 종료 뒤 원본 Review/Draft 보존 — 2026-10-12
 
 production의 격리 native recorder에서 마이크 track 종료 후 inactive/chunks 보유 상태를 확인했다. 기존 Stop은 null을 반환하여 Review 진입 Timeout5000ms가 발생했다. 수집 원본이 있으면 기존 Stop으로 확정하고 inactive recorder에 stop을 다시 호출하지 않는다. Blob 확정 뒤 중복 encoded chunk 참조만 반환한다. 제품/시각/자동 제출 정책 변경 없음.

@@ -33,6 +33,17 @@ import { CURRENT_USER_ID, PEOPLE, PERSON_BY_ID, SAMPLE_SONGS, personFromName } f
 import { createRecordingInflowRenderer, createResonanceRenderer } from './resonanceWebGL.js'
 import { loadAiVoiceFields } from './aiVoiceLayer.js'
 
+// Navigation hints are optional; a blocked cache must not block the app.
+function readNavigationHint(key, fallback, allowed) {
+  try {
+    const value=sessionStorage.getItem(key)
+    return value && (!allowed || allowed.includes(value)) ? value : fallback
+  } catch { return fallback }
+}
+function writeNavigationHint(key, value) {
+  try { sessionStorage.setItem(key,value) } catch { /* React keeps this session's selection. */ }
+}
+
 const PART_CATALOG = [
   { id: 'soprano', name: 'Soprano', ko: '소프라노', color: '#3b82f6', range: 'C4–F5', participantId:'yoonseul', participant: '윤슬', status: 'accepted', duration: null },
   { id: 'alto', name: 'Alto', ko: '알토', color: '#f16f61', range: 'G3–C5', participantId:'doyoon', participant: '도윤', status: 'accepted', duration: null },
@@ -611,9 +622,9 @@ function Home({ openSong, layers, projectTracks, profile, mix, openCreateProject
 
 function Detail({ go, back, song, profile, join, layers, projectTracks, songSaved, toggleSongSave, openVocalProfile, createdProjects, onCreateProject, onOpenCreatedProject, initialProjectId, onSelectProject }) {
   const [selectedProjectId,setSelectedProjectId] = useState(initialProjectId || song.projects[0].id)
-  const [selectedPartId,setSelectedPartId] = useState(()=>sessionStorage.getItem(`ieum:detail:${song.id}:part`) || USER_PART_ID)
-  useEffect(()=>sessionStorage.setItem(`ieum:detail:${song.id}:part`,selectedPartId),[song.id,selectedPartId])
-  useEffect(() => { setSelectedProjectId(initialProjectId || song.projects[0].id); setSelectedPartId(sessionStorage.getItem(`ieum:detail:${song.id}:part`) || (initialProjectId ? '' : USER_PART_ID)) }, [song.id,initialProjectId])
+  const [selectedPartId,setSelectedPartId] = useState(()=>readNavigationHint(`ieum:detail:${song.id}:part`,USER_PART_ID))
+  useEffect(()=>writeNavigationHint(`ieum:detail:${song.id}:part`,selectedPartId),[song.id,selectedPartId])
+  useEffect(() => { setSelectedProjectId(initialProjectId || song.projects[0].id); setSelectedPartId(readNavigationHint(`ieum:detail:${song.id}:part`,initialProjectId ? '' : USER_PART_ID)) }, [song.id,initialProjectId])
   const allProjects = [...song.projects,...createdProjects.filter(project=>project.songId===song.id)]
   const selectedProject = allProjects.find(project=>project.id===selectedProjectId) || allProjects[0]
   const isLiveProject = selectedProject.id === PROJECT_ID
@@ -1255,9 +1266,9 @@ function ProfileSamplePlayer({ source, duration }) {
 }
 
 function CollectionArea({ collectionContext, go, openMainWorkspace, openSong, createdProjects = [], createdProjectTracks = {}, createdMixes = {}, openCreatedProject, toggleProjectById, projectLikes, vocalSaves, songSaves, toggleProjectLike, toggleVocalSave, toggleSongSave, openVocalProfile, layers, trackCount, mix, joined }) {
-  const [tab,setTab] = useState(()=>sessionStorage.getItem('ieum:collection-tab') || 'projects')
+  const [tab,setTab] = useState(()=>readNavigationHint('ieum:collection-tab','projects',['projects','vocals','songs']))
   useEffect(()=>{
-    sessionStorage.setItem('ieum:collection-tab',tab)
+    writeNavigationHint('ieum:collection-tab',tab)
     if(!collectionContext)return
     collectionContext.current.tab=tab
     const frame=requestAnimationFrame(()=>{
@@ -1314,8 +1325,8 @@ function ProfilePreferences({profile,save}) {
 
 function PersonalArea({ collectionContext, type, go, editVoice, updatePreferences, createdProjectTracks, createdMixes, toggleProjectById, openMainWorkspace, openSong, openCreatedProject, joined, createdProjects, projectLikes, vocalSaves, songSaves, toggleProjectLike, toggleVocalSave, toggleSongSave, openVocalProfile, profile, layers, trackCount, mix, readyForMix, resetDemo, delayedProjectIds = [] }) {
   const titles = {projects:'My projects',collection:'Collection',my:'My voice'}
-  const [projectFilter,setProjectFilter] = useState(()=>sessionStorage.getItem('ieum:project-filter') || 'all')
-  useEffect(()=>sessionStorage.setItem('ieum:project-filter',projectFilter),[projectFilter])
+  const [projectFilter,setProjectFilter] = useState(()=>readNavigationHint('ieum:project-filter','all',['all','recruiting','recording','mixing','complete']))
+  useEffect(()=>writeNavigationHint('ieum:project-filter',projectFilter),[projectFilter])
   const hasProject = joined || createdProjects.length > 0
   const lifecycle = mix ? 'complete' : readyForMix ? 'mixing' : 'recording'
   const projectVisible = projectFilter==='all' || projectFilter===lifecycle

@@ -1,3 +1,9 @@
+### R2 임시 탐색 캐시 / R6 실제 annotation 관측 — 2026-10-12
+
+R2: sessionStorage 실패가 실제 Collection/Detail/My 화면을 crash시키는 결함만 최소 수정한다. 선택적 cache 읽기/쓰기 실패는 기존 화면 기본값/React 선택으로 계속하며 영구 사용자 저장 오류 경로는 유지한다. 유효하지 않은 Collection 탭/Projects 필터는 기존 defaults. native3실패 분기·참여/Track/저장 보존 및 기존 Collection scroll/복귀, 2–4 Part 생성 회귀와 build 통과. 해당 기능 main push→Git Integration→production cache QA를 수행한다. 디자인/IA/정책 변경과 보류 서버3파일 제외.
+
+R6: CSD1.1 단일 공식 연구 예제만6247488bytes bounded Range 수신/CRC/hash 보존. 실제 수동8음절 MMS onset 평균 절대차57.591ms/최대137.437ms, phonetic ends는 note offsets와 최대약378ms 차이. pYIN의 짧은 첫 음절−1.3/−1.2반음 및 한 음절null/2frames도 그대로 기록한다. 합성 요청→정답 오인 방지를 좁게 검증한 것이며 male AI 원곡·지속 길이·화음·권한/청취 승인으로 확대하지 않는다. 수동 입력 오타 결과는 보존하고 정확한 원본 annotation으로 직접 입력한 별도 결과만 비교한다. 다음은 실제 분석을 사용할 범위와 불확실 구간의 구분이며 confidence/path score/전체 도구 성공만으로 Part/catalog gate를 통과시키지 않는다. R1–R7 단계 및 기존 완료 증거 유지.
+
 ### R1 종료 원본 / R6 수동 annotation 검증 — 2026-10-12
 
 R1 최소 결함 수정: 마이크 종료로 이미 inactive인 recorder도 수집 chunks가 있으면 기존 Stop→Review→Draft로 보존한다. 원본 없는 inactive는 null 유지, 중복 stop 없음. Blob 확정 뒤 chunk 참조만 반환하며 다른 Take/URL/DB는 삭제하지 않는다. production Timeout5000ms 재현 뒤 build/Node/native session·sample 및 새 원본 hash/Draft 재진입 QA 통과. 시작 실패 QA는 Guide schedule까지4조건으로 확장했다. 변경 파일만 main push→Git Integration→production 관련2검증을 수행한다. 물리 마이크/청취는 R7에 남긴다. 디자인/IA/서버 보류3파일 유지.
