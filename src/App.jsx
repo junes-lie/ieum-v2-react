@@ -27,7 +27,7 @@ import { loadProjectBacking, projectAudioReference, assertProjectTrackAudio } fr
 import { readLocalUserState, writeLocalUserState } from './projectService.js'
 import { evaluatePartFit } from './matching.js'
 import { buildVoiceLayer, projectRecordSignature } from './voiceAnalysis.js'
-import { clearProjectTracks, deleteTrack, deleteRecordingDraft, loadProjectTracks, loadTrack, saveTrack, saveTracks } from './trackStore.js'
+import { clearProjectTracks, deleteTrack, deleteRecordingDraft, loadProjectTracks, loadTrack, saveTrack, saveTracks, saveSubmittedTrack } from './trackStore.js'
 import { createProjectModel, resolveRecordPartSlots, SUPPORTED_PART_COUNTS, submittedProjectTracks, allProjectTracksSubmitted } from './projectModel.js'
 import { CURRENT_USER_ID, PEOPLE, PERSON_BY_ID, SAMPLE_SONGS, personFromName } from './catalog.js'
 import { createRecordingInflowRenderer, createResonanceRenderer } from './resonanceWebGL.js'
@@ -1444,7 +1444,7 @@ export default function App() {
     assertProjectTrackAudio(targetProject,[draft])
     const existing=await loadTrack(`${targetProject.id}:${part.id}`)
     if(existing?.origin==='live-microphone-recording'){setScreen('workspace');setHistory([]);return existing}
-    const track = {
+    const candidate = {
       id:`${targetProject.id}:${part.id}`,
       projectId:targetProject.id,
       projectSeed:targetProject.seed,
@@ -1463,12 +1463,13 @@ export default function App() {
       origin:'live-microphone-recording',
       createdAt:new Date().toISOString()
     }
-    await saveTrack(track)
+    const track = await saveSubmittedTrack(candidate)
+    const trackUrl = track === candidate ? draft.url : URL.createObjectURL(track.blob)
     touchProjectActivity(targetProject.id)
     if (activeCreatedProject) {
-      setCreatedProjectTracks(current=>({...current,[targetProject.id]:{...(current[targetProject.id]||{}),[part.id]:{...track,url:draft.url}}}))
+      setCreatedProjectTracks(current=>({...current,[targetProject.id]:{...(current[targetProject.id]||{}),[part.id]:{...track,url:trackUrl}}}))
       setCreatedProjects(current=>current.map(project=>project.id===targetProject.id?{...project,progress:Object.keys({...activeTracks,[part.id]:track}).length,status:'RECORDING',parts:project.parts.map(item=>item.id===part.id?{...item,status:'submitted'}:item)}:project))
-    } else setProjectTracks(current=>({...current,[part.id]:{...track,url:draft.url}}))
+    } else setProjectTracks(current=>({...current,[part.id]:{...track,url:trackUrl}}))
     setScreen('workspace'); setHistory([]); scrollToTop()
     return track
   }

@@ -1,3 +1,15 @@
+## 2026-10-11 단계3 — 동시 직접 제출의 원자적 원본 보존
+
+현재 실행은 단계3이다. 단계0 기준 보존 완료, 단계1 AI/개인 Identity는 기술 검증 범위만 통과, 단계2 기존3화면 통합은 있고 디자인은 별도 worktree에서 병렬 진행한다. 단계3 로컬 녹음·일시정지/재개·Draft·Review 직접 제출·2–4 Track Auto Mix/실패 원본 보존은 구현/자동 검증됐으나 실제 AI 가사/화음/진입·Identity 연결·실기기 인수는 미완료다. 단계4의 기존 탐색/저장/프로필 편집·복귀 부분 구현은 보존하며 잔여 통합/전수 검증, 단계5의 실제 인증·공유 저장·원자적 초대/배정·결과 공유·7일 Push, 단계6의 종합/실기기 인수가 남았다. 단계3 전체 gate를 축소하거나 다음 단계 신규 구현으로 넘어가지 않는다.
+
+기존 제출 경로는 loadTrack 확인과 saveTrack 쓰기가 별도 transaction이므로 두 탭의 동시 최초 제출이 먼저 저장한 원본을 덮을 수 있었다. trackStore.js의 saveSubmittedTrack는 같은 readwrite transaction에서 조회/최초 저장을 수행한다. 이미 live-microphone-recording 원본이 있으면 그 결과를 반환하며 Part/프로젝트/원본 Blob을 확인한다. 일반 saveTrack와 Profile 편집/범용 저장은 변경하지 않는다. App.jsx는 제출 저장 호출과 반환된 원본의 재생 URL만 변경한다. 제출 상태와 재생 음원이 같은 committed Track을 참조하며 상대 탭의 성공 원본을 새 Draft URL로 잘못 표시하지 않는다.
+
+새 qa:submission 검증은 동시/반복 제출 원본 보존, Part 독립, 실제 첫 제출의 기존 demo 교체, 쓰기 실패 rollback/재시도/다른 원본 보존, 잘못된 ID/빈 원본 거부를 통과했다. IEUM_QA_SOURCE_URL=http://127.0.0.1:4201/에서 두 실제 브라우저 탭/각각의 native IndexedDB 연결이 같은 먼저 저장된 원본을 반환했고 반복 제출·기존 Draft 보존을 확인했다. 이 URL은 소스 모듈을 읽을 수 있는 dev 전용 native QA 옵션이며 production에 /src 모듈이 있다고 간주하지 않는다. 같은 기기의 로컬 원자성 검증이며 단계5의 다중 사용자 서버 완료가 아니다.
+
+build34modules, Track store/프로필 transaction QA, 정상 실제2–4 Track/19초 등록 반주 Mix·재로드, recorder session/마이크 오류/실패한 retake 원본 유지/프로젝트 화면 연속성 QA를 통과했다. Draft QA 첫 실행은 작업실 진입 매개변수가 없는 URL에서 record-part selector timeout으로 실패했다. 기존 작업실 진입을 요구하는 동일 QA를 ?design=figma URL에서 재실행해 소유자 없음/본인/다른 사용자 원본 보존·폐기·재진입 모두 통과했다. synthetic microphone/격리 DB 결과를 실기기 녹음/청취/시각 인수로 표시하지 않는다.
+
+디자인 worktree와 assets/styles/Record renderer는 변경하지 않았다. src/App.jsx의 기능 hunk는 제출부에만 제한했으며 별도 디자인 branch 통합 시 이를 보존해야 한다. CPU/GPU 모델과 실제 음원 원본·실패 결과는 유지한다. 이 기술/기능 보완 묶음은 검증 후 main Git Integration으로 배포하며 단계3 전체 완료와 구분한다.
+
 ## 2026-10-11 단계3 — 손상된 Track 정렬 값의 실패·원본 보존
 
 현재 단계3이다. 디자인은 별도 codex/ieum-design worktree에서 진행하며 이번 기능 작업은 main의 src/audio.js와 유지 QA만 수정했다. 새 IA/화면/스타일·Identity 형상·AI 음원은 변경하지 않았다.

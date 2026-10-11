@@ -27,6 +27,32 @@ export async function saveTrack(track) {
   return track
 }
 
+// A submitted original is immutable, including two tabs submitting together.
+export async function saveSubmittedTrack(track) {
+  if (!track?.projectId || !track.partId || track.id !== `${track.projectId}:${track.partId}` ||
+      track.origin !== 'live-microphone-recording' || !track.blob?.size) {
+    throw new Error('제출할 원본 녹음과 프로젝트·Part가 필요해요.')
+  }
+  const db = await openDatabase()
+  try { return await new Promise((resolve,reject)=>{
+    const tx=db.transaction(STORE,'readwrite'), store=tx.objectStore(STORE)
+    let saved, failure
+    tx.oncomplete=()=>resolve(saved)
+    tx.onerror=()=>reject(failure || tx.error)
+    tx.onabort=()=>reject(failure || tx.error || new Error('제출 저장이 취소됐어요. 원본을 유지합니다.'))
+    const request=store.get(track.id)
+    request.onsuccess=()=>{
+      try {
+        const existing=request.result
+        if(existing?.origin==='live-microphone-recording') {
+          if(existing.projectId!==track.projectId || existing.partId!==track.partId || !existing.blob?.size) throw new Error('기존 제출 원본을 확인하지 못했어요. 원본을 유지합니다.')
+          saved=existing
+        } else {store.put(track);saved=track}
+      } catch(error){failure=error;tx.abort()}
+    }
+  }) } finally {db.close()}
+}
+
 export async function loadProjectTracks(projectId) {
   const db = await openDatabase()
   try { return await new Promise((resolve, reject) => {
