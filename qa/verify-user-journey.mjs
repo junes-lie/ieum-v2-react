@@ -5,7 +5,7 @@ import {indexedDB,IDBObjectStore} from 'fake-indexeddb'
 import {transformWithOxc} from 'vite'
 import React,{act} from 'react'
 import {createRoot} from 'react-dom/client'
-import {saveTrack,loadTrack,clearProjectTracks} from '../src/trackStore.js'
+import {saveTrack,loadTrack,clearProjectTracks,deleteRecordingDraft} from '../src/trackStore.js'
 import {buildVoiceLayer} from '../src/voiceAnalysis.js'
 
 // Isolated Node DOM and in-memory IndexedDB only. Never opens a browser or the user's DB.
@@ -36,13 +36,15 @@ const state=()=>window.__IEUM_V2__.state
 const check=(name)=>console.log('PASS '+name)
 const errors=[]
 globalThis.__qaRecordCalls=[]
+globalThis.__qaDraftChanges=[]
 const originalError=console.error
 console.error=(...args)=>{errors.push(args.map(String).join(' '));originalError(...args)}
 try{
  const source=(await readFile(new URL('../src/App.jsx',import.meta.url),'utf8')).replace(/import \{ createRecordingInflowRenderer, createResonanceRenderer \} from ['"]\.\/resonanceWebGL\.js['"]/,'const createRecordingInflowRenderer=()=>()=>{}; const createResonanceRenderer=()=>({dispose(){}})').replace('  createPreviewMix,','  createPreviewMix as realCreatePreviewMix,')+'\nconst createPreviewMix=async()=>({blob:new Blob([\"QA preview\"]),url:URL.createObjectURL(new Blob([\"QA preview\"])),duration:7});'
  const icons=await readFile(new URL('../src/Icons.jsx',import.meta.url),'utf8')
  await writeFile(iconsTemp,(await transformWithOxc(icons,'Icons.jsx',{jsx:{runtime:'classic'}})).code)
- const code=(await transformWithOxc(source,'App.jsx',{jsx:{runtime:'classic'}})).code.replace('./Icons.jsx','./.qa-user-journey-icons.mjs').replace("import { createRecordingInflowRenderer, createResonanceRenderer } from './resonanceWebGL.js'",'const createRecordingInflowRenderer=()=>()=>{}; const createResonanceRenderer=()=>({dispose(){}})')
+ const observedSource=source.replaceAll('onDraftChange?.(false)', 'globalThis.__qaDraftChanges.push(false); onDraftChange?.(false)')
+ const code=(await transformWithOxc(observedSource,'App.jsx',{jsx:{runtime:'classic'}})).code.replace('./Icons.jsx','./.qa-user-journey-icons.mjs').replace("import { createRecordingInflowRenderer, createResonanceRenderer } from './resonanceWebGL.js'",'const createRecordingInflowRenderer=()=>()=>{}; const createResonanceRenderer=()=>({dispose(){}})')
  await writeFile(appTemp,code.replace(/createResonanceRenderer\s*=\s*\(\)\s*=>\s*\(\{\s*dispose\(\)\s*\{\s*\}\s*\}\)/g, 'createResonanceRenderer=options=>{globalThis.__qaRecordCalls.push(options);return {dispose(){}}}')+'\nexport {ResonanceRecord};')
  const {default:App,ResonanceRecord}=await import(appTemp.href)
  localStorage.setItem('ieum-v2:user-state:v7',JSON.stringify({joined:true,joinedPart:'tenor',invited:true,invitedVocalId:'luna',projectLikes:[{projectId}],songSaves:[{songId:'a-thousand-years'}],vocalSaves:[{vocalId:'luna'}]}))
@@ -80,9 +82,21 @@ try{
   assert.equal(document.querySelector('[data-action="record-submit"]').disabled,false)
   check('Failed submission keeps Review, original draft and unchanged submitted count; retry remains available')
  } finally { IDBObjectStore.prototype.put=originalPut }
- await click('[data-action="record-submit"]');assert.equal(state().screen,'workspace');assert.equal(Object.keys(state().projectTracks).length,3)
- await settle();assert.equal(await loadTrack(draftId),null);assert.equal((await loadTrack(projectId+':tenor')).layer.projectSeed,seed)
- check('Review submission persists owned Track, increases 2/4 to 3/4, deletes only submitted draft and returns to Workspace')
+ const originalDelete=IDBObjectStore.prototype.delete
+ try {
+  IDBObjectStore.prototype.delete=function(key,...args){if(key===draftId)throw new Error('QA cleanup failure');return originalDelete.call(this,key,...args)}
+  await click('[data-action="record-submit"]');await settle()
+  assert.equal(state().screen,'workspace');assert.equal(Object.keys(state().projectTracks).length,3)
+  assert.equal(await (await loadTrack(draftId)).blob.text(),await blob.text())
+  assert.equal(await (await loadTrack(projectId+':tenor')).blob.text(),await blob.text())
+  assert.equal((await loadTrack(projectId+':tenor')).layer.projectSeed,seed)
+  assert.equal(document.querySelector('[data-action="record-submit"]'),null)
+  assert.deepEqual(globalThis.__qaDraftChanges,[],'Failed cleanup must not clear the persisted draft indicator')
+  assert.equal(errors.length,1);assert.ok(errors[0].includes('Submitted Track preserved; draft cleanup pending'));errors.length=0
+ } finally {IDBObjectStore.prototype.delete=originalDelete}
+ await deleteRecordingDraft({userId:'jisun',projectId,partId:'tenor'})
+ assert.equal(await loadTrack(draftId),null);assert.equal(Object.keys(state().projectTracks).length,3)
+ check('Successful submission survives cleanup failure; original Track/draft preserved, no duplicate submission, cleanup retry leaves submitted count unchanged')
  await click('[data-nav="user"]');assert.equal(state().screen,'my');assert.ok(document.body.textContent.includes('QA personal sample'))
  await click('[data-nav="bookmark"]');assert.equal(state().screen,'collection');assert.ok(document.querySelector('[data-action="open-project-like"]'))
  await click('[data-action="open-project-like"]');assert.equal(state().screen,'workspace')

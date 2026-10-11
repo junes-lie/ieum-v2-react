@@ -1,3 +1,11 @@
+## 2026-10-12 재계획 / R1 제출 후 Draft 정리 실패 분리
+
+기존 구현계획 파일을 직접 수정했다. 앱 기능 마감/배포와 AI 음악 연구의 의존성을 분리하며 기존 단계·완료 증거·AI 요구를 보존한다. 첫 기능 수정은 Recorder의 제출 성공 뒤 Draft 삭제 처리다. IndexedDB 정리가 실제 완료된 뒤에만 Draft 표시를 해제한다. 정리 실패는 확정 Track의 실패로 바꾸지 않고 원본·제출수·Workspace 이동을 유지한다.
+
+검증: React/격리 IndexedDB에 삭제 실패를 주입해 확정 Track과 Draft Blob 보존, 2→3 제출수, 중복 제출 화면 없음, Draft 표시 해제 콜백 미호출, 정리 재시도 후 제출수 불변을 확인했다. 기존 2–4 Part 제출/재로드·탐색/Profile/Collection 복귀 통합 QA와 atomic Draft cleanup QA, production build34modules 통과. 하드웨어 마이크/음질/시각 인수 결과가 아니다. production 배포 상태는 commit 후 확인한다.
+
+실제 협업 계정/환경·최신 정책 확인, AI 정확한 가사/화음/진입, 보류된 Identity 디자인·실기기 검증은 남았다. Notion 전용 도구는 현재 세션에 노출되지 않아 읽었다고 주장하지 않는다. 이번 수정은 저장 결과 분리이며 새 UX/제품 정책/디자인 변경은 없다. 기존 미커밋 서버 HTTP 보완3파일은 보존/commit 제외.
+
 ## 2026-10-12 R6 우선 재개 — 실제 GPU guidance 비교와 RAM 감시
 
 사용자의 RAM 확보/AI 우선 지시에 따라 서버 후속 수정은 보류하고 실제 음악 시험을 순차 실행했다. 시작 시 RAM9.72GiB 여유/GTX1660SUPER511MiB/Python 없음 확인. 기존 CPU 환경·원곡·실패 후보·디자인 worktree를 보존했다. generate-ai-provided-song.py에 비Turbo native guidance-scale 진단 인자를 추가했다. 미지정 Base/SFT7.0·Turbo1.0 기존 유효 기본값은 유지하며, 유한1–20만 허용한다. 실제 사용 값을 report에 기록한다. 앱/음원/QA 기준 변경은 없다.

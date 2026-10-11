@@ -1062,7 +1062,14 @@ function Recorder({ go, submit, onRecordingStart, partId, projectTracks, layers,
   const send = async () => {
     if (submittingRef.current) return
     submittingRef.current=true;setSubmitting(true); setError('')
-    try { await submit({...draft,noiseFloor},currentPart); onDraftChange?.(false); deleteRecordingDraft({userId:CURRENT_USER_ID,projectId:project.id,partId:currentPart.id}).catch(error=>console.error('Submitted Track preserved; draft cleanup pending',error)) }
+    try {
+      await submit({...draft,noiseFloor},currentPart)
+      // Submission is committed independently of optional local draft cleanup.
+      try {
+        await deleteRecordingDraft({userId:CURRENT_USER_ID,projectId:project.id,partId:currentPart.id})
+        onDraftChange?.(false)
+      } catch (error) { console.error('Submitted Track preserved; draft cleanup pending',error) }
+    }
     catch (reason) { setError(reason?.message || '제출하지 못했어요. 원본 녹음은 이 기기에 보관했어요. 다시 시도해 주세요.'); submittingRef.current=false;setSubmitting(false) }
   }
   useEffect(() => {
