@@ -78,6 +78,15 @@ export function createRemoteProjectService({ baseUrl, getAccessToken, fetchImpl 
     createProject: (project, key) => request('projects', { method: 'POST', data: project, idempotencyKey: requireKey(key) }),
     joinPart: (projectId, partId, key) => request(`projects/${id(projectId)}/parts/${id(partId)}/join`, { method: 'POST', data: {}, idempotencyKey: requireKey(key) }),
     loadProjectTracks: projectId => request(`projects/${id(projectId)}/tracks`),
+    prepareTrackUpload: (projectId, partId, file, key) => {
+      if (!file || !Number.isSafeInteger(file.size) || file.size <= 0 || typeof file.contentType !== 'string' || !file.contentType.startsWith('audio/') || !/^[a-f0-9]{64}$/i.test(file.sha256 || '')) throw new ServiceError('업로드할 원본 파일 정보를 확인해 주세요.', { code: 'INVALID_UPLOAD_FILE' })
+      return request(`projects/${id(projectId)}/parts/${id(partId)}/upload-intents`, { method: 'POST', data: { size: file.size, contentType: file.contentType, sha256: file.sha256.toLowerCase() }, idempotencyKey: requireKey(key) })
+    },
+    submitUploadedTrack: (projectId, partId, take, key) => {
+      if (!take || typeof take.uploadIntentId !== 'string' || !take.uploadIntentId.trim()) throw new ServiceError('원본 업로드 확인이 필요해요.', { code: 'UPLOAD_INTENT_REQUIRED' })
+      if (!Number.isFinite(take.duration) || take.duration <= 0 || !Number.isFinite(take.syncOffsetMs ?? 0) || (take.syncOffsetMs ?? 0) < 0 || (take.syncOffsetMs ?? 0) >= take.duration * 1000) throw new ServiceError('녹음 길이와 정렬 정보를 확인해 주세요.', { code: 'INVALID_TAKE_METADATA' })
+      return request(`projects/${id(projectId)}/parts/${id(partId)}/tracks`, { method: 'POST', data: { uploadIntentId: take.uploadIntentId, duration: take.duration, syncOffsetMs: take.syncOffsetMs ?? 0, features: take.features, projectSeed: take.projectSeed }, idempotencyKey: requireKey(key) })
+    },
     submitTrack: (projectId, partId, take, key) => {
       if (!(take.blob instanceof Blob)) throw new ServiceError('원본 녹음이 필요해요.', { code: 'TAKE_REQUIRED' })
       const data = new FormData()

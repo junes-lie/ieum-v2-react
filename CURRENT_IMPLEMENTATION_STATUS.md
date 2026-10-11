@@ -1,3 +1,9 @@
+## 2026-10-11 R3 업로드/제출 transport 선행 계약
+
+기존 projectService에 prepareTrackUpload와 submitUploadedTrack을 추가했다. 파일 크기·audio MIME·SHA256 검증 후 업로드 intent 준비를 요청하고, 확정 제출에서는 intent ID/길이/offset/분석/seed JSON만 보낸다. 원본 Blob은 Function 제출 payload에서 제외한다. 기존 multipart 제출·로컬 Draft·App 동작은 유지한다. 실제 Storage 업로드, intent 소유자/hash 서버 검증, DB 제출 transaction, UI 연결은 아직 없다. 준비 응답을 Track/Layer/Mix 성공으로 처리하는 코드는 추가하지 않았다.
+
+QA는9MB 원본 메타데이터 준비·별도 idempotency 키·JSON 제출/Blob 미전송·잘못된 파일/길이/offset 사전 거부·무인증 거부·409 conflict 전파를 통과했다. 모두 stub HTTP이고 실제 서버 성공 증거가 아니다. build34modules와 npm run qa9 suites exit0. 기존 Profile/임시본/2–4 Mix 회귀 유지. 제공자/계정/로그인 방식이 필요한 실제 R3 연결은 계속 미완료다. Notion 도구 metadata는 발견했으나 실행 전 세션에서 제거되어 원문 호출을 하지 못했고, 이번 작업은 기존 SERVICE_CONNECTION의 기술 계약만 보완했다. 디자인·음원·대형 AI 작업은 변경하지 않았다.
+
 ## 2026-10-11 R6 실제 SFT GPU 생성·품질 검사
 
 사용자의 대형 AI 실행 지시 후 실제 RAM7.98GiB 여유/CPU6%/GTX1660SUPER VRAM525MiB 사용/Python 없음 확인. 기존 CPU 환경과 원곡 보존, GPU worker 하나씩 실행했다. SFT FP32+host cache 시험은 실제 worker RAM9.00GiB/시스템 여유0.47GiB에서 명령줄·PID10196 확인 후 그 worker만 중단했다. monitor exit4294967295, 정상 생성 성공 아님. 결과/모델/원본은 삭제하지 않았다.

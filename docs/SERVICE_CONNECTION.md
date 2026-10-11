@@ -106,3 +106,7 @@ AI Voice Layer는 FFT 수식과 다르다. 모델·가중치·추론 런타임·
 Vercel project `prj_eowHNSo22vKNulK4a2LFYzQnAYj1`의 Git 연결은 github/ieum-v2-react, productionBranch main이다. 환경변수 목록 API의 결과는 0개였다. 값은 출력하거나 변경하지 않았다. 저장소 api에는 구현 파일이 없고 .env.example은 주석만 있다. `.vercel/project.json`은 현재 저장소에 없다. 이 사실만으로 외부 계정 자체가 없다고 판단하지 않는다. 인증/DB/파일 저장/AI 서버 endpoint의 실제 제공 환경은 아직 확인되지 않았다. 계정 생성·서비스 설치·원격 설정 변경은 수행하지 않았다.
 
 P0 실제 모델 기술 검증과 기존 Record의 검증된 출력 표시 연결은 현재 상태 문서에 기록되어 있다. 이 문서의 과거 ‘모델 미검증’ 표현은 그 기술 검증 이전 상태이며, 실제 production 추론 서비스 연결은 계속 미완료다.
+
+## 2026-10-11 직접 업로드 transport 준비
+
+`prepareTrackUpload(projectId,partId,{size,contentType,sha256},key)`는 파일 metadata로 upload-intents를 요청한다. `submitUploadedTrack(projectId,partId,{uploadIntentId,duration,syncOffsetMs,features,projectSeed},key)`는 원본 Blob 없이 JSON 확정 제출을 요청한다. 서로 다른 idempotency 키를 사용하며 업로드 준비 성공은 제출 성공이 아니다. 실제 signed upload 실행/서버 intent 검증/권한/DB transaction/마지막 Mix/UI 연결은 미구현이다. 기존 multipart 경로는 별도 transport 호환으로 보존하며 Vercel 경로에 연결하지 않았다. Stub 계약 QA 통과만으로 capabilities를 true로 바꾸지 않는다.
