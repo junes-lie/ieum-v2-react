@@ -1,3 +1,13 @@
+### R6 실제 파형의 앱 추출기 교차 관측 — 2026-10-12
+
+직전 aeaaa9cb8ba74e1736ec17fbd18bb86c5795c887 Git Integration7002801786 success/production HTTP200 및 index-DpeDJVz-.js SHA84CBF8692F280E5D18B581D03EEE46FDBE09F7D4BE246AEA405F67E3967E0A44 일치를 확인했다. 현재 production /api/capabilities는 preparation/모든 공유 capability false, 진단용 비밀이 아닌 invalid token의 /api/me/session은 HTTP503 SERVICE_NOT_CONFIGURED였다. 인증·협업 연결 성공으로 처리하지 않는다.
+
+MLP의 기존 파생48k PCM16 두 WAV를 변경 없이 mono float32로 내보내 기존 src/pitch.js normalized-difference-v1을 직접 적용했다. frame4096/hop1024/80ms interior, threshold 변경 없이 모든 frame/reason을 보존했다. PCM SHA base46dcacccd17ba3afe9d6797f538f1680ad9258069581ac325cf22fc192f5751c, upper487b5717706649e73302a03cad0f91057866fd2f1aafb1c0da88106668d94a9c. 기존 native/derived 원본 hash와 score 입력 목적은 유지했다. 결과 mlp-app-pitch-cross-observation.json은 기존 runtime에 보존한다.
+
+base interior7 median54.812/58.982/62.060/56.941/57.045/54.750/54.997, 검출14/7/24/17/15/11/17frames. pYIN .75 조건에서 누락했던 '가'가 이 추출기에서는11frames 검출됐다. 따라서 pYIN confident interior0을 실제 파형의 발성/음정 자체가 없다는 판정으로 확대하지 않는다. 두 분석기의 주기 점수와 확률은 같은 지표가 아니다. upper interior59.173/62.092/65.530/61.944/61.987/59.477/59.579로 '히'−.470/마지막+.579반음 차이가 남는다. 시작 rest interior도 base3frames MIDI40.759/upper9frames MIDI57.247 검출됐고 마지막 rest interior는 양쪽0이었다. 초기 잔여 파형/추출기 반응과 pYIN rest0의 차이를 보존하며 silence/음질 승인으로 바꾸지 않는다.
+
+이는 모델 추가 실행 없는 독립 진단이며 앱 코드/음원/분석 threshold를 변경하지 않았다. 실제 sourceScore·음향 지속음/화성·전체2–4Part·권리/청취 gate는 유지한다. 기존 생성 결과를 등록하거나 무작위 seed/threshold로 통과시키지 않는다.
+
 ### R6 다른 한국어 score 구조의 실제 검증 — 2026-10-12
 
 c734679725be43150a6df9309332e7cf4d110c21 Git Integration7002616427 success/production HTTP200/index-DpeDJVz-.js remote/local SHA84CBF8692F280E5D18B581D03EEE46FDBE09F7D4BE246AEA405F67E3967E0A44 exact, native 늦은 Sample URL·buffer 해제/기존 Profile reload와 정상 Recorder bytes exact/pageerror0을 확인했다. receipt는 기존 runtime에 보존했다. 현재 서버 보류3파일은 유지한다.

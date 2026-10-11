@@ -1,3 +1,7 @@
+### R6 음정 누락 해석의 교차 검증 — 2026-10-12
+
+같은 MLP 실제 파형을 기존 앱 normalized-difference-v1/48k4096창으로 비교했다. base '가'는11 interiorframes/median54.750으로 관측되어 pYIN 확률 조건의 누락을 실제 발성 부재로 단정하지 않는다. upper '히'/마지막 약−.47/+.58반음 및 첫 rest 검출 차이는 남는다. 원본/파생/PCM hash·모든 frame/reason과 고정 조건은 상태 문서/runtime에 보존한다. 분석기를 통과시키기 위한 임계값·모델·출력 변경은 없다. 다음 R6은 확정 score/실제 화성·지속음과 권리/청취·전체 Part 검증이며 기존 순서/완료 gate는 유지한다. 실제 production 서비스의 preparation/503 SERVICE_NOT_CONFIGURED도 확인되어 R3/R4 연결 완료로 처리하지 않는다.
+
 ### R6 대체 한국어 score 경로의 실제 관측 — 2026-10-12
 
 기존 R6 안에서 공식 MLP Singer의 다른 native 한국어/MIDI 구조를 검증했다. 코드/94MB checkpoint·공식 호환55.8MB HiFi-GAN을 고정 hash/원문으로 확인하고 제한 로더·현재 GPU 환경에서 두 기존 opening 가설의 실제 파형을 생성했다. 새 앱/프로토타입/추론 서비스/환경 설치가 아니다. 두 Small 가사 exact와 mel fresh-process 재현은 확인했지만 base '가'의 fixed interior 음정 누락, upper 마지막+.6반음과 음절 끝/지속음 차이를 보존했다. threshold/seed/출력 편집으로 통과시키지 않는다. 코드 MIT를 CSD 학습 자료·voice/production 권리 승인으로 확대하지 않는다. SoulX의 Korean SVS 지원은 현재 공식 원문에서 확인하지 못해 설치하지 않았다.
