@@ -1,3 +1,7 @@
+### R5 개인 입력 선행 — 실제 음역 source revision — 2026-10-12
+
+기존 Setup/음역 재측정 저장에 measurement data digest·analysis version·source revision을 추가하고 Sample의 오디오 원본 hash와 구분한다. 최초 저장/실패 재시도·Profile 재로드·Sample 교체의 독립성 QA를 통과했다. legacy 입력의 출처를 소급 생성하지 않는다. Source revision 보존은 개인 형상 생성/자동 갱신 정책과 별개이며 보류된 디자인·기존 G1–G5/전체 단계 완료 조건을 유지한다. 관련 build/QA→명시 stage→main 자동배포→Production Profile QA 순서로 마감한다.
+
 ### R1/R2 정지 실패 시 현재 녹음 보존 — 2026-10-12
 
 대표 Sample/Project의 브라우저 stop 거부를 기존 오류 영역에서 처리하고 같은 정지 버튼으로 재시도한다. 실패한 정지로 activeElapsed/segment를 종료하지 않으며 타이머와 현재 녹음을 유지한다. 실제 오류 주입의 unhandled 재현→재시도 Review/기존 Profile 보존, 정상 종료/pause/resume/입력 종료 길이 회귀→build→main 자동배포→Production 순서로 검증한다. 새로운 화면/추천 정책/디자인은 추가하지 않으며 실기기 마이크·음질·전체 단계 완료 조건은 유지한다.

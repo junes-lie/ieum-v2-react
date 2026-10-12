@@ -1,8 +1,27 @@
 import assert from 'node:assert/strict'
 import {indexedDB,IDBObjectStore} from 'fake-indexeddb'
 import {saveTracks,loadTrack} from '../src/trackStore.js'
-import {prepareVoiceSampleRecord} from '../src/profileSource.js'
+import {prepareVoiceRangeRecord,prepareVoiceSampleRecord} from '../src/profileSource.js'
+import {canonicalIdentityInput} from '../src/voiceIdentityContract.js'
 globalThis.indexedDB=indexedDB
+const measured={id:'provenance:range',projectId:'provenance',kind:'voice-range',rangeData:{analysisVersion:'normalized-difference-v1',lowMidi:48,highMidi:67,sampleCount:10,confidence:.8}}
+const pendingRange=prepareVoiceRangeRecord(measured)
+measured.rangeData.lowMidi=36
+const preparedRange=await pendingRange
+assert.equal(preparedRange.rangeData.lowMidi,48,'Measurement snapshot must precede hash awaits')
+const rangeDigest=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(canonicalIdentityInput(preparedRange.rangeData)))
+assert.equal(preparedRange.sourceProvenance.measurementSha256,[...new Uint8Array(rangeDigest)].map(value=>value.toString(16).padStart(2,'0')).join(''))
+assert.equal(preparedRange.sourceProvenance.analysisVersion,'normalized-difference-v1')
+assert.equal('audioSha256' in preparedRange.sourceProvenance,false,'Range measurement is not an audio recording')
+await saveTracks([preparedRange])
+assert.deepEqual((await loadTrack(preparedRange.id)).sourceProvenance,preparedRange.sourceProvenance)
+const repeated=await prepareVoiceRangeRecord({...measured,rangeData:preparedRange.rangeData})
+assert.equal(repeated.sourceProvenance.measurementSha256,preparedRange.sourceProvenance.measurementSha256)
+assert.notEqual(repeated.sourceProvenance.revision,preparedRange.sourceProvenance.revision)
+await assert.rejects(prepareVoiceRangeRecord({...measured,kind:'project-track'}))
+await assert.rejects(prepareVoiceRangeRecord({...measured,rangeData:{lowMidi:NaN,highMidi:67}}))
+const noVersion=await prepareVoiceRangeRecord({...measured,rangeData:{lowMidi:48,highMidi:67}})
+assert.equal(noVersion.sourceProvenance.analysisVersion,null,'Unavailable analysis version must not be invented')
 const candidate={id:'provenance:sample',projectId:'provenance',kind:'voice-sample',blob:new Blob(['actual immutable Sample bytes']),features:{version:'ieum-basic-voice-v5',brightness:.4}}
 const pending=prepareVoiceSampleRecord(candidate)
 candidate.features.brightness=.9

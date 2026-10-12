@@ -1,3 +1,11 @@
+### R5 개인 입력 선행 — 음역 측정 출처 보존 — 2026-10-12
+
+기존 대표 Sample의 원본 SHA/revision과 구분해 음역 측정 데이터의 canonical measurementSha256·분석 version·개별 source revision을 기존 range record에 저장한다. 최초 Profile 저장과 음역만 재측정하는 동일 경로에 연결하고 메모리 Profile/재로드에 rangeProvenance를 복원한다. 저장 성공 전 새 revision을 게시하지 않으며 Sample 교체는 range revision을 변경하지 않는다. 음역을 오디오 파일로 가장하지 않아 audioSha256은 사용하지 않고 기존 legacy record에는 null을 유지한다. 개인 형상 갱신/사진/버전/fallback 정책이나 그래픽 생성 완료를 확정하지 않는다.
+
+실제 Node immutable snapshot/hash/동일 데이터 digest/독립 revision/저장 재읽기/누락 version null/용도·잘못된 값 거부, 기존 Profile transaction rollback과 Identity 계약 통과. 실제 React의 range 저장 실패→이전 Profile/legacy provenance 유지→재시도, Sample 저장 실패/교체·재로드에도 같은 range provenance 유지, 최초 Setup/자동 참여 없음·선호값 보존 검증 통과. synthetic microphone 범위이며 실기기/음질/전체 Identity G1–G5는 미완료. build38modules/504.69KB, 기존500KB 경고 유지. 앱/관련 QA·현재 계획만 main Git Integration→Production 검증하며 사용자 서버3파일/디자인/모델 원본 보존.
+
+직전aa30184 main 일치·Vercel success 및 Production index-DaRN9b5z.js SHA3195CA1703C8368DF08B11ABC5908D9CCE0B08EB56D6FF8B788FF8D7EEDE4561 exact, 배포된 Sample/Project stop retry native QA 통과를 확인했다. 다음은 미정 정책/보류 형상을 임의 승인하지 않는 독립 기능·입력 연결 보완이다.
+
 ### R1/R2 브라우저 녹음 정지 거부의 재시도 — 2026-10-12
 
 실제 React/격리 마이크에서 MediaRecorder.stop의 첫 InvalidStateError를 주입했을 때 대표 Sample 종료의 unhandled `QA stop refused`를 재현했다. Sample과 Project 종료에 오류 처리를 추가하고, 실패하면 현재 Take/기존 Profile을 유지하며 경과시간 갱신을 복원한다. 공통 stopRecording은 브라우저 정지 성공 전 activeElapsed/segment를 확정하지 않고 실패한 stop listener를 제거한다. 정지를 다시 눌러 기존 Review로 복귀하며 실패 자체로 Sample 저장/Track 제출을 성공 처리하지 않는다. 새 정책·디자인·서버 사용자3파일 변경 없음. 유지 QA는 qa:stop-retry로 실행한다. 자동 검증은 synthetic microphone의 오류/정상 재시도이며 실기기·음질·전체 R1/R2 완료 증거는 아니다.
