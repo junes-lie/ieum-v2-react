@@ -1074,8 +1074,16 @@ function Recorder({ go, submit, onRecordingStart, partId, projectTracks, layers,
     } catch (e) { if(!startingRef.current)return;setMicrophoneFailure(audioReady); setPermissionDenied(audioReady&&isMicrophonePermissionError(e)); setError(audioReady?microphoneErrorMessage(e):e.message); setStatus('ready') }
     finally {startingRef.current=false;setRecordingBusy(false)}
   }
-  const pause = () => { if(getRecordingTimeline().state!=='recording')return;pauseRecording(); setStatus('paused'); clearInterval(timer.current) }
-  const resume = () => { if(getRecordingTimeline().state!=='paused')return;resumeRecording(); setStatus('recording'); timer.current = window.setInterval(() => setSeconds(getRecordingTimeline().elapsedSec), 100) }
+  const pause = () => {
+    if(getRecordingTimeline().state!=='recording')return
+    try { pauseRecording(); setError(''); setStatus('paused'); clearInterval(timer.current) }
+    catch(reason) { setError(reason?.message || '일시정지하지 못했어요. 다시 눌러 주세요.') }
+  }
+  const resume = () => {
+    if(getRecordingTimeline().state!=='paused')return
+    try { resumeRecording(); setError(''); setStatus('recording'); timer.current = window.setInterval(() => setSeconds(getRecordingTimeline().elapsedSec), 100) }
+    catch(reason) { setError(reason?.message || '녹음을 이어가지 못했어요. 다시 눌러 주세요.') }
+  }
   const stop = async () => {
     if(stoppingRef.current)return false
     stoppingRef.current=true;setRecordingBusy(true)
