@@ -1,5 +1,9 @@
 # 현재 실행 기준 — 2026-10-13 변경분 및 잔여 구현계획 개정
 
+## 2026-10-13 R1/R2 상세 Key 잠금 안내
+
+기존02 상세의 Key 안내를 실제 첫 녹음 잠금(mainKeyLocked/created Project keyLocked)과 확정 Track 상태에 연결한다. 제출0개여도 실제 녹음을 시작했으면 잠금으로 안내하고 잠금만으로 제출/완료를 늘리지 않는다. 기존 화면/디자인·녹음 시작 및 저장 구조는 유지한다. Node 렌더에서 main/created 잠금·미잠금·확정 Track 경로를 확인했으며 실제 Key 조정/원격 연결·실기기 인수는 기존 잔여다. 이미 확정된 서비스 없음·Google 우선 답변을 재질문하지 않는다.
+
 2026-10-13 R3 session 수명 gate: 기존 Google helper/serviceSession에 deadline·same-user renew·단일 자동 갱신 timer를 연결했다. 유효기간 내 pending 요청/원본을 유지하고 다음 요청은 새 token을 쓰며 만료 후에는 이전 scope를 무효화한 채 새 검증 scope만 연다. 명시적 logout/갱신 실패·신원 변경·오래된 갱신 응답은 재활성화하지 않는다. background 지연/실패·timer 취소·관련 source 등록 세션 회귀를 제어 시계/주입 Auth로 검증했다. 이 준비 코드를 실제 App/Google/모바일 완료로 확대하지 않는다. 실제 운영 연결·App 버튼/복귀 및 lifecycle 인수·새로고침 세션은 잔여이며 기존 단계/예산/정책·사용자3파일을 보존한다. 공수는 미측정이고 접근 질문을 반복하지 않는다.
 
 2026-10-13 R3 Google PKCE gate: Google 우선 결정을 기존 serviceSession/server identity 검증에 연결하는 로그인 URL/복귀 helper를 준비했다. 실제 Crypto와 주입 OAuth→기존 인증의 준비 상태/URL 정리·임시 verifier/state·서버 본인 검증·취소/재생/로그아웃 경쟁·refresh rotation/신원 재검증·현재 로그인 logout 실패 검사를 통과했다. SDK/계정/runtime 추가나 별도 UI는 없으며 실제 앱 로그인/복귀·운영 origin/public key/allowlist·자동 갱신/만료·새로고침 세션 복원·실제 두 사용자 인수는 잔여다. 현재 preparation capability를 유지한다. 기존 단계·예산·완료 증거/사용자3파일을 보존하고 같은 계정 접근 질문은 반복하지 않는다. 이번 실효 공수는 미측정이다.

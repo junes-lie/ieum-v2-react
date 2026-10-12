@@ -1,4 +1,10 @@
+## 2026-10-13 R1/R2 상세 Key 잠금 안내
+
+기존 Detail이 제출수만 보고 첫 녹음 후에도 Key 조정 가능으로 표시하던 누락을 수정했다. App의 저장된 mainKeyLocked와 created Project keyLocked를 사용하고 확정 Track도 잠금 근거로 유지한다. 첫 녹음 전/후 안내만 바꾸며 배정·음역·원본·제출/Mix·디자인은 변경하지 않는다. 기존 single-app Node 렌더 QA에서 미제출 잠금과 main/created·확정 Track 경로 통과. 실제 기기/시각·원격 Key 조정·Auth 연결은 미완료다.
+
 ## 2026-10-13 R3 인증 만료·자동 갱신 준비
+
+마감:검토한7파일만aa470c15981e9c1f97ddbe5323a2e166cb16e5af로 commit/main push, main/origin0/0 및 사용자 기존3파일 수정 보존. Vercel full SHA success·Production deployment7024004211 SHA 일치/success를 확인했다. https://vercel.com/junes-lie/ieum-v2-react/3uwZJvSvwtupzqs2G7cWiFRmwu9m. Production page/JS200·index-LuCsuWOM.js local exact/SHA256 0dadee8ac7863e856e39ddc8de990b42230306dfeff5dfaa86029b5fd00971c8, capabilities200/preparation·서비스 기능false, 무인증 me/session401/private no-store/AUTH_REQUIRED다. helper는 실제 App에서 호출하지 않으므로 화면/Google 로그인 가능 상태는 바뀌지 않았다. 기존500KB build 경고 유지·실제 운영/App lifecycle/모바일/reload 인수 미완료. 이 문단은 commit 후 로컬 증거 기록이다.
 
 기존 serviceSession에 명시적 token deadline과 renew를 연결했다. 만료 시 기존 scope/늦은 결과를 차단하고 같은 실제 UUID의 유효 토큰 갱신은 유효기간 내 진행 중 요청을 불필요하게 취소하지 않는다. 이후 요청은 새 token을 사용한다. 만료 후 갱신은 새 scope만 열고 이전 scope는 거부한다. 명시적 logout은 만료 신원 context도 제거해 갱신으로 재활성화되지 않는다. 겹친 갱신의 오래된 응답도 차단한다.
 

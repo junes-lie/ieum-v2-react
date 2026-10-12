@@ -99,10 +99,16 @@ try {
   const renderDetail=extra=>renderToStaticMarkup(React.createElement(Detail,{...detailProps,...extra}))
   const initialDetail=renderDetail({createdProjects:[{...homeProject,progress:3,status:'COMPLETE'}]})
   assert.ok(initialDetail.includes('00/03 · RECRUITING'),'Stored display labels cannot substitute real submitted Tracks in Detail')
+  assert.ok(initialDetail.includes('첫 녹음 시작 전 조정 가능'))
+  const lockedEmptyDetail=renderDetail({createdProjects:[{...homeProject,keyLocked:true}]})
+  assert.ok(lockedEmptyDetail.includes('첫 녹음 시작 후 Key 고정'),'Recording locks Key before any Track submission')
+  assert.ok(lockedEmptyDetail.includes('00/03 · RECRUITING'),'Key lock cannot create a submitted Track')
+  assert.ok(!lockedEmptyDetail.includes('첫 녹음 시작 전 조정 가능'))
   assert.ok(initialDetail.includes('작업실로 이동'))
   assert.ok(!initialDetail.includes('완성곡 듣기'))
   const finalDetail=renderDetail({createdProjectTracks:{[homeProject.id]:fullTracks}})
   assert.ok(finalDetail.includes('03/03 · MIXING'))
+  assert.ok(finalDetail.includes('첫 녹음 시작 후 Key 고정'),'Existing submitted Track also prevents misleading unlocked guidance')
   assert.ok(!finalDetail.includes('완성곡 듣기'),'Final Tracks without a saved Mix are not completed')
   const completedDetail=renderDetail({createdProjectTracks:{[homeProject.id]:fullTracks},createdMixes:{[homeProject.id]:{url:'blob:qa-home-mix'}}})
   assert.ok(completedDetail.includes('03/03 · COMPLETE'))
@@ -141,6 +147,8 @@ try {
   const mainFinals=Object.fromEntries(['soprano','alto','tenor','bass'].map(partId=>[partId,{id:`${mainId}:${partId}`,projectId:mainId,partId,blob:new Blob(['final']),kind:'project-track',submissionStatus:'success',duration:7,participant:`QA ${partId}`}]))
   const existingTwo={soprano:mainFinals.soprano,alto:mainFinals.alto}
   const renderMainDetail=extra=>renderDetail({song:mainSong,initialProjectId:mainId,createdProjects:[],projectTracks:existingTwo,...extra})
+  assert.ok(renderMainDetail({projectTracks:{},mainKeyLocked:true}).includes('첫 녹음 시작 후 Key 고정'),'Main Project uses its persisted recording lock even before submission')
+  assert.ok(renderMainDetail({projectTracks:{},mainKeyLocked:false}).includes('첫 녹음 시작 전 조정 가능'))
   const mainRows=[],mainActions=[],mainDestinations=[]
   try{
     React.createElement=(type,props,...children)=>{
