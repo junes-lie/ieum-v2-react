@@ -1235,3 +1235,9 @@ Node 실제 저장 재읽기·같은 입력 재현·원본/분석/revision 차�
 같은 보존 base PCM(SHA2efa01ddbb8b17dc63b037601a6cbd6a27a5bc9b4b5e20ba8f445b6e1118a0ca)의 conditioning interval을 별도 sidecar와 기존 측정기에 연결해1회 실제 측정했다. live guard wall7.327초/exit0/resourceStopped=false·free최소8.386GiB/owned최대.238GiB. 기존 최신 frame-support 측정의 requested observations/fullInterval/noteEvent 및 duration/hash는 exact 유지다. 최초 비교는 더 오래된 fullInterval 키가 적은 report를 골라 assertion observations였고 실제 최신 report로 대조해 exact 확인했다. 원본/실패/별도 sidecar/측정 로그는 기존 runtime에 보존한다.
 
 요청 대비 실제 입력 경계 차이 최대.0099828초, 요 native end4.458231 vs요청4.468182초, actual voiced last4.400181초·35/44frames·최장31. rest RMS.01233684/.00918070로 잔여 에너지는 남는다. conditioning 경계는 실제 음소/발성 진입 판정이 아니며 휴지/지속음 해결·원곡 음표/화음/2–4Part/청취·권한 승인으로 표시하지 않는다. build39modules/509.42KB 기존500KB 경고·앱 bundle exact 유지. 연구 유지 코드/계획만 main Git Integration→Production 기존 앱 보존으로 마감하고 사용자 서버3파일/디자인은 보존한다.
+
+### R6 무거운 runtime 전 실제 입력 검증 — 2026-10-12
+
+generator의 torch/numpy/soundfile/scipy 및 모델 import를 모든 실제 token/frame/curve 검증 뒤로 이동했다. --validate-score-only는 원본 converter 결과와 frame/note events만 반환하고 modelLoaded=false/inferenceExecuted=false로 종료한다. 기존 실제 생성/preflight의 모델·seed/steps/sampler/출력 처리는 유지한다. 이는 잘못된 입력의 불필요한 RAM/GPU 로딩을 제거하는 실행 변경이며 생성 음악 품질 통과가 아니다.
+
+실제 generator runpy 진입에서 무거운 import를 금지한 상태로 정상 rest/음절 및 melisma2개,0-frame sung/rest·잘못된 rest/note·frame충돌 curve5개의7사례를 실행해 통과했다. 최초 QA temp 경로에서 PermissionError: [Errno 13] Permission denied가 발생했으며 저장소 내 고유 전용 temp 경로를 사용해 보완했다. 사용자 파일/원본을 삭제하지 않고 QA가 만든 파일만 자체 정리한다. 추가 모델/추론/환경 설치 없음. build39modules/509.42KB 기존500KB 경고와 현재 앱 bundle 유지. 유지 실행 코드/QA/현재 계획만 main 자동배포→Production 앱 보존으로 마감한다. 실제 가사·음정/휴지·전체2–4Part·권한/청취·Identity·서버 gate는 미완료다.

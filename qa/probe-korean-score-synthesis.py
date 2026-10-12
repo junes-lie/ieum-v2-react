@@ -4,7 +4,7 @@ The caller must apply live RAM monitoring; this script does not manage other pro
 """
 import argparse,hashlib,json,math,sys,time
 from pathlib import Path
-p=argparse.ArgumentParser();p.add_argument('--runtime-dir',type=Path,required=True);p.add_argument('--preflight',action='store_true');p.add_argument('--output-dir',type=Path);p.add_argument('--score-spec',type=Path);p.add_argument('--generation-stage',choices=['diffusion','linear'],default='diffusion');p.add_argument('--sampler',choices=['native','reference-ddim-diagnostic'],default='native');a=p.parse_args()
+p=argparse.ArgumentParser();p.add_argument('--runtime-dir',type=Path,required=True);p.add_argument('--preflight',action='store_true');p.add_argument('--validate-score-only',action='store_true');p.add_argument('--output-dir',type=Path);p.add_argument('--score-spec',type=Path);p.add_argument('--generation-stage',choices=['diffusion','linear'],default='diffusion');p.add_argument('--sampler',choices=['native','reference-ddim-diagnostic'],default='native');a=p.parse_args()
 assert a.sampler=='native' or a.generation_stage=='diffusion','Reference diagnostic requires diffusion stage'
 root=a.runtime_dir.resolve()
 syllables=['<X>','오','늘','도','함','께','해','요','<X>']
@@ -38,17 +38,13 @@ if note_curves is not None:
    assert isinstance(note,int) and not isinstance(note,bool) and 0<note<128
    previous=offset
   assert curve[0]['offsetSeconds']==0 and curve[0]['modelNoteIndex']==notes[index],'Curve must start with the declared segment note'
-if not a.preflight:
+if not (a.preflight or a.validate_score_only):
  assert a.output_dir and not a.output_dir.exists(),'A new output directory is required'
 sys.path[:0]=[str(root/'probe-source'),str(root/'deps')]
-import numpy as np
-import soundfile as sf
-import torch,yaml
-from scipy.signal import resample_poly
+import yaml
 from Arg_Parser import Recursive_Parse
 from Pattern_Generator import Convert_Feature_Based_Music,Expand_by_Duration
 
-torch.set_num_threads(2);torch.manual_seed(65359)
 hp=Recursive_Parse(yaml.safe_load((root/'Hyper_Parameters.yaml').read_text(encoding='utf-8')))
 token_dict=yaml.safe_load((root/'YAML/Token.yaml').read_text(encoding='utf-8'))
 converted=Convert_Feature_Based_Music(list(zip(seconds,syllables,notes)),hp.Sound.Sample_Rate,hp.Sound.Frame_Shift,hp.Duration.Consonant_Duration,hp.Duration.Equality)
@@ -77,6 +73,15 @@ if note_curves is not None:
  assert frame_start==len(tokens)==len(expanded_notes)
 assert all(value in token_dict for value in tokens)
 assert tokens and len(tokens)*hp.Sound.Frame_Shift/hp.Sound.Sample_Rate<=10
+if a.validate_score_only:
+ print(json.dumps({'status':'score-validation-only','modelLoaded':False,'inferenceExecuted':False,'nativeSampleRate':hp.Sound.Sample_Rate,'nativeFrameShift':hp.Sound.Frame_Shift,'expandedScoreSegments':expanded_score_segments,'expandedNoteEvents':expanded_note_events},ensure_ascii=False),flush=True)
+ raise SystemExit(0)
+# Import the heavy runtime only after all input/token/frame checks succeed.
+import numpy as np
+import soundfile as sf
+import torch
+from scipy.signal import resample_poly
+torch.set_num_threads(2);torch.manual_seed(65359)
 from Modules.Modules import DiffSinger
 model=DiffSinger(hp).eval()
 parameter_bytes=sum(value.numel()*value.element_size() for value in model.parameters())
