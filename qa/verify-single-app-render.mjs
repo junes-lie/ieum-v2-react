@@ -136,6 +136,37 @@ try {
   assert.ok(otherSelected.includes('00/02 · RECRUITING'))
   assert.ok(!otherSelected.includes('open-selected-created-project'),'Another selected Project must not expose this owner Workspace action')
   console.log('PASS Detail: actual submitted state/Part/layer lineage, Review and stale Mix excluded, same-song carousel selection, explicit selected Project navigation. Node render/callbacks only.')
+  const mainId='ieum-thousand-years-v7'
+  const mainSong={...song,id:'a-thousand-years',projects:[{id:mainId,name:'Original C · Quartet',partCount:4,progress:2,status:'RECORDING',seed:'main-seed',key:'C major'}]}
+  const mainFinals=Object.fromEntries(['soprano','alto','tenor','bass'].map(partId=>[partId,{id:`${mainId}:${partId}`,projectId:mainId,partId,blob:new Blob(['final']),kind:'project-track',submissionStatus:'success',duration:7,participant:`QA ${partId}`}]))
+  const existingTwo={soprano:mainFinals.soprano,alto:mainFinals.alto}
+  const renderMainDetail=extra=>renderDetail({song:mainSong,initialProjectId:mainId,createdProjects:[],projectTracks:existingTwo,...extra})
+  const mainRows=[],mainActions=[],mainDestinations=[]
+  try{
+    React.createElement=(type,props,...children)=>{
+      if(typeof type==='function' && type.name==='PartRow')mainRows.push(props)
+      if(type==='button' && props?.['data-action']==='open-selected-main-project')mainActions.push(props)
+      return originalCreateElement(type,props,...children)
+    }
+    const assigned=renderMainDetail({joined:true,joinedPart:'tenor',candidateAccepted:true,invitedPerson:{id:'luna',name:'Luna'},openMainWorkspace:target=>mainDestinations.push(target)})
+    assert.ok(assigned.includes('02/04 · RECORDING'))
+    assert.ok(!assigned.includes('data-testid="part-fit"'),'Assigned Tenor is no longer an OPEN Part Fit action')
+    assert.equal(mainRows.find(row=>row.part.id==='tenor').part.status,'ready')
+    assert.equal(mainRows.find(row=>row.part.id==='tenor').part.participantId,'jisun')
+    assert.equal(mainRows.find(row=>row.part.id==='bass').part.status,'accepted')
+    assert.equal(mainRows.find(row=>row.part.id==='bass').part.participantId,'luna')
+    assert.equal(mainRows.find(row=>row.part.id==='bass').onPlay,undefined,'Acceptance is not a submitted Track')
+    mainActions[0].onClick()
+    assert.deepEqual(mainDestinations,['workspace'])
+    mainActions.length=0
+    const done=renderMainDetail({projectTracks:mainFinals,mainMix:{url:'blob:main-final'},openMainWorkspace:target=>mainDestinations.push(target)})
+    assert.ok(done.includes('04/04 · COMPLETE'))
+    mainActions[0].onClick()
+    assert.deepEqual(mainDestinations,['workspace','complete'])
+  }finally{React.createElement=originalCreateElement}
+  assert.ok(!renderMainDetail({mainMix:{url:'blob:incomplete'}}).includes('완성곡 듣기'))
+  assert.ok(renderMainDetail({projectTracks:{...existingTwo,tenor:{...mainFinals.tenor,kind:'temporary-recording',submissionStatus:'review'}}}).includes('02/04 · RECORDING'))
+  console.log('PASS existing Quartet Detail: actual own/accepted Part assignment, acceptance/Review does not submit, verified complete state and explicit Workspace/Complete navigation.')
   let personalFilter='all',collectionTab='projects'
   globalThis.sessionStorage={getItem:key=>key==='ieum:project-filter'?personalFilter:key==='ieum:collection-tab'?collectionTab:null}
   const personalProps={...homeProps,createdMixes:{},joined:false,projectLikes:[{projectId:homeProject.id}],vocalSaves:[],songSaves:[],

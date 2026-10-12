@@ -1,4 +1,12 @@
+## 2026-10-13 R1/R2 기존 Quartet 상세 배정 연결
+
+기존02 main Project에 App의 joined/joinedPart·실제 초대 수락 candidateAccepted/invitedPerson·저장 Mix가 전달되지 않아 배정된 Part도 OPEN으로 보이고 내 작업실 대안이 없던 누락을 수정했다. 기존 Workspace와 같은 확정 Track 우선→내 배정 ready→수락한 후보 accepted 순서로 상세를 표시하고 수락은 제출로 세지 않는다. Carousel/main header도 확정 Track 수 및 공통 Mix 성공 조건을 사용하며 내 참여는03, 전부 제출+저장 Mix는07의 기존 이동 callback으로 연결한다. 직접 join도 이미 내 Part/수락한 Bass 자리를 다시 배정하지 않도록 상태를 재검사한다. 음역 Gate·시연 출처·초대 수락/제출 분리·원본·다른 Project 비교는 유지한다.
+
+기존 SSR/격리 DOM QA에서 자신의 Tenor ready·후보 Bass accepted·미제출 후보 재생 없음·수락/Review 제출수 불변·02/04 RECORDING·04/04+저장 Mix COMPLETE·작업실/완성 목적지 callback·불완전 Mix 거부를 검증했다. Node user-journey의 기존 비교/History·Profile/Collection/제출·완성 복원·2–4 Part 회귀와 build40modules/529.58KB 통과; 기존500KB 경고 유지. 실제 브라우저·마이크/청취·두 사용자 협업·시각/디자인·R3 실제 연결은 미완료다. 사용자 기존3파일 수정은 보존한다.
+
 ## 2026-10-13 R1/R2 개인 목록 상태·계보 연결
+
+배포 확인: 검토한5파일만5e900df503e79819e894a1e40b05b66a865c078d로 commit/main push, main/origin0/0이다. 해당 full SHA Vercel status success·https://vercel.com/junes-lie/ieum-v2-react/3YFJLpJWT2bkdnG3s32sh2DUHbF6 확인. Production page/asset200/index-CsvxrAir.js SHA256 68c2fd568b920580940e6b0295e15d6410cedf35b1dbed0255551685ae85a7bb가 당시 local build와 일치했다. read-only RAM 조회는 총16,724,992KiB/가용7,469,396KiB였으며 대형 AI 실행/사용자 앱 종료/자원 설정 변경은 없었다. 앞선 sandbox CIM 조회 실패(클라이언트에서 CIM 리소스에 대한 액세스를 사용할 수 없습니다)는 권한 있는 읽기에서 확인한 값으로 구분한다. 이 문단은 commit 후 기록이다.
 
 기존08/09가 created Project의 저장 status 또는 Mix 존재만으로 COMPLETE를 표시하고 완료 필터에 넣는 누락을 확인했다. projectModel의 기존 확정 Track 판정에 작은 공통 localProjectLifecycle을 연결하여 Home/02/08/09에 필수 Track+저장 Mix→COMPLETE, 필수 Track만→MIXING을 적용한다. 최초 제출 이전의 기존 RECORDING 상태는 보존하며 오래된 COMPLETE/MIXING이나 Review는 최종 상태 근거로 쓰지 않는다.08 완료 버튼 라벨도 실제 상태를 따르고 공통 이동은 기존 검증 조건을 유지한다.09 Record는 같은 Project ID/Seed·실제 Part 순서·확정 레이어만 사용한다. 저장곡 프로젝트 수에는 동일 Song의 실제 created Project도 포함한다. 저장/해제·Part/제출/Mix/원본·화면 수/디자인은 변경하지 않았다.
 

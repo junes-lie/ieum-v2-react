@@ -643,7 +643,7 @@ function Home({ openSong, layers, projectTracks, profile, mix, openCreateProject
   </div>
 }
 
-function Detail({ go, back, song, profile, join, layers, projectTracks, songSaved, toggleSongSave, openVocalProfile, createdProjects, createdProjectTracks = {}, createdMixes = {}, onCreateProject, onOpenCreatedProject, initialProjectId, onSelectProject, detailContext }) {
+function Detail({ go, back, song, profile, join, layers, projectTracks, songSaved, toggleSongSave, openVocalProfile, createdProjects, createdProjectTracks = {}, createdMixes = {}, onCreateProject, onOpenCreatedProject, openMainWorkspace, mainMix, joined = false, joinedPart = USER_PART_ID, candidateAccepted = false, invitedPerson, initialProjectId, onSelectProject, detailContext }) {
   const readSelectedPart=projectId=>detailContext?.current[projectId] ?? (projectId===PROJECT_ID?readNavigationHint(`ieum:detail:${song.id}:part`,USER_PART_ID):'')
   const [selectedProjectId,setSelectedProjectId] = useState(initialProjectId || song.projects[0].id)
   const [selectedPartId,setSelectedPartId] = useState(()=>readSelectedPart(initialProjectId || song.projects[0].id))
@@ -652,7 +652,9 @@ function Detail({ go, back, song, profile, join, layers, projectTracks, songSave
     if(selectedProjectId===PROJECT_ID)writeNavigationHint(`ieum:detail:${song.id}:part`,selectedPartId)
   },[song.id,selectedProjectId,selectedPartId,detailContext])
   useEffect(() => { const projectId=initialProjectId || song.projects[0].id;setSelectedProjectId(projectId);setSelectedPartId(readSelectedPart(projectId)) }, [song.id,initialProjectId])
-  const allProjects = [...song.projects,...createdProjects.filter(project=>project.songId===song.id).map(project=>{
+  const mainTracks=Object.fromEntries(submittedProjectTracks(PROJECT,projectTracks).map(track=>[track.partId,track]))
+  const mainComplete=allProjectTracksSubmitted(PROJECT,mainTracks) && Boolean(mainMix)
+  const allProjects = [...song.projects.map(project=>project.id===PROJECT_ID?{...project,progress:Object.keys(mainTracks).length,status:localProjectLifecycle({...PROJECT,...project},mainTracks,mainMix)}:project),...createdProjects.filter(project=>project.songId===song.id).map(project=>{
     const progress=submittedProjectTracks(project,createdProjectTracks[project.id] || {}).length
     return {...project,progress,status:localProjectLifecycle(project,createdProjectTracks[project.id] || {},createdMixes[project.id])}
   })]
@@ -660,14 +662,20 @@ function Detail({ go, back, song, profile, join, layers, projectTracks, songSave
   const isLiveProject = selectedProject.id === PROJECT_ID
   const isCreatedProject = createdProjects.some(project=>project.id===selectedProject.id)
   const createdTracks = isCreatedProject ? Object.fromEntries(submittedProjectTracks(selectedProject,createdProjectTracks[selectedProject.id] || {}).map(track=>[track.partId,track])) : {}
-  const listenTracks = isLiveProject ? Object.fromEntries(submittedProjectTracks(PROJECT,projectTracks).map(track=>[track.partId,track])) : createdTracks
-  const liveSubmitted = Object.keys(projectTracks).length
+  const listenTracks = isLiveProject ? mainTracks : createdTracks
+  const liveSubmitted = Object.keys(mainTracks).length
   const submitted = isLiveProject ? liveSubmitted : selectedProject.progress
   const projectLayers = isLiveProject ? layers : isCreatedProject ? selectedProject.parts.map(part=>createdTracks[part.id]?.layer || null) : []
   const staticActive = Array.from({length:selectedProject.partCount},(_,index)=>index<submitted)
   const emptyProjectParts = PART_CATALOG.slice(0,selectedProject.partCount).map(part=>({...part,participantId:null,participant:null,status:'open',duration:null}))
   const displayParts = isLiveProject
-    ? PARTS.map(part => projectTracks[part.id] ? {...part,participantId:projectTracks[part.id].participantId || personFromName(projectTracks[part.id].participant)?.id,participant:projectTracks[part.id].participant,status:'submitted',duration:fmt(projectTracks[part.id].duration),demo:projectTracks[part.id].demo,disclosure:projectTracks[part.id].disclosure} : part)
+    ? PARTS.map(part => {
+      const track=mainTracks[part.id]
+      if(track)return {...part,participantId:track.participantId || personFromName(track.participant)?.id,participant:track.participant,status:'submitted',duration:fmt(track.duration),demo:track.demo,disclosure:track.disclosure}
+      if(joined && part.id===joinedPart)return {...part,participantId:CURRENT_USER_ID,participant:'JISUN',status:'ready'}
+      if(candidateAccepted && part.id==='bass' && invitedPerson)return {...part,participantId:invitedPerson.id,participant:invitedPerson.name,status:'accepted'}
+      return part
+    })
     : (selectedProject.parts || emptyProjectParts).map(part=>createdTracks[part.id]?{...part,participantId:createdTracks[part.id].participantId || part.participantId,participant:createdTracks[part.id].participant || part.participant,status:'submitted',duration:fmt(createdTracks[part.id].duration)}:part)
   const chosen = isLiveProject ? displayParts.find(part=>part.id===selectedPartId) : null
   const fit = evaluatePartFit({rangeData:profile?.rangeData,part:chosen})
@@ -685,6 +693,7 @@ function Detail({ go, back, song, profile, join, layers, projectTracks, songSave
       <div className="detail-record"><ResonanceRecord parts={displayParts} projectId={selectedProject.id} layers={projectLayers} active={staticActive} seed={selectedProject.seed} /><div className="film-note"><span>PROJECT KEY</span><strong>{selectedProject.key}</strong><small>{submitted?'첫 Track 이후 Key 고정':'첫 Track 전 조정 가능'}</small></div></div>
       {isLiveProject || isCreatedProject ? <CurrentMixPanel key={selectedProject.id} project={selectedProject} parts={displayParts} projectTracks={listenTracks} openVocalProfile={openVocalProfile} waveform={false} title="Part 구성" emptyMessage="아직 제출된 녹음이 없어요." partAction={part=>isLiveProject&&['open','recruiting'].includes(part.status)?{action:()=>setSelectedPartId(part.id),label:selectedPartId===part.id?'선택됨':'확인'}:{}}/> : <section className="part-list"><div className="section-head"><h2>Part 구성</h2><span>{selectedProject.name}</span></div>{displayParts.map(part => <PartRow key={part.id} part={part} onParticipant={part.participantId&&part.participantId!==CURRENT_USER_ID?()=>openVocalProfile(part.participantId):undefined}/>)}</section>}
       {isCreatedProject && <button className="primary" data-action="open-selected-created-project" onClick={()=>onOpenCreatedProject(selectedProject.id)}>{selectedProject.status==='COMPLETE'?'완성곡 듣기':'작업실로 이동'}</button>}
+      {isLiveProject && (joined || mainComplete) && <button className="primary" data-action="open-selected-main-project" onClick={()=>openMainWorkspace(mainComplete?'complete':'workspace')}>{mainComplete?'완성곡 듣기':'작업실로 이동'}</button>}
       {isLiveProject ? <p className="demo-disclosure">{demoNames || '현재 없음'}: 흐름 검증용 로컬 합성 Stem입니다. 실제 사람의 보컬 Track이나 실제 협업 결과가 아니며, 배포 가능한 동일 곡의 사람 보컬 원본은 아직 제공되지 않았습니다.</p> : isCreatedProject ? <p className="demo-disclosure">이 브라우저에 저장된 내 프로젝트입니다. 제출된 원본 Track과 Part 배정 상태를 표시합니다. 실제 서버 협업 연결은 아직 완료되지 않았습니다.</p> : <p className="demo-disclosure">탐색용 Project 데이터입니다. 선택한 Project에 따라 Part 구성이 교체되며 Track 녹음 시연은 Original C · Quartet에서 제공합니다.</p>}
       {chosen && ['open','recruiting'].includes(chosen.status) && <section className="fit-panel" data-testid="part-fit"><p className="kicker">Part fit · {chosen.name}</p><h2>{profile?(fit.eligible?'현재 Key의 요구 음역을 충족해요.':'현재 Key의 요구 음역을 확인해 주세요.'):'참여 전에 내 목소리를 준비해요.'}</h2>{profile?<><div className="range-line"><span>내 편한 음역 <b>{profile.range}</b></span><span>Part 요구 음역 <b>{chosen.range}</b></span></div><ul>{fit.reasons.map(reason=><li key={reason}>{reason}</li>)}<li>음색·역할은 참고 정보이며 실력 평가가 아니에요.</li></ul><button className="primary" data-action="join-part" disabled={!fit.eligible} onClick={()=>join(selectedPartId)}>{chosen.name} 참여 확정</button></>:<><p>먼저 실제 마이크로 편한 음역을 측정합니다. 대표 Voice Sample은 다음 단계에서 별도 Sample Song으로 등록하며 측정 음성과 섞지 않습니다.</p><button className="primary" data-action="voice-setup" onClick={()=>go('voice')}>내 목소리 알아보기</button></>}</section>}
     </main>
@@ -1661,7 +1670,7 @@ export default function App() {
     if(value.phase==='sample-save'){stopMicrophone();return preferences}
     back(voiceReturnScreen); stopMicrophone()
   }
-  const join = partId => { const part=PARTS.find(item=>item.id===partId);if(!part || projectTracks[partId] || part.participantId || !evaluatePartFit({rangeData:profile?.rangeData,part}).eligible)return; setJoinedPart(partId);setActiveCreatedProjectId(null); setJoined(true); touchProjectActivity(PROJECT_ID); setScreen('workspace'); setHistory([]) }
+  const join = partId => { const part=PARTS.find(item=>item.id===partId);if(!part || projectTracks[partId] || part.participantId || (joined && joinedPart===partId) || (candidateAccepted && partId==='bass') || !evaluatePartFit({rangeData:profile?.rangeData,part}).eligible)return; setJoinedPart(partId);setActiveCreatedProjectId(null); setJoined(true); touchProjectActivity(PROJECT_ID); setScreen('workspace'); setHistory([]) }
   const openFinder = partId => { if (!partId) return; setFinderPartId(partId); setSelectedMatchVocalId(null); go('finder') }
   const invite = vocal => {
     const candidate=PERSON_BY_ID[vocal?.id]
@@ -1945,7 +1954,7 @@ export default function App() {
 
   let content
   if (screen==='home') content=<Home createdProjects={createdProjects} createdProjectTracks={createdProjectTracks} createdMixes={createdMixes} openCreatedProject={openCreatedProject} joined={joined} joinedPart={joinedPart} candidateAccepted={candidateAccepted} openSong={openSong} layers={layers} projectTracks={projectTracks} profile={profile} mix={mix} openCreateProject={()=>startCreateProject(null)} openComplete={()=>go('complete')}/>
-  else if (screen==='detail') content=<Detail go={go} back={()=>back('home')} song={selectedSong} profile={profile} join={join} layers={layers} projectTracks={projectTracks} songSaved={songSaved} toggleSongSave={toggleSongSave} openVocalProfile={openVocalProfile} createdProjects={createdProjects} createdProjectTracks={createdProjectTracks} createdMixes={createdMixes} onCreateProject={startCreateProject} onOpenCreatedProject={openCreatedProject} initialProjectId={selectedProjectId} onSelectProject={setSelectedProjectId} detailContext={detailContext}/>
+  else if (screen==='detail') content=<Detail go={go} back={()=>back('home')} song={selectedSong} profile={profile} join={join} layers={layers} projectTracks={projectTracks} songSaved={songSaved} toggleSongSave={toggleSongSave} openVocalProfile={openVocalProfile} createdProjects={createdProjects} createdProjectTracks={createdProjectTracks} createdMixes={createdMixes} onCreateProject={startCreateProject} onOpenCreatedProject={openCreatedProject} openMainWorkspace={openMainWorkspace} mainMix={mix} joined={joined} joinedPart={joinedPart} candidateAccepted={candidateAccepted} invitedPerson={invitedPerson} initialProjectId={selectedProjectId} onSelectProject={setSelectedProjectId} detailContext={detailContext}/>
   else if (screen==='song-browser') content=<SongBrowser back={()=>back('collection')} openSong={openSong} songSaves={songSaves} toggleSongSave={toggleSongSave} createdProjects={createdProjects} onCreateProject={startCreateProject}/>
   else if (screen==='create-project') content=<CreateProject profile={profile} draft={createProjectDrafts.current[createDraftKey]} rememberDraft={rememberCreateProjectDraft} setupVoice={()=>go('voice')} key={createDraftKey} back={()=>back(createProjectSongId?'detail':'home')} complete={createProject} initialSongId={createProjectSongId}/>
   else if (screen==='voice') content=<VoiceSetup key={voiceEditMode || "setup"} existing={profile} editMode={voiceEditMode} songSaves={songSaves} go={go} back={()=>{setVoiceEditMode(null);back(voiceReturnScreen)}} complete={completeProfile}/>

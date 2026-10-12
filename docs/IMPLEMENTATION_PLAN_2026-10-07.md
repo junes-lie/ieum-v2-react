@@ -4,6 +4,8 @@
 
 ## 이미 확정된 서비스·비용 답변
 
+2026-10-13 R1/R2 기존 Quartet 상세 후속:02에 현재 내 Part/수락한 후보 배정·실제 Track 수/Mix와 기존03/07 대안 callback을 전달했다. 수락만으로 Track 증가·배정된 자리 재참여·불완전 Mix 완성 이동을 막고 기존 Gate/원본·Project 문맥을 유지했다. SSR/격리 DOM와 기존 user-journey/build 통과. 실제 서비스/후보 청취·물리/모바일·디자인 인수는 기존 잔여이며 단계·예산·사용자3파일을 보존한다.
+
 2026-10-13 R1/R2 개인 목록 후속:08/09의 created Project 상태/완료 필터를 Home/02와 같은 실제 제출·저장 Mix 판정에 연결했다. 첫 제출 전 기존 RECORDING 유지·stale COMPLETE/불완전 Mix 거부·같은 Record 계보·저장곡 실제 Project 수·2–4 Part를 기존 SSR/격리 DOM 및 user-journey/build로 검증했다. 새 기획/화면/디자인·서버 활성화·형상 생성은 없으며 실제 인수/외부 의존성은 기존 잔여로 유지한다. 기존 단계·완료 증거·예산·사용자3파일을 보존한다.
 
 2026-10-13 R1/R2 상세 청취 후속:02/D09의 실제 제출 Track 청취를 기존 CurrentMixPanel/Player/Preview Mix에 통합했다. 실제 원본 URL·개별/포함/제외·0개 안내/비활성·Project 변경 시 이전 재생 pause와 상태 분리를 Node SSR+격리 DOM에서 검증하고 기존 user-journey/build 통과. Preview DSP/미디어/GPU는 주입이며 실제 음원/청취·기기·승인 디자인 인수/원격 binding은 남는다. 기존02 청취 코드 잔여를 이 범위에서 닫고 실제 인수와 분리한다. 기존 단계·일정·형상 정책·비용0원/서버 질문 반복 금지·사용자3파일을 유지한다.
