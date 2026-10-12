@@ -1,3 +1,8 @@
+### R2 곡 상세의 곡/비교 Project 이력 복원 — 2026-10-12
+
+native 두 곡 방문 QA에서 최신 Ocean Eyes 상세에 Forward했는데 이전 A Thousand Years가 남는 assertion 실패를 재현했다. 기존 history 동기화 effect에 selectedSongId/selectedProjectId를 보존한다. A Thousand Years/Warm Duet↔Ocean Eyes/Low-key Duet의 실제 Back/Forward 곡과 비교 Project exact, 저장곡2/미참여 유지·기존 Finder Part/Project 및 Collection 복귀 회귀/build38modules를 통과했다. 기존500KB chunk 경고 유지. 새 IA/시작화면 정책/서버·디자인 변경 없음. 관련 묶음만 main 자동배포→Production 같은 곡 QA로 마감하며 전체 R2/실기기·실제 협업 인수로 확대하지 않는다.
+
+직전 a702433 Part/Project 이력은 main/origin 일치·Git Integration success/Production 같은·다른 Project Part 및 후보 QA 통과, bundle E12F6CCD1242F317226C380692ABA553330E7B2BD95D28EB9D16E08D74BBCFDB exact로 마감했다. 사용자 서버3파일/보류 정책과 기존 R3–R7 gate는 유지한다.
 ### R2 Finder Part/Project 이력 복원 — 2026-10-12
 
 현재 방문을 떠나기 전에 브라우저 Back→Forward하면 최신 Alto Finder에 이전 Tenor Part가 남는 native assertion 실패를 재현했다. 기존 history 동기화 effect에 finderPartId/activeCreatedProjectId를 보존한다. 새 IA/시작화면/참여·초대/제출 정책을 추가하지 않는다. 같은 Project의 두 Part와 서로 다른 Project의 두 Part에서 Back/Forward의 제목·Project ID exact/제출 Track0을 확인했다. 기존 후보/목록 이력과 Collection 프로필·저장/복귀 회귀 및 build38modules 통과. 기존500KB chunk 경고는 남는다. 관련 묶음만 main 자동배포→Production 같은 Part QA로 마감한다. 실제 협업/측정 추천/실기기·전체 R2 인수로 확대하지 않는다.
