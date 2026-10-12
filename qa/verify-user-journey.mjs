@@ -49,10 +49,12 @@ try{
  await writeFile(iconsTemp,(await transformWithOxc(icons,'Icons.jsx',{jsx:{runtime:'classic'}})).code)
  const preferences=await readFile(new URL('../src/VoicePreferenceChoices.jsx',import.meta.url),'utf8')
  await writeFile(preferencesTemp,(await transformWithOxc(preferences,'VoicePreferenceChoices.jsx',{jsx:{runtime:'classic'}})).code.replace('./Icons.jsx','./.qa-user-journey-icons.mjs'))
- const observedSource=source.replaceAll('onDraftChange?.(false)', 'globalThis.__qaDraftChanges.push(false); onDraftChange?.(false)')
+ const recordingSource=source.replace('  requestMicrophone,','  requestMicrophone as realRequestMicrophone,').replace('  startRecording,','  startRecording as realStartRecording,').replace('loadProjectBacking, projectAudioReference','loadProjectBacking as realLoadProjectBacking, projectAudioReference')+
+  '\nconst requestMicrophone=async()=>{};const loadProjectBacking=async()=>null;const startRecording=async options=>{globalThis.__qaRecordingOptions=options;};'
+ const observedSource=recordingSource.replaceAll('onDraftChange?.(false)', 'globalThis.__qaDraftChanges.push(false); onDraftChange?.(false)')
  const code=(await transformWithOxc(observedSource,'App.jsx',{jsx:{runtime:'classic'}})).code.replace('./VoicePreferenceChoices.jsx','./.qa-user-journey-preferences.mjs').replace('./Icons.jsx','./.qa-user-journey-icons.mjs').replace("import { createRecordingInflowRenderer, createResonanceRenderer } from './resonanceWebGL.js'",'const createRecordingInflowRenderer=()=>()=>{}; const createResonanceRenderer=()=>({dispose(){}})')
  await writeFile(appTemp,code.replace(/createResonanceRenderer\s*=\s*\(\)\s*=>\s*\(\{\s*dispose\(\)\s*\{\s*\}\s*\}\)/g, 'createResonanceRenderer=options=>{globalThis.__qaRecordCalls.push(options);return {dispose(){}}}')+'\nexport {ResonanceRecord};')
- const {default:App,ResonanceRecord}=await import(appTemp.href)
+ const {default:App,ResonanceRecord,Recorder}=await import(appTemp.href)
  localStorage.setItem('ieum-v2:user-state:v7',JSON.stringify({joined:true,joinedPart:'tenor',invited:true,invitedVocalId:'luna',projectLikes:[{projectId}],songSaves:[{songId:'a-thousand-years'}],vocalSaves:[{vocalId:'luna'}]}))
  await saveTrack(track('soprano'));await saveTrack(track('alto'))
  await saveTrack({id:profileId+':range',projectId:profileId,kind:'voice-range',range:'C3–G4',rangeData:{lowMidi:48,highMidi:67}})
@@ -320,6 +322,37 @@ try{
  assert.equal(state().joined,false)
  assert.equal(state().createdProjects.length,0)
  check('Empty My Projects returns to Home discovery without selecting a fixed Project, assigning a Part or creating a Project')
+ await act(async()=>root.unmount())
+ for(const count of [2,3,4]){
+  const recorderParts=Array.from({length:count},(_,index)=>({id:'guide-'+(count-index),name:'GUIDE '+index,color:'#abcdef'}))
+  const recorderProject={id:'qa-guide-'+count,seed:'qa-guide-seed-'+count,parts:recorderParts,partCount:count,recordingDuration:18}
+  const ownPart=recorderParts[count-1]
+  const finals=Object.fromEntries(recorderParts.map((part,index)=>[part.id,{id:recorderProject.id+':'+part.id,projectId:recorderProject.id,partId:part.id,partIndex:99-index,participant:'GUIDE PERSON '+index,blob,duration:7,kind:'project-track',submissionStatus:'success',layer:{qaMarker:'final-'+index}}]))
+  const pending=count>2?{...finals[recorderParts[1].id],kind:'temporary-recording',submissionStatus:'review',participant:'INVALID REVIEW',duration:900,layer:{qaMarker:'review'}}:null
+  const supplied={...finals,...(pending?{[pending.partId]:pending}:{}),foreign:{...finals[recorderParts[0].id],id:'other:foreign',projectId:'other',partId:'foreign',participant:'INVALID FOREIGN',duration:900},failed:{...finals[recorderParts[0].id],partId:'failed',submissionStatus:'failed',duration:900}}
+  if(count===4)supplied[recorderParts[2].id]={...finals[recorderParts[2].id],projectId:'other',participant:'INVALID SOURCE',duration:900}
+  const originals=Object.values(supplied).map(item=>({item,index:item.partIndex,duration:item.duration,blob:item.blob,layer:item.layer}))
+  root=createRoot(container)
+  await act(async()=>root.render(React.createElement(Recorder,{go:()=>{},submit:async()=>{},partId:ownPart.id,project:recorderProject,parts:recorderParts,projectTracks:supplied,layers:recorderParts.map(part=>supplied[part.id].layer)})));await settle();await settle()
+  assert.equal(document.querySelectorAll('.guide-track-chips input').length,1,'Only another actual submitted Track is a recording Guide')
+  assert.ok(!container.textContent.includes('INVALID'))
+  assert.ok(container.textContent.includes('00:18'),'Invalid input duration cannot extend recording')
+  const guideCheck=document.querySelector('.guide-track-chips input')
+  await act(async()=>guideCheck.click());await settle()
+  await click('[data-action="record-start"]')
+  const options=globalThis.__qaRecordingOptions
+  assert.equal(options.duration,18)
+  assert.deepEqual(options.guideTracks.map(item=>item.partId),[recorderParts[0].id])
+  assert.equal(options.guideTracks[0].partIndex,0,'Guide audio follows current Part order, not its old stored index')
+  assert.equal(options.guides.parts[0],false,'The displayed Guide checkbox targets the actual audio slot')
+  assert.equal(options.guideTracks[0].blob,finals[recorderParts[0].id].blob)
+  const record=globalThis.__qaRecordCalls.findLast(item=>item.projectSeed===recorderProject.seed)
+  assert.equal(record.slots[0].qaMarker,'final-0')
+  if(pending)assert.equal(record.slots[1],null,'Review is not a submitted Record layer')
+  for(const original of originals){assert.equal(original.item.partIndex,original.index);assert.equal(original.item.duration,original.duration);assert.equal(original.item.blob,original.blob);assert.equal(original.item.layer,original.layer)}
+  await act(async()=>root.unmount());root=null
+  check(count+'-Part Recorder uses final sources/current Guide slots only, excludes Review/foreign/failed inputs and preserves originals')
+ }
  assert.deepEqual(errors,[],'Unexpected App console errors')
  console.log('Node integration passed. No claim of visual fidelity, GPU rendering, microphone capture, audible playback, real AI/backend or physical mobile verification.')
 }finally{

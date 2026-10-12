@@ -1106,10 +1106,12 @@ function RecordingConfirmation({ children, onCancel }) {
 }
 
 function Recorder({ go, submit, onRecordingStart, partId, projectTracks, layers, project = PROJECT, parts = PARTS, onDraftChange }) {
-  const recordingWindow = Math.max(18,...Object.values(projectTracks).map(track=>track.duration || 0),project.recordingDuration || 0)
+  const finalTracks=useMemo(()=>Object.fromEntries(submittedProjectTracks(project,projectTracks).map(track=>[track.partId,track])),[project,projectTracks])
+  const finalLayers=parts.map((part,index)=>finalTracks[part.id]?.layer || (finalTracks[part.id]?layers[index]:null))
+  const recordingWindow = Math.max(18,...Object.values(finalTracks).map(track=>track.duration || 0),project.recordingDuration || 0)
   const currentPart = parts.find(part => part.id === partId) || parts[0]
   const currentIndex = parts.findIndex(part => part.id === currentPart.id)
-  const guideTracks = Object.values(projectTracks).filter(track => track.partId !== currentPart.id)
+  const guideTracks = parts.flatMap((part,partIndex)=>part.id!==currentPart.id && finalTracks[part.id]?[{...finalTracks[part.id],partIndex}]:[])
   const [guides, setGuides] = useState({ backing:true, parts:parts.map(part=>part.id!==partId) })
   const [status, setStatus] = useState('ready')
   const [seconds, setSeconds] = useState(0)
@@ -1270,7 +1272,7 @@ function Recorder({ go, submit, onRecordingStart, partId, projectTracks, layers,
     catch(reason) { setError(reason?.message || 'Guide를 재생하지 못했어요. 다시 선택해 주세요.') }
   },[guides])
   const provisionalLayer = draft?.features ? buildVoiceLayer(project.seed,currentPart.id,draft.features) : null
-  const reviewLayers = layers.map((layer,index)=>index===currentIndex&&provisionalLayer?provisionalLayer:layer)
+  const reviewLayers = finalLayers.map((layer,index)=>index===currentIndex&&provisionalLayer?provisionalLayer:layer)
   return <div className="screen recording-screen" data-recording-status={status}>
     <TopBar figmaHeader title={status==='review'?'녹음 확인':`${currentPart.name} 녹음`} back={leave} meta={status === 'review' ? project.key || 'C major' : undefined}/>
     <main>
@@ -1281,7 +1283,7 @@ function Recorder({ go, submit, onRecordingStart, partId, projectTracks, layers,
         <div className="guide-track-chips">{guideTracks.map(track=>{const part=parts.find(item=>item.id===track.partId);const actualIndex=parts.findIndex(item=>item.id===track.partId);return <label className={guides.parts[actualIndex]?'selected':''} key={track.id}><input aria-label={`${track.participant} · ${part?.name} 함께 듣기`} type="checkbox" checked={Boolean(guides.parts[actualIndex])} onChange={e=>{const nextParts=[...guides.parts];nextParts[actualIndex]=e.target.checked;setGuides({...guides,parts:nextParts})}}/><span>{track.participant} · {part?.name}</span></label>})}</div>
         <p className="guide-device-note">Guide는 듣기용이며 녹음에는 내 입력만 저장합니다. 이어폰 없이 녹음하면 스피커 소리가 마이크에 들어갈 수 있어요.</p>
       </section>
-      <div className="recording-visual"><ResonanceRecord parts={parts} tracks={projectTracks} projectId={project.id} layers={status==='review'?reviewLayers:layers} activePartIndex={currentIndex} state={status === 'recording' ? 'recording' : status==='paused'?'paused':'rest'} level={level} seed={project.seed} compact /><RecordingInflow active={status==='recording'} partIndex={0} level={level} seed={project.seed} waveformRef={waveformRef}/></div>
+      <div className="recording-visual"><ResonanceRecord parts={parts} tracks={finalTracks} projectId={project.id} layers={status==='review'?reviewLayers:finalLayers} activePartIndex={currentIndex} state={status === 'recording' ? 'recording' : status==='paused'?'paused':'rest'} level={level} seed={project.seed} compact /><RecordingInflow active={status==='recording'} partIndex={0} level={level} seed={project.seed} waveformRef={waveformRef}/></div>
       {!project.lyrics?.length&&<p className="lyric-source-note">실제 곡 가사와 반주가 아직 등록되지 않았어요.</p>}
       <div className="lyrics" aria-live="polite">{[lyricIndex-1,lyricIndex,lyricIndex+1].map(index=><span key={index} className={index===lyricIndex?'active':''} aria-hidden={!lyrics[index]||undefined}>{lyrics[index] || ''}</span>)}</div>
       <div className="recording-timeline" aria-label="녹음 시간"><div><span>RECORD TIME</span><b>{fmt(seconds)} / {fmt(recordingWindow)}</b></div><div className="time-progress"><span style={{width:`${Math.min(100,seconds/recordingWindow*100)}%`}}/></div></div>

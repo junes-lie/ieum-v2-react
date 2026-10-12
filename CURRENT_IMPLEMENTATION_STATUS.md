@@ -1,4 +1,10 @@
+## 2026-10-13 R1/R2 녹음 Guide 확정 입력
+
+2026-10-13 R1/R2 녹음 Guide 연결: Recorder도 기존 확정 제출 공통 판정을 사용한다. Review/실패·다른 Project 입력은 함께 듣기/녹음 길이/확정 Record Layer에 포함하지 않고 내 Review provisional layer만 기존 흐름대로 표시한다. 다른 확정 Track의 partIndex는 원본을 변경하지 않는 사본에서 현재 실제 Part 순서로 연결하여 Guide 선택과 audio scheduling slot 불일치를 막는다. 격리 Node DOM/IndexedDB의 실제 Recorder 시작 callback에서2/3/4 Part·Guide 체크 선택·잘못된 기존 index/입력 제외·원본 불변을 확인하고 기존 App 흐름/렌더 및 build 통과. 초기 QA는 renderer 옵션 projectId/layers가 존재하지 않아 TypeError였으며 실제 projectSeed/slots 계약으로 고쳐 통과했다. 마이크/반주/녹음 시작은 QA stub이며 실제 청취·녹음 하드웨어/시각·음악·원격 서비스 인수를 대체하지 않는다. 사용자3파일 및 기존 단계/예산/미정 정책을 보존하고 실효 공수는 미측정이다.
+
 ## 2026-10-13 R1/R2 완성 화면 직접 진입
+
+마감:8db4a1d28e189f94eb66cba2db8806dff17ef15f 관련4파일 commit/main push·main/origin0/0, 사용자 서버3파일 보존. Vercel full SHA success/Production deployment7024635087 SHA 일치·https://vercel.com/junes-lie/ieum-v2-react/8QU8SbL2zGa288J17XGNhNpMexKR 확인. Production page/JS200·index-C7QZTo6R.js local exact/SHA256 0db5d09babf6b4a8b63ef6e5faad1b9cbacc4bf48cfb1623d92025e7bf59ed04; capabilities200/preparation 및 모든 실제 서비스 기능false다. user-journey 격리 DOM/저장 회귀·build 통과, 실제 기기/청취/디자인·원격 서비스·생성 음악/그래픽은 미완료다. 처음 호출한 npm qa:journey는 존재하지 않는 script라 Missing script 오류였으며 기존 node qa/verify-user-journey.mjs를 직접 실행해 통과했다. 이 문단은 commit 후 로컬 증거 기록이다.
 
 2026-10-13 R1/R2 완성 진입 gate: 기존 App의 direct #complete·History 복원도 실제 필수 submitted Track과 저장 Mix가 모두 있을 때만07을 유지한다. 불완전 입력은 기존03을 즉시 렌더하고 현재 History entry를 workspace로 교체하여 잘못된 완료/반복 back 경로를 막는다. 저장된 Mix/Track을 삭제·재생성하지 않으며 기존 정상 완성 이동은 유지한다. 격리 DOM/IndexedDB user-journey에서 Mix 없음·불완전 Track+저장 Mix·popstate·원본 보존 및 정상 완성 복원/기존2–4 Part 회귀를 확인했다. production build 통과, 기존500KB 경고 유지. 실제 기기·청취·시각/디자인·원격 서비스 및 R5/R6 생성 인수는 기존 잔여이며 사용자 서버3파일은 이번 stage에서 제외한다. 실효 공수는 미측정이다.
 
