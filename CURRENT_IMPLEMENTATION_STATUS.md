@@ -1,4 +1,16 @@
+## 2026-10-13 R3 대표 Sample 원본 업로드·오디오 해독 준비
+
+기존 개인 측정/대표 Sample과 Project Track의 목적을 분리하는 profile_sample_upload_intents 및 본인 prepare/lookup RPC를 추가했다. voice-sample-upload API는 본인 Auth→DB 할당→private Storage byte 검사/서명 순서로 동작한다. 동일 사용자/key/파일은 같은 원본 ID, 바뀐 파일은409이며 다른 사용자의 같은 key와 Track의 같은 key는 별개다. 이전 Profile/Part가 없는 초기 Setup도 준비 가능하다. 사용자 입력의 userId/purpose/features/검증 완료는 거부한다.
+
+voice-sample-verify API는 인증 본인 원본 조회→실제 decoder→service-only immutable receipt에 연결했다. 실제 sampleRate/frame 길이·decoder binary/version/hash를 보존하며 재시도는 원본 byte를 재확인해 기존 version을 유지한다. uploadStatus·audioVerification과 대표 Sample 등록의 sampleVerification=pending을 분리했다. 기존 Project verifier와 같은 decode receipt 검사만 재사용하고 Project/Part를 가짜로 붙이거나 Sample을 제출 Track으로 취급하지 않는다.
+
+격리 SQL의 본인/타인/익명·키/파일 변경·기존 Profile/원본 이력 보존·Track 목적 분리, 주입 API의 signing/byte 재검사·위조/오류/비공개 bucket 검증이 통과했다. 실제 AAC→주입 Storage→실제 해독0.512초→실제 격리 SQL receipt→재시도/불일치·타인·decoder 미설정·DB 실패 QA도 통과했고 원본 hash/기존 Profile·Identity/0Track·0Mix 유지 확인. 공유 receipt 검사 추출의 기존 Project 실제 AAC/receipt/제출 및 upload/Profile API 회귀와 build40modules/525.39KB도 통과했다. >500KB 기존 경고는 유지한다.
+
+실제 원격 migration/Auth/Storage·hosted decoder·App Setup 바인딩·대표 Sample 분석/측정 출처/Profile 등록 transaction은 미완료다. decoder 길이 검증을 음색 분석·그래픽 생성 완료로 기록하지 않는다. 기존 사용자 변경3파일을 보존하며 별도 화면/앱·자동 원본 이관·로컬 대형 AI 실행은 하지 않았다. 다음은 측정/대표 Sample provenance와 source revision 등록 경계다.
+
 ## 2026-10-13 R3 Profile 원본 revision 보존 준비
+
+Git/Production 확인: 검토한7파일만560fbb754e1cacfe911406ae4e63123a34492823로 commit/push했고 main/origin0/0이다. 사용자 서버3파일은 미커밋 보존했다. 해당full SHA GitHub status pending/statuses0·deployment0이며 자동배포 READY는 미확인이다. Production 앱200/index-Cy9rymZA.js와 capabilities200/preparation/모두false를 확인했다. 기존 frontend bundle/거부 경계를 새 migration 적용이나 실제 서비스 연결 증거로 사용하지 않는다. 이 문단은 commit 이후 로컬 기록이다.
 
 사용자당 현재 원본 한 행만 보관하던 DB에 private revision별 history를 추가했다. 기존 trusted source는 누락 없이 보존하고 이후 새 source revision은 같은 transaction에서 snapshot을 남긴다. 같은 사용자/revision의 원본 hash·음역·Sample 참조·분석 version·실제 검증 시각 변경은409로 거부한다. 검증 시각은 UTC microseconds로 정규화해 DB 세션 timezone 차이가 같은 원본의 충돌을 만들지 않는다. 다른 사용자의 같은 revision은 별개다. 현재 Part Fit은 현재 원본을 계속 사용하며 이력 보존만으로 기존 Identity/Track/Record를 갱신하지 않는다.
 

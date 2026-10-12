@@ -1,5 +1,15 @@
 # 단일 앱 서비스 연결 계약
 
+## 2026-10-13 개인 대표 Sample 업로드·오디오 검증 준비
+
+POST /api/me/voice-sample-upload는 {size,sha256,contentType}와 Idempotency-Key를 받는다. Auth의 실제 UUID→본인 목적의 ieum_prepare_profile_sample_upload RPC→private Storage byte 검사/없는 원본의 no-upsert 서명 순서다. 기존 Profile/Part가 없어도 초기 Setup 원본을 준비할 수 있으며 사용자 ID/purpose/음역/features/검증 성공 입력은 거부한다. 개인 Sample intent는 Project upload intent와 별도 테이블·키 공간이다. opaque 원본 UUID는 기존 Storage adapter를 재사용하고 API bearer를 Storage에 전달하지 않는다.
+
+POST /api/me/voice-sample-verify는 {uploadIntentId}만 받는다. 본인 ieum_get_owned_profile_sample_upload 조회→실제 Storage 원본 hash/MIME/크기·해독→service-only ieum_confirm_profile_sample_audio RPC의 immutable receipt를 연결했다. 권한 확인 전에 Storage를 읽지 않는다. 기존 IEUM_AUDIO_DECODER_PATH/IEUM_AUDIO_MAX_DECODE_SECONDS server-only 설정을 재사용하며 decoder/분석 version·실제 frame 길이를 저장한다. 기존 receipt 재시도는 새 decoder 없이도 byte 재검사 후 같은 길이/version을 유지한다. Sample 원본 유실이면 재서명/덮어쓰기로 조용히 복구하지 않는다.
+
+상태는 uploadStatus(바이트 전송), audioVerification(실제 format/길이 해독), sampleVerification(대표 Sample/Profile 등록)을 구분한다. 현재 마지막 상태는 pending이다. decoded-pcm-v1은 길이 검증이며 음색·음역 분석 version이나 Identity 생성 성공이 아니다. 원본 검증만으로 기존 대표 Sample·측정 음역·성향·Identity/Track/Mix를 변경하지 않는다. 실제 Profile 등록에는 측정 출처·대표 Sample 분석/참조·revision을 연결하는 별도 transaction이 남아 있다.
+
+profile_sample_uploads→profile_sample_receipts 순서로 migration을 적용한다. 실제 원격에는 적용하지 않았고 App 바인딩/Google 연결/hosted decoder도 미완료다. 로컬 실제 AAC + 격리 SQL·주입 HTTP의 검증 성공/재시도/권한/DB 실패와 관련 Project 해독·제출 회귀는 통과했지만 실제 원격 사용자·청취 인수 증거는 아니다. 새 화면/측정 과제·자동 시연 데이터 업로드는 추가하지 않았다.
+
 ## 2026-10-13 Profile 원본 revision 이력
 
 project_participation 다음에 profile_source_history migration을 적용한다. ieum_profile_voice_sources는 현재 Part Fit용 source이며 새 private history는(user_id,source_revision)별 전체 원본 참조를 보존한다. 기존행 backfill/현재행 insert·update의 snapshot은 같은 transaction이고 같은 revision 내용 변경은409 rollback이다. 시각 값은 실제 verified_at을 UTC microseconds로 직렬화하며 새 검증 시각을 만들지 않는다. authenticated/anon은 이력에 접근하지 않고 service_role도 SELECT만 가능하다. 쓰기는 현재 source의 trusted write trigger에 한정한다. 원격에는 적용하지 않았다.
