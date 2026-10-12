@@ -1,8 +1,10 @@
 import assert from 'node:assert/strict'
 import {readFile,writeFile,unlink} from 'node:fs/promises'
 import {transformWithOxc} from 'vite'
-import React from 'react'
+import React,{act} from 'react'
 import {renderToStaticMarkup} from 'react-dom/server'
+import {createRoot} from 'react-dom/client'
+import {Window} from 'happy-dom'
 
 // Node rendering only: no browser, Computer Use, microphone, or network.
 globalThis.window={AudioContext:class{},location:{search:''}}
@@ -11,6 +13,7 @@ globalThis.localStorage={getItem:()=>null}
 const temp=new URL('../src/.qa-single-app-render.mjs',import.meta.url)
 const iconsTemp=new URL('../src/.qa-single-app-icons.mjs',import.meta.url)
 const preferencesTemp=new URL('../src/.qa-single-app-preferences.mjs',import.meta.url)
+const controlsTemp=new URL('../src/.qa-detail-listening.mjs',import.meta.url)
 try {
   const source=await readFile(new URL('../src/App.jsx',import.meta.url),'utf8')
   const iconsSource=await readFile(new URL('../src/Icons.jsx',import.meta.url),'utf8')
@@ -157,4 +160,51 @@ try {
   assert.ok(!main.includes('FigmaProject'))
   assert.equal((main.match(/createRoot/g)||[]).length,2)
   console.log('Single App Node rendering: entry, custom 2/3/4-Part Workspace/Recorder/Complete, dynamic credits/key/song, native final audio passed. No visual or interactive browser claim.')
-} finally { await Promise.all([unlink(temp).catch(()=>{}),unlink(iconsTemp).catch(()=>{}),unlink(preferencesTemp).catch(()=>{})]) }
+  // Actual React effects/controls in isolated Node DOM; preview DSP and GPU are
+  // injected boundaries. No browser, device microphone, or listening claim.
+  const controlsSource=source.replace(/import \{ createRecordingInflowRenderer, createResonanceRenderer \} from ['"]\.\/resonanceWebGL\.js['"]/,'const createRecordingInflowRenderer=()=>()=>{}; const createResonanceRenderer=()=>({dispose(){}})')
+    .replace('  createPreviewMix,','  createPreviewMix as unusedPreviewMix,')
+    + '\nconst createPreviewMix=async options=>{globalThis.__qaDetailPreviewCalls.push(options);return {url:"blob:qa-detail-preview",duration:12}};'
+  await writeFile(controlsTemp,(await transformWithOxc(controlsSource,'App.jsx',{jsx:{runtime:'classic'}})).code.replace('./Icons.jsx','./.qa-single-app-icons.mjs').replace('./VoicePreferenceChoices.jsx','./.qa-single-app-preferences.mjs'))
+  const dom=new Window({url:'http://localhost/'})
+  for(const key of ['window','document','navigator','location','localStorage','sessionStorage','HTMLElement','Event','Image','ResizeObserver'])Object.defineProperty(globalThis,key,{value:key==='window'?dom:dom[key],configurable:true,writable:true})
+  globalThis.IS_REACT_ACT_ENVIRONMENT=true
+  globalThis.__qaDetailPreviewCalls=[]
+  dom.AudioContext=class{}
+  dom.HTMLMediaElement.prototype.play=async function(){this.qaPlaying=true}
+  dom.HTMLMediaElement.prototype.pause=function(){this.qaPlaying=false}
+  const {Detail:InteractiveDetail}=await import(controlsTemp.href)
+  const container=document.createElement('div');document.body.append(container)
+  const root=createRoot(container)
+  const settle=async()=>act(async()=>{await new Promise(resolve=>setTimeout(resolve,30))})
+  const click=async selector=>{const button=container.querySelector(selector);assert.ok(button,selector);await act(async()=>button.click());await settle()}
+  const controlTracks=Object.fromEntries(Object.entries(fullTracks).map(([id,track])=>[id,{...track,url:`blob:qa-${id}`,duration:12,participant:`QA ${id}`}]))
+  const beforeOriginals=await Promise.all(Object.values(controlTracks).map(track=>track.blob.text()))
+  try{
+    await act(async()=>root.render(React.createElement(InteractiveDetail,{...detailProps,createdProjectTracks:{[homeProject.id]:controlTracks}})))
+    await settle()
+    assert.equal(container.querySelectorAll('.include-toggle').length,3)
+    assert.equal(globalThis.__qaDetailPreviewCalls.at(-1).tracks.length,3)
+    await click('.include-toggle')
+    assert.equal(globalThis.__qaDetailPreviewCalls.at(-1).tracks.length,2)
+    assert.deepEqual(globalThis.__qaDetailPreviewCalls.at(-1).tracks.map(track=>track.partId),['harmony','lower'])
+    await click('.row-track-play')
+    assert.equal(container.querySelector('audio').getAttribute('src'),'blob:qa-lead','Individual Track uses its persisted audio URL')
+    assert.equal(container.querySelector('audio').qaPlaying,true)
+    await click('.listening-context button')
+    await click('[data-part="harmony"] .include-toggle')
+    await click('[data-part="lower"] .include-toggle')
+    assert.equal(container.querySelector('.play-btn').disabled,true,'Zero selected Mix Tracks cannot play')
+    assert.ok(container.textContent.includes('들을 트랙을 하나 이상 선택해 주세요.'))
+    await click('[data-part="lead"] .include-toggle')
+    assert.equal(container.querySelector('audio').getAttribute('src'),'blob:qa-lead')
+    await click('.play-btn')
+    const previousAudio=container.querySelector('audio')
+    assert.equal(previousAudio.qaPlaying,true)
+    await click('[data-project-id="qa-static-project"]')
+    assert.equal(previousAudio.qaPlaying,false,'Changing Project pauses the old audio')
+    assert.equal(container.querySelector('#current-mix'),null,'Another Project cannot retain previous Project Track controls')
+    assert.deepEqual(await Promise.all(Object.values(controlTracks).map(track=>track.blob.text())),beforeOriginals)
+    console.log('PASS Detail isolated Node controls/effects: individual URL, selected Mix inputs, zero-selection disabled, Project switch pauses old media, original Blobs unchanged. Preview DSP/media hardware/GPU are not verified here.')
+  }finally{await act(async()=>root.unmount());await dom.happyDOM.close()}
+} finally { await Promise.all([unlink(temp).catch(()=>{}),unlink(iconsTemp).catch(()=>{}),unlink(preferencesTemp).catch(()=>{}),unlink(controlsTemp).catch(()=>{})]) }

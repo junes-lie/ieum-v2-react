@@ -1,3 +1,11 @@
+## 2026-10-13 R1/R2 상세 제출 Track 청취 연결
+
+사용자가 승인한261012 화면명세02/D09의 미구현 청취를 기존 CurrentMixPanel/Player·Preview Mix에 연결했다. 원래 PartRow 표현을 유지하고 확정 Track만 개별 URL·포함/제외·현재 청취 조합으로 전달한다. 생성 Project와 기존 main은 같은 읽기 경계를 사용하며 탐색용 정적 Project에 재생 가능한 원본이 있는 것처럼 만들지 않는다. 제출0개 안내, 조합0개 재생 비활성/이유, 같은 곡의 다른 Project 선택 시 keyed panel 폐기 및 이전 audio pause를 적용했다. 개인 청취 조합은 제출/Part 배정/완성 Mix·원본 Blob을 변경하지 않는다. Workspace는 기존 waveform/기본 제목을 유지하고 새 화면·디자인 토큰은 없다.
+
+기존 single-app QA에 격리 happy-dom 실제 React 효과/클릭을 추가해 individual 원본 URL·선택2/1/0개·Mix 입력·재생 비활성/이유·Project 전환의 이전 media pause·원본 유지,2–4 Part/상태/계보 SSR을 검증했다. Preview DSP/GPU/HTMLMediaElement는 검사 경계에서 주입하므로 실제 가창·실기기 청취를 증명하지 않는다. 기존 Node user-journey의 작업실·Draft 실패/재시도·직접 제출·cleanup 실패 보존·History·완성 복원·2–4 Part 회귀와 build40modules/528.82KB 통과. 기존500KB 경고는 유지한다. 최신 온라인 Notion/figma-desktop는 도구0개로 확인하지 못했으며 승인된261012 export/기존 컴포넌트를 사용했고 시각 인수는 미완료다.
+
+직전 c054adb 상세 상태 commit의 Production 페이지200/index-C_NZzyZc.js 파일200/SHA256 10beea043b07bcb422e1e1c5e01d657a83a68ee10a73959e584d62d13eade074가 당시 로컬 build와 일치했다. 추가 기존 verify-song-detail-history.mjs는 Edge launch에서 Target page, context or browser has been closed(temporary site list error=-5/TransactNamedPipe 0x6D)로 실패했고 실제 UI History 통과로 기록하지 않는다. 이 실패를 제품 코드 결함/통과로 바꾸거나 재설치·Computer Use로 우회하지 않았다. Node History 회귀는 별도 증거다. 실제 서비스/음악·Identity·두 사용자/모바일·청취·승인 디자인·Vercel READY 메타데이터는 여전히 미완료이며 사용자3파일은 보존한다.
+
 ## 2026-10-13 R1/R2 생성 Project 상세 연결 마감
 
 Home 후속 대조에서 기존02가 created Project의 고정 progress/status와 배정 당시 Part를 표시하고 Carousel 클릭으로03을 직접 여는 누락을 확인했다. 현재 저장된 확정 Track만 progress·Part 제출 상태/참여자/길이/레이어에 연결하고 같은 Project ID·Seed·실제2–4 Part 순서를 Record에 전달한다. Review·임시본·오래된 COMPLETE/불완전 Mix는 완료 근거로 쓰지 않는다. 같은 곡 Carousel은02 안에서 선택을 바꾸며 내 프로젝트의 별도 작업실/완성곡 버튼이 선택 Project를 연다. App의 공통 created Project 이동도 모든 확정 Track+저장 Mix 조건을 적용했다.
