@@ -28,6 +28,7 @@ try {
  await page.waitForSelector('[data-action="sample-stop"]');await page.waitForTimeout(3400)
  await page.locator('[data-action="sample-stop"]').click()
  await page.locator('[data-action="voice-complete"]').click()
+ await page.locator('[data-action="preferences-skip"]').click()
  await page.locator('[data-action="profile-finish"]').click()
  await page.waitForSelector('.owner-part-field')
  assert.equal(await page.locator('.field-label select').isDisabled(),false)

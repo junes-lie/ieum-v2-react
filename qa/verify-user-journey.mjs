@@ -24,6 +24,7 @@ window.HTMLMediaElement.prototype.pause=()=>{}
 globalThis.fetch=async url=>{assert.equal(url,'/demo-stems/manifest.json','Existing submitted Tracks must prevent loading replacement demo audio');return {ok:true,json:async()=>({tracks:[{partId:'soprano',file:'/demo-stems/soprano.wav'},{partId:'alto',file:'/demo-stems/alto.wav'}]})}}
 const appTemp=new URL('../src/.qa-user-journey-app.mjs',import.meta.url)
 const iconsTemp=new URL('../src/.qa-user-journey-icons.mjs',import.meta.url)
+const preferencesTemp=new URL('../src/.qa-user-journey-preferences.mjs',import.meta.url)
 const projectId='ieum-thousand-years-v7',seed='ieum:thousand-years:original-c:0048',profileId='ieum-v2:voice-profile:v7'
 const blob=new Blob(['isolated synthetic recording bytes'],{type:'audio/wav'})
 const features={version:'ieum-basic-voice-v3',fingerprint:'qa-preserved',brightness:.5,low:.33,dynamicRange:.4,spectralFlux:.2,roughness:.3,energy:.5,activeRatio:.8,articulation:.2,pitchVariation:.1,envelope:[.2,.7,.4]}
@@ -46,8 +47,10 @@ try{
  const source=(await readFile(new URL('../src/App.jsx',import.meta.url),'utf8')).replace(/import \{ createRecordingInflowRenderer, createResonanceRenderer \} from ['"]\.\/resonanceWebGL\.js['"]/,'const createRecordingInflowRenderer=()=>()=>{}; const createResonanceRenderer=()=>({dispose(){}})').replace('  createPreviewMix,','  createPreviewMix as realCreatePreviewMix,')+'\nconst createPreviewMix=async()=>({blob:new Blob([\"QA preview\"]),url:URL.createObjectURL(new Blob([\"QA preview\"])),duration:7});'
  const icons=await readFile(new URL('../src/Icons.jsx',import.meta.url),'utf8')
  await writeFile(iconsTemp,(await transformWithOxc(icons,'Icons.jsx',{jsx:{runtime:'classic'}})).code)
+ const preferences=await readFile(new URL('../src/VoicePreferenceChoices.jsx',import.meta.url),'utf8')
+ await writeFile(preferencesTemp,(await transformWithOxc(preferences,'VoicePreferenceChoices.jsx',{jsx:{runtime:'classic'}})).code.replace('./Icons.jsx','./.qa-user-journey-icons.mjs'))
  const observedSource=source.replaceAll('onDraftChange?.(false)', 'globalThis.__qaDraftChanges.push(false); onDraftChange?.(false)')
- const code=(await transformWithOxc(observedSource,'App.jsx',{jsx:{runtime:'classic'}})).code.replace('./Icons.jsx','./.qa-user-journey-icons.mjs').replace("import { createRecordingInflowRenderer, createResonanceRenderer } from './resonanceWebGL.js'",'const createRecordingInflowRenderer=()=>()=>{}; const createResonanceRenderer=()=>({dispose(){}})')
+ const code=(await transformWithOxc(observedSource,'App.jsx',{jsx:{runtime:'classic'}})).code.replace('./VoicePreferenceChoices.jsx','./.qa-user-journey-preferences.mjs').replace('./Icons.jsx','./.qa-user-journey-icons.mjs').replace("import { createRecordingInflowRenderer, createResonanceRenderer } from './resonanceWebGL.js'",'const createRecordingInflowRenderer=()=>()=>{}; const createResonanceRenderer=()=>({dispose(){}})')
  await writeFile(appTemp,code.replace(/createResonanceRenderer\s*=\s*\(\)\s*=>\s*\(\{\s*dispose\(\)\s*\{\s*\}\s*\}\)/g, 'createResonanceRenderer=options=>{globalThis.__qaRecordCalls.push(options);return {dispose(){}}}')+'\nexport {ResonanceRecord};')
  const {default:App,ResonanceRecord}=await import(appTemp.href)
  localStorage.setItem('ieum-v2:user-state:v7',JSON.stringify({joined:true,joinedPart:'tenor',invited:true,invitedVocalId:'luna',projectLikes:[{projectId}],songSaves:[{songId:'a-thousand-years'}],vocalSaves:[{vocalId:'luna'}]}))
@@ -303,7 +306,7 @@ try{
 }finally{
  console.error=originalError
  if(root)await act(async()=>root.unmount())
- await Promise.all([unlink(appTemp).catch(()=>{}),unlink(iconsTemp).catch(()=>{})])
+ await Promise.all([unlink(appTemp).catch(()=>{}),unlink(iconsTemp).catch(()=>{}),unlink(preferencesTemp).catch(()=>{})])
  await clearProjectTracks(projectId);await clearProjectTracks(profileId)
  await window.happyDOM.close()
 }

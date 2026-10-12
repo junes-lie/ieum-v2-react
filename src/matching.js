@@ -37,13 +37,17 @@ export const rangeGate = evaluatePartFit
 
 // Compare declared preferences, not prototype metrics or inferred vocal ability.
 export function sharedVoicePreferences(profile, candidate) {
+  const genreAliases={'발라드':'ballad','팝':'pop','r&b·소울':'r&b','록':'rock','힙합':'hip hop','재즈':'jazz'}
+  const canonical=(key,value)=>{const text=String(value).trim().toLocaleLowerCase();return key==='genres'?(genreAliases[text] || text):text}
   const shared = key => {
-    const own = new Set((profile?.[key] || []).map(value=>String(value).trim().toLocaleLowerCase()))
-    return [...new Set(candidate?.[key] || [])].filter(value=>own.has(String(value).trim().toLocaleLowerCase()))
+    const own = new Set((profile?.[key] || []).map(value=>canonical(key,value)))
+    return [...new Set(candidate?.[key] || [])].filter(value=>own.has(canonical(key,value)))
   }
   const genres = shared('genres')
   const taste = shared('taste')
-  return {genres,taste,count:genres.length+taste.length}
+  const songIds=shared('preferredSongIds')
+  const configured=Boolean(profile?.genres?.length || profile?.taste?.length || profile?.preferredSongIds?.length)
+  return {genres,taste,songIds,configured,count:genres.length+taste.length+songIds.length}
 }
 
 export function recommendSampleSongs(rangeData, songs) {

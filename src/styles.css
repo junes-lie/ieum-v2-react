@@ -256,7 +256,29 @@ dialog.confirm-modal .review-actions button{flex:1 1 120px;min-height:52px}
 .workspace-track-row .track-play::before{content:'';position:absolute;left:6px;top:6px;width:32px;height:32px;box-sizing:border-box;border:1px solid rgba(236,230,220,.68);border-radius:50%;background:linear-gradient(#2c2721,#201c17 38%,#15110e);box-shadow:inset 1px 1px rgba(255,250,242,.18),inset -1px -1px rgba(26,20,15,.38)}
 .workspace-track-row .track-play img{position:relative;z-index:1}
 @media(max-width:389px){.workspace-track-row{grid-template-columns:34px 74px minmax(24px,1fr) 46px 44px;gap:8px}}
-.voice-preference-choices fieldset{min-width:0;margin:16px 0;padding:12px;border:1px solid var(--line-strong);display:flex;flex-wrap:wrap;gap:4px 16px}
-.voice-preference-choices legend{font-size:14px}
-.voice-preference-choices label{display:inline-flex;align-items:center;gap:8px;min-height:44px;margin:0;font-size:14px}
-.voice-preference-choices input[type=checkbox]{display:inline-block;flex:none;width:18px;height:18px;min-height:0;margin:0;padding:0;accent-color:var(--primary)}
+.voice-preference-choices fieldset{min-width:0;margin:24px 0;padding:12px 0;border:0;border-top:1px solid var(--line-strong)}
+.voice-preference-choices legend{font-size:16px;padding-right:12px}
+.voice-preference-choices .preference-orbits{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,8rem),1fr));gap:20px 14px;align-items:center;justify-items:center;padding:12px 6px}
+.voice-preference-choices .preference-circle{position:relative;display:flex;align-items:center;justify-content:center;flex-direction:column;aspect-ratio:1;min-height:calc(3.5em + 32px);width:94%;border-radius:50%;border:1px solid var(--line-strong);background:var(--strong);color:var(--primary);font-size:1rem;line-height:1.5;padding:16px;text-align:center;overflow-wrap:anywhere;transition:transform .15s var(--ease),background-color .15s var(--ease);isolation:isolate}
+.voice-preference-choices .preference-circle[aria-pressed=true]{background:var(--primary);color:var(--bg);border-color:var(--primary);transform:scale(1.025)}
+.voice-preference-choices .preference-circle:disabled{opacity:.65}
+.voice-preference-choices .preference-check{display:block;position:absolute;bottom:9%;font-size:14px;line-height:1;height:14px}
+.voice-preference-choices .role-circle{width:94%}
+.voice-preference-choices .genre-circle.size-1{width:77%}
+.voice-preference-choices .genre-circle.size-2{width:86%}
+.voice-preference-choices .genre-circle:nth-child(even){margin-top:20px}
+.voice-preference-choices .preference-search{display:block;font-size:14px;margin:12px 0}
+.voice-preference-choices .preference-search input{display:block;width:100%;min-height:44px;margin-top:8px;padding:10px;background:var(--surface);border:1px solid var(--line-strong);color:var(--primary)}
+.voice-preference-choices .preference-saved-filter{font-size:14px;min-height:44px}
+.voice-preference-choices .preference-saved-filter[aria-pressed=true]{background:var(--primary);color:var(--bg)}
+.voice-preference-choices .preference-song{width:100%;display:grid;justify-items:center;gap:8px;min-width:0}
+.voice-preference-choices .preference-song:nth-child(even){margin-top:20px}
+.voice-preference-choices .song-circle{font-size:.875rem;min-height:calc(4.5em + 32px)}
+.voice-preference-choices .song-circle img{position:absolute;inset:0;width:100%;height:100%;border-radius:50%;object-fit:cover;z-index:-2}
+.voice-preference-choices .song-circle:has(img:not([hidden]))::before{content:'';position:absolute;inset:0;background:rgba(13,11,9,.72);border-radius:50%;z-index:-1}
+.voice-preference-choices .song-circle:has(img:not([hidden]))[aria-pressed=true]{color:var(--primary);box-shadow:inset 0 0 0 4px var(--primary)}
+.voice-preference-choices .preference-song small{font-size:12px;text-align:center;color:var(--secondary);overflow-wrap:anywhere;max-width:100%}
+.voice-preference-choices .preference-selected{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.voice-preference-choices .preference-selected button{min-height:44px;max-width:100%;padding:8px 12px;background:var(--surface);border:1px solid var(--line-strong);border-radius:20px;overflow-wrap:anywhere;font-size:14px}
+@media(max-width:359px){.voice-preference-choices .preference-circle{font-size:.875rem;padding:10px}.voice-preference-choices .genre-circle:nth-child(even),.voice-preference-choices .preference-song:nth-child(even){margin-top:0}.voice-preference-choices .genre-circle{min-width:82%}}
+@media(prefers-reduced-motion:reduce){.voice-preference-choices .preference-circle{transition:none}}

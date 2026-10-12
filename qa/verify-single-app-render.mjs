@@ -10,13 +10,16 @@ globalThis.location=window.location
 globalThis.localStorage={getItem:()=>null}
 const temp=new URL('../src/.qa-single-app-render.mjs',import.meta.url)
 const iconsTemp=new URL('../src/.qa-single-app-icons.mjs',import.meta.url)
+const preferencesTemp=new URL('../src/.qa-single-app-preferences.mjs',import.meta.url)
 try {
   const source=await readFile(new URL('../src/App.jsx',import.meta.url),'utf8')
   const iconsSource=await readFile(new URL('../src/Icons.jsx',import.meta.url),'utf8')
   const iconsTransformed=await transformWithOxc(iconsSource,'Icons.jsx',{jsx:{runtime:'classic'}})
   await writeFile(iconsTemp,iconsTransformed.code)
+  const preferencesSource=await readFile(new URL('../src/VoicePreferenceChoices.jsx',import.meta.url),'utf8')
+  await writeFile(preferencesTemp,(await transformWithOxc(preferencesSource,'VoicePreferenceChoices.jsx',{jsx:{runtime:'classic'}})).code.replace('./Icons.jsx','./.qa-single-app-icons.mjs'))
   const transformed=await transformWithOxc(source,'App.jsx',{jsx:{runtime:'classic'}})
-  await writeFile(temp,transformed.code.replace('./Icons.jsx','./.qa-single-app-icons.mjs'))
+  await writeFile(temp,transformed.code.replace('./Icons.jsx','./.qa-single-app-icons.mjs').replace('./VoicePreferenceChoices.jsx','./.qa-single-app-preferences.mjs'))
   const {default:App,Workspace,Recorder,Complete}=await import(temp.href)
   const noop=()=>{}
   const parts=[{id:'lead',name:'Lead',color:'#3b82f6',status:'ready',participantId:'jisun',participant:'나'},{id:'harmony',name:'Harmony',color:'#f16f61',status:'open'},{id:'lower',name:'Lower',color:'#2eb6ad',status:'open'}]
@@ -61,4 +64,4 @@ try {
   assert.ok(!main.includes('FigmaProject'))
   assert.equal((main.match(/createRoot/g)||[]).length,2)
   console.log('Single App Node rendering: entry, custom 2/3/4-Part Workspace/Recorder/Complete, dynamic credits/key/song, native final audio passed. No visual or interactive browser claim.')
-} finally { await Promise.all([unlink(temp).catch(()=>{}),unlink(iconsTemp).catch(()=>{})]) }
+} finally { await Promise.all([unlink(temp).catch(()=>{}),unlink(iconsTemp).catch(()=>{}),unlink(preferencesTemp).catch(()=>{})]) }

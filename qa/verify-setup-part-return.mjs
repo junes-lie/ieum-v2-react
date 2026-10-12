@@ -26,7 +26,7 @@ try{
  await page.locator('.sample-select-stage > button.primary').click();await page.locator('[data-action="sample-start"]').click()
  await page.waitForSelector('[data-action="sample-stop"]');await page.waitForTimeout(3400)
  await page.locator('[data-action="sample-stop"]').click();await page.waitForSelector('[data-action="voice-complete"]')
- await page.locator('[data-action="voice-complete"]').click();await page.locator('[data-action="profile-finish"]').click()
+ await page.locator('[data-action="voice-complete"]').click();await page.locator('[data-action="preferences-skip"]').click();await page.locator('[data-action="profile-finish"]').click()
  await page.waitForSelector('.detail-screen')
  assert.match(await page.locator('[data-testid="part-fit"] .kicker').textContent(),/Bass/,'Successful Profile Setup must return to the same Part for fit recheck')
  assert.equal(await page.locator('[data-action="join-part"]').count(),1)

@@ -1,3 +1,27 @@
+## 2026-10-13 R2 VP05A·원형 보컬 성향 선택
+
+사용자가 제공한 노션/PRD·화면명세·유저플로우·IA·PROJECT의 261012.md에서 해당 변경분을 확인했다. 이는 사용자 제공 export이며 Notion 온라인을 읽었다고 주장하지 않는다. 기존 VP 번호/메인10화면과 React 앱을 유지하고 초기 VP05 음역·샘플 atomic 저장 성공 → VP05A → 성향 저장 성공 또는 건너뛰기 → VP06 → 기존 returnContext로 연결한다. 재측정·샘플 교체에 VP05A를 강제하지 않는다. VP05A Back은 저장 Sample과 선택 초안을 유지하며 VP05로 돌아가고 같은 Take를 다시 저장하지 않고 재사용한다.
+
+공통 VoicePreferenceChoices를 초기 Setup과 MY 편집에 연결했다. 역할2개/장르6개 원형 복수 선택, 기존 Song 카탈로그의 곡명·아티스트 검색/저장곡 필터·선택/해제·중복 방지, 선택 체크/크림 대비/제한적 확대·엇갈린 배치·키보드 focus/aria-pressed/reduced motion을 제공한다. 앨범 이미지 없는 현재 카탈로그는 곡명을 유지한다. 사진/감정/주황 Accent/상시 물리 효과는 추가하지 않았다. 기존 preference record에 preferredSongIds를 추가하고 알려진 기존 역할·장르 명칭은 편집 폼에서만 대응하며 미지원 기존 저장값은 보존/명시 해제를 제공한다. 선호 곡과 Bookmark, 역할과 Part 배정, 성향과 음역·Sample·Track·Mix·Identity 생성 상태를 분리한다. 미설정은 중립 안내하고 실제 저장값의 공통 장르/곡 ID만 기존 비교에 사용한다.
+
+검증: 기존 npm run qa의13 suites와 build40modules/525.39KB 통과(기존500KB 경고). 관련 native Profile 8종과 Setup Part 복귀/Project 개설 gate/Finder 정렬 회귀를 각 통과했다. 새 원형 QA는 VP05 Sample 저장 실패 시 미진입/동일 Take 재시도, VP05A 저장 실패·재시도·Back/재진입·기존 성향 유지 skip·같은 Bass 복귀, MY 저장/취소/재접속·검색/선택/해제/저장곡·중복 방지, 기존 Bookmark·음역/Sample hash/Track/Mix/Identity 보존, 미선택 참여 가능,320/430px·root 글자200%·겹침/잘림·44px·키보드·동일 역할 크기/reduced motion을 통과했다. 자동 QA의 합성 마이크/격리 fixture이며 물리 입력·청취 증거가 아니다. 초기 QA의 잘못된 버튼 이름은 테스트만 수정했으며 샘플 교체 대기 timeout 구간에 Vite HMR 로그가 있어 앱을 고정하고 해당 실패/잔여 QA를 재실행했다. 기존 텍스트 입력/VP06 직행을 기대하던 QA는 확정된 원형/VP05A 흐름으로 갱신했다. 사용자 서버3파일은 보존/commit 제외한다. Git Integration/Production 마감은 실제 결과로 추가한다. 기존 R2 전체·R3–R7의 미완료 gate를 이번 성향 변경으로 완료 처리하지 않는다. 물리 마이크/청취와 최종 디자인 인수는 자동 QA와 구분한다.
+
+## 2026-10-12 R2 Profile 재배포 및 Production 검증 완료
+
+사용자가 Vercel GitHub App의 repository 선택에서 ieum-v2-react 누락을 확인하고 추가한 뒤 같은 commit을 Redeploy했다. GitHub deployment7012282096의 최신 status는 2026-10-12T11:13:22Z(20:13:22 KST) success/Deployment has completed, target https://ieum-v2-react-an0xjj7gu-junes-lie.vercel.app 이다. sha는 dc1d227f045eeefeccbd9c09cb9097d3b0ad252e 그대로다. Production HTTP200/index-DGcyKyMd.js SHA256 D597AD39622C68E4C37EBC7225F0F6D159940D78A8060E40AD030274478252DF가 검증된 build와 일치했다.
+
+Production verify-profile-data-confidence/verify-finder-sorting/verify-vocal-profile-setup 모두 exit0. 미등록 취향/미분석 음색 표시, 명시적 역할·장르·취향 선택과 reload, 동일 대표 Sample hash/측정 음역/기존 Track 보존, Finder 정렬·후보/Project 이력,05A→Setup 저장→같은 보컬·Collection 복귀를 통과했다. 격리 fixture와 합성 마이크이며 물리 입력·청취·실제 협업 검증이 아니다. 해당 R2 Profile 묶음의 배포 blocker는 해소됐다. R2 전체와 R3–R7의 기존 미완료 gate는 유지한다. 직접 production deploy/빈 commit/코드 수정 없이 사용자 Git 권한 복구와 같은 commit 재배포로 해결했고 사용자 서버3파일을 보존했다.
+
+## 2026-10-12 R2 Profile 배포 실패 — 해결 전 기록
+
+사용자가 제공한 해당 배포 상세 화면에서 실제 오류 `Git information retrieval failed for this deployment.`를 확인했다. 실패 지점은 Git 정보 조회이며 React compile 오류로 판정하지 않는다. GitHub API에서 해당 commit과 main ref 일치, repository private=true/archived=false/disabled=false를 확인했다. 이는 현재 gh 인증의 접근 증거이고 Vercel GitHub App의 접근 증거는 아니다. 설치 권한을 확인하려고 GET /user/installations를 호출했으나 HTTP403 `You must authenticate with an access token authorized to a GitHub App in order to list installations`였다. 설치가 없다는 뜻으로 해석하지 않는다. [Vercel 공식 안내](https://vercel.com/docs/errors/error-list#lost-git-repository-access)의 GitHub App repository 접근 범위와 Vercel 연결을 확인해야 하며, 일시 조회 실패인지 권한 문제인지는 아직 미확정이다. Vercel 전용 인증 도구가 없어 해당 연결 확인/복구와 같은 commit의 Git Integration 재배포는 미수행이다. 코드·Git 설정·App 설치/권한은 변경하지 않았다.
+
+로컬 검증된 Profile 데이터 구분 수정 dc1d227f045eeefeccbd9c09cb9097d3b0ad252e는 main/origin0/0으로 push됐다. build39modules/520.18KB·Node 기존 여정·native legacy미등록/직접 선택/reload/원본SHA·Finder·05A Setup 모두 통과했다. 그러나 Vercel Git Integration Production7012282096/dpl_CRmFtWeT2VV41y2dj2yxGLhvZM6g는failure다. 실제 GitHub 설명: Deployment has failed — run this Vercel CLI command: npx vercel inspect dpl_CRmFtWeT2VV41y2dj2yxGLhvZM6g --logs. 이 안내만으로 build/권한/플랫폼/할당량 중 원인을 단정하지 않는다.
+
+실패 배포 URL은 https://ieum-v2-react-l6ptwumcf-junes-lie.vercel.app/ 이며 직접 GET은 로그인 HTML을 반환해 앱/로그 증거로 사용하지 않았다. 현재 노출 Vercel deployment tool0개,호스트 Vercel CLI 명령/기존 npx캐시 발견 없음,로컬 CLI auth파일 없음(내용 조회 없음)으로 상세 build 로그 접근 수단이 없다. CLI 설치/자동 로그인·설정 변경·CUA·수동 production deploy·빈 commit 재시도는 하지 않았다. 실제 로그 접근/원인 확인 후 해당 실패만 해결→Git Integration→Production Profile QA가 다음 gate다. 이 수정은 배포 완료가 아니며 다음 단계 완료로 넘기지 않는다.
+
+현재 Production HTTP200/index-C6HVSKUB.js는 직전acc20b8 초대 수정이다. Production 초대 QA/동일bundle SHA 검증 완료,사용자 서버3파일 변경은 그대로 미커밋 보존한다. QA 서버/브라우저 종료·대형AI실행 없음. R2 전체·R3/R4 실제서비스·R5 실제형상/정책·R6 음악/권리·실기기/승인 디자인 인수는 여전히 미완료이며 목표 범위를 줄이거나 완료를 선언하지 않는다. 이번 turn은 실제 앱수정2묶음/commit/push·1묶음Production검증으로 progress이고 정체3turn 조건은 충족하지 않는다.
+
 ## 2026-10-12 R2 Profile의 미등록·미분석 값 정리
 
 직전 acc20b816afa84f4abf38fd818c3abcd573d3f15는 main/origin0/0·Vercel Git Integration Production7012193314 success,HTTP200/index-C6HVSKUB.js SHA256 AD1FBC74CDBF18F500A9C096FE8F9FB7325E4A64B231EC7B65EA14106C7A6138 exact·Production 초대 QA 통과로 마감했다. 실제 사용자 수락/협업 성공은 아니다.
