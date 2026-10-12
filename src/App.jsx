@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import Icon from './Icons.jsx'
 import { PITCH_ANALYSIS_VERSION } from './pitch.js'
-import { prepareVoiceRangeRecord, prepareVoiceSampleRecord } from './profileSource.js'
+import { prepareVoiceRangeRecord, prepareVoiceSampleRecord, voiceSourceRevision } from './profileSource.js'
 import { prepareSubmittedTrackRecord } from './trackSource.js'
 import { prepareProjectMix } from './mixSource.js'
 import figmaAssets from './figmaAssets.json' with { type: 'json' }
@@ -1521,14 +1521,15 @@ export default function App() {
     scrollToTop()
   }
   const completeProfile = async value => {
-    if(value.editMode==='range'&&profile&&value.rangeData){const record=await prepareVoiceRangeRecord({id:RANGE_RECORD_ID,projectId:PROFILE_PROJECT_ID,kind:'voice-range',range:value.range,rangeData:value.rangeData,createdAt:new Date().toISOString(),origin:'measured-pitch-range'});await saveTrack(record);setProfile(current=>({...current,range:record.range,rangeData:record.rangeData,rangeProvenance:record.sourceProvenance}));setVoiceEditMode(null);back(voiceReturnScreen);stopMicrophone();return}
-    if(value.editMode==='sample'&&profile&&value.sample?.blob){const record=await prepareVoiceSampleRecord({id:SAMPLE_RECORD_ID,projectId:PROFILE_PROJECT_ID,kind:'voice-sample',songId:value.sampleSong.id,songLabel:value.sampleSong.title,blob:value.sample.blob,duration:value.sample.duration,features:value.sample.features,origin:'live-microphone-voice-sample',createdAt:new Date().toISOString()});await saveTrack(record);setProfile(current=>({...current,sampleSong:record.songLabel,sampleUrl:value.sample.url,sampleDuration:record.duration,sampleFeatures:record.features,sampleProvenance:record.sourceProvenance}));setVoiceEditMode(null);back(voiceReturnScreen);stopMicrophone();return}
+    if(value.editMode==='range'&&profile&&value.rangeData){const record=await prepareVoiceRangeRecord({id:RANGE_RECORD_ID,projectId:PROFILE_PROJECT_ID,kind:'voice-range',range:value.range,rangeData:value.rangeData,createdAt:new Date().toISOString(),origin:'measured-pitch-range'});const sourceRevision=await voiceSourceRevision(record.sourceProvenance,profile.sampleProvenance);await saveTrack(record);setProfile(current=>({...current,voiceSourceRevision:sourceRevision,range:record.range,rangeData:record.rangeData,rangeProvenance:record.sourceProvenance}));setVoiceEditMode(null);back(voiceReturnScreen);stopMicrophone();return}
+    if(value.editMode==='sample'&&profile&&value.sample?.blob){const record=await prepareVoiceSampleRecord({id:SAMPLE_RECORD_ID,projectId:PROFILE_PROJECT_ID,kind:'voice-sample',songId:value.sampleSong.id,songLabel:value.sampleSong.title,blob:value.sample.blob,duration:value.sample.duration,features:value.sample.features,origin:'live-microphone-voice-sample',createdAt:new Date().toISOString()});const sourceRevision=await voiceSourceRevision(profile.rangeProvenance,record.sourceProvenance);await saveTrack(record);setProfile(current=>({...current,voiceSourceRevision:sourceRevision,sampleSong:record.songLabel,sampleUrl:value.sample.url,sampleDuration:record.duration,sampleFeatures:record.features,sampleProvenance:record.sourceProvenance}));setVoiceEditMode(null);back(voiceReturnScreen);stopMicrophone();return}
     if (!value?.rangeData || !value?.sample?.blob) return
     const createdAt = new Date().toISOString()
     const rangeRecord = await prepareVoiceRangeRecord({ id:RANGE_RECORD_ID, projectId:PROFILE_PROJECT_ID, kind:'voice-range', range:value.range, rangeData:value.rangeData, createdAt, origin:'measured-pitch-range' })
     const sampleRecord = await prepareVoiceSampleRecord({ id:SAMPLE_RECORD_ID, projectId:PROFILE_PROJECT_ID, kind:'voice-sample', songId:value.sampleSong?.id || 'sample-a', songLabel:value.sampleSong?.title || 'Sample Song A', blob:value.sample.blob, mimeType:value.sample.mimeType, duration:value.sample.duration, features:value.sample.features, createdAt, origin:'live-microphone-voice-sample' })
+    const sourceRevision=await voiceSourceRevision(rangeRecord.sourceProvenance,sampleRecord.sourceProvenance)
     await saveTracks([rangeRecord,sampleRecord])
-    setProfile({name:'JISUN',voiceType:'Warm middle',range:value.range,rangeData:rangeRecord.rangeData,rangeProvenance:rangeRecord.sourceProvenance,sampleSong:sampleRecord.songLabel,sampleUrl:value.sample.url,sampleDuration:value.sample.duration,sampleFeatures:sampleRecord.features,sampleProvenance:sampleRecord.sourceProvenance,roles:['Middle harmony','Support'],genres:['Indie','Ballad'],taste:['Acoustic','Film soundtrack'],identity:value.identity})
+    setProfile({name:'JISUN',voiceSourceRevision:sourceRevision,voiceType:'Warm middle',range:value.range,rangeData:rangeRecord.rangeData,rangeProvenance:rangeRecord.sourceProvenance,sampleSong:sampleRecord.songLabel,sampleUrl:value.sample.url,sampleDuration:value.sample.duration,sampleFeatures:sampleRecord.features,sampleProvenance:sampleRecord.sourceProvenance,roles:['Middle harmony','Support'],genres:['Indie','Ballad'],taste:['Acoustic','Film soundtrack'],identity:value.identity})
     back(voiceReturnScreen); stopMicrophone()
   }
   const join = partId => { const part=PARTS.find(item=>item.id===partId);if(!part || projectTracks[partId] || part.participantId || !evaluatePartFit({rangeData:profile?.rangeData,part}).eligible)return; setJoinedPart(partId);setActiveCreatedProjectId(null); setJoined(true); touchProjectActivity(PROJECT_ID); setScreen('workspace'); setHistory([]) }
@@ -1764,7 +1765,9 @@ export default function App() {
       const sampleRecord = profileStored.find(item=>item.kind==='voice-sample' && item.blob)
       const preferenceRecord=profileStored.find(item=>item.kind==='voice-preferences')
       const mixRecord = projectStored.find(item=>item.kind==='auto-mix' && item.blob)
-      if (rangeRecord && sampleRecord) setProfile({name:'JISUN',voiceType:'Warm middle',range:rangeRecord.range,rangeData:rangeRecord.rangeData,rangeProvenance:rangeRecord.sourceProvenance || null,sampleSong:sampleRecord.songLabel,roles:['Middle harmony','Support'],genres:['Indie','Ballad'],taste:['Acoustic','Film soundtrack'],sampleUrl:restoredUrl(sampleRecord.blob),sampleDuration:sampleRecord.duration,sampleFeatures:sampleRecord.features,sampleProvenance:sampleRecord.sourceProvenance || null,identity:{status:'blocked',reason:'free-local-generative-model-not-connected'},...preferenceRecord?.preferences})
+      const restoredSourceRevision=rangeRecord && sampleRecord ? await voiceSourceRevision(rangeRecord.sourceProvenance,sampleRecord.sourceProvenance) : null
+      if(!active)return
+      if (rangeRecord && sampleRecord) setProfile({name:'JISUN',voiceSourceRevision:restoredSourceRevision,voiceType:'Warm middle',range:rangeRecord.range,rangeData:rangeRecord.rangeData,rangeProvenance:rangeRecord.sourceProvenance || null,sampleSong:sampleRecord.songLabel,roles:['Middle harmony','Support'],genres:['Indie','Ballad'],taste:['Acoustic','Film soundtrack'],sampleUrl:restoredUrl(sampleRecord.blob),sampleDuration:sampleRecord.duration,sampleFeatures:sampleRecord.features,sampleProvenance:sampleRecord.sourceProvenance || null,identity:{status:'blocked',reason:'free-local-generative-model-not-connected'},...preferenceRecord?.preferences})
       if (mixRecord) { setMix({...mixRecord,url:restoredUrl(mixRecord.blob)}); setMixStatus('complete'); setMixProgress(100) }
       const createdTrackEntries = await Promise.all(createdProjects.map(async project=>{
         const records = await loadProjectTracks(project.id)

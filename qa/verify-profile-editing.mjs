@@ -1,3 +1,4 @@
+import {voiceSourceRevision} from '../src/profileSource.js'
 import assert from 'node:assert/strict'
 import {createRequire} from 'node:module'
 const require=createRequire('C:/Users/LEE/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright/package.json')
@@ -20,6 +21,7 @@ try {
  const originalSampleUrl=await page.evaluate(()=>window.__IEUM_V2__.state.profile.sampleUrl)
  assert.equal(await page.evaluate(()=>window.__IEUM_V2__.state.profile.sampleProvenance),null,'Legacy Sample must not acquire invented provenance on load')
  assert.equal(await page.evaluate(()=>window.__IEUM_V2__.state.profile.rangeProvenance),null,'Legacy range must not acquire invented provenance on load')
+ assert.equal(await page.evaluate(()=>window.__IEUM_V2__.state.profile.voiceSourceRevision),null,'Legacy sources must not fabricate a combined revision')
  const originalRoles=await page.evaluate(()=>window.__IEUM_V2__.state.profile.roles)
  await page.getByRole('button',{name:'선호 역할 · 장르 · 취향 수정'}).click()
  await page.getByLabel('선호 역할',{exact:true}).fill('Cancelled role')
@@ -96,7 +98,10 @@ try {
  assert.equal(savedProvenance.value.purpose,'voice-sample')
  assert.equal(savedProvenance.value.analysisVersion,'ieum-basic-voice-v5')
  assert.match(savedProvenance.value.revision,/^[a-f0-9-]{36}$/)
+ const combinedRevision=await page.evaluate(()=>window.__IEUM_V2__.state.profile.voiceSourceRevision)
+ assert.equal(combinedRevision,await voiceSourceRevision(rangeProvenance,savedProvenance.value),'Published revision must describe actual saved sources')
  await page.reload();await page.waitForFunction(()=>window.__IEUM_V2__?.state?.profile && window.__IEUM_V2__.state.profile.sampleSong!=='Original QA sample')
+ assert.equal(await page.evaluate(()=>window.__IEUM_V2__.state.profile.voiceSourceRevision),combinedRevision,'Same source-set revision survives reload')
  assert.deepEqual(await page.evaluate(()=>window.__IEUM_V2__.state.profile.sampleProvenance),savedProvenance.value,'Exact stored source revision must survive reload')
  assert.deepEqual(await page.evaluate(()=>window.__IEUM_V2__.state.profile.rangeProvenance),rangeProvenance,'Sample replacement/reload must preserve measured range revision')
  assert.equal(await page.evaluate(()=>window.__IEUM_V2__.state.profile.sampleFeatures.version),'ieum-basic-voice-v5','Sample analysis version must survive reload')
@@ -118,6 +123,8 @@ try {
  assert.equal(await initialPage.evaluate(()=>window.__IEUM_V2__.state.joined),false,'Profile registration must not auto-join a project')
  assert.equal(await initialPage.evaluate(()=>window.__IEUM_V2__.state.profile.sampleProvenance.purpose),'voice-sample','Initial Profile setup must use the same provenance path')
  assert.equal(await initialPage.evaluate(()=>window.__IEUM_V2__.state.profile.rangeProvenance.purpose),'voice-range','Initial Profile setup must retain measurement provenance')
+ const initialSources=await initialPage.evaluate(()=>{const p=window.__IEUM_V2__.state.profile;return {range:p.rangeProvenance,sample:p.sampleProvenance,revision:p.voiceSourceRevision}})
+ assert.equal(initialSources.revision,await voiceSourceRevision(initialSources.range,initialSources.sample),'Initial Setup connects the same measured-source revision')
  await initialContext.close()
  assert.deepEqual(await page.evaluate(()=>window.__IEUM_V2__.state.profile.roles),['QA harmony','QA support'])
  assert.deepEqual(errors,[])

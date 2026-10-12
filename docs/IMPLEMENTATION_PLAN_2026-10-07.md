@@ -922,3 +922,9 @@ Figma Desktop MCP에서 실제 읽은 프레임은 `IEUM · 3화면 · 편집용
 새로 만든 Project의 My 목록은 저장된 project.status/progress만 읽어 실제 마지막 제출 뒤에도 RECORDING 또는 오래된 개수를 표시했다. 기존 allProjectTracksSubmitted/submittedProjectTracks와 실제 저장 Mix를 목록에 연결했다. 모든 필수 제출은 기존 main 목록과 같은 MIXING 분류, 저장된 Mix가 있을 때 COMPLETE 분류를 사용한다. 모집/녹음 정책·실패 재시도·데이터 저장·디자인은 변경하지 않는다.
 
 유지 native Mix 저장 실패 QA에 2/3/4 Part의 실제 제출 개수·믹싱 필터·실패 시 완성 목록 제외·성공/reload 후 완성 이동을 추가해 모두 통과했다. 기존 사용자 여정/2–4 제출·원본 복원 및 single App Node 렌더, build38modules/505.09KB 통과(기존500KB 경고 유지). 물리 청취/실기기·실제 협업·R5 생성·R6 음악 gate는 미완료다. 사용자 서버3파일은 보존한다. 기능 묶음만 main Git Integration→Production 동일 QA로 마감한다.
+
+### R5 측정 음성 원본 조합 revision — 2026-10-12
+
+기존 range/sample sourceProvenance의 purpose/revision/hash/analysis version을 canonical 순서로 결합한 private voiceSourceRevision을 기존 Profile 저장/재측정/Sample 교체/재로드에 연결했다. 생성 이미지 revision이나 선호 설정을 포함한 전체 Profile revision은 아니며 개인 형상 갱신·기존 Track 재생성 정책을 확정하지 않는다. 두 원본 출처가 준비되지 않은 legacy는 null 유지, 저장 성공 전에 새 값을 게시하지 않는다. 저장된 두 source로 재구성하므로 별도 DB/화면이나 중복 원본을 추가하지 않는다. bootstrap hash await 뒤 lifecycle 확인을 유지한다.
+
+Node 실제 저장 재읽기·같은 입력 재현·원본/분석/revision 차이·immutable hash·legacy null, 기존 Identity 입력 계약/단일 App 렌더 통과. native Profile 편집 QA의 초기 등록·range/Sample 저장 실패/retry·Sample 원본 URL·재접속/선호값 보존 및 실제 저장 source와 조합 revision 일치를 통과했다. build38modules/506.10KB 기존500KB 경고 유지. 이 입력 연결은 전체 G1–G5/실제 형상·음악·서비스·물리 인수 완료가 아니다. 사용자 서버3파일/디자인/모델 원본 보존. 해당 묶음만 main Git Integration→Production Profile QA로 마감한다.

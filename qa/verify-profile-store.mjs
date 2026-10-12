@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import {indexedDB,IDBObjectStore} from 'fake-indexeddb'
 import {saveTracks,loadTrack} from '../src/trackStore.js'
-import {prepareVoiceRangeRecord,prepareVoiceSampleRecord} from '../src/profileSource.js'
+import {prepareVoiceRangeRecord,prepareVoiceSampleRecord,voiceSourceRevision} from '../src/profileSource.js'
 import {canonicalIdentityInput} from '../src/voiceIdentityContract.js'
 globalThis.indexedDB=indexedDB
 const measured={id:'provenance:range',projectId:'provenance',kind:'voice-range',rangeData:{analysisVersion:'normalized-difference-v1',lowMidi:48,highMidi:67,sampleCount:10,confidence:.8}}
@@ -56,3 +56,16 @@ assert.equal((await loadTrack(range.id)).range,'New range')
 assert.equal(await (await loadTrack(sample.id)).blob.text(),'New sample')
 await assert.rejects(()=>saveTracks([]));await assert.rejects(()=>saveTracks([{id:'invalid'}]))
 console.log('Profile store: failed sample write rolls back range and sample; no partial initial registration; successful retry commits both.')
+
+const combinedRevision=await voiceSourceRevision(preparedRange.sourceProvenance,prepared.sourceProvenance)
+assert.match(combinedRevision,/^ieum-voice-source-set-v1:[a-f0-9]{64}$/)
+assert.equal(combinedRevision,await voiceSourceRevision((await loadTrack(preparedRange.id)).sourceProvenance,(await loadTrack(prepared.id)).sourceProvenance))
+for(const source of [null,{}, {...preparedRange.sourceProvenance,purpose:'project-track'}]) assert.equal(await voiceSourceRevision(source,prepared.sourceProvenance),null)
+assert.notEqual(combinedRevision,await voiceSourceRevision({...preparedRange.sourceProvenance,revision:'new-measurement'},prepared.sourceProvenance))
+assert.notEqual(combinedRevision,await voiceSourceRevision(preparedRange.sourceProvenance,{...prepared.sourceProvenance,audioSha256:'f'.repeat(64)}))
+assert.notEqual(combinedRevision,await voiceSourceRevision(preparedRange.sourceProvenance,{...prepared.sourceProvenance,analysisVersion:'new-extractor'}))
+const rangeSnapshot=structuredClone(preparedRange.sourceProvenance)
+const pendingRevision=voiceSourceRevision(rangeSnapshot,prepared.sourceProvenance)
+rangeSnapshot.revision='changed-during-await'
+assert.equal(await pendingRevision,combinedRevision)
+console.log('Measured voice source-set revision: same persisted sources reproduce, source/revision/analysis changes separate, legacy unknown and immutable hash input passed; no graphic update policy.')

@@ -30,3 +30,17 @@ export async function prepareVoiceSampleRecord(record) {
     analysisVersion:snapshot.features?.version || null
   }}
 }
+
+// Revision of measured voice sources, not preferences or a generated Identity.
+// Legacy sources stay unknown; never fabricate their analysis or revisions.
+export async function voiceSourceRevision(rangeSource, sampleSource) {
+  const valid=(source,purpose,field)=>source?.version==='ieum-profile-source-v1' && source.purpose===purpose &&
+    typeof source.revision==='string' && source.revision.length>0 && /^[a-f0-9]{64}$/.test(source[field] || '')
+  if(!valid(rangeSource,'voice-range','measurementSha256') || !valid(sampleSource,'voice-sample','audioSha256')) return null
+  const input={version:'ieum-voice-source-set-v1',sources:[
+    {purpose:'voice-range',revision:rangeSource.revision,sha256:rangeSource.measurementSha256,analysisVersion:rangeSource.analysisVersion || null},
+    {purpose:'voice-sample',revision:sampleSource.revision,sha256:sampleSource.audioSha256,analysisVersion:sampleSource.analysisVersion || null}
+  ]}
+  const digest=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(canonicalIdentityInput(input)))
+  return 'ieum-voice-source-set-v1:'+ [...new Uint8Array(digest)].map(value=>value.toString(16).padStart(2,'0')).join('')
+}
