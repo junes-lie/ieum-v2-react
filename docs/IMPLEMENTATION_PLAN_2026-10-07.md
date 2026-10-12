@@ -1,5 +1,7 @@
 # 현재 실행 기준 — 2026-10-13 변경분 및 잔여 구현계획 개정
 
+2026-10-13 R3 결과 저장 gate: 기존 signed uploader와 실제 완료 확정 helper에 persistProjectMix를 연결했다. job별 출력 UUID/hash/byteLength intent·private no-upsert upload·실제 파일 재검증·2–4 Part 완료/재시도와 업로드/DB/응답 유실·다른 결과 거부·원본 보존을 격리 검증했다. 기존 Mix 엔진을 병렬 DSP로 대체하지 않았다. 현재 서버 Web Audio runtime은 없고 별도 native runtime 설치는 자동 승인 검토가 기존 설치 금지로 거부했으며 우회하지 않는다. 관련 시험 설치는 사용자 응답 대기이고 renderer/운영 worker/실제 서비스/App 연결은 잔여다. 기존 단계·예산·외부 의존성·미정 정책과 실패 이력을 유지한다.
+
 2026-10-13 R3 저장 결과 완료 gate: 기존 decoder/Storage/complete_verified_mix transaction에 서버 내부 completeStoredProjectMix와 service-only context 조회를 연결했다. 실제 저장 bytes/hash/길이 검증 전에는 완료 RPC를 호출하지 않고 I/O 뒤 실제 제출 snapshot/Source를 다시 검사한다.2/3/4 Part의 실제 짧은 WAV→격리 SQL·실패/원본 보존/동일 재시도 검증을 통과했다. 생성/업로드를 구현한 것으로 계산하지 않으며 actual Mix renderer·persist/upload worker와 hosted 환경/실제 사용자/App 연결이 다음 잔여다. 이 gate는 기존 R3 안의 선행 연결이며 단계·예산/외부 의존성·미정 정책은 유지한다. 실효 공수는 미측정이며 같은 접근 질문이나 AI 시험을 반복하지 않는다.
 
 2026-10-13 R3 저장 Mix 재조회 gate: 기존 Project Mix job/결과 참조에 참여자 전용 GET projects/:id/mix와 session-scoped Blob 조회를 연결했다. 실제 제출 Track snapshot/Source·2–4 Part·상태를 DB에서 확인하고 대기/실패는 재생 결과로 반환하지 않는다. 성공 결과도 private Storage hash·명시적 byte 한도·실제 해독 길이를 확인한 뒤에만 임시 접근을 제공한다. 기존 Track 다운로드를 재사용하고 local 원본/URL 캐시·시연 자료 이관·App 활성화는 하지 않는다. 격리 DB/API/세션·실제 짧은 WAV·관련 decoder/build 검증을 통과했다. 이는 음악 생성/Mix worker/원격 DB·실제 두 사용자 완료 증거가 아니다. 이번 gate의 실효 공수는 미측정이며 기존 예산을 초기화/임의 차감하지 않는다. 다음 R3 잔여는 실제 Mix 실행·저장 worker, hosted runtime·OAuth/Storage 접근 및 기존 App binding이다. 이미 답한 접근 질문을 반복하지 않는다.

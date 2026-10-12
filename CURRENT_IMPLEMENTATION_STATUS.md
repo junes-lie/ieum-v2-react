@@ -1,4 +1,16 @@
+## 2026-10-13 R3 Mix 결과 업로드·재시도 연결 준비
+
+서버 내부 persistProjectMix를 기존 signed uploader/Storage/완료 확정 경로에 연결했다. 실제 renderer가 반환한 WAV Blob만 받으며 streaming hash/명시적 byte 한도→service-only 출력 intent→기존 private no-upsert 업로드→실제 저장 bytes/hash/해독→완료 transaction 순서다. job별 output UUID/hash/byteLength를 DB에 보존하고 다른 결과로 같은 intent를 재사용하지 않는다. 업로드·DB 실패/응답 유실 뒤 같은 파일을 재검사해 재업로드 없이 완료를 재시도한다. 성공했던 파일이 유실되면 조용히 재생성하거나 덮어쓰지 않는다. 준비만으로 Track/Mix 완료를 늘리지 않고 기존 사용자3파일·원본/화면을 보존한다.
+
+실제 합성 WAV를 Blob으로 전송하는 주입 Storage와 기존 decoder/격리 SQL을 연결해2/3/4 Part의 업로드 실패·업로드 응답 유실·일치 파일의409 경쟁 응답·DB 실패·완료 응답 유실·같은 ID/metadata 재시도·불일치/한도/권한·완료 파일 유실을 검증했다. 실제 cloud write·renderer·운영 job scheduler/hosted 환경·App 바인딩·청취는 미완료다. 준비 기능을 R3 전체 완료로 계산하지 않는다.
+
+출력 manifest는 SQL trigger로 첫 allocation 이후 고정하고 다른 output ID/hash로 완료 transaction을 실행해도 rollback한다. guard QA의 첫 direct-update 검사는 fixture service role의 RLS 때문에0row여서 Missing expected rejection이었다. 실제 trigger가 실행되는 owner 문맥 검사와 service-only 완료 RPC 검사로 바로잡아 통과했고 제품 guard는 유지했다. 실제 Supabase 역할/두 connection 검증을 대신하지 않는다.
+
+Renderer runtime 조사: 현재 앱의 엔진은 browser Web Audio이고 기존 앱/bundled Node dependency에 서버 Web Audio runtime이 없다. 공식 node-web-audio-api 문서의 지원 플랫폼/AudioBuffer caveat를 읽었다. npm view는 UNABLE_TO_VERIFY_LEAF_SIGNATURE로 종료했고 시스템 CA를 사용하는 직접 registry 조회는2.2.0/unpacked42,188,827bytes를 반환했다. 별도 TEMP 설치 명령은 실행 전에 자동 승인 검토가 거부했다(기존 runtime 설치 금지와 충돌). 설치/우회/앱 dependency/OS 설정 변경은 없으며 시험 설치 질문은 응답 대기다. 현재 준비된 renderer가 있는 것으로 표시하지 않는다.
+
 ## 2026-10-13 R3 실제 저장 결과의 완료 확정 연결 준비
+
+마감: 검토한7파일만3c1ed5be5159b9257d83fd9cd89910bac6020a94로 commit/main push, main/origin0/0 및 기존 사용자3파일 수정 보존 확인. 해당 full SHA Vercel status success와 Production deployment7023119097의 SHA 일치를 확인했다. https://vercel.com/junes-lie/ieum-v2-react/Cq1naZUEFJMNsFueqQJLBcUNrMYw. Production page/asset200·index-LuCsuWOM.js 실제 bytes가 local build와 동일(SHA256 0dadee8ac7863e856e39ddc8de990b42230306dfeff5dfaa86029b5fd00971c8), capabilities는200/preparation·관련 권한 false, Mix 익명 조회401/private,no-store다. UI/실제 서비스 활성화 변화는 없으며 이 internal helper의 hosted worker 실행·원격 migration을 확인한 것으로 확대하지 않는다. 이 문단은 commit 후 로컬 증거 기록이다.
 
 서버 내부 completeStoredProjectMix는 기존 Mix job의 service-only context 조회→private Storage 실제 bytes/hash/명시적 한도·오디오 해독→기존 완료 transaction을 연결한다. 입력은 jobId/objectId/sha256뿐이며 duration/MIME/크기/실행 경로·사용자 완료 주장을 받지 않는다. DB의 실제2–4 제출 Track snapshot/Source·Project Seed/상태를 확인하고 파일 I/O 뒤 완료 transaction에서 계보를 다시 검사한다. 동일 결과 재시도는 원본을 재검사하고 기존 완료/revision을 유지하며 다른 결과나 유실은 실패한다. 새 공개 completion API·Mix DSP·worker 활성화·원본 삭제는 없다.
 

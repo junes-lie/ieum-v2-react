@@ -1,5 +1,13 @@
 # 단일 앱 서비스 연결 계약
 
+## 2026-10-13 Mix 결과 업로드·출력 intent 준비
+
+mix_completion_context 다음 mix_output_intents migration을 적용한다. 원격에는 적용하지 않았다. service-only ieum_prepare_mix_output(jobId,sha256,size)는 Project→job 잠금·기존 실제 제출/source 검증 후 출력 UUID/hash/byteLength를 함께 보존한다. 같은 입력만 재시도하고 첫 candidate와 다른 hash/size는409다. 기존 완료 결과는 원래 result_object_id를 유지한다. allocation은 Track/완료/revision을 늘리지 않는다.
+
+persistProjectMix({jobId,blob})는 worker 내부의 기존 WAV render output을 받는다. 사용자 ID/URL/길이/완료 주장을 받거나 별도 HTTP endpoint를 만들지 않는다. 명시적 byte 예산·stream hash 뒤 intent metadata를 대조하고 기존 Storage byte 검증/비공개 signed no-upsert uploader를 재사용한다. 업로드 오류/409는 저장 bytes가 동일하게 검증된 경우에만 이어가며 DB 실패/응답 유실 뒤 재시도에서도 같은 output ID를 사용한다. 실제 해독/완료 transaction이 마지막 성공 판정이고 완료 파일 유실/불일치에는 재생성·덮어쓰기·원본 삭제를 하지 않는다. signed token은 저장 metadata에 남기지 않고 service credential은 signed PUT에 보내지 않는다.
+
+Renderer 자체는 아직 없다. [node-web-audio-api 공식 문서](https://github.com/ircam-ismm/node-web-audio-api)는 Node용 Web Audio와 native 플랫폼·AudioBuffer 접근 caveat를 안내한다.2.2.0 별도 TEMP runtime 설치는 기존 설치 금지 제약으로 자동 승인 검토가 거부했으며 우회하지 않는다. 설치 시험은 사용자 응답 대기이며 새로운 서비스 계정/유료 경로 질문으로 바꾸지 않는다. 기존 PC/앱/모델 runtime은 보존한다. 실제 운영 runtime·Mix renderer/업로드 worker scheduler·Google/DB/Storage/App·실기기 청취는 계속 미완료이고 capability false를 유지한다.
+
 ## 2026-10-13 저장 Mix 완료 확정 연결 준비
 
 project_tracks 다음 mix_completion_context migration을 적용한다. 원격에는 적용하지 않았다. service_role만 현재 job의 Project Seed·실제2–4 제출 Track snapshot/Source·상태/기존 결과를 조회한다. completeStoredProjectMix는 trusted worker 내부 호출이며 브라우저 route/서명 API가 아니다. jobId/objectId/sha256만 받고 실제 Storage bytes/hash·기존 decoder의 frame 길이를 검증한 뒤 ieum_complete_verified_mix를 호출한다. 완료 transaction의 현재 입력 재검사와 동일 결과 재시도를 재사용한다. secret은 apikey만으로 서버 RPC/Storage에 전달하고 사용자 bearer/상류 진단을 반환하지 않는다.
