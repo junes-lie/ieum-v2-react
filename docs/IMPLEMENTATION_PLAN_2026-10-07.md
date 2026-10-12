@@ -1,3 +1,7 @@
+### R1 Auto Mix 파일 저장 실패 검증 — 2026-10-12
+
+2–4개의 제출 원본으로 실제 native Mix를 생성한 후 저장 실패를 주입했다. 원본 SHA/미완료 상태/완성 파일 부재·자동 무한 재시도 없음 및 기존 reload 후 한 Mix 저장을 검증했다. 새 retry 정책/화면·오디오 처리는 변경하지 않는다. 유지 qa:mix-errors를 자동배포 뒤 Production에서도 실행하고 실제 청취·모바일·협업 gate는 유지한다. 이전 보컬 history12e9d2c는 Production 같은 QA로 마감했다.
+
 ### R2 다른 보컬 이력 복원 — 2026-10-12
 
 서로 다른 저장 보컬 방문 뒤 실제 Back/Forward의 사람 문맥 누락을 재현하고 기존 history에 보컬 ID를 보존·검증 복원했다. native Collection 회귀/기존 사용자 여정·build를 검증해 main 자동배포 후 같은 Production QA로 마감한다. 새로고침 시작화면 정책과 Sample/Track 구분은 유지한다. 전체 탐색/Identity·실기기 완료로 확대하지 않는다. 이전 Player cca382c는 자동배포/Production 동일 재생 QA/hash 일치로 마감했다. 상세 실패·scope·build 경고는 상태 문서 참조.

@@ -1,3 +1,11 @@
+### R1 확정 Mix 저장 실패의 실제 원본 보존 — 2026-10-12
+
+유지 QA qa:mix-errors에 2/3/4 제출 Part의 native OfflineAudioContext 생성→IndexedDB auto-mix put 실패를 추가했다. 실제 오류 문구와 완성 화면 미이동, DB에 Mix 미저장, 모든 제출 Blob SHA exact/Project RECORDING 유지, 실패한 job의 자동 반복 없음, 저장 가능해진 뒤 기존 reload 경로에서 하나의 실제 Mix 저장/원본 SHA 유지까지 통과했다. 격리된 시연 오디오 입력이며 실제 협업·물리 청취·원곡 Part 품질 증거는 아니다. 앱의 새 retry UI/정책은 추가하지 않았다.
+
+초기 QA는 선택하지 않은 Project 및 갱신되지 않은 optional __IEUM_V2__ getter의 activeMixStatus를 기다려 timeout이었다. 기존 My Projects로 대상에 진입하고 실제 렌더된 .mix-error/IndexedDB 상태를 확인하도록 정정했다. 진단 getter는 createdMixStates 변경마다 갱신되지 않으므로 그 값만으로 실제 앱 상태를 판정하지 않는다. 앱의 저장 실패 보존은 이번 검증에서 추가 수정 없이 통과했다.
+
+이전 12e9d2c는 자동배포 commit status success/Production Collection Back·Forward/저장·스크롤 QA/pageerror0, bundle6A4DF2F5F34FF69D5419C7DF92B3722B0A5060753ADBC9626DD1282B0B63F7F1 exact/main 동기화로 마감했다. 이 유지 QA 묶음도 main 자동배포 후 Production 같은 실패 조건을 확인한다. 전체 R1/R2 인수 및 서버·Identity·AI 음악 완료로 확대하지 않는다.
+
 ### R2 보컬 프로필의 브라우저 이력 문맥 — 2026-10-12
 
 저장 보컬 Luna→Collection→Min을 방문하고 실제 Back으로 Luna 이력에 돌아가도 Min 이름이 남는 native assertion 실패를 재현했다. 기존 history entry에 selectedVocalId를 보존하고 등록된 ID에 한해 popstate 복원한다. 기존 screen effect가 현재 entry를 갱신해 Forward도 해당 보컬을 유지한다. 앱 시작화면/새 IA/대표 Sample·Project Track 구분/Identity 디자인/서버 상태는 변경하지 않는다.
