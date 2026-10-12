@@ -4,6 +4,8 @@
 
 ## 이미 확정된 서비스·비용 답변
 
+Home 진입 마감 보완: 모집/최근 created Project 카드도 기존02에 해당Song/Project를 선선택해 연다. 기존 개인 목록 작업실 직접 진입 callback을 이곳에 재사용했던 최초 수정은 보완하며 완성곡은 기존07 진입을 유지한다. Node 실제 callback 검증으로 직접 작업실 우회/Project 문맥 유실을 막고 새로운 화면/별도 계획을 만들지 않는다.
+
 2026-10-13 R1/R2 확인 결함 후속: Home의 고정 모집/최근/완성 목록이 실제 생성 Project/저장 Mix를 누락하는 결함을 현재 코드에서 확인해 기존 목록에 연결했다. actual empty Part·확정 Track 수·모든 Track+저장 Mix·같은 Project ID 조건과2/3/4 Part/실제 콜백 Node QA/build 통과. 기존 기획/디자인·단계·완료 증거/원본은 보존했다. 이전 신규 결함0h는 당시 대조 범위의 판정이며 이번 결함까지 없었다는 뜻으로 확대하지 않는다. 실제 기능/시각/모바일 인수·원격 Home 연결은 미완료이고 이번 실효 공수는 미측정이다.
 
 2026-10-13 R3 public Project discovery gate: 기존 catalog/실제 Project의 Song 필터·bounded cursor·2–4 Part/실제 제출 상태를 anonymous SQL/HTTP/client/session에 연결했다. 개인 UUID/원본/추가 metadata는 제외하고 기존 음역·참여 Gate와 Record Seed·처리 상태를 유지한다. failed Mix→mixing·성공 fixture receipt→completed/거짓 completed 비노출·기존 catalog/Part Fit/참여/제출·세션 QA/build 통과. 이는 실제 원격/믹스 파일·참여자 Profile/청취·Home/02 Carousel 바인딩 완료가 아니다. 다음은 기존 App 탐색·복귀 모델과 실제 데이터 연결이며 사용자3파일/미정 정책/기존 예산·단계를 보존한다.

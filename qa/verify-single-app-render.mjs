@@ -84,11 +84,11 @@ try {
       if(type==='button' && props?.['data-project-id']===homeProject.id)buttons.push(props)
       return originalCreateElement(type,props,...children)
     }
-    renderHome({openCreatedProject:id=>opened.push(id)})
+    renderHome({openSong:(songId,id)=>opened.push({songId,id}),openCreatedProject:()=>assert.fail('Recruiting/recent Project must open the existing Detail first')})
   }finally{React.createElement=originalCreateElement}
   assert.equal(buttons.length,2,'Created Project appears in recruiting and recent lists')
   for(const button of buttons)button.onClick()
-  assert.deepEqual(opened,[homeProject.id,homeProject.id],'Both actual handlers preserve the created Project ID')
+  assert.deepEqual(opened,[{songId:homeProject.songId,id:homeProject.id},{songId:homeProject.songId,id:homeProject.id}],'Both actual handlers select the same Song/Project in existing Detail')
   console.log('PASS Home rendered local discovery: created Project recruiting/recent/completed lists, real saved Track counts, assigned seats not OPEN, Review/invites do not submit, Mix success plus all Tracks required. Node render, not physical/visual/browser navigation acceptance.')
   for (const count of [2,4]) {
     const dynamicParts=Array.from({length:count},(_,index)=>({id:`free-${count}-${index}`,name:`Voice ${index+1}`,color:'#3b82f6',status:index?'open':'ready'}))

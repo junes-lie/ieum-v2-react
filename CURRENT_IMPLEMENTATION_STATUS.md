@@ -1,5 +1,7 @@
 ## 2026-10-13 R1/R2 Home 프로젝트 상태 누락 수정
 
+진입 조건 후속: 모집·최근 created Project 카드의 최초 구현은 기존 개인 목록의 openCreatedProject(작업실 직접 진입)를 재사용했다. PRD Home Project Card→기존02의 해당 Project 선선택 조건을 재대조해 openSong(songId,projectId)로 보완하고 완성 결과는 기존 complete 경로를 유지했다. 실제 Node callback에서 모집/최근이 Song+Project를 같은 Detail 진입에 전달하고 작업실 callback을 직접 부르지 않는 것을 검증한다. 이 변경은 기존 화면 수/레이아웃·개인 목록의 작업실 진입을 변경하지 않는다.
+
 기존 Home 모집/최근/완성 목록이 고정되어 실제 생성 Project 및 완료 Mix가 누락되는 결함을 확인하고 기존 React Home에 현재 createdProjects/확정 Track/createdMixes·openCreatedProject를 연결했다. 실제 빈 Part가 있는 Project만 모집 수/목록에 포함하고 ready/수락한 Part는 OPEN으로 세지 않는다. 최근 목록은 현재 Project ID/생성 순서를 유지하며 저장된 확정 Track 수·Mix 결과로 상태를 표시한다. persisted COMPLETE 라벨이나 임시 Review/초대만으로 제출/완성을 계산하지 않는다. 모든 필수 Track+저장 Mix 성공 뒤에만 완성 목록에 표시하고 같은 Project를 연다.
 
 기존 Node React SSR QA에 실제 생성 Project의 모집/최근/완성·2/3/4 Part·Review/초대 불변·모든 배정 완료·오래된 COMPLETE/불완전 Mix 거부와 실제 버튼 콜백의 Project ID 보존을 추가해 통과했다. 2/4 Part fixture의 첫 ready Part를 OPEN으로 세지 않는 조건으로 QA 기대값을 정정했으며 앱 계산을 잘못된 fixture 기대값에 맞춰 바꾸지 않았다. build40modules/527.36KB 통과, 기존>500KB 경고 유지. CSS/타이포/레이아웃 토큰·화면 수·IA/음역 Gate·원본·제출/Auto Mix 동작은 변경하지 않았다. Node render/콜백 검증이며 실제 시각/모바일 터치/청취나 브라우저 전체 navigation 인수는 아니다.
