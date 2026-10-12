@@ -11,6 +11,7 @@
     "qa:service-http": "node qa/verify-service-http.mjs",
     "qa:profile-service": "node qa/verify-profile-service.mjs",
     "qa:profile-db": "node qa/verify-profile-database.mjs",
+    "qa:profile-source-history": "node qa/verify-profile-source-history.mjs",
     "qa:saves": "node qa/verify-saved-objects.mjs",
     "qa:saves-db": "node qa/verify-saved-objects-database.mjs",
     "qa:project-track-db": "node qa/verify-project-track-database.mjs",

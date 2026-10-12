@@ -1,5 +1,11 @@
 # 단일 앱 서비스 연결 계약
 
+## 2026-10-13 Profile 원본 revision 이력
+
+project_participation 다음에 profile_source_history migration을 적용한다. ieum_profile_voice_sources는 현재 Part Fit용 source이며 새 private history는(user_id,source_revision)별 전체 원본 참조를 보존한다. 기존행 backfill/현재행 insert·update의 snapshot은 같은 transaction이고 같은 revision 내용 변경은409 rollback이다. 시각 값은 실제 verified_at을 UTC microseconds로 직렬화하며 새 검증 시각을 만들지 않는다. authenticated/anon은 이력에 접근하지 않고 service_role도 SELECT만 가능하다. 쓰기는 현재 source의 trusted write trigger에 한정한다. 원격에는 적용하지 않았다.
+
+이는 기존 source 출처 보존의 선행 작업이다. 실제 등록은 개인 측정/대표 Sample과 Project 제출 Track의 목적·원본·분석 경계를 유지해야 한다. 클라이언트 hash는 무변경 증거이며 서버 음성 분석 성공 증거가 아니다. Profile 생성·Sample 분석·Identity 생성·제출·Mix의 상태를 혼동하지 않고 갱신/fallback 정책은 아직 미정이다. 이력에는 개인 UUID/private object ID가 있으므로 공개 URL/시각 metadata/API에 그대로 반환하지 않는다.
+
 ## 2026-10-13 Workspace 제출 원본 재조회 준비
 
 GET projects/:id/tracks는 본인 Auth bearer로 ieum_list_project_tracks를 호출한다. private 원본은 확정 Workspace 참여자 범위로 기본 거부/허용하고 아직 초대 후보·공개 방문자에게 원본 URL을 확장하지 않는다.02/초대의 미리듣기와07 공개 공유는 별도 Preview/Result Mix 계약을 유지한다. 실제 제출과 확인된 audio receipt만 목록으로 반환하고 Project 잠금/Source/revision/제출수 일치를 확인한다. server Storage가 원본을 재검증한 뒤600초 operational read URL을 준비하며 secret/user bearer는 URL에 넣지 않는다. expiresIn은 파일 접근 수명이며 Product7일 알림 정책과 무관하다. [공식 signed URL 구현](https://github.com/supabase/storage-js/blob/master/src/packages/StorageFileApi.ts)의 signedURL 응답 형식을 확인했다.

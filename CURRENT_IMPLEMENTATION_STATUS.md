@@ -1,4 +1,14 @@
+## 2026-10-13 R3 Profile 원본 revision 보존 준비
+
+사용자당 현재 원본 한 행만 보관하던 DB에 private revision별 history를 추가했다. 기존 trusted source는 누락 없이 보존하고 이후 새 source revision은 같은 transaction에서 snapshot을 남긴다. 같은 사용자/revision의 원본 hash·음역·Sample 참조·분석 version·실제 검증 시각 변경은409로 거부한다. 검증 시각은 UTC microseconds로 정규화해 DB 세션 timezone 차이가 같은 원본의 충돌을 만들지 않는다. 다른 사용자의 같은 revision은 별개다. 현재 Part Fit은 현재 원본을 계속 사용하며 이력 보존만으로 기존 Identity/Track/Record를 갱신하지 않는다.
+
+격리 PostgreSQL의 backfill·새 revision/동일 revision 재시도·충돌 rollback·사용자/익명 접근 거부·service history 수정/삭제/추가 금지·성향 독립·현재 Part Fit·0Project/0Track/0Mix 검증을 통과했다. 기존2/3/4 Part 참여 QA에도 migration을 추가해 통과했고 build40modules/525.39KB 성공이다. 첫 QA 실패는 fixture의 service_role BYPASSRLS 누락이었으며 실제 역할 특성을 반영한 뒤 통과했다. 기존>500KB build 경고는 유지한다.
+
+원격 migration/실제 측정·Sample ingestion/App 연결은 수행하지 않았다. 이력은 신뢰된 등록 경계가 제공한 자료를 보존할 뿐 클라이언트 수치를 서버 실측이나 그래픽 생성 결과로 승격하지 않는다. 실제 생성/형상 갱신/버전/fallback 미정 정책과 사용자 미커밋 서버3파일은 유지한다. 다음 선행 작업은 인증 사용자와 구분된 Profile 원본 업로드·실제 Sample 검증·측정 출처 등록이며 기존 Project Track intent를 대표 Sample로 전용하지 않는다.
+
 ## 2026-10-13 R3 제출 Track 재조회·private 원본 불러오기 준비
+
+Git/Production 확인: 이번12파일만1419fdccc9e7eee596e31ab6e0704c10da770d05로 commit/push,main/origin0/0이다. 사용자 서버3파일은 미커밋 보존했다. Production GET projects/qa-read-only/tracks 미인증401 AUTH_REQUIRED·비실제 QA bearer503 SERVICE_NOT_CONFIGURED,앱200/index-Cy9rymZA.js·capabilities200/preparation/모두false를 확인했다. 해당full SHA status pending/statuses0·deployment0으로 최신 Git Integration 성공/READY는 미확인이다. 거부 응답/기존 bundle만으로 이번 Track 로직 배포·실제 원본 조회/청취 성공을 주장하지 않는다. 이 문단은 commit 이후 로컬 기록이다.
 
 GET projects/:id/tracks를 기존 Function에 연결했다. 확정 Workspace 참여자에게 실제 제출 Track만 Project revision/source와 함께 반환하며 private Storage의 원본 hash/size/MIME를 다시 확인한 뒤 opaque 경로의 임시 read URL을 제공한다. DB 조회는 Project 공유 잠금으로 제출 transaction과 같은 경계를 유지한다. 임시 intent·Draft·미제출 원본·client_features는 목록/측정 결과로 노출하지 않는다. 공개/초대 미리듣기의 Mix 경로를 이 private 원본 경로로 대신하지 않는다.
 

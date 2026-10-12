@@ -4,6 +4,8 @@
 
 ## 이미 확정된 서비스·비용 답변
 
+2026-10-13 R3/R5 원본 계보 선행 gate: 현재 Profile source와 private revision별 immutable snapshot을 분리했다. 재측정/대표 Sample 변경 후에도 이전 hash/참조/분석 version을 남기고 동일 revision 재사용으로 내용을 덮지 않는다. 현재 Part Fit은 현재 source를 사용하며 이력 보존은 Identity 갱신·과거 Track/Record 재생성 정책을 확정하지 않는다. 기존2–4 Part QA 및 새 실제 격리 SQL QA/build 통과. 실제 source ingestion·원격 migration·생성 결과는 미완료다. 기존 예산/실효 공수 미측정 상태·완료 증거·단계 번호는 유지한다.
+
 2026-10-13 R3 재접속 데이터 gate: 확정 참여자의 제출 Track 조회·private 원본 hash 재검증/임시 read URL과 session-scoped Blob loader를 구현·검증했다. 임시본/미제출·public Preview를 이 경로에 섞지 않고 explicit 메모리 예산·local 원본 보존을 적용했다. 실제 서비스/App Guide·Multitrack/청취는 다음 잔여이며 R3 완료로 확대하지 않는다. User Flow2C 단계5·PRD15의 제출 Track 재생/Guide 범위를 사용자 승인261012 export와 대조했다. 기존 단계·Source·역할·디자인은 유지한다.
 
 2026-10-13 R3 session gate: 기존 transport와 원본 전송에 사용자/세션 revision 경계를 연결했다. preparation 서비스 활성화·타인/demo 원본 자동 업로드·logout 이후 제출·늦은 응답 적용을 차단하는 주입 QA 및 기존 Track transfer/build를 통과했다. 사용자 미커밋 transport 변경을 제외한 HEAD snapshot에서도 확인했다. 실제 Google/Auth 접근·로그인 복귀 문맥·remote catalog/Profile·App 바인딩은 미완료이며 실제 서비스 연결 완료로 계산하지 않는다. 사용자 파일3개는 계속 별도 보존한다.

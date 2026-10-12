@@ -18,7 +18,7 @@ try {
     create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
     grant usage on schema auth to authenticated;grant execute on function auth.uid() to authenticated;`)
   for(const user of users)await db.query('insert into auth.users values($1)',[user])
-  for(const file of ['20261013_voice_profiles.sql','20261013_project_tracks.sql','20261013_project_participation.sql'])
+  for(const file of ['20261013_voice_profiles.sql','20261013_project_tracks.sql','20261013_project_participation.sql','20261013_profile_source_history.sql'])
     await db.exec(await readFile(new URL(`../server/migrations/${file}`,import.meta.url),'utf8'))
   const source={songId:'qa-song',key:'original',revision:'qa-v1',duration:20,sourceSha256:'a'.repeat(64),backingSha256:'b'.repeat(64)}
   const insertArrangement=(id,parts,audio=source)=>db.query('insert into public.ieum_catalog_arrangements values($1,$2,$3,$4,$5)',
@@ -69,12 +69,13 @@ try {
     assert.equal((await db.query('select count(*)::int as count from public.ieum_submitted_tracks where project_id=$1',[first.id])).rows[0].count,0)
   }
   // Compare SQL eligibility with the existing React domain rule, including tessitura.
+  let fitRevision=0
   for(const [range,required] of [[measured,{lowMidi:48,highMidi:67}],
     [measured,{lowMidi:47,highMidi:67}],[measured,{lowMidi:48,highMidi:68}],
     [{...measured,comfortableRange:{lowMidi:52,highMidi:62}},{lowMidi:50,highMidi:65,tessitura:{lowMidi:53,highMidi:61}}],
     [{...measured,comfortableRange:{lowMidi:52,highMidi:62}},{lowMidi:50,highMidi:65,tessitura:{lowMidi:51,highMidi:63}}]]) {
     await db.exec('reset role')
-    await db.query('update public.ieum_profile_voice_sources set range_data=$1 where user_id=$2',[JSON.stringify(range),users[0]])
+    await db.query('update public.ieum_profile_voice_sources set range_data=$1,source_revision=$3 where user_id=$2',[JSON.stringify(range),users[0],`qa-fit-revision-${++fitRevision}`])
     const expected=evaluatePartFit({rangeData:range,part:required}).eligible
     const operation=db.query('select public.ieum_require_part_fit($1,$2)',[users[0],JSON.stringify(required)])
     if(expected)await operation;else await assert.rejects(operation,error=>error.code==='PT403')
