@@ -948,3 +948,11 @@ Node 실제 저장 재읽기·같은 입력 재현·원본/분석/revision 차�
 generator의 torch/numpy/soundfile/scipy 및 모델 import를 모든 실제 token/frame/curve 검증 뒤로 이동했다. --validate-score-only는 원본 converter 결과와 frame/note events만 반환하고 modelLoaded=false/inferenceExecuted=false로 종료한다. 기존 실제 생성/preflight의 모델·seed/steps/sampler/출력 처리는 유지한다. 이는 잘못된 입력의 불필요한 RAM/GPU 로딩을 제거하는 실행 변경이며 생성 음악 품질 통과가 아니다.
 
 실제 generator runpy 진입에서 무거운 import를 금지한 상태로 정상 rest/음절 및 melisma2개,0-frame sung/rest·잘못된 rest/note·frame충돌 curve5개의7사례를 실행해 통과했다. 최초 QA temp 경로에서 PermissionError: [Errno 13] Permission denied가 발생했으며 저장소 내 고유 전용 temp 경로를 사용해 보완했다. 사용자 파일/원본을 삭제하지 않고 QA가 만든 파일만 자체 정리한다. 추가 모델/추론/환경 설치 없음. build39modules/509.42KB 기존500KB 경고와 현재 앱 bundle 유지. 유지 실행 코드/QA/현재 계획만 main 자동배포→Production 앱 보존으로 마감한다. 실제 가사·음정/휴지·전체2–4Part·권한/청취·Identity·서버 gate는 미완료다.
+
+### R6 휴지 AC/DC와 terminal alpha 대조 — 2026-10-12
+
+기존 실제 PCM16의 raw RMS/DC/AC·windowed 대역 분율·휴지4구간을 read-only로 측정했다. 단독 휴지 raw.0096574/AC.0096505/DC power.001428, base 앞 휴지 raw.01233684/AC.01233674, 뒤.00918070/AC.00917479였다. 단독/가창 이전에도 잔여 에너지가 있으므로 DC 편향 또는 가창 뒤 잔향만으로 설명하지 않는다. spectral 분율은 청취/노이즈 발생원/음질 승인 근거가 아니다. 실제 conditioning sidecar·원본/report SHA를 확인하고 output/필터/마스킹/crop은 변경하지 않았다. 두 read-only 측정은 guard wall1.249/1.229초 exit0였다.
+
+원본 모델 alphas_cumprod_prev[0]=1 및 [공식 DDIM 문서](https://huggingface.co/docs/diffusers/api/schedulers/ddim)의 set_alpha_to_one 종료 조건을 대조했다. 기존 native/reference/default는 유지하고 명시 terminal-one 진단 옵션만 추가했다. 같은 원래 rest score SHA146ec12fb0df5b88548ddd6bd94738f82f86c692b7eb33a7fe3b651ed713e065·checkpoint/code/seed65359/50steps/vocoder·길이2.995375초를 유지한 실제1회 결과 SHA7182b9f53ddbd2800a0ad7c6288e4ac88f65de52cb4e5e68323a7f1b2e57cea7, RMS.00959338/peak.09183519였다. 기존 reference RMS.00965685 대비 소폭 차이이며 휴지 해결/새 기본 sampler/음악 승인으로 표시하지 않는다. guard wall7.327초/exit0/resourceStopped=false/free최소7.371GiB/owned최대1.268GiB/GPUpeak353900544bytes. 같은 실패 조건의 seed/guidance/재실행 후보 탐색은 하지 않는다.
+
+실제 source/PCM/hash/실패 증거/자원 로그는 기존 runtime에 보존했다. 실제 generator 입력 경로7사례 회귀 및 build39modules/509.42KB 통과(기존500KB 경고). 유지 진단 도구/계획만 main Git Integration→Production 기존 앱 보존으로 마감한다. 다음 음악 선행은 이 sampler 종료 옵션을 반복하기보다 실제 음절/휴지 acoustic 제어와 모델/학습자료 제약을 해결하는 것이다. 원곡 음표/화음·전체2–4Part·권리/청취/서비스·Identity gate는 미완료 유지, 사용자 서버3파일/디자인/현재 앱 음원은 보존한다.
