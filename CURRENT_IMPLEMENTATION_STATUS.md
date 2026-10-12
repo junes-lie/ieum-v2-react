@@ -1321,3 +1321,12 @@ generator의 torch/numpy/soundfile/scipy 및 모델 import를 모든 실제 toke
 project-track 후보의 actualRange는 충분한 유효 관측과 지원 version/count/range가 있을 때만 estimated/confidence=null로 연결한다. Sample 관측을 편한 Profile 음역이나 평균 개인 음역으로 대체하지 않는다. averageRange/호흡/비브라토/BPM/리듬은 미지원null 유지, 무음/짧은/legacy·잘못된 관측도 null이다. 미정 형상/사진/갱신/매칭 정책이나 화면을 추가하지 않는다.
 
 3 sample rate·저/중음·두 음정 변화·동일 입력 재현·무음/짧은입력·잘못된값과 synthetic WAV의 제출 원본/관측/Layer 저장 재읽기를 검증했다. 기존 저음 회귀 및 변경 전 Record fixtures의 fingerprint959ec28d/2f3bc4dc·Layer d60d64d4/4082a169·2–4 signature0cb8b1c3/85797d10/35c8f287 exact 유지. native Profile 초기 등록/편집/실패/retry/reload·실제 Sample의 observation/private 생성 입력 보존, 단일 App Node 렌더/build39modules/509.99KB 통과(기존500KB 경고). synthetic 검증이며 실제 사람의 전체 음역/청취/형상 gate를 통과한 것으로 처리하지 않는다. 관련 기능 묶음만 main Git Integration→Production Profile QA로 마감하고 사용자 서버3파일/디자인/AI 원본은 보존한다.
+### R6 실제 원본 VAE 인코딩 분리 측정 — 2026-10-12
+
+설치된 AutoencoderOobleck의 use_tiling은 encode 입력이 sampling_rate*30을 넘을 때만 분할 경로에 진입한다. 같은 실제 원곡 SHA7ef11d5e...의31.7–39.7초 입력은384000samples로 30초 threshold보다 작아 분할되지 않는다. 이것만으로 이전 전체 생성 중단의 원인을 단정하지 않는다.
+
+qa/verify-music-source-encode.py로 기존 local VAE만 실제 CUDA FP32/동일 leaf offload·74개 weight normalization exact 조건에서 인코딩했다. Transformer/조건 모델은 로드하지 않았다. 실제 source/weight SHA 검증, posterior mean shape1×64×200·finite 및 SHA b65e572498767decc6928f868ce17308b8a66583dc64c7c3aebd93c9b04158d5를 관측했다. encode1.707906초/GPU peak allocated1143369728bytes/reserved2097152000bytes, guard wall31.061650초/exit0/resourceStopped=false·PC free최소5.543957GiB/최대 worker3.031757GiB. worker 종료 확인. 이는 component 자원 측정이며 native posterior sampling/전체 pipeline RAM 안전/음악·가사·화음/속도 개선 승인은 아니다.
+
+최초 실행은 output 공백 경로가 Start-Process 인자에서 분리되어 argparse unrecognized arguments/exit2였고, 기존 guard와 공백 없는 상대 output 경로로 바로잡았다. 실패/성공 기록 모두 기존 runtime에 보존했다. 첫 성공 측정은 결과 기록 중 weight read_bytes를 포함하므로 최대 worker를 인코딩 자체 peak로 해석하지 않는다. 유지 스크립트는 source/weight 파일 hash를 bounded file_digest로 바꾸고 model import 전에 계산해 후속 진단의 불필요한 전체 파일 RAM 할당을 제거한다. 기존 CPU/GPU 환경·모델·음원·사용자 서버3파일은 변경하지 않는다.
+
+다음 R6 선행은 이 VAE 단독 결과와 기존 조건 모델 단독 결과를 근거로 전체 pipeline의 source encode/condition/denoising 진입별 실제 RAM을 분리하는 것이다. 동일 실패 경로의 무근거 전체 생성 반복과 생성 품질 문턱 완화는 하지 않는다. 일정 재산정 eae2974 main push/Git Integration success·Production HTTP200/index-DlRbC8xD.js SHA39509AA129CA1D0F39DED94EB1C660BF021700509F272D748B7278E7715DAB1B exact 확인.

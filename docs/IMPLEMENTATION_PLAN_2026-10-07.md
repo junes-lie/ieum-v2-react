@@ -1027,3 +1027,6 @@ project-track 후보의 actualRange는 충분한 유효 관측과 지원 version
 R5 형상 검토 및 갱신/버전/fallback 등 미정 정책 대기는 별도 외부 의존성이다. R6 5–10일은 적합한 생성 방법과 서비스 사용 권한을 확보하는 조건의 추정이며 상한이 아니다. 현재 큰 모델의 RAM guard 중단과 짧은 후보의 품질 실패를 고려하면 전체 기능 완료일은 확정할 수 없다. 시간을 줄이기 위해 요구를 축소하거나 실패 음원/임의 그래픽을 등록하지 않는다.
 
 실행은 기존 독립 묶음 순서에 따라 R1/R2 마감을 AI 연구 대기와 분리한다. R5는 승인된 형상/정책에 의존하지 않는 선행 작업까지만 진행하고, 실제 생성·통합 성공과 입력 준비를 구분한다. R6는 동일 실패 경로 반복을 중단하고 실제 제어/권리/메모리 근거가 있는 다음 실험만 실행한다. 의미 있는 묶음의 관련 QA/build/diff 검토 후 main push→Git Integration→Production으로 전달한다.
+### R6 다음 자원 검증의 실제 선행 근거 — 2026-10-12
+
+기존 VAE만 같은 actual 원곡31.7–39.7초를 CUDA FP32로 인코딩하는 분리 시험을 완료했다. 30초 threshold 때문에8초에서는 encode tiling이 비활성이며 실제 posterior mean1×64×200·finite/hash를 얻었다. encode1.708초, guard wall31.062초/exit0/resourceStopped=false/free최소5.544GiB·worker최대3.032GiB. Transformer/조건 모델 없이 성공했으므로 전체 pipeline 안전·음악 품질이나 기존 중단의 원인으로 단정하지 않는다. 다음은 source encode→condition→denoising 진입의 실제 자원 분리이며 같은 실패 생성의 seed/guidance 반복이 아니다. 기존 G1–G5/음악·권리·청취/실기기 gate와 앱/디자인/서버 상태를 유지한다. 유지 진단은 source/weight SHA를 streaming으로 확인하고 기존 runtime의 원본/실패 결과를 보존한다. 상세 측정·실패와 scope는 현재 상태 문서 최신 항목 참조.
