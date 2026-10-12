@@ -6,6 +6,8 @@ export function isSupportedVoiceAnalysis(features) {
     (features?.version === 'ieum-basic-voice-v5' && features.pitchAnalysisVersion === 'normalized-difference-v1' && features.pitchFrameLength === 4096)
 }
 
+export const PITCH_OBSERVATION_VERSION = 'ieum-sampled-pitch-v1'
+
 const clamp01 = value => Math.max(0, Math.min(1, value))
 const round = (value, places = 5) => Number(value.toFixed(places))
 
@@ -74,9 +76,9 @@ export function analyzeAudioBuffer(audioBuffer) {
   const pitchSize = 4096
   const frameCount = Math.min(72, Math.max(12, Math.floor(source.length / fftSize)))
   const hop = Math.max(1, Math.floor((source.length - fftSize) / Math.max(1, frameCount - 1)))
-  const frameRms = [], centroids = [], rolloffs = [], flatnesses = [], zcrs = [], fluxes = [], pitchMidis = []
+  const frameRms = [], centroids = [], rolloffs = [], flatnesses = [], zcrs = [], fluxes = [], pitchMidis = [], pitchConfidences = []
   const bandEnergy = [0, 0, 0]
-  let previous = null, globalPeak = 0
+  let previous = null, globalPeak = 0, pitchAttempts = 0
 
   for (let frameIndex = 0; frameIndex < frameCount; frameIndex++) {
     const start = Math.min(Math.max(0, source.length - fftSize), frameIndex * hop)
@@ -91,9 +93,11 @@ export function analyzeAudioBuffer(audioBuffer) {
     frameRms.push(currentRms)
     if (frameIndex % 2 === 0 && source.length >= pitchSize) {
       const pitchStart = Math.max(0, Math.min(source.length - pitchSize, start + (fftSize - pitchSize) / 2))
+      pitchAttempts++
       const pitch = estimatePitch(source.subarray(pitchStart,pitchStart + pitchSize), sampleRate)
       if (pitch.hz >= 65 && pitch.hz <= 1050 && pitch.confidence >= .30) {
         pitchMidis.push(69 + 12 * Math.log2(pitch.hz / 440))
+        pitchConfidences.push(pitch.confidence)
       }
     }
     zcrs.push(crossings / fftSize)
@@ -184,6 +188,21 @@ export function analyzeAudioBuffer(audioBuffer) {
     envelope
   }
   features.fingerprint = hashText(JSON.stringify(features))
+  // Additive observation has its own version. Existing Layer seeds use the
+  // unchanged v5 base fingerprint; new generation manifests capture full data.
+  const sufficient = pitchMidis.length >= 3
+  features.pitchObservation = {
+    version:PITCH_OBSERVATION_VERSION, analysisVersion:PITCH_ANALYSIS_VERSION,
+    status:sufficient?'estimated':'insufficient-data', frameLength:pitchSize,
+    attemptedFrames:pitchAttempts, validFrames:pitchMidis.length,
+    minimumMidi:sufficient?round(Math.min(...pitchMidis),3):null,
+    maximumMidi:sufficient?round(Math.max(...pitchMidis),3):null,
+    medianMidi:sufficient?round(percentile(pitchMidis,.5),3):null,
+    meanDetectorConfidence:pitchConfidences.length?round(mean(pitchConfidences),5):null,
+    frequencyBoundsHz:[65,1050], confidenceThreshold:.30,
+    scope:'At most 36 sampled monophonic F0 windows; not full Track range, comfortable range, timbre or singer ability',
+    perceptualReliability:null
+  }
   return features
 }
 

@@ -1249,3 +1249,11 @@ generator의 torch/numpy/soundfile/scipy 및 모델 import를 모든 실제 toke
 원본 모델 alphas_cumprod_prev[0]=1 및 [공식 DDIM 문서](https://huggingface.co/docs/diffusers/api/schedulers/ddim)의 set_alpha_to_one 종료 조건을 대조했다. 기존 native/reference/default는 유지하고 명시 terminal-one 진단 옵션만 추가했다. 같은 원래 rest score SHA146ec12fb0df5b88548ddd6bd94738f82f86c692b7eb33a7fe3b651ed713e065·checkpoint/code/seed65359/50steps/vocoder·길이2.995375초를 유지한 실제1회 결과 SHA7182b9f53ddbd2800a0ad7c6288e4ac88f65de52cb4e5e68323a7f1b2e57cea7, RMS.00959338/peak.09183519였다. 기존 reference RMS.00965685 대비 소폭 차이이며 휴지 해결/새 기본 sampler/음악 승인으로 표시하지 않는다. guard wall7.327초/exit0/resourceStopped=false/free최소7.371GiB/owned최대1.268GiB/GPUpeak353900544bytes. 같은 실패 조건의 seed/guidance/재실행 후보 탐색은 하지 않는다.
 
 실제 source/PCM/hash/실패 증거/자원 로그는 기존 runtime에 보존했다. 실제 generator 입력 경로7사례 회귀 및 build39modules/509.42KB 통과(기존500KB 경고). 유지 진단 도구/계획만 main Git Integration→Production 기존 앱 보존으로 마감한다. 다음 음악 선행은 이 sampler 종료 옵션을 반복하기보다 실제 음절/휴지 acoustic 제어와 모델/학습자료 제약을 해결하는 것이다. 원곡 음표/화음·전체2–4Part·권리/청취/서비스·Identity gate는 미완료 유지, 사용자 서버3파일/디자인/현재 앱 음원은 보존한다.
+
+### R5 실제 sampled F0 관측 보존 — 2026-10-12
+
+기존 v5 분석의 동일 최대36개4096-frame normalized-difference 추출에서 이미 계산한 F0 최저/최고/중앙값·attempted/valid count·detector confidence·65–1050Hz/.30 조건을 별도 ieum-sampled-pitch-v1 데이터로 보존한다. 새 모델·추론/추가 pitch pass는 없고 기존 v5 base fingerprint/Layer 입력은 변경하지 않는다. 전체 feature input에는 별도 observation version을 포함하며 기존 자료를 재분석/이주했다고 주장하지 않는다. 현재 신호 샘플 관측이며 전체 Track 음역·개인 편한 음역·지각 음색/실력·신뢰도 보장이 아니다.
+
+project-track 후보의 actualRange는 충분한 유효 관측과 지원 version/count/range가 있을 때만 estimated/confidence=null로 연결한다. Sample 관측을 편한 Profile 음역이나 평균 개인 음역으로 대체하지 않는다. averageRange/호흡/비브라토/BPM/리듬은 미지원null 유지, 무음/짧은/legacy·잘못된 관측도 null이다. 미정 형상/사진/갱신/매칭 정책이나 화면을 추가하지 않는다.
+
+3 sample rate·저/중음·두 음정 변화·동일 입력 재현·무음/짧은입력·잘못된값과 synthetic WAV의 제출 원본/관측/Layer 저장 재읽기를 검증했다. 기존 저음 회귀 및 변경 전 Record fixtures의 fingerprint959ec28d/2f3bc4dc·Layer d60d64d4/4082a169·2–4 signature0cb8b1c3/85797d10/35c8f287 exact 유지. native Profile 초기 등록/편집/실패/retry/reload·실제 Sample의 observation/private 생성 입력 보존, 단일 App Node 렌더/build39modules/509.99KB 통과(기존500KB 경고). synthetic 검증이며 실제 사람의 전체 음역/청취/형상 gate를 통과한 것으로 처리하지 않는다. 관련 기능 묶음만 main Git Integration→Production Profile QA로 마감하고 사용자 서버3파일/디자인/AI 원본은 보존한다.

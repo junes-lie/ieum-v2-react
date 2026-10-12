@@ -37,7 +37,14 @@ assert.equal(assessVoiceCandidates({...tone,version:'ieum-basic-voice-v4'},'proj
 assert.equal(assessVoiceCandidates({...tone,pitchFrameLength:1024},'project-track').candidates.brightness.status,'unsupported','Wrong v5 pitch window must not masquerade as supported')
 assert.equal(assessVoiceCandidates({...tone,pitchAnalysisVersion:'unknown'},'project-track').candidates.brightness.status,'unsupported','Unrecognized extractor must not masquerade as supported v4')
 assert.equal(assessment.candidates.brightness.confidence,null)
-for (const name of ['averageRange','actualRange','bpm','breathiness','vibrato','rhythmComplexity']) assert.equal(assessment.candidates[name].value,null)
+assert.equal(assessment.candidates.actualRange.status,'estimated')
+assert.equal(assessment.candidates.actualRange.confidence,null)
+assert.ok(Math.abs(assessment.candidates.actualRange.value.lowMidi-57)<.15)
+assert.ok(Math.abs(assessment.candidates.actualRange.value.highMidi-57)<.15)
+assert.equal(assessVoiceCandidates(tone,'voice-sample').candidates.actualRange.value,null,'Sample F0 must not replace measured comfortable Profile range')
+assert.equal(assessVoiceCandidates({...tone,pitchObservation:null},'project-track').candidates.actualRange.value,null,'Legacy analysis must not acquire unmeasured range')
+for(const invalid of [{version:'unknown'},{validFrames:2},{minimumMidi:NaN},{maximumMidi:0},{attemptedFrames:999}])assert.equal(assessVoiceCandidates({...tone,pitchObservation:{...tone.pitchObservation,...invalid}},'project-track').candidates.actualRange.value,null)
+for (const name of ['averageRange','bpm','breathiness','vibrato','rhythmComplexity']) assert.equal(assessment.candidates[name].value,null)
 assert.equal(assessVoiceCandidates({...tone,roughness:NaN},'project-track').candidates.roughness.value,null)
 
 const trackInput = {trackId:'track-1',identityRef:{id:'opaque-identity-1',revision:'identity-1',outputSha256:sha},generatorVersion:'layer-1',source:{...sample,purpose:'project-track'}}

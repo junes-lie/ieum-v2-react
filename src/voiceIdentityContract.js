@@ -1,5 +1,5 @@
 // Input manifests only: no inferred identity, generated image, or fallback policy.
-import { isSupportedVoiceAnalysis } from './voiceAnalysis.js'
+import { isSupportedVoiceAnalysis, PITCH_OBSERVATION_VERSION } from './voiceAnalysis.js'
 export const IDENTITY_CONTRACT_VERSION = 'ieum-identity-input-v1'
 const SHA256 = /^[a-f0-9]{64}$/
 const CANDIDATES = ['averageRange', 'brightness', 'roughness', 'breathiness', 'vibrato', 'dynamics', 'bpm', 'actualRange', 'rhythmComplexity']
@@ -46,6 +46,16 @@ export function assessVoiceCandidates(features, purpose) {
         method:`${features.version}:${field}`, reason:'Signal proxy; perceptual reliability not validated'
       }
     }
+  }
+  const pitch=features?.pitchObservation
+  if(purpose==='project-track' && isSupportedVoiceAnalysis(features) && features.rms>=.0015 &&
+    pitch?.version===PITCH_OBSERVATION_VERSION && pitch.analysisVersion==='normalized-difference-v1' &&
+    pitch.status==='estimated' && pitch.frameLength===4096 && Number.isInteger(pitch.validFrames) && pitch.validFrames>=3 &&
+    Number.isInteger(pitch.attemptedFrames) && pitch.attemptedFrames>=pitch.validFrames && pitch.attemptedFrames<=36 &&
+    Number.isFinite(pitch.minimumMidi) && Number.isFinite(pitch.maximumMidi) && pitch.minimumMidi>0 && pitch.maximumMidi<128 && pitch.minimumMidi<=pitch.maximumMidi) {
+    result.actualRange={status:'estimated',value:{lowMidi:pitch.minimumMidi,highMidi:pitch.maximumMidi},confidence:null,
+      method:`${pitch.version}:${pitch.analysisVersion}:sampled-f0`,
+      reason:'Observed sampled monophonic F0 range; full Track coverage and perceptual reliability not validated'}
   }
   return {purpose, analysisVersion:features?.version || null, candidates:result}
 }

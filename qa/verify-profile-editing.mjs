@@ -107,6 +107,8 @@ try {
  assert.deepEqual(actualInput.sources.map(source=>source.purpose),['voice-range','voice-sample'])
  assert.equal(actualInput.sources[0].sha256,rangeProvenance.measurementSha256)
  assert.equal(actualInput.sources[1].sha256,savedProvenance.hash)
+ assert.equal(actualInput.sources[1].data.pitchObservation.version,'ieum-sampled-pitch-v1','Actual saved Sample preserves the separately versioned F0 observation')
+ assert.ok(actualInput.sources[1].data.pitchObservation.attemptedFrames<=36)
  assert.equal(JSON.stringify(actualInput).includes('blob:'),false)
  await page.reload();await page.waitForFunction(()=>window.__IEUM_V2__?.state?.profile && window.__IEUM_V2__.state.profile.sampleSong!=='Original QA sample')
  assert.equal(await page.evaluate(()=>window.__IEUM_V2__.state.profile.voiceSourceRevision),combinedRevision,'Same source-set revision survives reload')
