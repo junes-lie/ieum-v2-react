@@ -32,6 +32,14 @@ export function allProjectTracksSubmitted(project, tracks) {
   return SUPPORTED_PART_COUNTS.includes(count) && submittedProjectTracks(project,tracks).length===count
 }
 
+// Display state must follow saved final Tracks and Mix, never a stale COMPLETE
+// label or an unfinished graphics/Review operation. Recording can start before
+// the first submission, so retain that existing non-final state.
+export function localProjectLifecycle(project, tracks = {}, mix) {
+  if (allProjectTracksSubmitted(project,tracks)) return mix ? 'COMPLETE' : 'MIXING'
+  return submittedProjectTracks(project,tracks).length || project.status==='RECORDING' ? 'RECORDING' : 'RECRUITING'
+}
+
 // Preserve known Part colors while allocating free Part IDs to unused slots.
 export function resolveRecordPartSlots(partIds, palettePartIds) {
   const reserved = new Set(partIds.map(id => palettePartIds.indexOf(id)).filter(index => index >= 0))

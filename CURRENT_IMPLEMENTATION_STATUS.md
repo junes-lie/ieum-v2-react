@@ -1,4 +1,12 @@
+## 2026-10-13 R1/R2 개인 목록 상태·계보 연결
+
+기존08/09가 created Project의 저장 status 또는 Mix 존재만으로 COMPLETE를 표시하고 완료 필터에 넣는 누락을 확인했다. projectModel의 기존 확정 Track 판정에 작은 공통 localProjectLifecycle을 연결하여 Home/02/08/09에 필수 Track+저장 Mix→COMPLETE, 필수 Track만→MIXING을 적용한다. 최초 제출 이전의 기존 RECORDING 상태는 보존하며 오래된 COMPLETE/MIXING이나 Review는 최종 상태 근거로 쓰지 않는다.08 완료 버튼 라벨도 실제 상태를 따르고 공통 이동은 기존 검증 조건을 유지한다.09 Record는 같은 Project ID/Seed·실제 Part 순서·확정 레이어만 사용한다. 저장곡 프로젝트 수에는 동일 Song의 실제 created Project도 포함한다. 저장/해제·Part/제출/Mix/원본·화면 수/디자인은 변경하지 않았다.
+
+기존 single-app SSR/격리 DOM QA에서08/09의 오래된 label·불완전 Mix 거부/완성 필터 Empty·전부 제출 후 MIXING·저장 Mix 후 COMPLETE·첫 제출 전 RECORDING의 Home/02/09 일치·Review 레이어 제외·같은 Record 계보·저장곡 수·2/3/4 Part를 검증했다. 기존 Node user-journey의 상태 필터/Collection 탭 복원·제출 실패/재시도·원본 유지·완성 복원·2–4 Part 회귀와 build40modules/528.90KB 통과, 기존500KB 경고 유지. 온라인 Notion/figma-desktop 도구0개이며 사용자 승인 최신261012 export의08/09 상태·B02/B04/B05와 대조했다. 실제 기기/시각/음악/협업·원격 연결·Identity 생성의 완료 증거가 아니다. 사용자 기존3파일 변경은 보존한다.
+
 ## 2026-10-13 R1/R2 상세 제출 Track 청취 연결
+
+마감 확인: 검토한4파일만7edd317abc71cf042cce4c3c7b78b9af4b12268e로 commit/main push했고 main/origin0/0, 사용자 기존3파일 수정은 보존했다. 해당 full SHA GitHub Vercel status success/Deployment has completed, Production deployment7022346458의 SHA 일치·success(2026-10-12T19:41:51Z)를 확인했다. Vercel 링크 https://vercel.com/junes-lie/ieum-v2-react/5pWJYJYmRUAbtxYhkzd1urLpENDP 및 deployment URL https://ieum-v2-react-brj2nrwl5-junes-lie.vercel.app. Production 페이지/asset200/index-BWEj7FbV.js SHA256 f0f3e0fd2e8942f48023e6dd904f499c51e319ac34bfdb327247474f8c048105가 local build와 일치했다. 이 묶음의 자동배포 성공은 확인했으며 아래 이전 commit의 메타데이터 미확인 기록을 소급 완료로 변경하지 않는다. 실제 기기/청취/시각 인수는 별도다. 이 문단은 commit 후 로컬 증거 기록이다.
 
 사용자가 승인한261012 화면명세02/D09의 미구현 청취를 기존 CurrentMixPanel/Player·Preview Mix에 연결했다. 원래 PartRow 표현을 유지하고 확정 Track만 개별 URL·포함/제외·현재 청취 조합으로 전달한다. 생성 Project와 기존 main은 같은 읽기 경계를 사용하며 탐색용 정적 Project에 재생 가능한 원본이 있는 것처럼 만들지 않는다. 제출0개 안내, 조합0개 재생 비활성/이유, 같은 곡의 다른 Project 선택 시 keyed panel 폐기 및 이전 audio pause를 적용했다. 개인 청취 조합은 제출/Part 배정/완성 Mix·원본 Blob을 변경하지 않는다. Workspace는 기존 waveform/기본 제목을 유지하고 새 화면·디자인 토큰은 없다.
 

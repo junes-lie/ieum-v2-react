@@ -23,7 +23,7 @@ try {
   await writeFile(preferencesTemp,(await transformWithOxc(preferencesSource,'VoicePreferenceChoices.jsx',{jsx:{runtime:'classic'}})).code.replace('./Icons.jsx','./.qa-single-app-icons.mjs'))
   const transformed=await transformWithOxc(source,'App.jsx',{jsx:{runtime:'classic'}})
   await writeFile(temp,transformed.code.replace('./Icons.jsx','./.qa-single-app-icons.mjs').replace('./VoicePreferenceChoices.jsx','./.qa-single-app-preferences.mjs'))
-  const {default:App,Workspace,Recorder,Complete,Home,Detail}=await import(temp.href)
+  const {default:App,Workspace,Recorder,Complete,Home,Detail,PersonalArea}=await import(temp.href)
   const noop=()=>{}
   const parts=[{id:'lead',name:'Lead',color:'#3b82f6',status:'ready',participantId:'jisun',participant:'나'},{id:'harmony',name:'Harmony',color:'#f16f61',status:'open'},{id:'lower',name:'Lower',color:'#2eb6ad',status:'open'}]
   const project={id:'qa-custom-trio',seed:'qa-trio-seed',parts,partCount:3,totalParts:3,key:'E minor',title:'QA Trio'}
@@ -136,6 +136,48 @@ try {
   assert.ok(otherSelected.includes('00/02 · RECRUITING'))
   assert.ok(!otherSelected.includes('open-selected-created-project'),'Another selected Project must not expose this owner Workspace action')
   console.log('PASS Detail: actual submitted state/Part/layer lineage, Review and stale Mix excluded, same-song carousel selection, explicit selected Project navigation. Node render/callbacks only.')
+  let personalFilter='all',collectionTab='projects'
+  globalThis.sessionStorage={getItem:key=>key==='ieum:project-filter'?personalFilter:key==='ieum:collection-tab'?collectionTab:null}
+  const personalProps={...homeProps,createdMixes:{},joined:false,projectLikes:[{projectId:homeProject.id}],vocalSaves:[],songSaves:[],
+    go:noop,openMainWorkspace:noop,toggleProjectLike:noop,toggleProjectById:noop,trackCount:0,toggleVocalSave:noop,toggleSongSave:noop,openVocalProfile:noop}
+  const renderPersonal=(type,extra)=>renderToStaticMarkup(React.createElement(PersonalArea,{...personalProps,type,...extra}))
+  for(const candidate of [{...homeProject,status:'COMPLETE'},{...homeProject,status:'MIXING'}]){
+    const extra={createdProjects:[candidate],createdMixes:{[candidate.id]:{url:'blob:stale'}}}
+    assert.ok(renderPersonal('collection',extra).includes('RECRUITING · 0/3'),'Collection must reject stale labels and incomplete Mix')
+    assert.ok(renderPersonal('projects',extra).includes('QA Created Trio · RECRUITING'))
+    personalFilter='complete'
+    assert.ok(!renderPersonal('projects',extra).includes('created-project-card'),'Stale Mix cannot enter completed filter')
+    assert.ok(renderPersonal('projects',extra).includes('필터 초기화'))
+    personalFilter='all'
+  }
+  const allSaved={createdProjectTracks:{[homeProject.id]:fullTracks}}
+  assert.ok(renderPersonal('collection',allSaved).includes('MIXING · 3/3'))
+  assert.ok(renderPersonal('projects',allSaved).includes('QA Created Trio · MIXING'))
+  const savedMix={...allSaved,createdMixes:{[homeProject.id]:{url:'blob:qa-final'}}}
+  assert.ok(renderPersonal('collection',savedMix).includes('COMPLETE · 3/3'))
+  assert.ok(renderPersonal('projects',savedMix).includes('완성곡 열기'))
+  personalFilter='complete'
+  assert.ok(renderPersonal('projects',savedMix).includes('created-project-card'))
+  personalFilter='all'
+  const started={createdProjects:[{...homeProject,status:'RECORDING'}]}
+  assert.ok(renderPersonal('collection',started).includes('RECORDING · 0/3'),'Recording starts before the first submission')
+  assert.ok(section(renderHome(started),'최근 열린 프로젝트').includes('00/03 · RECORDING'))
+  assert.ok(renderDetail(started).includes('00/03 · RECORDING'))
+  const collectionRecords=[]
+  try{
+    React.createElement=(type,props,...children)=>{
+      if(typeof type==='function' && type.name==='ResonanceRecord')collectionRecords.push(props)
+      return originalCreateElement(type,props,...children)
+    }
+    renderPersonal('collection',{createdProjectTracks:{[homeProject.id]:{lower:finalLower,harmony:{...reviewOnly,layer:{qaMarker:'review-not-final'}}}}})
+  }finally{React.createElement=originalCreateElement}
+  assert.equal(collectionRecords[0].projectId,homeProject.id)
+  assert.equal(collectionRecords[0].seed,homeProject.seed)
+  assert.deepEqual(collectionRecords[0].layers,[null,null,finalLower.layer],'Collection uses the same final layer ancestry, never Review')
+  collectionTab='songs'
+  assert.ok(renderPersonal('collection',{songSaves:[{songId:'ocean-eyes'}]}).includes('프로젝트 3개'),'Saved Song count includes actual same-song created Project')
+  collectionTab='projects'
+  console.log('PASS My Projects/Collection: consistent final state/filters, incomplete Mix rejected, pre-submission recording retained, same Record lineage, actual saved Song Project count.')
   for (const count of [2,4]) {
     const dynamicParts=Array.from({length:count},(_,index)=>({id:`free-${count}-${index}`,name:`Voice ${index+1}`,color:'#3b82f6',status:index?'open':'ready'}))
     const dynamicProject={id:`qa-project-${count}`,seed:`qa-seed-${count}`,parts:dynamicParts,totalParts:count,partCount:count,key:'F minor'}
@@ -145,6 +187,10 @@ try {
     const dynamicDetail=renderDetail({createdProjects:[dynamicHomeProject],initialProjectId:dynamicHomeProject.id})
     assert.ok(dynamicDetail.includes(`00/0${count} · RECRUITING`))
     for(const part of dynamicParts)assert.ok(dynamicDetail.includes(`data-part="${part.id}"`),'Detail retains the actual dynamic Part IDs')
+    const dynamicFinals=Object.fromEntries(dynamicParts.map(part=>[part.id,{id:`${dynamicProject.id}:${part.id}`,projectId:dynamicProject.id,partId:part.id,blob:new Blob(['final']),kind:'project-track',submissionStatus:'success'}]))
+    const dynamicSaved={createdProjects:[dynamicHomeProject],createdProjectTracks:{[dynamicProject.id]:dynamicFinals},projectLikes:[{projectId:dynamicProject.id}]}
+    assert.ok(renderPersonal('collection',dynamicSaved).includes(`MIXING · ${count}/${count}`))
+    assert.ok(renderPersonal('collection',{...dynamicSaved,createdMixes:{[dynamicProject.id]:{url:'blob:dynamic-final'}}}).includes(`COMPLETE · ${count}/${count}`))
     const dynamicCommon={...common,project:dynamicProject,parts:dynamicParts,layers:dynamicParts.map(()=>null)}
     const workspaceMarkup=renderToStaticMarkup(React.createElement(Workspace,{...dynamicCommon,isCreated:true,ownerPartId:dynamicParts[0].id,findVocal:noop,recordPart:noop}))
     assert.ok(workspaceMarkup.includes(`0/${count}`))
