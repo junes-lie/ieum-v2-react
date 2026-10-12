@@ -67,7 +67,7 @@ try {
  await page.locator('[data-action="record-part"]').click();await page.locator('[data-action="record-start"]').click()
  await page.waitForSelector('[data-action="record-pause"]')
  await page.evaluate(()=>{window.qaHoldDiscardCompletion=false;window.qaReleaseDiscard()})
- assert.equal(await page.evaluate(async()=>{const audio=await import('/src/audio.js');return audio.getRecordingTimeline().state}),'recording','An old discard completion must not cancel a new Recorder session')
+ assert.equal(await page.evaluate(()=>window.__IEUM_V2__.audioRuntime.recorder?.state),'recording','An old discard completion must not cancel a new Recorder session')
  assert.equal(await page.evaluate(()=>window.qaRecordingTimers.size),1)
  assert.deepEqual(errors,[])
  console.log(JSON.stringify({passed:true,failedRetakePreserves:['recording','paused','review'],singleDiscardTransaction:true,lateDiscardPreservesNewRecorder:true,timerCleanup:true,errors,limits:'Isolated synthetic microphone, injected IndexedDB failure/completion delay and popstate; no physical capture claim.'}))

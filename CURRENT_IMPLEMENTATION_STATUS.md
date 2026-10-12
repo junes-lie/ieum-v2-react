@@ -1,3 +1,9 @@
+### R1 배포 마감 / R6 보존된 독립 인식 결과 확인 — 2026-10-12
+
+R1 수정4caf55077d785d1856c186950e44f8c0dae017e1은 origin/main push/동기화0/0·동일 commit Vercel success를 확인했다. Production HTTP200/index-CmugzJuL.js SHA7D1119CC141D9DC490A6AE3CEBA7EE8868AC08A66D0EBD878EF320AD2C342207은 검증 build와 exact다. Production retake QA에서 실패3상태 원본 보존·중복 확인1transaction·지연 삭제 완료 이후 새 recording/타이머·pageerror0 통과. QA의 개발 전용 /src/audio.js import를 기존 공개 진단 audioRuntime.recorder.state 조회로 바꿔 Production에서도 같은 검증을 재사용한다. 실제 마이크·청취/전체 R1 완료는 아니다.
+
+미커밋 R6의 보존된 실제 Turbo CUDA FP32 인식 report를 읽었다. 입력 WAV SHAe5115769aee201c71088245fcccc12772a67c663ab60658742ecc0f8ccb9b05b·8초/48kHz·원본 hash 검증 true, 모델 인식은 '아 아 아 아', 기대 '오늘도 함께해요'와 textSimilarity0.0/lyricAcceptance=false/catalogRegistrationApproved=false다. 새 모델/음원 생성은 하지 않았다. GPU 실행 결과 존재가 음악 품질 성공이 아니므로 후보는 앱에 등록하지 않는다. 기존 CPU Small 실패·Turbo CPU RAM 중단과 CUDA의 실제 인식 완료를 구분한다. 다음 R6는 같은 실패 후보 재생성이 아닌 실제 sampler/decoder 및 제어 경로의 근거 확보다. 미커밋 AI 코드/결과는 보존하고 이 R1 묶음에 stage하지 않는다.
+
 ## 2026-10-12 R1 삭제 확인 중복·지연 응답의 새 녹음 보호
 
 직전87629f1의 확정 계획 적용/관련 QA 마감을 현재 Git main에서 확인하고 완료된 범위를 재구현하지 않았다. 기존 Recorder에서 Review의 삭제 확인을 같은 tick에 두 번 누르면 readwrite transaction이2개 실행되는 실제 assertion2!==1을 재현했다. 삭제 요청 ref와 기존 busy 상태를 연결해 하나만 진행하며 modal 취소/확인·기존 leave를 처리 중 잠근다. 삭제 실패는 기존 녹음/Review·URL을 유지하고 finally에서 잠금을 해제해 다시 시도할 수 있다. 컴포넌트 종료 후 삭제 완료는 전역 cancelRecording/새 Recorder 상태에 손대지 않는다. 화면/문구/삭제 정책·다른 참여자 Track·디자인 변경 없음.
