@@ -1,3 +1,9 @@
+### R1/R2 브라우저 녹음 정지 거부의 재시도 — 2026-10-12
+
+실제 React/격리 마이크에서 MediaRecorder.stop의 첫 InvalidStateError를 주입했을 때 대표 Sample 종료의 unhandled `QA stop refused`를 재현했다. Sample과 Project 종료에 오류 처리를 추가하고, 실패하면 현재 Take/기존 Profile을 유지하며 경과시간 갱신을 복원한다. 공통 stopRecording은 브라우저 정지 성공 전 activeElapsed/segment를 확정하지 않고 실패한 stop listener를 제거한다. 정지를 다시 눌러 기존 Review로 복귀하며 실패 자체로 Sample 저장/Track 제출을 성공 처리하지 않는다. 새 정책·디자인·서버 사용자3파일 변경 없음. 유지 QA는 qa:stop-retry로 실행한다. 자동 검증은 synthetic microphone의 오류/정상 재시도이며 실기기·음질·전체 R1/R2 완료 증거는 아니다.
+
+검증: Sample/Project stop 거부→재시도 Review, 기존 Sample lifecycle·중복/pause/resume session, 정상/분석 실패/paused 입력 종료 원본 hash·Draft 복원, audio foundation/단일 App Node 렌더 통과. 첫 Project QA는 참여 fixture 누락으로 record-part timeout이었고 기존 joined/tenor를 명시해 재실행 통과했다. build38modules/503.89KB의 기존500KB 경고는 남는다. 직전84704dd Production index-qsyOOu7f.js SHA18500D0C0A3FEB68E35D27E60D0BB871BB105E26DBA2E075582D70305A5CBAE4 exact를 확인했다. 이번 기능 수정은 diff 검토 뒤 main Git Integration→Production 검증으로 마감한다. 음악 연구/Identity 형상 보류와 실제 서버 gate는 별도로 유지한다.
+
 ### R6 reference sampler fresh-process 재현성 — 2026-10-12
 
 현재 free8.80GiB 확인 후 새 sampler의 같은 실제 base 입력/seed/고정 runtime을 새로운 프로세스에서1회 실행했다. 모델/code/source hashes·score/spec·generator/sampler hash·duration/peak/RMS와 실제 PCM SHA2efa01ddbb8b17dc63b037601a6cbd6a27a5bc9b4b5e20ba8f445b6e1118a0ca가 이전 결과와 exact였다. 이 입력의 current GPU/runtime fresh-process 재현만 증명하며 다른 기기·모든 입력·개인 Identity·음악 품질 보장으로 확대하지 않는다. 후보 품질을 찾는 seed/guidance 반복이나 native sampler 기본 변경 없음. guard wall7.295초/exit0/resourceStopped=false, 원본/별도재현/검증hash/모니터를 기존 runtime에 보존한다.

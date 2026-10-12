@@ -847,6 +847,7 @@ function VoiceSetup({ complete, go, back, existing, editMode }) {
     sampleStoppingRef.current=true;setSampleBusy(true)
     const lifecycle=sampleLifecycleRef.current
     try {
+    setError('');setSaveFailure(false)
     clearInterval(timer.current)
     const draft = await stopRecording()
     if(lifecycle!==sampleLifecycleRef.current){if(draft?.url)URL.revokeObjectURL(draft.url);return}
@@ -856,6 +857,10 @@ function VoiceSetup({ complete, go, back, existing, editMode }) {
       setError('대표 Voice Sample은 최소 3초 이상 녹음해 주세요.'); setSampleStatus('ready'); return
     }
     setSampleDraft(draft); setSampleStatus('review'); setSamplePlaying(false)
+    } catch(reason) {
+      if(lifecycle!==sampleLifecycleRef.current)return
+      setSaveFailure(true);setError(reason?.message || '녹음을 끝내지 못했어요. 다시 정지를 눌러 주세요.')
+      if(getRecordingTimeline().state==='recording')timer.current=window.setInterval(()=>setSeconds(getRecordingTimeline().elapsedSec),1000)
     } finally {sampleStoppingRef.current=false;setSampleBusy(false);setSampleAction(null)}
   }
   const chooseSampleSong = song => {setSampleGuidePlaying(false);if(sampleDraft&&song.id!==sampleSong.id){pendingSampleSong.current=song;setSampleAction('discard-song');return}setSampleSong(song)}
@@ -1070,6 +1075,7 @@ function Recorder({ go, submit, onRecordingStart, partId, projectTracks, layers,
     if(stoppingRef.current)return false
     stoppingRef.current=true;setRecordingBusy(true)
     try {
+    setError('')
     clearInterval(timer.current)
     const value = await stopRecording()
     if (!value?.blob) { setError('녹음을 저장하지 못했어요. 다시 시도해 주세요.'); setStatus('paused'); return }
@@ -1080,6 +1086,10 @@ function Recorder({ go, submit, onRecordingStart, partId, projectTracks, layers,
     setDraft(stored); setStatus('review')
     try { await saveTrack(stored); onDraftChange?.(true); return true }
     catch { setError('임시 저장하지 못했어요. 녹음 원본은 이 화면에 유지됩니다. 저장을 다시 시도해 주세요.'); return false }
+    } catch(reason) {
+      setError(reason?.message || '녹음을 끝내지 못했어요. 다시 정지를 눌러 주세요.')
+      if(getRecordingTimeline().state==='recording')timer.current=window.setInterval(()=>setSeconds(getRecordingTimeline().elapsedSec),100)
+      return false
     } finally {stoppingRef.current=false;setRecordingBusy(false)}
   }
   const retry = async () => {

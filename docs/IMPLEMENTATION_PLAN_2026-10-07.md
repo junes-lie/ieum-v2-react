@@ -1,3 +1,7 @@
+### R1/R2 정지 실패 시 현재 녹음 보존 — 2026-10-12
+
+대표 Sample/Project의 브라우저 stop 거부를 기존 오류 영역에서 처리하고 같은 정지 버튼으로 재시도한다. 실패한 정지로 activeElapsed/segment를 종료하지 않으며 타이머와 현재 녹음을 유지한다. 실제 오류 주입의 unhandled 재현→재시도 Review/기존 Profile 보존, 정상 종료/pause/resume/입력 종료 길이 회귀→build→main 자동배포→Production 순서로 검증한다. 새로운 화면/추천 정책/디자인은 추가하지 않으며 실기기 마이크·음질·전체 단계 완료 조건은 유지한다.
+
 ### R6 reference sampler fresh-process 재현성 — 2026-10-12
 
 현재 free8.80GiB 확인 후 새 sampler의 같은 실제 base 입력/seed/고정 runtime을 새로운 프로세스에서1회 실행했다. 모델/code/source hashes·score/spec·generator/sampler hash·duration/peak/RMS와 실제 PCM SHA2efa01ddbb8b17dc63b037601a6cbd6a27a5bc9b4b5e20ba8f445b6e1118a0ca가 이전 결과와 exact였다. 이 입력의 current GPU/runtime fresh-process 재현만 증명하며 다른 기기·모든 입력·개인 Identity·음악 품질 보장으로 확대하지 않는다. 후보 품질을 찾는 seed/guidance 반복이나 native sampler 기본 변경 없음. guard wall7.295초/exit0/resourceStopped=false, 원본/별도재현/검증hash/모니터를 기존 runtime에 보존한다.

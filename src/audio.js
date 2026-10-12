@@ -448,12 +448,14 @@ export function updateRecordingGuides(guides) {
 export async function stopRecording() {
   if (!runtime.recorder || (runtime.recorder.state === 'inactive' && !runtime.chunks.length)) return null
   const recorder = runtime.recorder
-  if (runtime.recordingSegmentActive) runtime.activeElapsedSec += Math.max(0, context().currentTime - runtime.activeStartedAt)
-  runtime.recordingSegmentActive = false
+  const elapsedAtStop = runtime.activeElapsedSec + (runtime.recordingSegmentActive ? Math.max(0, context().currentTime - runtime.activeStartedAt) : 0)
   if (recorder.state !== 'inactive') await new Promise(resolve => {
     recorder.addEventListener('stop', resolve, { once: true })
-    recorder.stop()
+    try { recorder.stop() }
+    catch(error) { recorder.removeEventListener('stop',resolve);throw error }
   })
+  runtime.activeElapsedSec = elapsedAtStop
+  runtime.recordingSegmentActive = false
   cancelAnimationFrame(runtime.raf)
   stopGuides()
   runtime.recordingGuideState = null
