@@ -1,3 +1,9 @@
+### R2 곡 기반 생성 입력 복귀 / R6 권한 근거 — 2026-10-12
+
+서로 다른 곡에서 생성 화면에 진입한 뒤 이전 방문에 Back하면 잘못된 곡을 만드는 경로를 actual 재현했다. 기존 history에 생성 진입 songId를 보존하고 곡별 초기화 입력을 맞춰 Back/Forward·최종 확인 전0개/확인 후1개·0 Track, 기존2–4 구성/Key/중복 방지/재로드 회귀를 통과했다. 기존 확인 후 생성 계약과 화면 수를 유지하며 main 자동배포→Production qa:project-song-history로 마감한다.
+
+R6: [모델 저자 원본](https://github.com/CODEJIN/DiffSingerKR)의 CSD 학습 명시와 직접 링크한 [CSD 원본의 비상업 조건](https://github.com/emotiontts/emotiontts_open_db/tree/master/Dataset/CSD#6-license)을 확인했다. MIT 코드만으로 가수/checkpoint/생성 음원 서비스 권한을 확보했다고 기록하지 않는다. 현재 모델의 기술 검증은 보존하되 Production catalog 등록은 미승인 유지. 다음 실제 음악 경로는 기존 sourceScore/음절/화성 제어 gate와 서비스 사용 권한 근거를 모두 갖춰야 한다. 새로운 유료 제공자·재학습·모델 설치를 확정하지 않고 독립 앱 기능 마감과 분리한다.
+
 ### R2 참여 준비의 선택 Part 복귀 — 2026-10-12
 
 기존 빈 recruiting Part의 선택 버튼 연결 누락을 고치고, session cache unavailable 상태에서도 Project별 앱 문맥으로 실제 선택 Part를 보존한다. Setup 취소/측정·Sample 저장 완료→같은 Bass fit 재검사·자동 참여 없음/Track 수 불변을 native 검증했고 곡/Project 이력·cache 오류·기존 Node Flow 회귀를 통과했다. 기존 IA/화면/참여 확정·Part Fit 조건 유지. 관련 build→명시 stage/main push→Git Integration→Production qa:setup-return으로 마감하며 서버 수락/실기기/전체 R2 완료로 확대하지 않는다.

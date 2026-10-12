@@ -1,3 +1,11 @@
+### R2 곡 기반 Project 생성의 실제 이력 — 2026-10-12
+
+Collection의 A Thousand Years→곡 기반 생성 방문, 이후 Ocean Eyes→생성 방문 뒤 Back에서 이전 생성 Review가 Ocean Eyes4 Parts를 표시하는 실제 오류를 재현했다. 생성 진입 songId(null의 Home 곡 선택 포함)를 현재 history/go/popstate에 보존하고 곡 기반 CreateProject를 해당 입력별로 분리해 기존 local state가 다른 곡의 초기 입력을 유지하지 않도록 했다. Back/Forward의 서로 다른 곡·확인 전0개/최종 확인1개·실제 ocean-eyes ID·0 Track과 기존2–4 Part/Key/검토 Back/중복 confirm/재로드·Song Detail 이력·단일 App Node 렌더 통과. 새 생성/임시본 보존 정책·화면·디자인 변경 없음. build38modules/505.01KB 기존500KB 경고 유지. 관련 QA/build→main Git Integration→Production QA로 마감하며 서버 사용자3파일은 제외한다.
+
+R6 공식 출처 확인: [DiffSingerKR 원본](https://github.com/CODEJIN/DiffSingerKR)은 MIT 코드와 공유 checkpoint의 CSD 학습을 명시한다. 저자가 직접 링크한 [CSD 원본 License](https://github.com/emotiontts/emotiontts_open_db/tree/master/Dataset/CSD#6-license)는 CC BY-NC-SA4.0 및 비상업 목적 조건을 명시한다. 코드 MIT를 checkpoint/가수/서비스 배포 허가로 해석하지 않는다. 지금까지의 실제 생성/측정 원본은 연구 증거로 보존하고 서비스 음원으로 등록하지 않는다. 모델 결과물에 대한 별도 권한은 미확정이며 승인 없이 서비스 사용 가능으로 변경하지 않는다. 재학습·추가 대형 모델 설치/반복 추론은 하지 않았다. 원곡의 음표/화성·전체2–4 Part·실기기/청취 gate도 유지한다.
+
+직전744ac3c main0·0/Vercel success 및 Production index--qFi5bF8.js SHA4DE028F0F811C3D178FB4B56DDDE6B134116694AB32F37145962811118EE272E exact, Production Setup cancel/save→원래 Bass fit·자동참여/Track 증가 없음 native QA 통과를 확인했다.
+
 ### R2 참여 Setup의 실제 Part 복귀 — 2026-10-12
 
 기존 Detail은 빈 recruiting Part에 선택 action을 전달하지만 label을 누락해 Bass 선택 버튼이 없었다. 기존 open/recruiting 선택 분기를 같은 버튼에 연결했다. 이후 sessionStorage read/write 차단 상태에서 Bass 선택→Setup 취소→Tenor로 잘못 복귀하는 actual assertion을 재현했다. Project별 앱 메모리 문맥에 선택 Part를 보존하고 비교 Project의 빈 Part 값이 기존 live Project 선택을 덮어쓰지 않도록 했다. 새 화면/배정/자동 참여/추천 정책·디자인 변경 없음.

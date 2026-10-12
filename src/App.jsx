@@ -1492,7 +1492,7 @@ export default function App() {
     setHistory(h => [...h,screen])
     const scrollTop=document.querySelector('.screen')?.scrollTop || window.scrollY
     if(screen==='collection')collectionContext.current.scrollByTab[collectionContext.current.tab]=scrollTop
-    window.history.replaceState({ieumScreen:screen,selectedSongId,selectedProjectId,activeCreatedProjectId,finderPartId,selectedVocalId,selectedMatchVocalId,voiceEditMode,voiceReturnScreen,scrollTop},'',`#${screen}`)
+    window.history.replaceState({ieumScreen:screen,selectedSongId,selectedProjectId,activeCreatedProjectId,finderPartId,selectedVocalId,selectedMatchVocalId,voiceEditMode,voiceReturnScreen,createProjectSongId,scrollTop},'',`#${screen}`)
     window.history.pushState({ieumScreen:next},'',`#${next}`)
     setScreen(next); scrollToTop()
   }
@@ -1626,6 +1626,7 @@ export default function App() {
       if(event.state?.finderPartId)setFinderPartId(event.state.finderPartId)
       if(PERSON_BY_ID[event.state?.selectedVocalId])setSelectedVocalId(event.state.selectedVocalId)
       if(event.state?.selectedMatchVocalId===null || PERSON_BY_ID[event.state?.selectedMatchVocalId])setSelectedMatchVocalId(event.state.selectedMatchVocalId)
+      if(event.state?.createProjectSongId===null || SONGS.some(song=>song.id===event.state?.createProjectSongId))setCreateProjectSongId(event.state.createProjectSongId)
       if([null,'range','sample'].includes(event.state?.voiceEditMode))setVoiceEditMode(event.state.voiceEditMode)
       if(['my','detail'].includes(event.state?.voiceReturnScreen))setVoiceReturnScreen(event.state.voiceReturnScreen)
       setScreen(next)
@@ -1637,8 +1638,8 @@ export default function App() {
   }, [])
 
   useEffect(() => {
-    window.history.replaceState({...window.history.state,ieumScreen:screen,selectedVocalId,selectedMatchVocalId,finderPartId,activeCreatedProjectId,selectedSongId,selectedProjectId,voiceEditMode,voiceReturnScreen},'',`#${screen}`)
-  }, [screen,selectedVocalId,selectedMatchVocalId,finderPartId,activeCreatedProjectId,selectedSongId,selectedProjectId,voiceEditMode,voiceReturnScreen])
+    window.history.replaceState({...window.history.state,ieumScreen:screen,selectedVocalId,selectedMatchVocalId,finderPartId,activeCreatedProjectId,selectedSongId,selectedProjectId,voiceEditMode,voiceReturnScreen,createProjectSongId},'',`#${screen}`)
+  }, [screen,selectedVocalId,selectedMatchVocalId,finderPartId,activeCreatedProjectId,selectedSongId,selectedProjectId,voiceEditMode,voiceReturnScreen,createProjectSongId])
 
   useEffect(() => {
     if(persisted.storageReadFailed)return
@@ -1798,7 +1799,7 @@ export default function App() {
   if (screen==='home') content=<Home openSong={openSong} layers={layers} projectTracks={projectTracks} profile={profile} mix={mix} openCreateProject={()=>startCreateProject(null)} openComplete={()=>go('complete')}/>
   else if (screen==='detail') content=<Detail go={go} back={()=>back('home')} song={selectedSong} profile={profile} join={join} layers={layers} projectTracks={projectTracks} songSaved={songSaved} toggleSongSave={toggleSongSave} openVocalProfile={openVocalProfile} createdProjects={createdProjects} onCreateProject={startCreateProject} onOpenCreatedProject={openCreatedProject} initialProjectId={selectedProjectId} onSelectProject={setSelectedProjectId} detailContext={detailContext}/>
   else if (screen==='song-browser') content=<SongBrowser back={()=>back('collection')} openSong={openSong} songSaves={songSaves} toggleSongSave={toggleSongSave} createdProjects={createdProjects} onCreateProject={startCreateProject}/>
-  else if (screen==='create-project') content=<CreateProject back={()=>back(createProjectSongId?'detail':'home')} complete={createProject} initialSongId={createProjectSongId}/>
+  else if (screen==='create-project') content=<CreateProject key={createProjectSongId || 'song-selection'} back={()=>back(createProjectSongId?'detail':'home')} complete={createProject} initialSongId={createProjectSongId}/>
   else if (screen==='voice') content=<VoiceSetup key={voiceEditMode || "setup"} existing={profile} editMode={voiceEditMode} go={go} back={()=>{setVoiceEditMode(null);back(voiceReturnScreen)}} complete={completeProfile}/>
   else if (screen==='workspace') content=<Workspace go={go} project={activeProject} song={activeSong} isCreated={Boolean(activeCreatedProject)} ownerPartId={activeCreatedProject?.ownerPartId || joinedPart} findVocal={openFinder} joined={joined} invited={invited} invitedPerson={invitedPerson} candidateAccepted={candidateAccepted} candidateArrivalStatus={candidateArrivalStatus} projectTracks={activeTracks} layers={activeLayers} recordPart={recordPart} projectLiked={activeProjectLiked} toggleProjectLike={toggleActiveProjectLike} openVocalProfile={openVocalProfile} mix={activeMix} mixStatus={activeMixStatus} completionDelayed={delayedProjectIds.includes(activeProject.id)} hasDraft={Boolean(draftKeys[`${activeProject.id}:${activeCreatedProject?.ownerPartId||joinedPart}`])}/>
   else if (screen==='finder') content=<Finder back={()=>back('workspace')} preferences={finderPreferences[finderContextKey]} updatePreferences={patch=>setFinderPreferences(current=>({...current,[finderContextKey]:{...current[finderContextKey],...patch}}))} invite={activeTracks[finderPartId]||activeFinderPart?.status==='accepted'?null:invite} invitedVocalIds={activeCreatedProject?(activeFinderPart?.invitations||[]).map(item=>item.vocalId):(invited?[invitedVocalId]:[])} part={activeFinderPart} vocalSaves={vocalSaves} toggleVocalSave={toggleVocalSave} openVocalProfile={openVocalProfile} selectedVocalId={selectedMatchVocalId} setSelectedVocalId={setSelectedMatchVocalId}/>
