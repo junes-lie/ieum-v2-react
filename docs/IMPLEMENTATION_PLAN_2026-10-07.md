@@ -1,3 +1,7 @@
+### R2 다른 보컬 이력 복원 — 2026-10-12
+
+서로 다른 저장 보컬 방문 뒤 실제 Back/Forward의 사람 문맥 누락을 재현하고 기존 history에 보컬 ID를 보존·검증 복원했다. native Collection 회귀/기존 사용자 여정·build를 검증해 main 자동배포 후 같은 Production QA로 마감한다. 새로고침 시작화면 정책과 Sample/Track 구분은 유지한다. 전체 탐색/Identity·실기기 완료로 확대하지 않는다. 이전 Player cca382c는 자동배포/Production 동일 재생 QA/hash 일치로 마감했다. 상세 실패·scope·build 경고는 상태 문서 참조.
+
 ### R2 공통 Player 재생 실패 마감 — 2026-10-12
 
 이전 취소된 재생 요청의 늦은 거부가 새 재생을 정지하는 native 결함을 재현하고 effect 요청 소유권을 보호했다. 현재 요청의 실패 처리는 유지한다. qa:playback/기존 사용자 여정·공유 Sample 플레이어 회귀로 검증해 main 자동배포 후 Production 같은 QA로 전달한다. 탐색 순위·Identity 정책/디자인·서버 상태는 변경하지 않으며 전체 R2 완료로 계산하지 않는다. 앞선 Project 첫 가사 안내는04af003 자동배포 및 Production 같은 QA로 마감했다.

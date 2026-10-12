@@ -1474,7 +1474,7 @@ export default function App() {
     setHistory(h => [...h,screen])
     const scrollTop=document.querySelector('.screen')?.scrollTop || window.scrollY
     if(screen==='collection')collectionContext.current.scrollByTab[collectionContext.current.tab]=scrollTop
-    window.history.replaceState({ieumScreen:screen,selectedSongId,selectedProjectId,activeCreatedProjectId,finderPartId,scrollTop},'',`#${screen}`)
+    window.history.replaceState({ieumScreen:screen,selectedSongId,selectedProjectId,activeCreatedProjectId,finderPartId,selectedVocalId,scrollTop},'',`#${screen}`)
     window.history.pushState({ieumScreen:next},'',`#${next}`)
     setScreen(next); scrollToTop()
   }
@@ -1606,6 +1606,7 @@ export default function App() {
       if(event.state?.selectedProjectId!==undefined)setSelectedProjectId(event.state.selectedProjectId)
       if(event.state?.activeCreatedProjectId!==undefined)setActiveCreatedProjectId(event.state.activeCreatedProjectId)
       if(event.state?.finderPartId)setFinderPartId(event.state.finderPartId)
+      if(PERSON_BY_ID[event.state?.selectedVocalId])setSelectedVocalId(event.state.selectedVocalId)
       setScreen(next)
       requestAnimationFrame(()=>{window.scrollTo(0,event.state?.scrollTop || 0);const surface=document.querySelector('.screen');if(surface)surface.scrollTop=event.state?.scrollTop || 0})
     }
@@ -1615,8 +1616,8 @@ export default function App() {
   }, [])
 
   useEffect(() => {
-    window.history.replaceState({...window.history.state,ieumScreen:screen},'',`#${screen}`)
-  }, [screen])
+    window.history.replaceState({...window.history.state,ieumScreen:screen,selectedVocalId},'',`#${screen}`)
+  }, [screen,selectedVocalId])
 
   useEffect(() => {
     if(persisted.storageReadFailed)return

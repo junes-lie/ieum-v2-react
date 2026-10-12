@@ -1,3 +1,11 @@
+### R2 보컬 프로필의 브라우저 이력 문맥 — 2026-10-12
+
+저장 보컬 Luna→Collection→Min을 방문하고 실제 Back으로 Luna 이력에 돌아가도 Min 이름이 남는 native assertion 실패를 재현했다. 기존 history entry에 selectedVocalId를 보존하고 등록된 ID에 한해 popstate 복원한다. 기존 screen effect가 현재 entry를 갱신해 Forward도 해당 보컬을 유지한다. 앱 시작화면/새 IA/대표 Sample·Project Track 구분/Identity 디자인/서버 상태는 변경하지 않는다.
+
+기존 Collection native QA에 두 보컬 Back/Forward 조건을 추가해 통과했다. 저장 해제는 참여/Track을 유지하고 곡/보컬 탭·탭별/전역 스크롤·저장 Project 문맥과 Home OPEN Part 이동도 통과했다. 초기에 새로고침 프로필 화면 유지 조건을 추가했으나 현재 앱은 기존 시작화면 정책으로 이동하므로 timeout이었다. 정책 변경 없이 해당 assertion/초기 ID 복원 제안을 제외했고 Back/Forward 범위만 검증한다. build34modules 통과, JS500.07KB/152.73KB gzip으로 Vite500KB chunk 경고가 발생했다. 경고를 숨기거나 관련 없는 분할 refactor를 수행하지 않는다. 기존 Node 사용자 여정 통과 및 single App 회귀를 확인하고 관련 묶음만 main 자동배포→Production 같은 Collection QA로 전달한다. 실기기·전체 R2 인수는 별도다.
+
+직전 Player 수정 cca382c는 Vercel commit status success, Production native 재생 소유권 QA 통과/bundle AE3020B5FDA466D7402A8B39D534A5441ABBAE96F41E608EE84D7DF5E5D732BC exact/main 동기화 확인. Profile Sample 편집·실패/재시도·교체·재로드도 통과했다.
+
 ### R2 재생 요청의 늦은 실패 소유권 — 2026-10-12
 
 Current Mix의 재생→정지→재생 뒤 이전 play Promise를 늦게 거부하면 현재 native 재생까지 멈추는 assertion 실패를 재현했다. 공통 Player effect cleanup에서 이전 요청을 비활성화하고 현재 요청의 거부만 setPlaying(false)에 반영하도록 수정했다. 새 화면·오디오 gain·저장/Track/Identity 데이터 변경은 없다. 유지 QA qa:playback은 지연된 취소 요청이 새 실제 재생을 유지하는 조건과 현재 요청 실패가 제어/오디오를 정지하는 조건을 함께 확인한다. 초기 QA는 hidden audio를 visible로 기다려 timeout했고 attached 대기 및 기존 My Projects→Workspace 진입으로 수정한 뒤 실제 앱 결함을 재현했다.
