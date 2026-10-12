@@ -1,3 +1,9 @@
+### R5 제출된 Track → 개인 Layer 입력 선행 연결 — 2026-10-12
+
+기존 voiceIdentitySources/Track 계약에 read-only loadSubmittedTrackIdentityInput을 추가했다. canonical Project/Part 제출 키로 실제 저장 record를 읽고 개인 결과 소유자와 participantId·live 제출 origin·원본 SHA/크기·source revision/analysis version을 확인한다. 명시적으로 전달받은 개인 결과 참조는 비동기 read 전 snapshot이며 기존 buildTrackIdentityInput에 실제 분석/지원 한계와 목적을 전달한다. 개인 user ID 원문은 반환 입력에 넣지 않는다. Review/Sample·legacy provenance·미지원 분석/불일치 원본·소유자 불일치를 거부하며 BPM/호흡 등 미지원 후보null을 유지한다. 기존 Profile/Track revision·동일 입력 digest·read-only/변조 거부 및 QA identity 회귀 통과. fixture 개인 참조를 사용한 데이터 준비 검증이며 개인 결과 승인/형상 생성·Track 변형/Record 결합 성공 또는 자동 갱신 정책이 아니다. 그래픽/제출/Mix 상태·기존 앱·디자인/원본은 변경하지 않는다. qa:identity에 유지 검사 연결, build/기존 제출 회귀→main 자동배포→Production 앱 보존으로 마감한다.
+
+직전17633a4 Git Integration success·Production HTTP200/기존 index-DlRbC8xD.js SHA39509AA129CA1D0F39DED94EB1C660BF021700509F272D748B7278E7715DAB1B exact 마감. 사용자 서버3파일과 미검증 low-RAM generator는 별도 보존한다.
+
 ### R6 guard 실패 exit 전파와 중단 단계 교정 — 2026-10-12
 
 모델을 import하지 않는 Python SystemExit(7)에서 guard summary ExitCode7인데 호출 명령 exit0인 실제 실패 전달 누락을 확인했다. summary 보존 뒤 worker exit를 반환하도록 보완해 같은 짧은 실패의 호출 명령이 nonzero이며, native normal/pressure 자손 QA에서 LASTEXITCODE와 summary exact·무관 sentinel 보존이 통과했다. 기존8GiB 시작/4GiB3회 중단·소유 트리만 종료·CPU 환경/실패 원본은 유지하며 대형 AI는 실행하지 않았다.

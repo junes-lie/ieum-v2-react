@@ -1,3 +1,7 @@
+### R5 제출 입력 연결 선행 — 2026-10-12
+
+기존 measured Profile bridge 다음으로 이미 저장된 canonical 제출 Track→개인 Layer 입력의 read-only bridge를 기존 모듈에 통합했다. 원본 SHA/분석·revision·개인 참조 소유자·목적을 묶고 Review/Sample/미지원/legacy·변조를 거부한다. 개인 참조는 explicit snapshot이며 미지원 특성null을 유지한다. 같은 입력 재현·비동기 참조 불변·DB 원본 보존 QA identity에 연결. 개인 artifact 승인/생성·Track 변형/Project 결합은 미완료이며 보류된 형상/사진/재측정/갱신/fallback 정책을 확정하지 않는다. 독립 데이터 준비와 실제 AI 생성 완료를 구분하고 기존 G1–G5/전체 단계 완료 gate를 유지한다. build/제출 회귀 및 main Git Integration→Production 기존 앱 보존으로 마감한다. 직전17633a4 자동배포/asset exact 확인.
+
 ### R6 실행 실패 전달 / 실제 중단 위치 — 2026-10-12
 
 guard summary의 자식 exit7이 호출자 exit0으로 끝나는 누락을 짧은 모델 없는 시험으로 확인하고 실제 exit 전파를 연결했다. normal/가상 pressure의 소유3대 worker·LASTEXITCODE/summary exact·무관 sentinel 보존 통과. 대형 모델/환경 변경 없음. low-RAM v2는 실제 pipeline 준비 뒤 생성 호출까지 진입했으나 첫 diffusion/condition 완료/PCM이 없는 자원 중단이다. 초기화만 실패한 것으로 좁혔던 이전 기록을 교정하며 어떤 연산의 RAM 원인인지는 미확정 유지. 같은 입력 대형 시험을 반복하지 않고 앱 독립 기능/확정되지 않은 개인 형상·실제 AI Part 및 서비스 gate를 구분한다.
