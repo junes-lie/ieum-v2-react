@@ -1,5 +1,13 @@
 # 단일 앱 서비스 연결 계약
 
+## 2026-10-13 Owner의 녹음 전 Key 조정 준비
+
+project_participation 이후 project_key_adjustment migration을 적용한다. 실제 원격에는 적용하지 않았다. POST /api/projects/:id/key는 본인 Auth, Idempotency-Key 및 {arrangementId,expectedRevision}만 받는다. 사용자 UUID·직접 Key/추정 음역·임의 source는 받지 않는다. SQL은 Owner→Project 잠금→동일 요청 최초 응답→첫 녹음/실제 제출/현재 revision→trusted arrangement를 검사한다. 같은 Song/실제2–4 Part ID·수만 변경하며 배정자 Fit을 현재 저장 측정값으로 다시 확인한다. Fit 실패에는 전체 transaction을 보존하고 자동 Part 재배정/제거를 하지 않는다.
+
+성공은 실제 key/source/Part 요구 음역과 revision/activity만 갱신하며 Seed·배정·Profile·제출·Mix는 유지한다. 같은 arrangement 선택은 revision을 늘리지 않는다. 첫 녹음과 동일 Project 잠금을 사용하고 시작 후 새 요청은 거부한다. 이전 성공 요청의 응답 유실 재시도는 첫 receipt만 반환하며 녹음 이후 실제 Project를 되돌리지 않는다. 현재 상태는 기존 GET으로 읽는다. 오류는 whitelist code만 제공하고 upstream 진단은 제외한다. 기존 lifecycle rewrite를 사용하며 별도 앱·화면·시연 편곡은 추가하지 않았다.
+
+격리 SQL의2/3/4 Part·Owner/익명·Fit·다른 Part/누락 arrangement·revision·실패 보존·재시도/no-op·제출0에서도 녹음 시작 잠금 및 주입 HTTP/build 통과다. 실제 운영 migration·catalog ingest·동시 연결·client transport/App W07 바인딩·실기기 인수는 미완료다. 기존 서비스 없음·Google 우선 선택을 보존하며 같은 접근 정보 질문을 반복하지 않는다.
+
 ## 2026-10-13 Mix 결과 업로드·출력 intent 준비
 
 mix_completion_context 다음 mix_output_intents migration을 적용한다. 원격에는 적용하지 않았다. service-only ieum_prepare_mix_output(jobId,sha256,size)는 Project→job 잠금·기존 실제 제출/source 검증 후 출력 UUID/hash/byteLength를 함께 보존한다. 같은 입력만 재시도하고 첫 candidate와 다른 hash/size는409다. 기존 완료 결과는 원래 result_object_id를 유지한다. allocation은 Track/완료/revision을 늘리지 않는다.

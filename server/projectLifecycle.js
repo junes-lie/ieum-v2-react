@@ -23,6 +23,10 @@ function routeOf(request) {
   try { segments=path.split('/').map(decodeURIComponent) } catch { throw fail('INVALID_PROJECT_REQUEST') }
   if (segments.some(value=>!text(value) || value.includes('/') || ['.','..'].includes(value))) throw fail('INVALID_PROJECT_REQUEST')
   if (segments.length===1 && request.method==='GET') return { projectId:segments[0],operation:'get' }
+  if (segments.length===2 && segments[1]==='key') {
+    if(request.method!=='POST')throw fail('METHOD_NOT_ALLOWED')
+    return {projectId:segments[0],operation:'key'}
+  }
   if (segments.length===2 && ['tracks','mix'].includes(segments[1])) {
     if(request.method!=='GET')throw fail('METHOD_NOT_ALLOWED')
     return {projectId:segments[0],operation:segments[1]}
@@ -87,7 +91,7 @@ export async function projectLifecycleRequest(request,{ env=process.env,fetchImp
   let rpc=route.operation==='tracks'?'ieum_list_project_tracks':route.operation==='mix'?'ieum_get_project_mix':'ieum_get_project', body=route.operation==='create'?{}:{ p_project_id:route.projectId }, requestedOwnerPart, storage
   if (!['get','tracks','mix'].includes(route.operation)) {
     const value=await readMetadata(request)
-    if (route.operation!=='create') body.p_part_id=route.partId
+    if (!['create','key'].includes(route.operation)) body.p_part_id=route.partId
     if (route.operation==='upload') {
       const key=request.headers.get('idempotency-key')
       if (!text(key)) throw fail('IDEMPOTENCY_KEY_REQUIRED')
@@ -99,6 +103,13 @@ export async function projectLifecycleRequest(request,{ env=process.env,fetchImp
       storage=createSupabaseAudioStorage({env,fetchImpl})
       rpc='ieum_prepare_track_upload'
       Object.assign(body,{p_request_key:key,p_size:value.size,p_sha256:value.sha256.toLowerCase(),p_content_type:contentType})
+    } else if (route.operation==='key') {
+      const key=request.headers.get('idempotency-key')
+      if(!text(key))throw fail('IDEMPOTENCY_KEY_REQUIRED')
+      if(Object.keys(value).length!==2 || Object.keys(value).some(field=>!['arrangementId','expectedRevision'].includes(field)) ||
+        !text(value.arrangementId) || !Number.isSafeInteger(value.expectedRevision) || value.expectedRevision<0 || value.expectedRevision>2147483647)throw fail('INVALID_PROJECT_REQUEST')
+      rpc='ieum_set_project_key'
+      Object.assign(body,{p_arrangement_id:value.arrangementId,p_expected_revision:value.expectedRevision,p_request_key:key})
     } else if (route.operation==='create' || route.operation==='join') {
       const key=request.headers.get('idempotency-key')
       if (!text(key)) throw fail('IDEMPOTENCY_KEY_REQUIRED')
@@ -145,7 +156,8 @@ export async function projectLifecycleRequest(request,{ env=process.env,fetchImp
     // Only known RPC error identifiers; never echo arbitrary upstream diagnostics.
     let detail
     try {detail=await response.json()} catch {}
-    const specific={PROFILE_REQUIRED:403,PART_FIT_FAILED:403,PART_RANGE_UNAVAILABLE:409,ARRANGEMENT_NOT_FOUND:404}
+    const specific={PROFILE_REQUIRED:403,PART_FIT_FAILED:403,PART_RANGE_UNAVAILABLE:409,ARRANGEMENT_NOT_FOUND:404,
+      PROJECT_OWNER_REQUIRED:403,PROJECT_AUDIO_LOCKED:409,PROJECT_REVISION_CONFLICT:409,ARRANGEMENT_PARTS_MISMATCH:409}
     if (specific[detail?.message]===response.status) throw fail(detail.message)
     throw fail(codes[response.status] || 'PROJECT_UNAVAILABLE')
   }
@@ -217,6 +229,8 @@ export async function projectLifecycleRequest(request,{ env=process.env,fetchImp
     result={trackId:result.trackId,submissionStatus:'success',duration:body.p_duration,project}
   } else {
     result=projectSnapshot(result,route.operation==='create'?result?.id:route.projectId)
+    if(route.operation==='key' && (result.keyLockedAt!==null || result.lifecycle!=='recruiting' || result.submittedTrackCount!==0 ||
+      !result.parts.some(part=>part.participantId===user.id && part.status==='ready')))throw fail('INVALID_PROJECT_RESPONSE')
     if (route.operation==='start' && (!result.keyLockedAt || result.lifecycle!=='recruiting' ||
       !result.parts.some(part=>part.id===route.partId && part.status==='ready' && part.participantId===user.id))) throw fail('INVALID_PROJECT_RESPONSE')
     if (route.operation==='create' && (!uuid(result.id) || result.keyLockedAt!==null || result.lifecycle!=='recruiting' || result.submittedTrackCount!==0 ||
@@ -230,7 +244,8 @@ export function projectLifecycleErrorResponse(error) {
   const statuses={ AUTH_REQUIRED:401,SERVICE_NOT_CONFIGURED:503,INVALID_SERVICE_CONFIGURATION:503,AUTH_UNAVAILABLE:503,
     INVALID_AUTH_RESPONSE:503,INVALID_PROJECT_REQUEST:400,PROJECT_PAYLOAD_TOO_LARGE:413,IDEMPOTENCY_KEY_REQUIRED:400,
     PROJECT_ROUTE_NOT_FOUND:404,PROJECT_NOT_FOUND:404,ARRANGEMENT_NOT_FOUND:404,PROFILE_REQUIRED:403,PART_FIT_FAILED:403,PART_RANGE_UNAVAILABLE:409,
-    PART_NOT_ASSIGNED:403,PROJECT_CONFLICT:409,METHOD_NOT_ALLOWED:405,
+    PART_NOT_ASSIGNED:403,PROJECT_OWNER_REQUIRED:403,PROJECT_AUDIO_LOCKED:409,PROJECT_REVISION_CONFLICT:409,ARRANGEMENT_PARTS_MISMATCH:409,
+    PROJECT_CONFLICT:409,METHOD_NOT_ALLOWED:405,
     PROJECT_UNAVAILABLE:503,INVALID_PROJECT_RESPONSE:503,INVALID_UPLOAD_FILE:400,INVALID_UPLOAD_OBJECT:503,
     STORAGE_UNAVAILABLE:503,PRIVATE_STORAGE_REQUIRED:503,INVALID_STORAGE_RESPONSE:503,UPLOAD_OBJECT_MISSING:409,UPLOAD_OBJECT_MISMATCH:409,
     INVALID_AUDIO_RECEIPT:409,INVALID_AUDIO_RECEIPT_RESPONSE:503,INVALID_AUDIO_VERIFICATION:400,AUDIO_DECODER_NOT_CONFIGURED:503,

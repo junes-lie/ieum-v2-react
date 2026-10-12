@@ -207,6 +207,50 @@ try {
   assert.ok(!JSON.stringify(sanitized).includes('secret'))
   assert.ok(!JSON.stringify(sanitized).includes(users[0]))
   assert.deepEqual(sanitized.parts.find(part=>part.id==='one').requiredRange,{lowMidi:50,highMidi:65,tessitura:{lowMidi:53,highMidi:61}})
+  await db.exec('reset role')
+  await db.exec(await readFile(new URL('../server/migrations/20261013_project_key_adjustment.sql',import.meta.url),'utf8'))
+  await db.exec('reset role')
+  await db.query('update public.ieum_profile_voice_sources set range_data=$1,source_revision=$2 where user_id=$3',[JSON.stringify(measured),'qa-key-source-revision',users[0]])
+  await db.exec('reset role')
+  await db.query('update public.ieum_profile_voice_sources set range_data=$1,source_revision=$2 where user_id=$3',[JSON.stringify(measured),'qa-key-source-revision',users[0]])
+  const setKey=async(project,arrangement,revision,key)=>(await db.query('select public.ieum_set_project_key($1,$2,$3,$4) as result',[project,arrangement,revision,key])).rows[0].result
+  for(const count of [2,3,4]) {
+    await db.exec('reset role')
+    const parts=Array.from({length:count},(_,index)=>({id:`vocal-${index}`,requiredRange:{lowMidi:51,highMidi:66,tessitura:{lowMidi:53,highMidi:62}}}))
+    await db.query('insert into public.ieum_catalog_arrangements values($1,$2,$3,$4,$5)',
+      [`key-${count}`,'qa-song','+1',JSON.stringify({...source,key:'+1',revision:'key-v1',sourceSha256:'f'.repeat(64)}),JSON.stringify(parts)])
+    await insertArrangement(`unfit-${count}`,parts.map(part=>({...part,requiredRange:{lowMidi:50,highMidi:80}})))
+    await insertArrangement(`other-parts-${count}`,parts.map(part=>({...part,id:`different-${part.id}`})))
+    await asUser(users[0])
+    const initial=await create(`a-${count}`,'vocal-0',`key-project-${count}`)
+    await asUser(users[1]);const before=await joinPart(initial.id,'vocal-1',`key-join-${count}`)
+    await assert.rejects(setKey(initial.id,`key-${count}`,before.revision,`not-owner-${count}`),error=>error.code==='PT403')
+    await asUser(users[0])
+    for(const [arrangement,revision,code] of [[`key-${count}`,0,'PT409'],[`unfit-${count}`,before.revision,'PT403'],
+      [`other-parts-${count}`,before.revision,'PT409'],['missing',before.revision,'PT404']]) {
+      await assert.rejects(setKey(initial.id,arrangement,revision,`reject-${count}-${arrangement}`),error=>error.code===code)
+      assert.deepEqual(await get(initial.id),before)
+    }
+    const changed=await setKey(initial.id,`key-${count}`,before.revision,`key-${count}`)
+    assert.equal(changed.key,'+1');assert.equal(changed.seed,before.seed);assert.equal(changed.revision,before.revision+1)
+    assert.equal(changed.audioSourceRef.revision,'key-v1');assert.equal(changed.submittedTrackCount,0);assert.equal(changed.keyLockedAt,null)
+    assert.deepEqual(changed.parts.map(part=>part.participantId),before.parts.map(part=>part.participantId))
+    assert.deepEqual(changed.parts[0].requiredRange,parts[0].requiredRange)
+    assert.deepEqual(await setKey(initial.id,`key-${count}`,before.revision,`key-${count}`),changed)
+    await assert.rejects(setKey(initial.id,`a-${count}`,before.revision,`key-${count}`),error=>error.code==='PT409')
+    assert.equal((await setKey(initial.id,`key-${count}`,changed.revision,`same-key-${count}`)).revision,changed.revision)
+    const locked=(await db.query('select public.ieum_start_project_recording($1,$2) as result',[initial.id,'vocal-0'])).rows[0].result
+    await assert.rejects(setKey(initial.id,`a-${count}`,locked.revision,`locked-${count}`),error=>error.code==='PT409')
+    assert.deepEqual(await get(initial.id),locked)
+    // Lost-response replay returns the first receipt without changing the now-locked Project.
+    assert.deepEqual(await setKey(initial.id,`key-${count}`,before.revision,`key-${count}`),changed)
+    assert.deepEqual(await get(initial.id),locked)
+  }
+  await asUser(null)
+  await assert.rejects(setKey('missing','a-2',0,'anonymous-key'),error=>error.code==='PT401')
+  await db.exec('reset role;set role anon')
+  await assert.rejects(setKey('missing','a-2',0,'anon-key'),error=>error.code==='42501')
+  console.log('PASS Key adjustment: Owner/pre-recording only, catalog-backed 2–4 Parts/current assigned fit, revision conflict, stable seed/assignments, unchanged originals on failure, stored replay/no-op, recording locks before any submission. Isolated SQL, not live users/concurrent connections/App UI.')
   console.log('PASS public Project discovery SQL→HTTP→client: same Song/bounded pages, actual 2–4 Part/submission states, no participant IDs/originals, missing Profile can browse but not create, failed Mix stays mixing and successful receipt required for completed. Isolated fixtures, not live Mix/rights/App integration.')
   console.log('PASS public catalog SQL→HTTP→client: no Profile/login dependency, 2–4 actual Part metadata, deterministic bounded pages, no private extra fields/personal bearer, request/upstream failures, direct table access denied. Trusted fixtures only; no real approved songs/rights/App discovery activation.')
   console.log('PASS actual PostgreSQL Project creation/join: catalog-backed 2/3/4 Parts, creator assignment/others OPEN/0 Tracks, immutable sources, stored-profile range+tessitura parity, missing Profile denial, repeated-operation results, occupied-seat denial, no duplicate participation or direct source edits. Isolated fixtures, not live users/catalog/audio/cross-connection concurrency.')

@@ -29,6 +29,26 @@ const fetchImpl=async(url,init)=>{
   return result instanceof Response?result.clone():Response.json(result)
 }
 const options={env,fetchImpl}
+const keyRequest=(value={arrangementId:'verified-key',expectedRevision:0},key='key-adjust-1')=>new Request('https://ieum.example/api/projects/p/key',{
+  method:'POST',headers:{Authorization:'Bearer qa-token','Content-Type':'application/json',...(key?{'Idempotency-Key':key}:{})},body:JSON.stringify(value)})
+assert.equal((await projectLifecycleRequest(keyRequest(),options)).headers.get('cache-control'),'private, no-store')
+assert.ok(calls.at(-1).url.endsWith('/ieum_set_project_key'))
+assert.deepEqual(calls.at(-1).body,{p_project_id:'p',p_arrangement_id:'verified-key',p_expected_revision:0,p_request_key:'key-adjust-1'})
+for(const value of [{arrangementId:'a',expectedRevision:-1},{arrangementId:'a',expectedRevision:1.5},{arrangementId:'a',expectedRevision:2147483648},
+  {arrangementId:'a',expectedRevision:0,userId:user},{key:'+1',expectedRevision:0},{}]) {
+  const count=calls.length
+  await assert.rejects(projectLifecycleRequest(keyRequest(value),options),error=>error.code==='INVALID_PROJECT_REQUEST')
+  assert.equal(calls.length,count)
+}
+await assert.rejects(projectLifecycleRequest(keyRequest(undefined,''),options),error=>error.code==='IDEMPOTENCY_KEY_REQUIRED')
+for(const [code,status] of [['PROJECT_OWNER_REQUIRED',403],['PROJECT_AUDIO_LOCKED',409],['PROJECT_REVISION_CONFLICT',409],['ARRANGEMENT_PARTS_MISMATCH',409]]) {
+  result=Response.json({message:code,details:'private diagnostic'},{status})
+  const denied=await projectLifecycleRequest(keyRequest(),options).catch(projectLifecycleErrorResponse)
+  assert.equal(denied.status,status);assert.deepEqual(await denied.json(),{error:{code}})
+}
+result={...structuredClone(project),keyLockedAt:new Date().toISOString()}
+await assert.rejects(projectLifecycleRequest(keyRequest(),options),error=>error.code==='INVALID_PROJECT_RESPONSE')
+result=structuredClone(project)
 const req=(path='p',value,headers={})=>new Request(`https://ieum.example/api/projects/${path}`,{
   method:value===undefined?'GET':'POST',headers:{Authorization:'Bearer qa-token','Content-Type':'application/json',...headers},
   ...(value===undefined?{}:{body:JSON.stringify(value)})})

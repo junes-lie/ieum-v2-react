@@ -1,5 +1,7 @@
 # 현재 실행 기준 — 2026-10-13 변경분 및 잔여 구현계획 개정
 
+2026-10-13 R3 Key 조정 gate: 사용자 승인261012 화면명세03/W07·Key.Disabled 및 PRD13의 Owner/첫 녹음 전 조정·현재 Key Fit 기준에 맞춰 기존 Project API/SQL에 key 조정을 연결했다. 승인 catalog arrangement의 같은 Song·같은 실제2–4 Part ID/수만 허용하고 실제 Source/요구 음역을 함께 갱신한다. 현재 배정자의 측정 Fit을 기존 함수로 재검사하며 배정·Seed·Profile·Track·Mix를 재생성하지 않는다. revision/Project 잠금·최초 응답 보존으로 오래된 변경·녹음 시작 이후 변경·중복 변경을 차단한다. 격리 DB 및 주입 HTTP/build 통과는 실제 원격/동시 연결/앱 W07 인수를 대신하지 않는다. 실제 서버 접근, transport/App Key 선택 연결·실제 편곡 데이터는 미완료다. 기존 서비스 없음·Google 우선 결정은 확인했고 접근 수단 질문을 반복하지 않는다. 기존 단계/예산/외부 대기·미정 정책을 유지하고 이번 실효 공수는 미측정이다.
+
 2026-10-13 R3 결과 저장 gate: 기존 signed uploader와 실제 완료 확정 helper에 persistProjectMix를 연결했다. job별 출력 UUID/hash/byteLength intent·private no-upsert upload·실제 파일 재검증·2–4 Part 완료/재시도와 업로드/DB/응답 유실·다른 결과 거부·원본 보존을 격리 검증했다. 기존 Mix 엔진을 병렬 DSP로 대체하지 않았다. 현재 서버 Web Audio runtime은 없고 별도 native runtime 설치는 자동 승인 검토가 기존 설치 금지로 거부했으며 우회하지 않는다. 관련 시험 설치는 사용자 응답 대기이고 renderer/운영 worker/실제 서비스/App 연결은 잔여다. 기존 단계·예산·외부 의존성·미정 정책과 실패 이력을 유지한다.
 
 2026-10-13 R3 저장 결과 완료 gate: 기존 decoder/Storage/complete_verified_mix transaction에 서버 내부 completeStoredProjectMix와 service-only context 조회를 연결했다. 실제 저장 bytes/hash/길이 검증 전에는 완료 RPC를 호출하지 않고 I/O 뒤 실제 제출 snapshot/Source를 다시 검사한다.2/3/4 Part의 실제 짧은 WAV→격리 SQL·실패/원본 보존/동일 재시도 검증을 통과했다. 생성/업로드를 구현한 것으로 계산하지 않으며 actual Mix renderer·persist/upload worker와 hosted 환경/실제 사용자/App 연결이 다음 잔여다. 이 gate는 기존 R3 안의 선행 연결이며 단계·예산/외부 의존성·미정 정책은 유지한다. 실효 공수는 미측정이며 같은 접근 질문이나 AI 시험을 반복하지 않는다.
