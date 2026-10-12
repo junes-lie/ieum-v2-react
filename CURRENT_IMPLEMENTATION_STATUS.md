@@ -1,3 +1,9 @@
+### R2 기본 Project Collection Mix 상태 — 2026-10-12
+
+새 Project와 달리 기본 Project의 Collection에서 실제4 Track/Mix 저장 실패가 RECORDING · 04/04로 표시되는 native assertion 실패를 재현했다. 기존 readyForMix를 카드에 전달해 저장된 Mix 전 MIXING, 성공 후 COMPLETE를 표시한다. 기존 생성/제출/오디오/정책은 변경하지 않는다. 실제 native Mix 저장 실패→작업실 오류/완성곡 없음→정상 reload/Mix 저장→완성곡 연결과4 원본 Blob SHA exact, 기존 Collection 저장 해제/탭별 scroll/프로필·곡 이력/Home focus 회귀, build39modules/510.53KB 통과. 첫 fixture는 bootstrap에서 거부하는 임의 origin으로 timeout이었고 명시된 local-formant-singing-demo origin으로 교정했다. 사람 녹음/실기기 인수가 아니며 기존 전체 R2/음악/Identity gate 유지. 관련 묶음만 main 자동배포→Production 동일 QA로 마감한다.
+
+직전6f1b9e3 Git Integration success·Production Project/Sample Guide 오류·재시도/Review/Profile 보존 두 QA 통과·HTTP200·index-DmaVsSxO.js SHA4367FCAB70CEEBC7B07AB765FE8E2530DB9ABAD75C1CA5C47EC05311A02A542C exact 확인. 사용자 서버3파일·디자인/미검증 AI 초기화는 보존한다.
+
 ### R1 녹음 중 Guide 전환 오류 복구 — 2026-10-12
 
 기존 Project Guide 재선택의 노드 생성 거부가 React 화면을 종료시키는 pageerror를 재현했다. Project effect와 Sample 체크박스에서 기존 오류 영역으로 처리하고 updateRecordingGuides의 실패 시 부분 생성된 Guide 노드를 정리한다. MediaRecorder·활성 구간·원본은 계속 유지하고 Guide 재선택 성공 후 오류를 지운다. native Project의 오류/재선택/Review와 Sample의 같은 경로·기존 Profile 보존/stop retry, audio foundation/build39modules/510.49KB 통과(기존500KB 경고 유지). 신규 정책/디자인·음원/서버 변경 없음. 관련 묶음만 main Git Integration→Production 두 QA로 마감하며 물리 마이크/음질/전체 R1은 미완료다. 직전2f56846 기록/자원도구 자동배포 success·Production HTTP200/기존 JS SHA exact 확인.

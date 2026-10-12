@@ -1,3 +1,7 @@
+### R2 기본 Project Collection 상태 마감 — 2026-10-12
+
+실제4 Track 제출·Mix 저장 실패 시 기본 Collection 카드의 RECORDING 오표시를 재현하고 기존 readyForMix의 MIXING 판정을 연결했다. Mix 성공/reload 후 COMPLETE/같은 완성곡, 실패 시 같은 작업실·원본4 SHA 보존, 기존 Collection 저장 객체/탭/복귀 QA/build를 통과했다. bootstrap 허용 demo origin의 격리 실제 오디오 시험이며 물리 녹음/청취·전체 R2 완료로 확대하지 않는다. 관련 변경만 main Git Integration→Production 동일 QA로 마감하고 사용자 서버3파일/디자인/AI gate는 유지한다. 직전6f1b9e3 Production 두 Guide QA/asset exact 마감 확인.
+
 ### R1 녹음 중 Guide 오류 처리 — 2026-10-12
 
 Project Guide 재선택 오류의 React 종료를 실제 재현하고 기존 Project/Sample 오류 표시·재선택 성공, 실패한 Guide 노드 정리를 연결했다. 실제 녹음/활성 구간·기존 Profile 원본/제출 상태를 유지한다. native 두 경로/Review·stop retry/audio foundation/build 회귀 통과, 관련 변경만 main 자동배포→Production 검증한다. 제품/디자인·음원·실제 서버/전체 R1 완료 상태는 변경하지 않는다.
