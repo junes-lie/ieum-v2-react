@@ -30,7 +30,7 @@ import {
 } from './audio.js'
 import { loadProjectBacking, projectAudioReference, assertProjectTrackAudio, recordingEntryPrompt } from './projectAudio.js'
 import { readLocalUserState, writeLocalUserState } from './projectService.js'
-import { evaluatePartFit } from './matching.js'
+import { evaluatePartFit, sharedVoicePreferences } from './matching.js'
 import { buildVoiceLayer, projectRecordSignature, isSupportedVoiceAnalysis } from './voiceAnalysis.js'
 import { clearProjectTracks, deleteTrack, deleteRecordingDraft, loadProjectTracks, loadTrack, saveTrack, saveTracks, saveSubmittedTrack } from './trackStore.js'
 import { createProjectModel, resolveRecordPartSlots, SUPPORTED_PART_COUNTS, submittedProjectTracks, allProjectTracksSubmitted } from './projectModel.js'
@@ -958,22 +958,29 @@ function MatchDetail({ vocal, back, openProfile, invite, invitedVocalIds, part }
   </div>
 }
 
-function OtherVocalProfile({ vocal, back, saved, toggleSave, sampleUrl, sampleDuration }) {
+function OtherVocalProfile({ vocal, back, saved, toggleSave, sampleUrl, sampleDuration, profile, setupVoice }) {
   const [playing,setPlaying] = useState(false)
-  const compatibility = vocal.compatibility || ['서로의 편한 음역을 함께 확인할 수 있어요.', '음색 분석 데이터가 준비되면 조화 이유를 보여줘요.', '선호 역할을 나누어 확인할 수 있어요.', '저장곡과 선호 장르를 비교해요.']
+  const shared = sharedVoicePreferences(profile,vocal)
+  const compatibility = [
+    `나 ${profile?.range || '미등록'} · ${vocal.name} ${vocal.range || '미등록'}`,
+    '실제 두 목소리의 음색 비교 데이터가 아직 준비되지 않았어요.',
+    `나 ${(profile?.roles || []).join(' · ') || '미등록'} / ${vocal.name} ${(vocal.roles || []).join(' · ') || '미등록'}`,
+    shared.count ? `공통 장르: ${shared.genres.join(' · ') || '없음'} / 공통 취향: ${shared.taste.join(' · ') || '없음'}` : '등록된 장르·취향에서 공통 항목이 없어요.'
+  ]
   return <div className="screen candidate-screen other-vocal-screen">
     <TopBar title="VOCAL PROFILE" back={back} meta="ME ↔ VOCAL"/>
     <main>
       <div className="candidate-profile-head"><div className="candidate-identity"><VoiceIdentity identity={vocal.identity}/><div><p className="kicker">Other vocal</p><div className="vocal-name-line"><h1>{vocal.name}</h1><button className={`name-star ${saved?'active':''}`} data-action="toggle-vocal-save" aria-label={saved?`${vocal.name} 보컬 저장 취소`:`${vocal.name} 보컬 저장`} aria-pressed={saved} onClick={()=>toggleSave(vocal.id)}><Icon name="star" size={18}/></button></div><p>{vocal.voiceType}<br/>{vocal.range}</p></div></div></div>
       <section className="profile-facts"><div><span>선호 역할</span><b>{(vocal.roles||[vocal.role]).join(' · ')}</b></div><div><span>선호 장르</span><b>{(vocal.genres||[]).join(' · ')}</b></div><div><span>음악 취향</span><b>{(vocal.taste||[]).join(' · ')}</b></div></section>
       <section className="voice-sample-block"><div className="section-head"><h2>대표 Voice Sample</h2><span>{sampleUrl?'재생 가능':'아직 등록되지 않음'}</span></div>{sampleUrl?<Player source={sampleUrl} durationHint={sampleDuration} playing={playing} setPlaying={setPlaying}/>:<p>이 시연 데이터에는 실제 대표 Voice Sample이 없습니다. 프로젝트 Track을 프로필 Sample로 대신 표시하지 않습니다.</p>}</section>
-      <section className="compatibility"><h2>나와의 보컬 궁합</h2><div className="dual-fields" aria-label="JISUN과 상대 보컬의 두 Voice Field가 중앙에서 겹치는 정성적 시각화"><i/><i/></div>{['음역 조합','음색 조화','역할 보완','음악 취향'].map((label,index)=><div className="reason-row" key={label}><span>{label}</span><b>{compatibility[index]}</b></div>)}<small>현재 Project, Part, Key와 무관한 두 Vocal Profile 간 정성적 비교이며 사람의 우열이나 실력 점수가 아닙니다.</small></section>
+      <section className="compatibility"><h2>나와의 보컬 궁합</h2>{profile ? <>{['음역 조합','음색 조화','역할 보완','음악 취향'].map((label,index)=><div className="reason-row" key={label}><span>{label}</span><b>{compatibility[index]}</b></div>)}<small>내 저장된 Profile과 상대의 시연용 프로필 정보를 비교합니다. 실제 음색 분석이나 실력 점수가 아닙니다.</small></> : <><p>내 목소리를 등록하면 두 목소리의 조합을 볼 수 있어요.</p><button className="secondary" data-action="profile-setup-from-vocal" onClick={setupVoice}>내 목소리 알아보기</button></>}</section>
     </main>
   </div>
 }
 
-function Finder({ back, preferences, updatePreferences, invite, invitedVocalIds = [], part, vocalSaves, toggleVocalSave, openVocalProfile, selectedVocalId, setSelectedVocalId }) {
-  const {sort='종합 추천순',filterOpen=false,roleOnly=false,scrollTop=0}=preferences || {}
+function Finder({ back, preferences, updatePreferences, invite, invitedVocalIds = [], part, vocalSaves, toggleVocalSave, openVocalProfile, selectedVocalId, setSelectedVocalId, profile }) {
+  const {sort:storedSort='종합 추천순',filterOpen=false,roleOnly=false,rangeFilter='',voiceTypeFilter='',genreFilter='',tasteFilter='',scrollTop=0}=preferences || {}
+  const sort=storedSort==='음색 조화순'||(storedSort==='곡 취향 유사순'&&!profile)?'종합 추천순':storedSort
   const setSort=value=>updatePreferences({sort:value})
   const setRoleOnly=value=>updatePreferences({roleOnly:value})
   const returnToList=()=>{
@@ -989,12 +996,18 @@ function Finder({ back, preferences, updatePreferences, invite, invitedVocalIds 
     const fit=evaluatePartFit({rangeData:candidate,part})
     const margin=Math.min(fit.lowMargin||0,fit.highMargin||0)
     if(key==="range")return margin
+    if(key==="taste")return sharedVoicePreferences(profile,candidate).count
     const base=key==="overall"?margin:key==="role"?(preferred?1:0):0
     return (preferred ? 100 : 0) + base
   }
-  const candidates = PEOPLE.filter(candidate=>!candidate.isSelf)
+  const eligibleCandidates = PEOPLE.filter(candidate=>!candidate.isSelf)
     .filter(candidate=>evaluatePartFit({rangeData:candidate,part}).eligible)
+  const candidates = eligibleCandidates
     .filter(candidate=>!roleOnly || candidate.roles?.some(role=>preferredRoles.includes(role)))
+    .filter(candidate=>!rangeFilter || candidate.range===rangeFilter)
+    .filter(candidate=>!voiceTypeFilter || candidate.voiceType===voiceTypeFilter)
+    .filter(candidate=>!genreFilter || candidate.genres?.includes(genreFilter))
+    .filter(candidate=>!tasteFilter || candidate.taste?.includes(tasteFilter))
     .sort((a,b)=>score(b,keyBySort[sort])-score(a,keyBySort[sort]))
   const selected = selectedVocalId ? PERSON_BY_ID[selectedVocalId] : null
   if (selected) return <MatchDetail vocal={selected} back={returnToList} openProfile={openVocalProfile} invite={invite} invitedVocalIds={invitedVocalIds} part={part}/>
@@ -1002,9 +1015,10 @@ function Finder({ back, preferences, updatePreferences, invite, invitedVocalIds 
     <TopBar title={`${partName.toUpperCase()} · VOCAL FINDER`} back={back} action={filterOpen?'닫기':'필터'} onAction={()=>updatePreferences({filterOpen:!filterOpen})}/>
     <main>
       <p className="kicker">등록된 샘플 음역 기준 · {candidates.length} vocals</p><h1>{partName}를 끝까지<br/>부를 수 있는 보컬</h1>
-      {filterOpen && <section className="finder-filters"><label><input type="checkbox" checked={roleOnly} onChange={event=>setRoleOnly(event.target.checked)}/><span>{partName} 선호 역할</span></label><p>전체 보컬 중 현재 Part의 역할을 선호하는 후보만 좁혀 봅니다.</p></section>}
-      <div className="sort-row">{Object.keys(keyBySort).map(item => <button key={item} className={sort === item ? 'active' : ''} onClick={() => setSort(item)}>{item}</button>)}</div>
-      {candidates.length===0 && <section className="empty-state"><p>이 조건에 맞는 보컬이 없어요. 필터를 바꿔 다시 찾아보세요.</p><button className="secondary" data-action="reset-finder" onClick={()=>{setRoleOnly(false);setSort("종합 추천순")}}>조건 초기화</button></section>}
+      {filterOpen && <section className="finder-filters"><label><input type="checkbox" checked={roleOnly} onChange={event=>setRoleOnly(event.target.checked)}/><span>{partName} 선호 역할</span></label>{[['rangeFilter','등록 음역','range',rangeFilter],['voiceTypeFilter','프로필 음색 설명','voiceType',voiceTypeFilter],['genreFilter','선호 장르','genres',genreFilter],['tasteFilter','음악 취향','taste',tasteFilter]].map(([key,label,field,value])=><label key={key}>{label}<select aria-label={label} value={value} onChange={event=>updatePreferences({[key]:event.target.value})}><option value="">전체</option>{[...new Set(eligibleCandidates.flatMap(candidate=>candidate[field] || []))].map(option=><option key={option} value={option}>{option}</option>)}</select></label>)}<p>현재 Part의 음역 조건을 통과한 후보 안에서 좁혀 봅니다. 후보의 음역·음색 설명·취향은 시연용 프로필 데이터이며 실제 음색 분석값이 아닙니다.</p><button className="secondary" data-action="clear-finder-filters" onClick={()=>updatePreferences({roleOnly:false,rangeFilter:'',voiceTypeFilter:'',genreFilter:'',tasteFilter:''})}>조건 초기화</button></section>}
+      <div className="sort-row">{Object.keys(keyBySort).map(item => <button key={item} disabled={item==='음색 조화순'||(item==='곡 취향 유사순'&&!profile)} className={sort === item ? 'active' : ''} onClick={() => setSort(item)}>{item}</button>)}</div>
+      <p>음색 조화순은 실제 비교 데이터가 준비된 뒤 사용할 수 있어요.{!profile&&' 곡 취향 유사순은 내 프로필 등록 후 사용할 수 있어요.'}</p>
+      {candidates.length===0 && <section className="empty-state"><p>이 조건에 맞는 보컬이 없어요. 필터를 바꿔 다시 찾아보세요.</p><button className="secondary" data-action="reset-finder" onClick={()=>updatePreferences({roleOnly:false,rangeFilter:'',voiceTypeFilter:'',genreFilter:'',tasteFilter:'',sort:'종합 추천순'})}>조건 초기화</button></section>}
       <div className="candidate-list">{candidates.map(candidate => <div key={candidate.id} className="candidate-row"><button className="candidate-open" data-action="candidate" onClick={() => {updatePreferences({scrollTop:document.querySelector('.screen')?.scrollTop || window.scrollY});setSelectedVocalId(candidate.id);scrollToTop()}}><VoiceIdentity identity={candidate.identity}/><span><strong>{candidate.name}</strong><small>{candidate.range} · {candidate.role}</small><em>{candidate.matchReason || `${partName} 후보 · ${candidate.roles?.join(' · ')}`}</em></span><b>↗</b></button><button className={`candidate-save ${vocalSaves.some(item=>item.vocalId===candidate.id)?'active':''}`} aria-label={`${candidate.name} 보컬 저장`} aria-pressed={vocalSaves.some(item=>item.vocalId===candidate.id)} onClick={()=>toggleVocalSave(candidate.id)}><Icon name="star" size={17}/></button></div>)}</div>
     </main>
   </div>
@@ -1684,7 +1698,7 @@ export default function App() {
       if(event.state?.selectedMatchVocalId===null || PERSON_BY_ID[event.state?.selectedMatchVocalId])setSelectedMatchVocalId(event.state.selectedMatchVocalId)
       if(event.state?.createProjectSongId===null || SONGS.some(song=>song.id===event.state?.createProjectSongId))setCreateProjectSongId(event.state.createProjectSongId)
       if([null,'range','sample'].includes(event.state?.voiceEditMode))setVoiceEditMode(event.state.voiceEditMode)
-      if(['my','detail'].includes(event.state?.voiceReturnScreen))setVoiceReturnScreen(event.state.voiceReturnScreen)
+      if(['my','detail','vocal-profile'].includes(event.state?.voiceReturnScreen))setVoiceReturnScreen(event.state.voiceReturnScreen)
       setScreen(next)
       requestAnimationFrame(()=>{window.scrollTo(0,event.state?.scrollTop || 0);const surface=document.querySelector('.screen');if(surface)surface.scrollTop=event.state?.scrollTop || 0})
     }
@@ -1862,8 +1876,8 @@ export default function App() {
   else if (screen==='create-project') content=<CreateProject key={createProjectSongId || 'song-selection'} back={()=>back(createProjectSongId?'detail':'home')} complete={createProject} initialSongId={createProjectSongId}/>
   else if (screen==='voice') content=<VoiceSetup key={voiceEditMode || "setup"} existing={profile} editMode={voiceEditMode} go={go} back={()=>{setVoiceEditMode(null);back(voiceReturnScreen)}} complete={completeProfile}/>
   else if (screen==='workspace') content=<Workspace go={go} project={activeProject} song={activeSong} isCreated={Boolean(activeCreatedProject)} ownerPartId={activeCreatedProject?.ownerPartId || joinedPart} findVocal={openFinder} joined={joined} invited={invited} invitedPerson={invitedPerson} candidateAccepted={candidateAccepted} candidateArrivalStatus={candidateArrivalStatus} projectTracks={activeTracks} layers={activeLayers} recordPart={recordPart} projectLiked={activeProjectLiked} toggleProjectLike={toggleActiveProjectLike} openVocalProfile={openVocalProfile} mix={activeMix} mixStatus={activeMixStatus} retryAutoMix={retryAutoMix} completionDelayed={delayedProjectIds.includes(activeProject.id)} hasDraft={Boolean(draftKeys[`${activeProject.id}:${activeCreatedProject?.ownerPartId||joinedPart}`])}/>
-  else if (screen==='finder') content=<Finder back={()=>back('workspace')} preferences={finderPreferences[finderContextKey]} updatePreferences={patch=>setFinderPreferences(current=>({...current,[finderContextKey]:{...current[finderContextKey],...patch}}))} invite={activeTracks[finderPartId]||activeFinderPart?.status==='accepted'?null:invite} invitedVocalIds={activeCreatedProject?(activeFinderPart?.invitations||[]).map(item=>item.vocalId):(invited?[invitedVocalId]:[])} part={activeFinderPart} vocalSaves={vocalSaves} toggleVocalSave={toggleVocalSave} openVocalProfile={openVocalProfile} selectedVocalId={selectedMatchVocalId} setSelectedVocalId={setSelectedMatchVocalId}/>
-  else if (screen==='vocal-profile') content=<OtherVocalProfile vocal={selectedVocal} back={()=>back('collection')} saved={vocalSaves.some(item=>item.vocalId===selectedVocalId)} toggleSave={toggleVocalSave} sampleUrl={selectedVocal.sampleUrl} sampleDuration={selectedVocal.sampleDuration}/>
+  else if (screen==='finder') content=<Finder profile={profile} back={()=>back('workspace')} preferences={finderPreferences[finderContextKey]} updatePreferences={patch=>setFinderPreferences(current=>({...current,[finderContextKey]:{...current[finderContextKey],...patch}}))} invite={activeTracks[finderPartId]||activeFinderPart?.status==='accepted'?null:invite} invitedVocalIds={activeCreatedProject?(activeFinderPart?.invitations||[]).map(item=>item.vocalId):(invited?[invitedVocalId]:[])} part={activeFinderPart} vocalSaves={vocalSaves} toggleVocalSave={toggleVocalSave} openVocalProfile={openVocalProfile} selectedVocalId={selectedMatchVocalId} setSelectedVocalId={setSelectedMatchVocalId}/>
+  else if (screen==='vocal-profile') content=<OtherVocalProfile profile={profile} setupVoice={()=>go('voice')} vocal={selectedVocal} back={()=>back('collection')} saved={vocalSaves.some(item=>item.vocalId===selectedVocalId)} toggleSave={toggleVocalSave} sampleUrl={selectedVocal.sampleUrl} sampleDuration={selectedVocal.sampleDuration}/>
   else if (screen==='record') content=<Recorder go={go} submit={submit} onRecordingStart={()=>{touchProjectActivity(activeProject.id);if(!activeCreatedProject)setMainKeyLocked(true);if(activeCreatedProject)setCreatedProjects(current=>current.map(project=>project.id===activeProject.id?{...project,keyLocked:true}:project))}} partId={recordingPart} projectTracks={activeTracks} layers={activeLayers} project={{...activeProject,songTitle:activeSong.title,recordingDuration:activeProject.audioSource?.duration || activeSong.duration.split(":").reduce((total,value)=>total*60+Number(value),0)}} parts={activeParts} onDraftChange={present=>setDraftKeys(current=>({...current,[`${activeProject.id}:${recordingPart}`]:present}))}/>
   else if (screen==='complete') content=<Complete go={go} project={activeProject} song={activeSong} mix={activeMix} layers={activeLayers} projectTracks={activeTracks} projectLiked={activeProjectLiked} toggleProjectLike={toggleActiveProjectLike} openVocalProfile={openVocalProfile}/>
   else if (['projects','collection','my'].includes(screen)) content=<PersonalArea collectionContext={collectionContext} type={screen} go={go} createdProjectTracks={createdProjectTracks} createdMixes={createdMixes} toggleProjectById={id=>setProjectLikes(current=>current.some(item=>item.projectId===id)?current.filter(item=>item.projectId!==id):[...current,{projectId:id,savedAt:new Date().toISOString()}])} editVoice={mode=>{setVoiceEditMode(mode);go("voice")}} updatePreferences={async preferences=>{await saveTrack({id:PROFILE_PROJECT_ID+":preferences",projectId:PROFILE_PROJECT_ID,kind:"voice-preferences",preferences});setProfile(current=>({...current,...preferences}))}} openMainWorkspace={openMainWorkspace} openSong={openSong} openCreatedProject={openCreatedProject} joined={joined} createdProjects={createdProjects} projectLikes={projectLikes} vocalSaves={vocalSaves} songSaves={songSaves} toggleProjectLike={toggleProjectLike} toggleVocalSave={toggleVocalSave} toggleSongSave={toggleSongSave} openVocalProfile={openVocalProfile} profile={profile} layers={layers} trackCount={Object.keys(projectTracks).length} mix={mix} readyForMix={readyForMix} resetDemo={resetDemo} delayedProjectIds={delayedProjectIds}/>

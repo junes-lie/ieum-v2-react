@@ -34,3 +34,14 @@ export function evaluatePartFit({rangeData,part,transposeSemitones=0}) {
 }
 
 export const rangeGate = evaluatePartFit
+
+// Compare declared preferences, not prototype metrics or inferred vocal ability.
+export function sharedVoicePreferences(profile, candidate) {
+  const shared = key => {
+    const own = new Set((profile?.[key] || []).map(value=>String(value).trim().toLocaleLowerCase()))
+    return [...new Set(candidate?.[key] || [])].filter(value=>own.has(String(value).trim().toLocaleLowerCase()))
+  }
+  const genres = shared('genres')
+  const taste = shared('taste')
+  return {genres,taste,count:genres.length+taste.length}
+}

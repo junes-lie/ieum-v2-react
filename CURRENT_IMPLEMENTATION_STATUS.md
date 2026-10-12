@@ -1,3 +1,15 @@
+## 2026-10-12 R2 최신 로컬 Notion 대조와 Finder/05A 기능 연결
+
+사용자 승인 fallback으로 `레코드판/노션/*_261009.md`5개를 최신 파일 집합으로 확인했다. Notion 도구0개·온라인 미확인 상태는 유지한다. 관련 PRD8–10/화면명세04·05·05A·09·10·VP/유저플로우2D·3·Identity/IA 경로를 읽고 실제 React와 대조했다. 화면명세는 이전 export와 동일 SHA이고 IA/PRD/PROJECT/유저플로우는 다르다. 미정 Identity 정책은 최신 로컬본에서도 미정이며 임의 확정하지 않는다.
+
+앱 변경: Finder의4개 누락 필터와 전체 초기화, 저장된 내 장르·취향에 따른 취향 정렬·편집 즉시 반영. 기존 음역 Gate/역할 정렬 유지. 실제 음색 비교가 없으면 음색 조화순을 비활성하고 내 Profile이 없으면 취향 정렬을 비활성한다.05A는 등록 전 허구의 궁합을 표시하지 않고 기존 Setup 진입을 제공한다. 완료·취소·브라우저 이력에서 같은 보컬로 복귀하고 등록 후 실제 저장 음역/역할/공통 취향을 보여준다. 별도 화면/디자인/그래픽 생성 정책은 추가하지 않았다.
+
+로컬 검증: native Finder의 실제 범위/역할 순서·취향 비교·저장 편집 반영·필터 조합/Empty/전체 초기화/후보 이력,Collection 기존 저장·스크롤·05A Setup 취소 및 Back/Forward,synthetic microphone의05A→측정/Sample 저장→같은 Luna/저장 보컬 탭 복귀 모두 통과. 참여=false·초대=false·기존 제출2개 유지·Profile에 저장된 음역/장르 비교 확인. 기존 Node 사용자 여정과 build39modules/513.79KB 통과, 기존500KB 경고 유지. sandbox Edge 실행은 `Target page, context or browser has been closed`/파이프 오류로 종료했으며 동일 headless QA를 정상 host 환경에서 실행했다. Computer Use/Notion UI/Figma UI 우회 없음. 물리 마이크·청취·온라인 협업·실측 음색·R5 Identity는 미검증이다. 사용자 서버3파일 보존/commit 제외, 관련 묶음만 Git Integration→Production QA로 마감한다.
+
+## 2026-10-12 사용자 결정 — deAPI 진행 제외
+
+사용자는 무료 크레딧 안에서 확정적으로 완료할 수 없으면 진행하지 말라고 답했다. 필요한 음악 품질·재시도 횟수를 보장할 근거가 없어 deAPI 가입/연결/시험을 진행 대상에서 제외했다. 기존 구현계획을 직접 수정하고 계정 연결 대기 문구를 닫았다. 조사 이력·실제 음악 요구·기존 완료 증거는 보존한다. 앱/사용자 변경3파일 수정, 계정 생성, API 요청, 비용 지출, 로컬 AI 실행 없음. R6 실제 음악은 미완료이며 무료 크레딧 후보 조사로 완료 처리하지 않는다.
+
 ## 2026-10-12 R6 무료 시험의 실제 입력 오류 확인
 
 직전 단순 call의 null 오류를 공식 Gradio queue 경로에서 좁혔다. 공개 config의 실제 fn77/54입력(49공개 + 5내부 State)을 대조하고 상세 이벤트를 읽었다. event938e52e9e6f84305b6d2e81a182a4f0c는 success=false, 실제 오류 `Value: wav is not in the list of choices: ['mp3', 'flac']`다. 앞선 요청에서 출력 형식 enum을 검증하지 않은 실행 오류이며 인증/무료 할당량 문제로 단정하지 않는다.

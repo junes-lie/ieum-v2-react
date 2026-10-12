@@ -44,6 +44,13 @@ try {
  await page.locator('[data-action="collection-tab-vocals"]').click();await page.locator('.vocal-collection-open').first().click()
  await page.waitForSelector('.other-vocal-screen')
  const firstVocal=await page.locator('.vocal-name-line h1').textContent()
+ assert.equal(await page.getByText('내 목소리를 등록하면 두 목소리의 조합을 볼 수 있어요.',{exact:true}).count(),1)
+ assert.equal(await page.locator('.other-vocal-screen .reason-row').count(),0,'No Profile must not display fabricated pair compatibility')
+ await page.locator('[data-action="profile-setup-from-vocal"]').click();await page.waitForSelector('.voice-screen')
+ await page.goBack();await page.waitForSelector('.other-vocal-screen')
+ await page.goForward();await page.waitForSelector('.voice-screen')
+ await page.locator('.voice-screen [data-action="back"]').click();await page.waitForSelector('.other-vocal-screen')
+ assert.equal(await page.locator('.vocal-name-line h1').textContent(),firstVocal,'Setup cancellation and browser history must restore the same profile')
  await page.locator('[data-nav="bookmark"]').click()
  // Visit a different profile, then return through actual browser history.
  await page.locator('.vocal-collection-open').nth(1).click()
