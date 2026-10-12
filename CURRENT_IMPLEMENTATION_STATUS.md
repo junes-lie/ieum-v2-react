@@ -1,3 +1,11 @@
+## 2026-10-12 R1 삭제 확인 중복·지연 응답의 새 녹음 보호
+
+직전87629f1의 확정 계획 적용/관련 QA 마감을 현재 Git main에서 확인하고 완료된 범위를 재구현하지 않았다. 기존 Recorder에서 Review의 삭제 확인을 같은 tick에 두 번 누르면 readwrite transaction이2개 실행되는 실제 assertion2!==1을 재현했다. 삭제 요청 ref와 기존 busy 상태를 연결해 하나만 진행하며 modal 취소/확인·기존 leave를 처리 중 잠근다. 삭제 실패는 기존 녹음/Review·URL을 유지하고 finally에서 잠금을 해제해 다시 시도할 수 있다. 컴포넌트 종료 후 삭제 완료는 전역 cancelRecording/새 Recorder 상태에 손대지 않는다. 화면/문구/삭제 정책·다른 참여자 Track·디자인 변경 없음.
+
+기존 qa:record-errors의 retake QA를 확장했다. recording/paused/review 삭제 실패 원본·Review URL 보존, 같은 tick 확인2회→transaction1회, 정상 삭제 URL 해제/타이머 정리, IndexedDB completion 보류→popstate 이탈→새 Recorder 시작→오래된 완료 후 새 recording/타이머 보존과 pageerror0을 통과했다. 최초 지연 사례는 recordPart가 history를 push하지 않는 기존 경로에서 page.goBack으로 workspace를 가정해 timeout이었다. 기존 popstate handler에 명시 workspace history state를 주입하는 격리 시험으로 교정했다. 물리 브라우저 Back 정책 검증이나 물리 마이크/청취 인수로 확대하지 않는다.
+
+build39modules/510.88KB(기존500KB 경고 유지), atomic Draft cleanup/소유자 경계, single App Node2–4Part 렌더 통과. 관련 변경만 diff/staged diff 검토 후 main Git Integration→Production retake QA로 마감한다. 기존 미커밋 AI9파일/사용자 서버3파일은 보존·제외한다. Notion/figma-desktop 노출0개로 원본을 읽지 않았고, 사용자 확정 R1 코드 결함 범위만 수정했다. 전체 R1 물리 인수/R2 최신 요구 대조/R5 형상/R6 음악·실제 서비스 gate는 미완료다.
+
 ## 2026-10-12 확정 계획 적용 / R1·R2 마감 기준 확인
 
 사용자가 확정한 검토 계획을 기존 docs/IMPLEMENTATION_PLAN_2026-10-07.md의 최상단 실행 기준으로 반영했다. 기존 단계 0 완료, 1–4 부분 완료(2 디자인 보류), 5 서비스 미연결, 6 종합 인수 미완료를 유지한다. 기존 단계와 R1–R7 대응표·잔여 유형·완료 조건을 명시하고 과거 엄격한 전체 단계 대기/배포 금지/미구현 목록 해석의 충돌을 정리했다. 새 문서·앱·제품 정책·디자인 변경 없음.

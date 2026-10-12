@@ -1048,6 +1048,8 @@ function Recorder({ go, submit, onRecordingStart, partId, projectTracks, layers,
   const submittingRef=useRef(false)
   const startingRef=useRef(false)
   const stoppingRef=useRef(false)
+  const discardingRef=useRef(false)
+  const recorderActiveRef=useRef(true)
   const [recordingBusy,setRecordingBusy]=useState(false)
   const [restoreState,setRestoreState]=useState('loading')
   const [restoreAttempt,setRestoreAttempt]=useState(0)
@@ -1112,18 +1114,22 @@ function Recorder({ go, submit, onRecordingStart, partId, projectTracks, layers,
     } finally {stoppingRef.current=false;setRecordingBusy(false)}
   }
   const retry = async () => {
+    if(discardingRef.current)return
+    discardingRef.current=true;setRecordingBusy(true)
     setError(''); setMicrophoneFailure(false)
     try {
       await deleteRecordingDraft({userId:CURRENT_USER_ID,projectId:project.id,partId:currentPart.id})
+      if(!recorderActiveRef.current)return
       clearInterval(timer.current); cancelRecording()
       if(draft?.url)URL.revokeObjectURL(draft.url)
       onDraftChange?.(false); setDraft(null); setReviewPlaying(false); setStatus('ready'); setSeconds(0); setLevel(0); setConfirmAction(null)
     } catch {
+      if(!recorderActiveRef.current)return
       setConfirmAction(null); setError('녹음을 지우지 못했어요. 현재 녹음은 유지됩니다. 다시 시도해 주세요.')
-    }
+    } finally {discardingRef.current=false;if(recorderActiveRef.current)setRecordingBusy(false)}
   }
   const leave = async () => {
-    if(recordingBusy||startingRef.current||stoppingRef.current)return
+    if(recordingBusy||startingRef.current||stoppingRef.current||discardingRef.current)return
     if (status==='recording'||status==='paused') { setConfirmAction('leave'); return }
     if(draft){try{await saveTrack(draft)}catch{setError('임시 저장하지 못했어요. 원본을 유지하고 다시 시도해 주세요.');return}}
     go('workspace')
@@ -1157,7 +1163,7 @@ function Recorder({ go, submit, onRecordingStart, partId, projectTracks, layers,
     })
     return ()=>{active=false}
   },[draftId,restoreAttempt])
-  useEffect(() => () => { startingRef.current=false; clearInterval(timer.current); cancelRecording(); stopMicrophone() }, [])
+  useEffect(() => {recorderActiveRef.current=true;return () => { recorderActiveRef.current=false;startingRef.current=false; clearInterval(timer.current); cancelRecording(); stopMicrophone() }}, [])
   useEffect(() => {
     const url=draft?.url
     return () => {
@@ -1195,7 +1201,7 @@ function Recorder({ go, submit, onRecordingStart, partId, projectTracks, layers,
           {status === 'recording' && <><div className="record-control"><button className="round-secondary" aria-label="다시 녹음" disabled={recordingBusy} onClick={()=>setConfirmAction("retry")}><img src={figmaAssets.imgFaFaRotateRight} alt="" aria-hidden="true"/></button><span>다시 녹음</span></div><div className="record-control"><button className="record-btn stop" data-action="record-stop" disabled={recordingBusy} aria-label="녹음 정지" onClick={stop}><img src={figmaAssets.imgFaFaStop} alt="" aria-hidden="true"/></button><span>정지</span></div><div className="record-control"><button className="round-secondary" data-action="record-pause" aria-label="녹음 일시정지" onClick={pause}><img src={figmaAssets.imgFaFaPause} alt="" aria-hidden="true"/></button><span>일시정지</span></div></>}
           {status === 'paused' && <><div className="record-control"><button className="round-secondary" aria-label="다시 녹음" disabled={recordingBusy} onClick={()=>setConfirmAction("retry")}><img src={figmaAssets.imgFaFaRotateRight} alt="" aria-hidden="true"/></button><span>다시 녹음</span></div><div className="record-control"><button className="record-btn stop" data-action="record-stop" disabled={recordingBusy} aria-label="녹음 정지" onClick={stop}><img src={figmaAssets.imgFaFaStop} alt="" aria-hidden="true"/></button><span>정지</span></div><div className="record-control"><button className="round-secondary" data-action="record-resume" aria-label="녹음 이어서" onClick={resume}><img src={figmaAssets.imgFaFaPlay} alt="" aria-hidden="true"/></button><span>이어서 녹음</span></div></>}
             </div>}
-      {confirmAction && <RecordingConfirmation onCancel={()=>setConfirmAction(null)}><p className="kicker">CURRENT TAKE</p><h2 id="record-confirm-title">{confirmAction==='retry'?'지금 녹음을 지우고 다시 부를까요?':'녹음을 끝내고 보관할까요?'}</h2><p>{confirmAction==='retry'?'다른 참여자의 Track과 Record Layer는 그대로 유지됩니다.':'작업실에서 ‘녹음 이어서 확인하기’로 돌아올 수 있어요.'}</p><div className="review-actions"><button className="primary" onClick={()=>setConfirmAction(null)}>{confirmAction==='retry'?'지금 녹음 유지':'계속 녹음'}</button><button className="secondary" data-action={`confirm-${confirmAction}`} onClick={confirmAction==='retry'?retry:confirmLeave}>{confirmAction==='retry'?'지우고 다시 녹음':'녹음 끝내고 나가기'}</button></div></RecordingConfirmation>}
+      {confirmAction && <RecordingConfirmation onCancel={()=>{if(!discardingRef.current)setConfirmAction(null)}}><p className="kicker">CURRENT TAKE</p><h2 id="record-confirm-title">{confirmAction==='retry'?'지금 녹음을 지우고 다시 부를까요?':'녹음을 끝내고 보관할까요?'}</h2><p>{confirmAction==='retry'?'다른 참여자의 Track과 Record Layer는 그대로 유지됩니다.':'작업실에서 ‘녹음 이어서 확인하기’로 돌아올 수 있어요.'}</p><div className="review-actions"><button className="primary" disabled={recordingBusy} onClick={()=>setConfirmAction(null)}>{confirmAction==='retry'?'지금 녹음 유지':'계속 녹음'}</button><button className="secondary" disabled={recordingBusy} data-action={`confirm-${confirmAction}`} onClick={confirmAction==='retry'?retry:confirmLeave}>{confirmAction==='retry'?'지우고 다시 녹음':'녹음 끝내고 나가기'}</button></div></RecordingConfirmation>}
     </main>
   </div>
 }

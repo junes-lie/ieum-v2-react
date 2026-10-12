@@ -44,6 +44,10 @@ R1/R2 앱 마감을 음악 연구 종료까지 미루지 않는다. R4는 실제
 
 수정한 기능의 정상·실패·복원 및 관련 build/QA를 확인한다. 입력/버전/계약이 바뀌지 않은 검증은 재사용하고 변경 없는 전체 모델·전수 QA를 반복하지 않는다. 의미 있는 묶음마다 diff 검토→필요 파일만 stage→commit→origin/main push→Git Integration commit/성공 확인→Production QA로 마감한다. 사용자 실기기 확인 항목은 배포 후 묶어 전달한다.
 
+### R1 삭제 확인 중복과 지연 완료 마감 — 2026-10-12
+
+기존 Recorder의 중복 삭제 transaction2개를 실제 재현하고 하나의 in-flight 요청으로 제한했다. 실패 뒤 원본/URL·재시도를 유지하며 종료된 Recorder의 늦은 삭제 응답이 새 전역 녹음을 취소하지 않도록 한다. 기존 retake QA의 recording/paused/review 실패·중복 확인1transaction·지연 completion/popstate 이후 새 녹음/타이머 보존을 통과했다. atomic Draft cleanup·단일 App2–4Part 렌더/build 회귀 확인. 기존 앱/기획/디자인은 유지하고 해당 묶음만 자동배포→Production 같은 retake QA로 마감한다. 실제 마이크·청취/전체 R1 gate는 미완료 유지. 상세 최초 실패·QA 경계는 상태 문서 참조.
+
 ### R5 제출 입력 연결 선행 — 2026-10-12
 
 기존 measured Profile bridge 다음으로 이미 저장된 canonical 제출 Track→개인 Layer 입력의 read-only bridge를 기존 모듈에 통합했다. 원본 SHA/분석·revision·개인 참조 소유자·목적을 묶고 Review/Sample/미지원/legacy·변조를 거부한다. 개인 참조는 explicit snapshot이며 미지원 특성null을 유지한다. 같은 입력 재현·비동기 참조 불변·DB 원본 보존 QA identity에 연결. 개인 artifact 승인/생성·Track 변형/Project 결합은 미완료이며 보류된 형상/사진/재측정/갱신/fallback 정책을 확정하지 않는다. 독립 데이터 준비와 실제 AI 생성 완료를 구분하고 기존 G1–G5/전체 단계 완료 gate를 유지한다. build/제출 회귀 및 main Git Integration→Production 기존 앱 보존으로 마감한다. 직전17633a4 자동배포/asset exact 확인.

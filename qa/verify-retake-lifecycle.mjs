@@ -15,6 +15,11 @@ try {
   URL.revokeObjectURL=url=>{window.qaRetakeRevoked.push(url);return revoke(url)}
   const remove=IDBObjectStore.prototype.delete
   IDBObjectStore.prototype.delete=function(key){if(window.qaFailDraftDelete&&String(key).endsWith(':temporary-recording'))throw new Error('QA draft deletion failure');return remove.call(this,key)}
+  const transaction=IDBDatabase.prototype.transaction
+  window.qaDiscardTransactions=0
+  IDBDatabase.prototype.transaction=function(stores,mode,...args){if(window.qaCountDiscard&&mode==='readwrite')window.qaDiscardTransactions++;return transaction.call(this,stores,mode,...args)}
+  const completion=Object.getOwnPropertyDescriptor(IDBTransaction.prototype,'oncomplete')
+  Object.defineProperty(IDBTransaction.prototype,'oncomplete',{...completion,set(handler){const transaction=this;completion.set.call(this,function(event){if(window.qaHoldDiscardCompletion&&transaction.mode==='readwrite'){window.qaReleaseDiscard=()=>handler.call(transaction,event);return}handler.call(transaction,event)})}})
  })
  const page=await context.newPage(),errors=[]
  page.on('pageerror',error=>errors.push(error.message))
@@ -41,15 +46,30 @@ try {
  await failedRetake('review');assert.equal(await page.locator('.record-review audio').getAttribute('src'),originalUrl)
  assert.equal(await page.evaluate(url=>window.qaRetakeRevoked.includes(url),originalUrl),false,'Failed discard must keep the original Review URL playable')
  await page.evaluate(()=>{window.qaFailDraftDelete=false})
- await page.getByRole('button',{name:'다시 녹음',exact:true}).click();await page.locator('[data-action="confirm-retry"]').click()
+ await page.getByRole('button',{name:'다시 녹음',exact:true}).click()
+ await page.evaluate(()=>{window.qaCountDiscard=true;const button=document.querySelector('[data-action="confirm-retry"]');button.click();button.click()})
  await page.waitForSelector('[data-action="record-start"]')
+ assert.equal(await page.evaluate(()=>window.qaDiscardTransactions),1,'Repeated confirmation must perform one discard transaction')
+ await page.evaluate(()=>{window.qaCountDiscard=false})
  assert.equal(await page.evaluate(url=>window.qaRetakeRevoked.includes(url),originalUrl),true,'Successful confirmed discard must release the former Review URL')
  await page.locator('[data-action="record-start"]').click();await page.waitForSelector('[data-action="record-pause"]')
  assert.equal(await page.evaluate(()=>window.qaRecordingTimers.size),1)
  await page.getByRole('button',{name:'다시 녹음',exact:true}).click();await page.locator('[data-action="confirm-retry"]').click()
  await page.waitForSelector('[data-action="record-start"]')
  assert.equal(await page.evaluate(()=>window.qaRecordingTimers.size),0,'Retake must clear the previous UI timer')
+ await page.locator('[data-action="record-start"]').click();await page.waitForSelector('[data-action="record-pause"]')
+ await page.getByRole('button',{name:'다시 녹음',exact:true}).click()
+ await page.evaluate(()=>{window.qaHoldDiscardCompletion=true;document.querySelector('[data-action="confirm-retry"]').click()})
+ await page.waitForFunction(()=>typeof window.qaReleaseDiscard==='function')
+ assert.equal(await page.locator('[data-action="confirm-retry"]').isDisabled(),true)
+ await page.evaluate(()=>{history.replaceState({ieumScreen:'workspace'},'','#workspace');window.dispatchEvent(new PopStateEvent('popstate',{state:history.state}))})
+ await page.waitForSelector('.workspace-screen')
+ await page.locator('[data-action="record-part"]').click();await page.locator('[data-action="record-start"]').click()
+ await page.waitForSelector('[data-action="record-pause"]')
+ await page.evaluate(()=>{window.qaHoldDiscardCompletion=false;window.qaReleaseDiscard()})
+ assert.equal(await page.evaluate(async()=>{const audio=await import('/src/audio.js');return audio.getRecordingTimeline().state}),'recording','An old discard completion must not cancel a new Recorder session')
+ assert.equal(await page.evaluate(()=>window.qaRecordingTimers.size),1)
  assert.deepEqual(errors,[])
- console.log(JSON.stringify({passed:true,failedRetakePreserves:['recording','paused','review'],timerCleanup:true,errors,limits:'Isolated synthetic microphone and injected IndexedDB failure; no physical capture claim.'}))
+ console.log(JSON.stringify({passed:true,failedRetakePreserves:['recording','paused','review'],singleDiscardTransaction:true,lateDiscardPreservesNewRecorder:true,timerCleanup:true,errors,limits:'Isolated synthetic microphone, injected IndexedDB failure/completion delay and popstate; no physical capture claim.'}))
  await context.close()
 }finally{await browser.close()}
