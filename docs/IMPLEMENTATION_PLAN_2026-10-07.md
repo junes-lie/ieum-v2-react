@@ -1,3 +1,10 @@
+### R6 reference DDIM 저음/음절 대조 — 2026-10-12
+
+기존 original-opening의7음절/음표/길이 exact를 확인한 같은 seed/checkpoint/vocoder 입력의 reference DDIM1회를 actual 실행했다. SHA2efa01ddbb8b17dc63b037601a6cbd6a27a5bc9b4b5e20ba8f445b6e1118a0ca,5.456708333초/peak.53586352/RMS.11087490/inference1.1006초. pYIN 같은.75/80ms의7음절 median54.9/59.2/62.1/57/56.8/54.85/54.7, 유효13/14/53/29/28/16/29frames/최대.3반음. native의 가0frames/요53MIDI(요청55) 사례와 비교해 이 입력의 저음 제어 개선을 관측했으나 다른 입력/voice/style·전체 음악/청취 품질 승인으로 확대하지 않는다. Whisper-small 가사 exact/similarity1. 생성/측정/ASR wall7.295/7.256/19.500초·모두exit0/resourceStopped=false·free최소7.450/8.537/7.089GiB·owned최대1.155/.230/1.681GiB.
+
+같은 새 base/upper의 MMS 고정 경계 대조는 평균 절대onset42.620/41.650ms·최대77.167/57.106ms였고 마지막 phonetic end4.112624/4.072501초 vs요청note end4.468182초다. 음소 경계≠지속음 길이와 강제 정렬 입력≠독립 인식·path probability≠정확도는 유지한다. 이 모델의 비상업 연구 제약/실제 원곡 음표·화성 불확실성/휴지/2–4Part/catalog·청취 gate를 승인하지 않는다. 첫 정렬은 잘못된 CPU runtime의 libtorchaudio.pyd OSError(exit1)였으며 도구의 명시 torch2.8.0+cu126/torchaudio 요구에 맞는 기존 GPU runtime으로 바로잡아 새경로에서 base/upper12.009/11.961초 exit0를 확인했다. 설치/환경 변경·원본/실패 삭제 없음.
+
+실제 output/ASR/측정/경계/자원 증거는 repository 밖 기존 runtime에 보존했다. 기본 native/앱/음원/threshold·목소리/디자인/서버3파일은 변경하지 않는다. 다음 R6 선행은 지속음의 실제 F0 지지 구간을 음소 경계와 분리하고 원래 음절/note/rest/화음 자료의 불확실성을 대조하는 것이다. e3faba5 자동배포 success/main 일치 및 Production18500D0C0A3FEB68E35D27E60D0BB871BB105E26DBA2E075582D70305A5CBAE4 exact 증거를 유지한다. 이번 연구 기록만 main 자동배포→Production 앱 보존으로 마감하며 전체 단계 완료로 기록하지 않는다.
 ### R6 reference DDIM 실제 가창 대조 — 2026-10-12
 
 선택 sampler4d63697의 실제 휴지 대조 뒤 원래 upper 가사/음표/길이 입력을 exact 대조해 같은7음절 score의 reference DDIM을1회 실행했다. 기본 native·seed·checkpoint·vocoder·출력 shift/gain·gate는 유지한다. 신규 PCM SHAcd56b33cbb42e498302363e4c0335c43bc13a6d0ca68eade793970e55320847e,5.456708333초/peak.82087505/RMS.17424379/inference1.2275초. pYIN 같은.75/80ms 조건의7음절 median58.8/61.8/65.9/62.1/62/58.7/59.1·유효23/14/53/31/26/17/30frames, 최대.3반음이었다. native의 최대.1반음보다 개선됐다고 표시하지 않는다. rest RMS.02090355/.01359291·유효0frames는 기존 native .035009/.034862보다 낮으나 휴지 무음/품질 통과가 아니다.
