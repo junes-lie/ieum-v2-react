@@ -1,4 +1,14 @@
+## 2026-10-13 R3 공개 카탈로그 arrangement 조회 준비
+
+기존 trusted arrangement의 id/songId/key·source revision/hash/실제 길이·2–4 Part 음역을 공개 GET catalog-arrangements와 기존 transport/session에 연결했다. Profile 없는 탐색은 로그인/측정을 요구하지 않으며 Project 생성은 기존 authenticated Profile/Part Fit 조건을 유지한다. id cursor·최대50개 조회로 전체 목록을 무제한 읽지 않는다. SQL과 HTTP 양쪽에서 명시된 필드만 반환하며 개인 ID/진단·private URL/추가 metadata는 제외한다. 실제 곡/권리/제공 음원을 임의 등록하거나 제목·아티스트·추천점수를 만들어내지 않았다.
+
+격리 PostgreSQL→실제 HTTP handler→기존 client의 빈 목록·정렬/다음 cursor·2/3/4 Part·추가 개인 metadata 미노출·익명 직접 table 거부·잘못된 요청·실패 응답과 기존 생성/Part Fit/제출 회귀를 통과했다. session의 anonymous catalog·logout 이후 접근 차단 QA 및 build40modules/525.40KB 통과, 기존>500KB 경고 유지. 기존 미커밋 transport의 publicRead 토큰 미조회 한 줄만 이번 공개 조회의 필수 의존성으로 R3 검토/포함하고 나머지 사용자 변경3파일은 별도 보존한다.
+
+실제 서비스/migration·승인된 음악 catalog/제목/아티스트/음원 재생·기존 Home/Setup의 원격 data 바인딩은 미완료다. 이 조회는 재생 URL/실제 음악 품질이나 Project 추천·참여 가용성 계산의 완료가 아니다. 다음은 기존 앱 데이터 모델과 catalog/remote Project 목록 연결이며 준비 모드를 실제 연결로 바꾸지 않는다. 기존 계획/단계/비용0원/미정 정책은 유지한다.
+
 ## 2026-10-13 R3 클라이언트 Profile 원본 등록 연결 준비
+
+Git/Production 확인: 검토한7파일만59fa3c6d866c08bffe3e5fb4817fb4c27a7742b4로 commit/push,main/origin0/0이다. projectService API 추가5줄만 분리했고 사용자 기존3파일 수정은 보존했다. index snapshot에서도 session/Profile store·실제 AAC→HTTP→SQL 검증을 통과했다. 임시 QA의 fake-indexeddb 미해결 오류는 기존 설치 경로를 명시한 검사 환경에서 해결했으며 앱/의존성 설치 변경은 없다. Production200/index-CR97lKgZ.js SHA256 f68bf37dc06ad91cf96f01fa4c7787b9261dc63e1b3760a045a49c39bf715b27·CSS87f3681b1ab8faef43718afaae2cc2cae501875d64816f1359936d6e7afd4f2e가 local build와 일치했다. full SHA status pending/statuses0·deployment0으로 commit 메타데이터/READY는 미확인이다. capabilities preparation/모두false와 voice-source 무인증401을 확인했으며 실제 원격 등록 성공으로 확대하지 않는다. 이 문단은 commit 후 로컬 기록이다.
 
 기존 remote transport에 개인 Sample upload/verify/analyze·voice-source GET/POST를 추가하고 기존 profileSource에 session-scoped 등록 순서를 연결했다. 저장된 본인 range/Sample provenance·Blob hash를 재확인하고 호출 시작 시 metadata를 고정한다. exact-byte upload retry는 재업로드하지 않으며 실제 서버 해독·분석 결과를 확인한 뒤에만 source CAS 등록을 요청한다. 업로드/분석 성공만으로 등록 성공을 표시하지 않고 별도 키·기존 원본/기존 Profile을 유지한다. logout·사용자 변경·늦은 응답은 후속 등록/적용을 차단한다. source 현재 조회와 최초 등록 응답은 구분한다.
 

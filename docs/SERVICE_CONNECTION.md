@@ -1,5 +1,11 @@
 # 단일 앱 서비스 연결 계약
 
+## 2026-10-13 공개 catalog arrangement 조회 준비
+
+GET /api/catalog-arrangements?after=<id>&limit=<1–50>는 Profile/login 없이 기존 trusted catalog의 arrangement 선택 입력을 조회한다. 기본20개이며 id의 C collation 순서·마지막 id cursor를 사용하고 {items,nextCursor}를 반환한다. source revision/hash/실제 duration과2–4 Part requiredRange/tessitura만 제공하며 추가 개인 metadata·private asset URL·사용자 ID는 SQL/HTTP에서 제외한다. underlying table은 anon/auth 직접 읽기·쓰기를 계속 금지하고 public RPC만 허용한다. 음악 권리/품질 승인을 생략해 실제 곡을 seed하지 않았다.
+
+기존 getCatalog는 publicRead이므로 개인 토큰을 읽거나 보내지 않으며 session.run에서도 anonymous transport를 재사용한다. Profile 없어도 탐색 가능한 계약과 Profile/Part Fit 후 실제 생성/참여 계약을 구분한다. 환경 미연결은503이고 실제 catalog가 비어 있으면 빈 결과이지 demo fallback이 아니다. 적용 순서는 project_participation 이후 catalog_reads migration이며 실제 원격 적용/승인 음원·Home/Setup data 연결은 미완료다. 현재 주입 network+격리 PostgreSQL QA만 통과했다. 기존 publicRead 토큰 미조회 변경 한 줄을 이 기능의 필수 의존성으로 함께 검토하고 다른 미커밋 transport/QA 변경은 포함하지 않는다.
+
 ## 2026-10-13 클라이언트 Profile 원본 연결 준비
 
 기존 createRemoteProjectService에 getVoiceSource/prepareVoiceSampleUpload/verifyVoiceSample/analyzeVoiceSample/registerVoiceSource를 추가했다. 기존 createServiceSession.run 범위의 registerOwnedVoiceSource는 현재 실제 UUID 사용자 소유의 저장 rangeRecord/sampleRecord와 expectedSourceRevision(null=초기), 서로 다른 uploadKey/registrationKey, 기존 signed uploader를 받는다. Blob/provenance hash를 재검사하고 immutable metadata snapshot→Sample 업로드(검증된 같은 byte 재시도는 skip)→서버 audio verify→실제 feature analyze→Profile source 등록 순서다. 서버 features hash/원본 hash/길이·source 계보/출처를 확인하고 최종 등록 응답만 반환한다.

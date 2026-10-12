@@ -43,7 +43,7 @@ export function createServiceSession({baseUrl,fetchImpl=globalThis.fetch}={}) {
       const scoped=Object.fromEntries(Object.entries(service).map(([key,value])=>[key,typeof value!=='function'?value:async(...args)=>{
         check()
         // Public calls always use the anonymous transport, independent of session.
-        const target=['discover','getResult'].includes(key)?anonymous:service
+        const target=['discover','getResult','getCatalog'].includes(key)?anonymous:service
         let result
         try{result=await target[key](...args)}catch(error){check();throw error}
         check()

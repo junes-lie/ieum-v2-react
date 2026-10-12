@@ -3,6 +3,8 @@ import { readFile } from 'node:fs/promises'
 import { createRequire } from 'node:module'
 import { join } from 'node:path'
 import { evaluatePartFit } from '../src/matching.js'
+import {catalogReadRequest,catalogReadErrorResponse} from '../server/catalogRead.js'
+import {createRemoteProjectService} from '../src/projectService.js'
 if (!process.env.IEUM_PGLITE_ROOT) throw new Error('IEUM_PGLITE_ROOT must identify the isolated QA runtime; no remote migrations are applied')
 const require=createRequire(join(process.env.IEUM_PGLITE_ROOT,'package.json'))
 const { PGlite }=require('@electric-sql/pglite')
@@ -18,8 +20,11 @@ try {
     create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
     grant usage on schema auth to authenticated;grant execute on function auth.uid() to authenticated;`)
   for(const user of users)await db.query('insert into auth.users values($1)',[user])
-  for(const file of ['20261013_voice_profiles.sql','20261013_project_tracks.sql','20261013_project_participation.sql','20261013_profile_source_history.sql'])
+  for(const file of ['20261013_voice_profiles.sql','20261013_project_tracks.sql','20261013_project_participation.sql','20261013_profile_source_history.sql','20261013_catalog_reads.sql'])
     await db.exec(await readFile(new URL(`../server/migrations/${file}`,import.meta.url),'utf8'))
+  await db.exec('set role anon')
+  assert.deepEqual((await db.query('select public.ieum_list_catalog_arrangements() as result')).rows[0].result,{items:[],nextCursor:null})
+  await db.exec('reset role')
   const source={songId:'qa-song',key:'original',revision:'qa-v1',duration:20,sourceSha256:'a'.repeat(64),backingSha256:'b'.repeat(64)}
   const insertArrangement=(id,parts,audio=source)=>db.query('insert into public.ieum_catalog_arrangements values($1,$2,$3,$4,$5)',
     [id,'qa-song','original',JSON.stringify(audio),JSON.stringify(parts)])
@@ -101,5 +106,48 @@ try {
   await assert.rejects(create('a-2','vocal-0','unauth'),error=>error.code==='PT401')
   await db.exec('reset role;set role anon')
   await assert.rejects(create('a-2','vocal-0','anon'),error=>error.code==='42501')
+  const page=async(after=null,limit=2)=>(await db.query('select public.ieum_list_catalog_arrangements($1,$2) as result',[after,limit])).rows[0].result
+  assert.deepEqual((await page()).items.map(item=>item.id),['a-2','a-3'])
+  assert.equal((await page()).nextCursor,'a-3')
+  assert.deepEqual((await page('a-3')).items.map(item=>item.id),['a-4'])
+  assert.equal((await page('a-3')).nextCursor,null)
+  assert.deepEqual(await page('zz'),{items:[],nextCursor:null})
+  for(const limit of [null,0,51])await assert.rejects(page(null,limit),error=>error.code==='PT400')
+  await assert.rejects(db.exec('select * from public.ieum_catalog_arrangements'),error=>error.code==='42501')
+  await db.exec('reset role')
+  await insertArrangement('zz-private',[{id:'one',userId:users[0],requiredRange:{lowMidi:50,highMidi:65,privateDiagnostic:'secret',tessitura:{lowMidi:53,highMidi:61,privateField:'secret'}}},
+    {id:'two',requiredRange:{lowMidi:50,highMidi:65}}],{...source,signedUrl:'https://private.example/secret',userId:users[0]})
+  await db.exec('set role anon')
+  assert.ok(!JSON.stringify(await page('a-4')).includes('secret'))
+  assert.ok(!JSON.stringify(await page('a-4')).includes(users[0]))
+  const env={IEUM_DB_PROVIDER:'supabase',IEUM_AUTH_PROVIDER:'supabase',IEUM_SUPABASE_URL:'https://example.supabase.co',IEUM_SUPABASE_PUBLISHABLE_KEY:'qa-public'}
+  let calls=0,unavailable=false,invalid=false
+  const fetchImpl=async(url,options)=>{
+    calls++;assert.ok(url.endsWith('/ieum_list_catalog_arrangements'))
+    assert.equal(options.headers.Authorization,undefined);assert.equal(options.headers.apikey,'qa-public')
+    assert.equal(options.credentials,'omit');assert.equal(options.redirect,'error');assert.equal(options.referrerPolicy,'no-referrer')
+    if(unavailable)throw new Error('private upstream url/token')
+    const body=JSON.parse(options.body),result=await page(body.p_after_id,body.p_limit)
+    return Response.json(invalid?{items:[{}],nextCursor:null}:result)
+  }
+  const read=path=>catalogReadRequest(new Request('https://ieum.example/api/catalog-arrangements'+path,{headers:{Authorization:'Bearer must-not-forward'}}),{env,fetchImpl})
+  const firstPage=await read('?limit=2');assert.equal(firstPage.status,200)
+  assert.deepEqual(await firstPage.json(),await page())
+  assert.equal(firstPage.headers.get('cache-control'),'public, max-age=0, must-revalidate')
+  for(const query of ['?limit=0','?limit=51','?limit=1.5','?limit=01','?after=','?limit=2&limit=3','?userId=someone']){
+    const before=calls;await assert.rejects(read(query),error=>error.code==='INVALID_CATALOG_REQUEST');assert.equal(calls,before)
+  }
+  invalid=true;await assert.rejects(read(''),error=>error.code==='INVALID_CATALOG_RESPONSE');invalid=false
+  unavailable=true
+  const errorResponse=await read('').catch(catalogReadErrorResponse)
+  assert.equal(errorResponse.status,503);assert.deepEqual(await errorResponse.json(),{error:{code:'CATALOG_UNAVAILABLE'}})
+  unavailable=false
+  const client=createRemoteProjectService({baseUrl:'https://ieum.example/api',getAccessToken:()=>{assert.fail('Public catalog must not read a personal token')},fetchImpl:async(url,options)=>{
+    assert.equal(options.headers.Authorization,undefined)
+    return catalogReadRequest(new Request(url,options),{env,fetchImpl})
+  }})
+  assert.deepEqual(await client.getCatalog({limit:2}),await page())
+  assert.deepEqual(await client.getCatalog({after:'a-3',limit:2}),await page('a-3'))
+  console.log('PASS public catalog SQL→HTTP→client: no Profile/login dependency, 2–4 actual Part metadata, deterministic bounded pages, no private extra fields/personal bearer, request/upstream failures, direct table access denied. Trusted fixtures only; no real approved songs/rights/App discovery activation.')
   console.log('PASS actual PostgreSQL Project creation/join: catalog-backed 2/3/4 Parts, creator assignment/others OPEN/0 Tracks, immutable sources, stored-profile range+tessitura parity, missing Profile denial, repeated-operation results, occupied-seat denial, no duplicate participation or direct source edits. Isolated fixtures, not live users/catalog/audio/cross-connection concurrency.')
 } finally {await db.close()}

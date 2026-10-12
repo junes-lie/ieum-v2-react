@@ -44,7 +44,7 @@ export function createRemoteProjectService({ baseUrl, getAccessToken, fetchImpl 
   endpoint.pathname = endpoint.pathname.replace(/\/$/, '') + '/'
 
   async function request(path, { method = 'GET', data, publicRead = false, idempotencyKey } = {}) {
-    const token = await getAccessToken?.()
+    const token = publicRead ? null : await getAccessToken?.()
     if (!publicRead && !token) throw new ServiceError('로그인이 필요해요.', { code: 'AUTH_REQUIRED' })
     const headers = { Accept: 'application/json' }
     if (token) headers.Authorization = `Bearer ${token}`
@@ -72,6 +72,12 @@ export function createRemoteProjectService({ baseUrl, getAccessToken, fetchImpl 
     mode: 'remote',
     // Server response supplies capability evidence; construction does not imply availability.
     discover: () => request('capabilities', { publicRead: true }),
+    getCatalog: ({after,limit}={}) => {
+      const query=new URLSearchParams()
+      if(after!==undefined && after!==null)query.set('after',after)
+      if(limit!==undefined)query.set('limit',String(limit))
+      return request(`catalog-arrangements${query.size?'?'+query:''}`,{publicRead:true})
+    },
     getSession: () => request('me/session'),
     getProfile: () => request('me/profile'),
     saveProfile: profile => request('me/profile', { method: 'PATCH', data: profile }),

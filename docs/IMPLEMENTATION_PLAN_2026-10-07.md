@@ -4,6 +4,8 @@
 
 ## 이미 확정된 서비스·비용 답변
 
+2026-10-13 R3 catalog read gate: 기존 trusted arrangement의 공개 조회·bounded cursor·2–4 Part/source revision/hash 계약과 기존 anonymous client/session을 연결했다. Profile 없는 탐색과 authenticated Part Fit 생성/참여를 구분하며 개인 metadata/private URL은 SQL/HTTP whitelist로 제외한다. 빈 목록/권한/페이지/실패·기존 생성/제출·session QA/build 통과. 실제 승인 음악/카탈로그 ingest·원격 migration·Home/Setup data 바인딩은 미완료다. 기존 public token 미조회 변경 한 줄만 R3 필수 의존성으로 검토해 포함하며 나머지 사용자3파일 수정은 보존한다. 다음은 기존 App 모델·remote Project 탐색 연결이며 이미 완료된 source 등록/측정·AI 시험은 반복하지 않는다.
+
 2026-10-13 R3 client source gate: 기존 transport/session과 profileSource에 개인 원본 upload→verify→analyze→등록/현재 조회를 연결했다. 본인 소유·immutable provenance/hash·별도 키·서버 결과 대조·logout/늦은 응답·실패 보존 및 실제 AAC→HTTP handlers→격리 SQL 검증, Profile store/build 통과. actual App/OAuth/원격 migration/hosted decoder와 catalog·실제 Sample 청취는 미완료다. 완료된 원본 등록/API를 재구현하지 않고 다음은 실제 서비스 활성화에 필요한 기존 App session/데이터 연결 및 실제 catalog 준비다. 사용자3파일 변경·기존 단계/예산/미정 Identity 정책을 유지한다.
 
 2026-10-13 R3 Profile 원본 등록 gate: 기존 browser range provenance/hash와 본인 실제 Sample 분석·receipt/원본을 기존 current source·revision history/metadata에 연결하는 GET/POST API 및 service-only CAS transaction을 구현했다. 성향/Identity/Track/Mix는 유지하고 Sample F0로 편한 음역을 대체하지 않는다. 실제 AAC 분석+선언 range fixture→등록/수정/재시도/권한/실패 보존→기존2–4 Part 생성/Part Fit 연결과 관련 QA/build 통과. 실제 원격·물리 range 인수·App 바인딩·Sample 청취/개인 생성은 미완료다. 다음은 기존 session/Setup의 원격 source 조회·등록 바인딩과 catalog 연결이며 접근 정보 요청을 반복하지 않는다. 기존 단계·예산·미정 갱신 정책을 유지한다.
