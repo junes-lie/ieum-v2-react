@@ -6,6 +6,7 @@ import { join,resolve,sep } from 'node:path'
 import { createHash } from 'node:crypto'
 import { decodeOriginalAudio } from '../server/audioDecoder.js'
 import { createSupabaseAudioStorage } from '../server/audioStorage.js'
+import { projectLifecycleRequest } from '../server/projectLifecycle.js'
 
 const executable=process.env.IEUM_QA_FFMPEG_PATH
 assert.ok(executable,'IEUM_QA_FFMPEG_PATH must identify an existing decoder; no installation or AI model is started')
@@ -46,6 +47,40 @@ try {
     const expected={size:bytes.length,sha256:before,contentType}
     const verified=await storage.verifyOriginalAudio(objectId,expected,{executable,maxDurationSeconds:2})
     assert.deepEqual(verified,{...expected,...result},'Private Storage byte proof and real decoded media must refer to the same original')
+    const bounded=await storage.verifyOriginalAudio(objectId,{sha256:before,maxBytes:bytes.length},{executable,maxDurationSeconds:2})
+    assert.deepEqual(bounded,verified,'Mix result inspection derives size/MIME from hash-matched bounded actual audio')
+    await assert.rejects(storage.verifyOriginalAudio(objectId,{sha256:before,maxBytes:bytes.length-1},{executable,maxDurationSeconds:2}),e=>e.code==='UPLOAD_OBJECT_MISMATCH')
+    if(contentType==='audio/wav'){
+      const user='11111111-1111-4111-8111-111111111111',jobId='22222222-2222-4222-8222-222222222222'
+      const project={id:'p',seed:'seed',songId:'song',key:'original',partCount:2,submittedTrackCount:2,revision:3,lifecycle:'completed',keyLockedAt:'2026-10-13T00:00:00Z',
+        audioSourceRef:{songId:'song',key:'original',revision:'v1',duration:20,sourceSha256:'a'.repeat(64),backingSha256:'b'.repeat(64)},
+        parts:['lead','harmony'].map(id=>({id,participantId:user,status:'submitted',trackId:`p:${id}`}))}
+      let savedDuration=result.duration,stored=bytes,signed=0
+      const env={IEUM_AUTH_PROVIDER:'supabase',IEUM_DB_PROVIDER:'supabase',IEUM_STORAGE_PROVIDER:'supabase',IEUM_SUPABASE_URL:'https://example.supabase.co',
+        IEUM_SUPABASE_PUBLISHABLE_KEY:'qa-public',IEUM_SUPABASE_SECRET_KEY:'sb_secret_qa_only',IEUM_AUDIO_BUCKET:'private-audio',
+        IEUM_AUDIO_DECODER_PATH:executable,IEUM_AUDIO_MAX_DECODE_SECONDS:'2',IEUM_MIX_MAX_BYTES:String(bytes.length)}
+      const fetchImpl=async(url,options)=>{
+        if(url.endsWith('/auth/v1/user'))return Response.json({id:user})
+        if(url.endsWith('/ieum_get_project_mix')){
+          assert.equal(options.headers.Authorization,'Bearer qa-token')
+          return Response.json({project,mix:{jobId,status:'succeeded',result:{objectId,sha256:before,duration:savedDuration,completedAt:'2026-10-13T00:00:00Z'}}})
+        }
+        assert.equal(options.headers.apikey,'sb_secret_qa_only');assert.equal(options.headers.Authorization,undefined)
+        if(url.endsWith('/bucket/private-audio'))return Response.json({id:'private-audio',public:false})
+        if(url.includes('/object/sign/')){signed++;return Response.json({signedURL:`/object/sign/private-audio/originals/${objectId}?token=qa-read`})}
+        return new Response(stored,{headers:{'Content-Type':contentType}})
+      }
+      const request=()=>new Request('https://ieum.example/api/projects/p/mix',{headers:{Authorization:'Bearer qa-token'}})
+      const response=await projectLifecycleRequest(request(),{env,fetchImpl}),manifest=await response.json()
+      assert.equal(response.headers.get('cache-control'),'private, no-store')
+      assert.equal(manifest.mix.result.size,bytes.length);assert.equal(manifest.mix.result.duration,result.duration)
+      assert.equal(manifest.mix.result.objectId,undefined);assert.equal(signed,1)
+      savedDuration=result.duration+1
+      await assert.rejects(projectLifecycleRequest(request(),{env,fetchImpl}),e=>e.code==='UPLOAD_OBJECT_MISMATCH');assert.equal(signed,1)
+      savedDuration=result.duration;stored=new Uint8Array(bytes.length+1)
+      await assert.rejects(projectLifecycleRequest(request(),{env,fetchImpl}),e=>e.code==='UPLOAD_OBJECT_MISMATCH');assert.equal(signed,1)
+      console.log('PASS real WAV Mix read: actual decoded duration/hash/stream bound before private read URL; mismatched saved length and excessive bytes never signed. Synthetic audio, not generated music/worker.')
+    }
     await assert.rejects(storage.verifyOriginalAudio(objectId,{...expected,sha256:'0'.repeat(64)},
       {executable:join(directory,'missing.exe'),maxDurationSeconds:2}),e=>e.code==='UPLOAD_OBJECT_MISMATCH','Hash failure must precede decoding')
     await assert.rejects(decodeOriginalAudio(file,{executable,contentType,maxDurationSeconds:0.1}),e=>e.code==='AUDIO_DURATION_EXCEEDED')

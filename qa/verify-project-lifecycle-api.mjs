@@ -107,6 +107,20 @@ for(const [message,status] of [['PROFILE_REQUIRED',403],['PART_FIT_FAILED',403],
   const error=await projectLifecycleRequest(req('p/parts/lead/join',{}, {'Idempotency-Key':'join-1'}),options).catch(projectLifecycleErrorResponse)
   assert.equal(error.status,status);assert.deepEqual(await error.json(),{error:{code:message}})
 }
+result={project,mix:null}
+assert.deepEqual(await(await projectLifecycleRequest(req('p/mix'),options)).json(),result)
+assert.ok(calls.at(-1).url.endsWith('/ieum_get_project_mix'))
+const fullProject={...project,lifecycle:'mixing',submittedTrackCount:2,parts:project.parts.map(part=>({...part,participantId:user,status:'submitted',trackId:`p:${part.id}`}))}
+for(const status of ['queued','processing','failed']){
+  result={project:fullProject,mix:{jobId:intent,status,result:null,secret:'hidden'}}
+  const read=await(await projectLifecycleRequest(req('p/mix'),options)).json()
+  assert.equal(read.mix.status,status);assert.equal(read.mix.result,null);assert.equal(read.mix.secret,undefined)
+}
+result={project:fullProject,mix:{jobId:intent,status:'succeeded',result:{}}}
+await assert.rejects(projectLifecycleRequest(req('p/mix'),options),e=>e.code==='INVALID_PROJECT_RESPONSE')
+result={project:{...fullProject,lifecycle:'completed'},mix:{jobId:intent,status:'succeeded',result:{objectId:intent,sha256:originalSha,duration:20,completedAt:'2026-10-13T00:00:00Z'}}}
+await assert.rejects(projectLifecycleRequest(req('p/mix'),options),e=>e.code==='AUDIO_DECODER_NOT_CONFIGURED')
+assert.equal(projectLifecycleErrorResponse(Object.assign(new Error(),{code:'AUDIO_DECODER_NOT_CONFIGURED'})).status,503)
 result=null
 await assert.rejects(projectLifecycleRequest(createRequest({arrangementId:'a',ownerPartId:'lead'}),options),error=>error.code==='INVALID_PROJECT_RESPONSE')
 console.log('PASS shared Project API: verified user, route/rewrite mapping, recording start, idempotent metadata submission contract, no forged receipts/user IDs, bounded JSON, conflict/failure privacy, inconsistent response denial. Injected HTTP; no live collaboration claim.')

@@ -1,4 +1,14 @@
+## 2026-10-13 R3 저장 Mix 재조회 준비
+
+기존 project-lifecycle Function에 참여자 전용 GET projects/:id/mix를 추가했다. 새로운 mix_reads migration은 Project→job 잠금 순서·실제 제출 Track snapshot/Source/Part 수·완성 상태 일치를 확인하고 비참여/익명 조회를 거부한다. queued/processing/failed는 결과 null이며 제출이나 worker 성공을 생성하지 않는다. succeeded 결과는 private 파일의 실제 SHA256·stream byte 한도·해독 frame 길이가 저장값과 맞아야 read URL을 반환한다. 공개 공유 정책/원본 접근 범위는 확대하지 않았다.
+
+기존 session/transport·remoteProjectTracks의 다운로드 검증을 재사용하여 Mix Blob을 해당 세션에만 반환한다. signed URL을 결과 metadata/IndexedDB에 저장하지 않고 logout/원본 불일치/예산 초과는 실패한다. 사용자 기존3파일 변경은 별도로 유지하며 transport의 getProjectMix 한 줄만 이번 준비 범위다. 실제 App 동작/화면·local 원본·음악/Identity 생성은 바꾸지 않았다.
+
+2/3/4 Part 격리 PostgreSQL의 전원 제출 전 null·queued/failed/succeeded·본인/타인/익명 권한, 주입 HTTP/세션/Blob의 상태·출처/hash/MIME/한도/logout 검증, 실제 합성0.5초 WAV 해독→API read 성공·저장 길이 불일치/초과 byte 미서명과 기존 WebM/MP4/WAV 회귀/build 통과. 기존500KB build 경고 유지. 원격 migration/Google/Supabase·hosted decoder·실제 Mix 생성/저장 worker·App 바인딩·실기기 청취는 미완료다. 관련 로컬 자동 검증을 실제 서비스 완료로 계산하지 않는다.
+
 ## 2026-10-13 R1/R2 기존 Quartet 상세 배정 연결
+
+마감 확인: 검토한4파일만1e57989e1dd672e0601423b4c7e23b6c1c55bd9e로 commit/main push, main/origin0/0이다. 해당 full SHA Vercel status success 및 Production deployment7022684824의 SHA/Production 일치를 확인했다. https://vercel.com/junes-lie/ieum-v2-react/Ga6wbQZCKz3qh4mXuDGfGF1ADFXk. Production page/asset200/index-LuCsuWOM.js SHA256 0dadee8ac7863e856e39ddc8de990b42230306dfeff5dfaa86029b5fd00971c8가 local build와 일치했다. 실제 사용자 앱/원본을 삭제하거나 Computer Use/Remote Figma/직접 deploy·대형 AI를 실행하지 않았다. 이 문단은 commit 후 로컬 증거 기록이다.
 
 기존02 main Project에 App의 joined/joinedPart·실제 초대 수락 candidateAccepted/invitedPerson·저장 Mix가 전달되지 않아 배정된 Part도 OPEN으로 보이고 내 작업실 대안이 없던 누락을 수정했다. 기존 Workspace와 같은 확정 Track 우선→내 배정 ready→수락한 후보 accepted 순서로 상세를 표시하고 수락은 제출로 세지 않는다. Carousel/main header도 확정 Track 수 및 공통 Mix 성공 조건을 사용하며 내 참여는03, 전부 제출+저장 Mix는07의 기존 이동 callback으로 연결한다. 직접 join도 이미 내 Part/수락한 Bass 자리를 다시 배정하지 않도록 상태를 재검사한다. 음역 Gate·시연 출처·초대 수락/제출 분리·원본·다른 Project 비교는 유지한다.
 

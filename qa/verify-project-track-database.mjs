@@ -20,6 +20,8 @@ try {
     grant usage on schema auth to authenticated; grant execute on function auth.uid() to authenticated;`)
   for (const user of users) await db.query('insert into auth.users values ($1)',[user])
   await db.exec(await readFile(new URL('../server/migrations/20261013_project_tracks.sql',import.meta.url),'utf8'))
+  await db.exec(await readFile(new URL('../server/migrations/20261013_project_mix_reads.sql',import.meta.url),'utf8'))
+  const mix=async project=>(await db.query('select public.ieum_get_project_mix($1) as result',[project])).rows[0].result
   const source = { songId:'qa-fixture-song',key:'original',revision:'qa-source-v1',duration:20,sourceSha256:'a'.repeat(64),backingSha256:'b'.repeat(64) }
   // Trusted fixture ingestion, never the real song catalog or real users.
   for (const count of [2,3,4]) {
@@ -37,6 +39,7 @@ try {
     }
     await asUser(users[0])
     assert.equal((await get(project)).submittedTrackCount,0)
+    assert.equal((await mix(project)).mix,null)
     assert.equal((await get(project)).parts.length,count)
     await assert.rejects(submit(project,'vocal-0',intents[0],`${project}-0`),error => error.code==='PT409' && error.message.includes('PROJECT_NOT_RECORDING'))
     await assert.rejects(start(project,'vocal-1'),error => error.code==='PT403')
@@ -83,11 +86,17 @@ try {
     assert.equal(job.status,'queued'); assert.equal(job.track_ids.length,count)
     assert.equal((await db.query('select lifecycle from public.ieum_projects where id=$1',[project])).rows[0].lifecycle,'mixing')
     await asUser(users[0])
+    assert.equal((await mix(project)).mix.status,'queued')
+    assert.equal((await mix(project)).mix.result,null)
     await assert.rejects(db.query('select public.ieum_complete_verified_mix($1,gen_random_uuid(),$2,20)',[job.id,'d'.repeat(64)]),error => error.code==='42501')
     await assert.rejects(db.exec('delete from public.ieum_submitted_tracks'),error => error.code==='42501')
     await db.exec('reset role')
     await assert.rejects(db.query("update public.ieum_mix_jobs set status='succeeded',completed_at=now() where id=$1",[job.id]),error => error.code==='23514')
     await db.query("update public.ieum_mix_jobs set status='failed' where id=$1",[job.id])
+    await asUser(users[0])
+    assert.equal((await mix(project)).mix.status,'failed')
+    assert.equal((await mix(project)).mix.result,null)
+    await db.exec('reset role')
     assert.equal((await db.query('select lifecycle from public.ieum_projects where id=$1',[project])).rows[0].lifecycle,'mixing')
     const object = (await db.query('select gen_random_uuid() as id')).rows[0].id
     await db.exec('set role service_role')
@@ -98,12 +107,18 @@ try {
     await assert.rejects(db.query('select public.ieum_complete_verified_mix($1,$2,$3,20)',[job.id,object,'e'.repeat(64)]),error => error.code==='PT409')
     await asUser(users[0])
     assert.equal((await get(project)).lifecycle,'completed')
+    const saved=(await mix(project)).mix
+    assert.equal(saved.status,'succeeded');assert.equal(saved.result.objectId,object)
+    assert.equal(saved.result.sha256,'d'.repeat(64));assert.equal(saved.result.duration,20)
+    if(count<4){await asUser(users[3]);await assert.rejects(mix(project),e=>e.code==='PT403');await asUser(users[0])}
     assert.equal((await get(project)).submittedTrackCount,count)
     assert.deepEqual((await submit(project,'vocal-0',intents[0],`${project}-0`)).rows[0].result,responses[0])
   }
   await asUser(null)
+  await assert.rejects(mix('qa-2'),error=>error.code==='PT401')
   await assert.rejects(get('qa-2'),error => error.code==='PT401')
   await db.exec('reset role; set role anon')
+  await assert.rejects(mix('qa-2'),error=>error.code==='42501')
   await assert.rejects(get('qa-2'),error => error.code==='42501')
   for (const table of ['ieum_projects','ieum_project_parts','ieum_upload_intents','ieum_submitted_tracks','ieum_mix_jobs'])
     await assert.rejects(db.exec(`select * from public.${table}`),error => error.code==='42501')

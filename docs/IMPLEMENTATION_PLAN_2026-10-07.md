@@ -1,5 +1,7 @@
 # 현재 실행 기준 — 2026-10-13 변경분 및 잔여 구현계획 개정
 
+2026-10-13 R3 저장 Mix 재조회 gate: 기존 Project Mix job/결과 참조에 참여자 전용 GET projects/:id/mix와 session-scoped Blob 조회를 연결했다. 실제 제출 Track snapshot/Source·2–4 Part·상태를 DB에서 확인하고 대기/실패는 재생 결과로 반환하지 않는다. 성공 결과도 private Storage hash·명시적 byte 한도·실제 해독 길이를 확인한 뒤에만 임시 접근을 제공한다. 기존 Track 다운로드를 재사용하고 local 원본/URL 캐시·시연 자료 이관·App 활성화는 하지 않는다. 격리 DB/API/세션·실제 짧은 WAV·관련 decoder/build 검증을 통과했다. 이는 음악 생성/Mix worker/원격 DB·실제 두 사용자 완료 증거가 아니다. 이번 gate의 실효 공수는 미측정이며 기존 예산을 초기화/임의 차감하지 않는다. 다음 R3 잔여는 실제 Mix 실행·저장 worker, hosted runtime·OAuth/Storage 접근 및 기존 App binding이다. 이미 답한 접근 질문을 반복하지 않는다.
+
 사용자가 승인한 이번 개정이 아래 과거 실행 순서·작업 목록·일정 추정보다 우선한다. 기존 단계0–6과 R 실행 묶음, 완료 증거, 변경 이력, 미정 정책을 보존한다. 새 계획 문서/앱/프로토타입을 만들지 않는다. 승인 계획에 남아 있던 Plan Mode 파일 수정 금지는 검토 당시의 제한이며 현재 승인된 실행에는 적용하지 않는다.
 
 ## 이미 확정된 서비스·비용 답변

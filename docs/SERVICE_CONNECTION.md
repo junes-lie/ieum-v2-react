@@ -36,6 +36,14 @@ profile_sample_receipts 다음 profile_sample_analysis migration을 적용한다
 
 밝기/거칠기/dynamics는 기존 signal proxy estimated 표현을 유지하고 호흡량/비브라토/평균 음역 등 미지원 추출은unsupported/null로 둔다. sampled F0는 기존 제한된 monophonic 관찰이며 Sample로 편한 음역을 대체하거나 과학적 음색·실력 판정으로 표시하지 않는다. 원격 migration/hosted decoder/실제 가창 데이터·Profile 등록/App 연결은 미완료다. 실제 짧은 AAC와 격리 SQL의 source/version/예산/권한/실패·보존 검증만 완료했다.
 
+## 2026-10-13 저장 Mix 재조회 준비
+
+project_tracks 다음 project_mix_reads migration을 적용한다. 실제 원격에는 적용하지 않았다. GET projects/:id/mix는 본인 bearer로 참여자 전용 RPC를 호출한다. Project→job shared lock·제출 Track snapshot/Source/실제2–4 Part와 lifecycle을 대조한다. 대기/실패는 result:null, 성공은 opaque private 결과 참조를 서버에서만 읽는다. 공개 결과/공유 접근과 private Track 범위는 별도이며 이 API는 공개 원본 URL을 제공하지 않는다.
+
+성공 결과의 read URL 전에 기존 Storage/decoder를 재사용하여 실제 hash·오디오 포맷·frame 길이를 확인한다. server-only IEUM_MIX_MAX_BYTES와 기존 decoder path/최대 해독 길이는 명시적으로 설정해야 한다. 임의 기본값이나 로컬 Windows 경로를 운영에 적용하지 않는다. 파일 byte 한도는 전체 프로세스 RAM 한도와 다르며 서버 TEMP 사본·stream 해독으로 전체 PCM 누적을 피한다. 저장된 길이는 실제 frame 기준1sample 이내로 일치해야 한다. 불일치/유실/미설정은 실패하며 completion DB를 새로 확정하지 않는다.
+
+loadRemoteProjectMix는 기존 세션과 검증된 Blob 다운로드를 재사용한다. 명시적 file-byte 예산과 신뢰 Storage origin이 필요하며 signed URL/expiry를 Blob metadata/local 저장에 남기지 않는다. 실제 Mix worker·원격 환경·App 연결은 미완료다. 합성 짧은 WAV와 격리 DB/주입 HTTP 증거는 실제 음악 생성·두 사용자·청취 인수와 구분한다.
+
 ## 2026-10-13 개인 대표 Sample 업로드·오디오 검증 준비
 
 POST /api/me/voice-sample-upload는 {size,sha256,contentType}와 Idempotency-Key를 받는다. Auth의 실제 UUID→본인 목적의 ieum_prepare_profile_sample_upload RPC→private Storage byte 검사/없는 원본의 no-upsert 서명 순서다. 기존 Profile/Part가 없어도 초기 Setup 원본을 준비할 수 있으며 사용자 ID/purpose/음역/features/검증 성공 입력은 거부한다. 개인 Sample intent는 Project upload intent와 별도 테이블·키 공간이다. opaque 원본 UUID는 기존 Storage adapter를 재사용하고 API bearer를 Storage에 전달하지 않는다.

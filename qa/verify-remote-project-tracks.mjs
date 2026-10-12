@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import {createHash} from 'node:crypto'
-import {loadRemoteProjectTracks} from '../src/remoteProjectTracks.js'
+import {loadRemoteProjectTracks,loadRemoteProjectMix} from '../src/remoteProjectTracks.js'
 const bytes=new Uint8Array([1,2,3,4]),sha256=createHash('sha256').update(bytes).digest('hex'),person='11111111-1111-4111-8111-111111111111'
 const source={songId:'song',key:'original',revision:'v1',duration:20,sourceSha256:'a'.repeat(64),backingSha256:'b'.repeat(64)}
 const project={id:'p',songId:'song',key:'original',partCount:2,submittedTrackCount:1,audioSourceRef:source,
@@ -38,3 +38,27 @@ manifest={project:{...project,submittedTrackCount:0,parts:project.parts.map(part
 assert.deepEqual((await loadRemoteProjectTracks(base)).tracks,{})
 assert.equal(calls,before)
 console.log('PASS private remote Track load: exact SHA/size/MIME Blob, source/key/submission match, signed-origin/token checks, no bearer/cookie/referrer/redirect, session logout denial, no stale URL cache or local writes, explicit aggregate memory budget. Injected network, not real microphone/Storage/App playback.')
+const complete={...project,lifecycle:'completed',submittedTrackCount:2,parts:project.parts.map(part=>({...part,status:'submitted',trackId:`p:${part.id}`}))}
+const jobId='33333333-3333-4333-8333-333333333333',file={...track,completedAt:'2026-10-13T00:00:00Z'}
+let mixManifest={project:complete,mix:{jobId,status:'succeeded',result:file}}
+const mixSession={run:operation=>operation({service:{getProjectMix:async()=>mixManifest},assertCurrent:()=>{if(!current)throw Object.assign(new Error('changed'),{code:'SESSION_CHANGED'})}})}
+const mixBase={...base,session:mixSession}
+const result=await loadRemoteProjectMix(mixBase)
+assert.deepEqual(new Uint8Array(await result.mix.result.blob.arrayBuffer()),bytes)
+assert.equal(result.mix.result.audioUrl,undefined);assert.equal(result.mix.result.expiresIn,undefined)
+for(const status of ['queued','processing','failed']){
+  mixManifest={project:{...complete,lifecycle:'mixing'},mix:{jobId,status,result:null}}
+  const before=calls;assert.equal((await loadRemoteProjectMix(mixBase)).mix.status,status);assert.equal(calls,before)
+}
+mixManifest={project:complete,mix:{jobId,status:'succeeded',result:file}}
+for(const next of ['mismatch','oversize','wrong-mime','logout']){
+  mode=next;current=true
+  await assert.rejects(loadRemoteProjectMix(mixBase),e=>e.code===(next==='logout'?'SESSION_CHANGED':next==='wrong-mime'?'TRACK_DOWNLOAD_FAILED':'TRACK_SOURCE_MISMATCH'))
+}
+mode='valid';current=true
+await assert.rejects(loadRemoteProjectMix({...mixBase,maxTotalBytes:3}),e=>e.code==='TRACK_MEMORY_BUDGET_EXCEEDED')
+for(const patch of [{audioUrl:'https://attacker.invalid/x'},{duration:0},{audioUrl:file.audioUrl+'&token=other'}]){
+  mixManifest={project:complete,mix:{jobId,status:'succeeded',result:{...file,...patch}}}
+  const before=calls;await assert.rejects(loadRemoteProjectMix(mixBase),e=>e.code==='INVALID_MIX_MANIFEST');assert.equal(calls,before)
+}
+console.log('PASS session-scoped Mix read: pending/failed not playable, bounded hash-matched Blob, no signed URL persistence, origin checks and logout rejection. Injected network; no worker or App activation.')

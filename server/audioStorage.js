@@ -35,12 +35,14 @@ export function createSupabaseAudioStorage({ env = process.env, fetchImpl = glob
   }
   const verifyOriginal = async (objectId, expected, writeChunk) => {
       const objectPath = path(objectId)
-      if (!expected || !Number.isSafeInteger(expected.size) || expected.size <= 0 || typeof expected.contentType !== 'string' || !expected.contentType.startsWith('audio/') || typeof expected.sha256!=='string' || !/^[a-f0-9]{64}$/i.test(expected.sha256)) throw new ServiceError('원본 파일 검증 정보를 확인해야 해요.', { code: 'INVALID_UPLOAD_FILE' })
+      const boundedResult=expected?.size===undefined && Number.isSafeInteger(expected?.maxBytes) && expected.maxBytes>0
+      if (!expected || (!boundedResult && (!Number.isSafeInteger(expected.size) || expected.size <= 0 || typeof expected.contentType !== 'string' || !expected.contentType.startsWith('audio/'))) || typeof expected.sha256!=='string' || !/^[a-f0-9]{64}$/i.test(expected.sha256)) throw new ServiceError('원본 파일 검증 정보를 확인해야 해요.', { code: 'INVALID_UPLOAD_FILE' })
       await assertPrivateBucket()
       const response = await request(`object/${objectPath}`, { method: 'GET' })
       const contentType = response.headers.get('content-type')?.split(';')[0].trim().toLowerCase()
       const length = response.headers.get('content-length')
-      if (contentType !== expected.contentType.split(';')[0].trim().toLowerCase() || (length !== null && Number(length) !== expected.size) || !response.body) {
+      if ((boundedResult ? !['audio/wav','audio/x-wav','audio/webm','audio/mp4'].includes(contentType) || (length!==null && (!Number.isSafeInteger(Number(length)) || Number(length)<=0 || Number(length)>expected.maxBytes)) :
+        contentType !== expected.contentType.split(';')[0].trim().toLowerCase() || (length !== null && Number(length) !== expected.size)) || !response.body) {
         await response.body?.cancel().catch(() => {})
         throw new ServiceError('업로드한 원본 파일이 일치하지 않아요.', { status: 409, code: 'UPLOAD_OBJECT_MISMATCH' })
       }
@@ -52,12 +54,12 @@ export function createSupabaseAudioStorage({ env = process.env, fetchImpl = glob
           const { done, value } = await reader.read()
           if (done) break
           size += value.byteLength
-          if (size > expected.size) throw new ServiceError('업로드한 원본 파일이 일치하지 않아요.', { status: 409, code: 'UPLOAD_OBJECT_MISMATCH' })
+          if (size > (boundedResult?expected.maxBytes:expected.size)) throw new ServiceError('업로드한 원본 파일이 일치하지 않아요.', { status: 409, code: 'UPLOAD_OBJECT_MISMATCH' })
           hash.update(value)
           if(writeChunk)await writeChunk(value)
         }
         const sha256 = hash.digest('hex')
-        if (size !== expected.size || sha256 !== expected.sha256.toLowerCase()) throw new ServiceError('업로드한 원본 파일이 일치하지 않아요.', { status: 409, code: 'UPLOAD_OBJECT_MISMATCH' })
+        if (size<=0 || (!boundedResult && size !== expected.size) || (boundedResult && length!==null && size!==Number(length)) || sha256 !== expected.sha256.toLowerCase()) throw new ServiceError('업로드한 원본 파일이 일치하지 않아요.', { status: 409, code: 'UPLOAD_OBJECT_MISMATCH' })
         return { size, sha256, contentType }
       } catch (error) {
         await reader.cancel().catch(() => {})

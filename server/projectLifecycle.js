@@ -2,6 +2,7 @@ import { ServiceError } from '../src/projectService.js'
 import { readAuthConfiguration, verifyRequestUser } from './auth.js'
 import { createSupabaseAudioStorage } from './audioStorage.js'
 import { verifySubmissionAudio } from './submissionAudio.js'
+import { isAbsolute } from 'node:path'
 
 const fail = code => new ServiceError('프로젝트 요청을 완료하지 못했어요. 녹음 원본은 유지됩니다.',{ code })
 const text = value => typeof value==='string' && Boolean(value.trim())
@@ -22,9 +23,9 @@ function routeOf(request) {
   try { segments=path.split('/').map(decodeURIComponent) } catch { throw fail('INVALID_PROJECT_REQUEST') }
   if (segments.some(value=>!text(value) || value.includes('/') || ['.','..'].includes(value))) throw fail('INVALID_PROJECT_REQUEST')
   if (segments.length===1 && request.method==='GET') return { projectId:segments[0],operation:'get' }
-  if (segments.length===2 && segments[1]==='tracks') {
+  if (segments.length===2 && ['tracks','mix'].includes(segments[1])) {
     if(request.method!=='GET')throw fail('METHOD_NOT_ALLOWED')
-    return {projectId:segments[0],operation:'tracks'}
+    return {projectId:segments[0],operation:segments[1]}
   }
   if (segments.length===4 && segments[1]==='parts' && ['recording-start','tracks','join','upload-intents'].includes(segments[3])) {
     if (request.method!=='POST') throw fail('METHOD_NOT_ALLOWED')
@@ -83,8 +84,8 @@ export async function projectLifecycleRequest(request,{ env=process.env,fetchImp
   const user=await verifyRequestUser(request,{ env,fetchImpl })
   if (env.IEUM_DB_PROVIDER!=='supabase') throw fail('SERVICE_NOT_CONFIGURED')
   const route=routeOf(request), configuration=readAuthConfiguration(env)
-  let rpc=route.operation==='tracks'?'ieum_list_project_tracks':'ieum_get_project', body=route.operation==='create'?{}:{ p_project_id:route.projectId }, requestedOwnerPart, storage
-  if (!['get','tracks'].includes(route.operation)) {
+  let rpc=route.operation==='tracks'?'ieum_list_project_tracks':route.operation==='mix'?'ieum_get_project_mix':'ieum_get_project', body=route.operation==='create'?{}:{ p_project_id:route.projectId }, requestedOwnerPart, storage
+  if (!['get','tracks','mix'].includes(route.operation)) {
     const value=await readMetadata(request)
     if (route.operation!=='create') body.p_part_id=route.partId
     if (route.operation==='upload') {
@@ -150,7 +151,32 @@ export async function projectLifecycleRequest(request,{ env=process.env,fetchImp
   }
   let result
   try { result=await response.json() } catch { throw fail('INVALID_PROJECT_RESPONSE') }
-  if(route.operation==='tracks') {
+  if(route.operation==='mix') {
+    const project=projectSnapshot(result?.project,route.projectId),mix=result?.mix
+    if(mix===null){
+      if(project.lifecycle!=='recruiting')throw fail('INVALID_PROJECT_RESPONSE')
+      result={project,mix:null}
+    }else{
+      if(!uuid(mix?.jobId) || !['queued','processing','failed','succeeded'].includes(mix.status) ||
+        project.submittedTrackCount!==project.partCount ||
+        (mix.status==='succeeded'?project.lifecycle!=='completed':project.lifecycle!=='mixing' || mix.result!==null))throw fail('INVALID_PROJECT_RESPONSE')
+      let available=null
+      if(mix.status==='succeeded'){
+        const saved=mix.result
+        if(!uuid(saved?.objectId) || !/^[a-f0-9]{64}$/.test(saved.sha256 || '') || !Number.isFinite(saved.duration) || saved.duration<=0 ||
+          typeof saved.completedAt!=='string' || !Number.isFinite(Date.parse(saved.completedAt)))throw fail('INVALID_PROJECT_RESPONSE')
+        const executable=env.IEUM_AUDIO_DECODER_PATH,maxDurationSeconds=Number(env.IEUM_AUDIO_MAX_DECODE_SECONDS),maxBytes=Number(env.IEUM_MIX_MAX_BYTES)
+        if(typeof executable!=='string' || !isAbsolute(executable) || !Number.isFinite(maxDurationSeconds) || maxDurationSeconds<=0 ||
+          !Number.isSafeInteger(maxBytes) || maxBytes<=0)throw fail('AUDIO_DECODER_NOT_CONFIGURED')
+        storage=createSupabaseAudioStorage({env,fetchImpl})
+        const verified=await storage.verifyOriginalAudio(saved.objectId,{sha256:saved.sha256,maxBytes},{executable,maxDurationSeconds})
+        if(Math.abs(verified.duration-saved.duration)>1/verified.sampleRate)throw fail('UPLOAD_OBJECT_MISMATCH')
+        const access=await storage.createSignedRead(saved.objectId)
+        available={size:verified.size,sha256:verified.sha256,contentType:verified.contentType,duration:saved.duration,completedAt:saved.completedAt,...access}
+      }
+      result={project,mix:{jobId:mix.jobId,status:mix.status,result:available}}
+    }
+  }else if(route.operation==='tracks') {
     const project=projectSnapshot(result?.project,route.projectId),tracks=result?.tracks
     if(!Array.isArray(tracks) || tracks.length!==project.submittedTrackCount || new Set(tracks.map(track=>track?.partId)).size!==tracks.length ||
       tracks.some(track=>track?.id!==`${route.projectId}:${track.partId}` || track.projectId!==route.projectId || !uuid(track.participantId) ||
