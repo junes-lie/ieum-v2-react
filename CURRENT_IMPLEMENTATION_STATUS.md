@@ -1,4 +1,12 @@
+## 2026-10-13 R1/R2 생성 Project 상세 연결 마감
+
+Home 후속 대조에서 기존02가 created Project의 고정 progress/status와 배정 당시 Part를 표시하고 Carousel 클릭으로03을 직접 여는 누락을 확인했다. 현재 저장된 확정 Track만 progress·Part 제출 상태/참여자/길이/레이어에 연결하고 같은 Project ID·Seed·실제2–4 Part 순서를 Record에 전달한다. Review·임시본·오래된 COMPLETE/불완전 Mix는 완료 근거로 쓰지 않는다. 같은 곡 Carousel은02 안에서 선택을 바꾸며 내 프로젝트의 별도 작업실/완성곡 버튼이 선택 Project를 연다. App의 공통 created Project 이동도 모든 확정 Track+저장 Mix 조건을 적용했다.
+
+기존 Node SSR QA에서 생성 Project 최초/일부 제출/전부 제출/성공 Mix·Review/오래된 label/Mix·다른 Project 선택·실제 Carousel/이동 callback·동일 Part 순서/레이어/Seed/2–4 Part를 검증했다. 기존 Home·Workspace/Recorder/Complete 회귀 및 build40modules/528.44KB 통과; 기존500KB 경고는 유지한다. CSS/디자인 토큰/메인 화면 수/음역 Gate/제출·Mix 엔진/원본은 변경하지 않았다. Node render/callback 검증이며 실제 브라우저 전환·모바일 터치·시각·청취 인수는 미완료다.02의 제출 Track 청취 및 실제 원격 data 바인딩은 별도 잔여이며 이 수정으로 완료를 선언하지 않는다. 사용자 기존3파일 변경은 보존한다.
+
 ## 2026-10-13 R1/R2 Home 프로젝트 상태 누락 수정
+
+후속 배포 확인: Home 수정 2e0a9c6 및 상세 진입 보완 16b3489b91d4bb9f60acf4035d5d3950ee1f0279를 main에 push했다. Production 페이지200에서 index-CB4bx7EY.js를 제공하며 파일200/SHA256 b52e17947cf633ab01876f03fa01bab7de68aa1474b403486f7fde3523c5d6d0가 검증한 로컬 build와 일치한다. 최신 build는40modules/527.39KB이며 관련 SSR/실제 callback QA가 통과했다. full SHA GitHub status는 pending/statuses0으로 배포 ID·commit 메타데이터·READY는 미확인이다. JS 반영 확인을 실제 모바일 터치·시각·청취 인수로 확대하지 않는다. 이 문단은 commit 후 로컬 기록이다.
 
 진입 조건 후속: 모집·최근 created Project 카드의 최초 구현은 기존 개인 목록의 openCreatedProject(작업실 직접 진입)를 재사용했다. PRD Home Project Card→기존02의 해당 Project 선선택 조건을 재대조해 openSong(songId,projectId)로 보완하고 완성 결과는 기존 complete 경로를 유지했다. 실제 Node callback에서 모집/최근이 Song+Project를 같은 Detail 진입에 전달하고 작업실 callback을 직접 부르지 않는 것을 검증한다. 이 변경은 기존 화면 수/레이아웃·개인 목록의 작업실 진입을 변경하지 않는다.
 

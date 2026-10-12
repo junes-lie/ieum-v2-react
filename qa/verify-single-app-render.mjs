@@ -20,7 +20,7 @@ try {
   await writeFile(preferencesTemp,(await transformWithOxc(preferencesSource,'VoicePreferenceChoices.jsx',{jsx:{runtime:'classic'}})).code.replace('./Icons.jsx','./.qa-single-app-icons.mjs'))
   const transformed=await transformWithOxc(source,'App.jsx',{jsx:{runtime:'classic'}})
   await writeFile(temp,transformed.code.replace('./Icons.jsx','./.qa-single-app-icons.mjs').replace('./VoicePreferenceChoices.jsx','./.qa-single-app-preferences.mjs'))
-  const {default:App,Workspace,Recorder,Complete,Home}=await import(temp.href)
+  const {default:App,Workspace,Recorder,Complete,Home,Detail}=await import(temp.href)
   const noop=()=>{}
   const parts=[{id:'lead',name:'Lead',color:'#3b82f6',status:'ready',participantId:'jisun',participant:'나'},{id:'harmony',name:'Harmony',color:'#f16f61',status:'open'},{id:'lower',name:'Lower',color:'#2eb6ad',status:'open'}]
   const project={id:'qa-custom-trio',seed:'qa-trio-seed',parts,partCount:3,totalParts:3,key:'E minor',title:'QA Trio'}
@@ -90,12 +90,58 @@ try {
   for(const button of buttons)button.onClick()
   assert.deepEqual(opened,[{songId:homeProject.songId,id:homeProject.id},{songId:homeProject.songId,id:homeProject.id}],'Both actual handlers select the same Song/Project in existing Detail')
   console.log('PASS Home rendered local discovery: created Project recruiting/recent/completed lists, real saved Track counts, assigned seats not OPEN, Review/invites do not submit, Mix success plus all Tracks required. Node render, not physical/visual/browser navigation acceptance.')
+  const detailSong={...song,id:homeProject.songId,projects:[{id:'qa-static-project',name:'Other Project',partCount:2,progress:0,status:'RECRUITING',seed:'other',key:'C major'}]}
+  const detailProps={...homeProps,song:detailSong,go:noop,back:noop,join:noop,toggleSongSave:noop,openVocalProfile:noop,
+    onCreateProject:noop,onOpenCreatedProject:noop,onSelectProject:noop,initialProjectId:homeProject.id}
+  const renderDetail=extra=>renderToStaticMarkup(React.createElement(Detail,{...detailProps,...extra}))
+  const initialDetail=renderDetail({createdProjects:[{...homeProject,progress:3,status:'COMPLETE'}]})
+  assert.ok(initialDetail.includes('00/03 · RECRUITING'),'Stored display labels cannot substitute real submitted Tracks in Detail')
+  assert.ok(initialDetail.includes('작업실로 이동'))
+  assert.ok(!initialDetail.includes('완성곡 듣기'))
+  const finalDetail=renderDetail({createdProjectTracks:{[homeProject.id]:fullTracks}})
+  assert.ok(finalDetail.includes('03/03 · MIXING'))
+  assert.ok(!finalDetail.includes('완성곡 듣기'),'Final Tracks without a saved Mix are not completed')
+  const completedDetail=renderDetail({createdProjectTracks:{[homeProject.id]:fullTracks},createdMixes:{[homeProject.id]:{url:'blob:qa-home-mix'}}})
+  assert.ok(completedDetail.includes('03/03 · COMPLETE'))
+  assert.ok(completedDetail.includes('완성곡 듣기'))
+  assert.ok(!renderDetail({createdMixes:{[homeProject.id]:{url:'blob:stale'}}}).includes('완성곡 듣기'))
+  assert.ok(renderDetail({createdProjectTracks:{[homeProject.id]:{harmony:reviewOnly}}}).includes('00/03 · RECRUITING'))
+  const finalLower={...fullTracks.lower,participant:'QA FINAL LOWER',participantId:'qa-final-lower',duration:9.5,layer:{qaMarker:'lower-layer'}}
+  const detailButtons=[],selectedIds=[],workspaceIds=[],recordProps=[]
+  try{
+    React.createElement=(type,props,...children)=>{
+      if(type==='button' && (props?.['data-project-id'] || props?.['data-action']==='open-selected-created-project'))detailButtons.push(props)
+      if(typeof type==='function' && type.name==='ResonanceRecord')recordProps.push(props)
+      return originalCreateElement(type,props,...children)
+    }
+    const actualDetail=renderDetail({createdProjectTracks:{[homeProject.id]:{lower:finalLower}},onSelectProject:id=>selectedIds.push(id),onOpenCreatedProject:id=>workspaceIds.push(id)})
+    assert.ok(actualDetail.includes('01/03 · RECORDING'))
+    assert.ok(actualDetail.includes('QA FINAL LOWER'))
+    assert.ok(actualDetail.includes('00:09'))
+  }finally{React.createElement=originalCreateElement}
+  detailButtons.find(button=>button['data-project-id']===homeProject.id).onClick()
+  detailButtons.find(button=>button['data-project-id']==='qa-static-project').onClick()
+  assert.deepEqual(selectedIds,[homeProject.id,'qa-static-project'],'Carousel changes selected Project inside Detail')
+  assert.deepEqual(workspaceIds,[],'Carousel does not leave comparison for Workspace')
+  detailButtons.find(button=>button['data-action']==='open-selected-created-project').onClick()
+  assert.deepEqual(workspaceIds,[homeProject.id],'Explicit action opens the same selected Project')
+  assert.equal(recordProps[0].projectId,homeProject.id)
+  assert.equal(recordProps[0].seed,homeProject.seed)
+  assert.deepEqual(recordProps[0].parts.map(part=>part.id),homeProject.parts.map(part=>part.id))
+  assert.deepEqual(recordProps[0].layers,[null,null,finalLower.layer],'Record preserves actual Part order and final layer reference')
+  const otherSelected=renderDetail({initialProjectId:'qa-static-project',createdProjectTracks:{[homeProject.id]:fullTracks}})
+  assert.ok(otherSelected.includes('00/02 · RECRUITING'))
+  assert.ok(!otherSelected.includes('open-selected-created-project'),'Another selected Project must not expose this owner Workspace action')
+  console.log('PASS Detail: actual submitted state/Part/layer lineage, Review and stale Mix excluded, same-song carousel selection, explicit selected Project navigation. Node render/callbacks only.')
   for (const count of [2,4]) {
     const dynamicParts=Array.from({length:count},(_,index)=>({id:`free-${count}-${index}`,name:`Voice ${index+1}`,color:'#3b82f6',status:index?'open':'ready'}))
     const dynamicProject={id:`qa-project-${count}`,seed:`qa-seed-${count}`,parts:dynamicParts,totalParts:count,partCount:count,key:'F minor'}
     const dynamicHomeProject={...dynamicProject,title:`HOME ${count}`,name:`${count} voices`,songId:'ocean-eyes',status:'RECRUITING'}
     const dynamicHome=renderHome({createdProjects:[dynamicHomeProject]})
     assert.ok(section(dynamicHome,'파트 모집 중').includes(`00/0${count} · ${count-1} Parts OPEN`))
+    const dynamicDetail=renderDetail({createdProjects:[dynamicHomeProject],initialProjectId:dynamicHomeProject.id})
+    assert.ok(dynamicDetail.includes(`00/0${count} · RECRUITING`))
+    for(const part of dynamicParts)assert.ok(dynamicDetail.includes(`data-part="${part.id}"`),'Detail retains the actual dynamic Part IDs')
     const dynamicCommon={...common,project:dynamicProject,parts:dynamicParts,layers:dynamicParts.map(()=>null)}
     const workspaceMarkup=renderToStaticMarkup(React.createElement(Workspace,{...dynamicCommon,isCreated:true,ownerPartId:dynamicParts[0].id,findVocal:noop,recordPart:noop}))
     assert.ok(workspaceMarkup.includes(`0/${count}`))
