@@ -10,7 +10,7 @@
 | R1 / 단계3 | 녹음·Draft·Review 직접 제출·Auto Mix 재시도 구현과 관련 자동 검증 재사용 | 실제 음악, 물리 입력·음량·진입·지연·청취 |
 | R2 / 단계4 | 탐색·참여·Profile 편집·Collection·복귀 및 VP05A 기능 구현·관련 검증 완료 목록 | 실제 후보/Sample/음색·곡/Key 음역 자료, 동일 Identity(R5), 실기기/최종 디자인 인수 |
 | 1dd4f43 보컬 성향 | main push·Production JS/CSS exact·관련 Production QA 확인 | Vercel 배포 ID·commit 메타데이터/READY 독립 확인 |
-| R3 / 단계5 기반 | 인증·DB·Storage 연결 준비 | 실제 프로젝트/OAuth 접근, 두 사용자 인증·권한·원자적 제출 |
+| R3 / 단계5 기반 | Auth/Storage 계약, Profile 성향 DB migration·API 준비 및 격리 SQL/HTTP 검증 | 실제 프로젝트/OAuth 접근, 원격 migration·두 사용자 권한·전체 Profile/원자적 Track 제출·App 연결 |
 | R4 / 단계5 협업 | 기존 계약/로컬 흐름 보존 | R3 이후 실제 초대·경쟁·공유·7일 Push |
 | R5 / 단계1·2·4 | 측정 원본·revision·입력 계약 준비 | 실제 개인 생성→Track 변형→Project 결합, 승인 형상·미정 정책·G1–G5 |
 | R6 / 단계3 음악 | 기존 분석·실험 기록 보존 | 0원 실행 경로·권리·가창 품질 및 실제 곡/반주/2–4 Part 연결 |
@@ -50,7 +50,7 @@ R5는 승인 형상·갱신/버전/fallback 정책 의존 작업과 독립 데�
 | 묶음 | 예산/잔여 공수 | 실제 사용 시간 | 외부 대기 | 다음 완료 조건 | 목표일 |
 | --- | --- | --- | --- | --- | --- |
 | R1/R2 대조 | 최대2h; 이번 확인 범위 신규 결함 구현0h | 이번 대조 실효 공수 미측정; 시작 시각 소급 추정 안 함 | 실제 후보·곡 자료/실기기,기간 미측정 | 잔여 분류 기록 완료; 데이터/실기기 인수는 별도 | 대조10/13 수행; 인수일 미확정 |
-| R3 | 16–24h | 실제 연결 미착수 | 실제 Supabase/Google OAuth 접근 미확보 | 두 실제 사용자 인증·권한 | 10/14 접근 판정 후 산정 |
+| R3 | 16–24h 기존 조건부 예산 유지; 실효 공수 미측정으로 임의 차감 없음 | 실제 연결 미착수; 10/13 transport 검토 및 Profile DB/API 준비·SQL/HTTP 검증 완료 | 실제 Supabase/Google OAuth 접근 미확보 | 원격 migration·두 사용자 권한·전체 Profile/Track 제출·App 연결 | 10/14 접근 판정 후 산정 |
 | R4 | 12–20h | 실제 협업 미착수 | R3/Push 환경 | 실제 경쟁·공유·알림 | R3 완료 후 산정 |
 | R5 | 24–40h | 기존 선행 실효 공수 미측정 | 승인 형상/갱신·버전·fallback 정책 | 개인 실제 결과부터G1–G5 | 10/14 의존성 판정 후 산정 |
 | R6 경로 | 기존4h 상한 유지; 잔여 시간 미측정 | 과거 실험/실패 이력 보존; 상한 초기화 안 함 | 무료 할당량/실제 품질·권리 | 성공한 짧은 구절의 제어/품질 | 10/14 확보 여부 판정 |
@@ -62,6 +62,8 @@ R5는 승인 형상·갱신/버전/fallback 정책 의존 작업과 독립 데�
 VP05A Production 통과 증거를 재사용하고 변경된 정상/실패/복원 경로만 재검증한다. 물리 마이크·음량·진입·지연·청취/최종 디자인은 배포본에서 한 묶음으로 인수하며 합성 입력으로 대신하지 않는다. 의미 있는 묶음은 diff→필요 파일 명시stage→commit→origin/main push→Git Integration→Production QA로 마감한다. 기존 서버3파일은 R3 검토 전까지 별도 보존한다. Computer Use/Remote Figma/직접 Production deploy/중복 앱·계획은 금지한다.
 
 ## R1/R2 잔여 대조 결과 — 2026-10-13
+
+R3 독립 준비 진행: 기존 /api/me/profile 경로의 본인 조회/성향 PATCH와 ieum_profiles migration·RLS·revision CAS RPC를 작성했다. 기존 측정 음역/Sample/Identity 필드의 보존·미설정 선택·다른 사용자/익명/직접 쓰기 거부와 동시 같은revision1승자를 실제 PostgreSQL PGlite fixture에서 확인했다. Auth/HTTP 계약·build도 통과했다. 상세 실행/제약은 docs/SERVICE_CONNECTION.md의10/13절을 적용한다. 실서비스/전체 Profile 등록/원본 업로드/실제 경쟁·로그인 및 App 연결은 미완료다. 기존 사용자 서버3파일은 그대로 보존하며 계정 존재 질문을 반복하지 않는다.
 
 사용자 제공 최신261012 PRD/화면명세/유저플로우와 실제 App의 completeProfile/join/invite/submit/Auto Mix, sharedVoicePreferences와 유지 QA·완료 기록을 대조했다. Notion/figma-desktop/Vercel 전용 도구는 이번 세션 노출0개이며 온라인/시각 원본 확인을 주장하지 않는다. 시각 구현은 이번 작업 범위가 아니다.
 

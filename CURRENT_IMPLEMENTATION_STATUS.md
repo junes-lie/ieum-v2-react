@@ -1,3 +1,17 @@
+## 2026-10-13 R3 독립 구현 — Profile 성향 DB·API 준비
+
+기존 서비스 없음/구성안 준비·Google 로그인 우선 답변을 적용하고 기존 계정/프로젝트 질문을 반복하지 않았다. 기존 Vercel Functions에 GET/PATCH /api/me/profile, 선택적 IEUM_DB_PROVIDER 설정, 신규 ieum_profiles migration·본인 RLS·제한 RPC를 구현했다. PATCH는 expectedRevision과 성향4필드만 허용하며 음역/Sample/Identity/userId 변경 요청은 거부한다. auth.uid() 기반 본인 행·revision CAS·키별 병합을 동일 DB 트랜잭션에서 수행하고 revision은 voiceSourceRevision과 구분한다. 기존 App/UI/로컬 Profile/Track/Mix를 변경하거나 자동 이관하지 않았다. 준비 API/환경으로 capability를true로 바꾸지 않는다.
+
+실제 PostgreSQL 엔진 PGlite0.5.9의 격리 메모리 DB에 migration SQL을 실행해 두 테스트 Auth 문맥·본인 행 SELECT·다른 사용자/익명 차단·직접 쓰기/삭제 거부·같은revision 요청1승자/1충돌·음역/Sample/Identity 보존·빈 선택·잘못된 입력 거부를 통과했다. SQL 엔진 실행은 실제 Supabase/Google/서로 다른 DB connection 증거가 아니다. Profile API 주입 HTTP 검증과 기존 Auth QA, build40modules/525.39KB(index-Cy9rymZA.js/index-B6SzxD8P.css)도 exit0,기존500KB 경고만 있다. App 변화가 없어 이전 VP05A Production QA를 재사용한다. 원격 migration 적용·실제 로그인·전체 Profile 등록/Track 제출·App 연결은 남았다.
+
+PGlite는 신규 TEMP QA 경로에만 설치했고 앱 dependency/전역 설정·사용자 프로세스는 변경하지 않았다. 첫 npm 조회는 UNABLE_TO_VERIFY_LEAF_SIGNATURE였고 NODE_USE_SYSTEM_CA 환경만으로도 동일 실패였다. 지원되는 --use-system-ca를 이번 npm 프로세스 NODE_OPTIONS에 명시해 TLS 검증을 유지한 채 조회/준비에 성공했다. SSL 검증 비활성화 없음. QA DB는finally close/Node 종료했다. 기존 서버3파일은 수정/commit 제외하며 이번 신규 API/DB 준비 묶음만 Git Integration으로 마감한다. 전체 R3–R7 및 Goal 완료는 아니다.
+
+## 2026-10-13 R3 준비 검토 — 기존 미커밋 transport 변경 보존
+
+직전 계획 개정f12e10b와 VP05A1dd4f43은 Git 기록에서 확인했고 미커밋 서버3파일을 보존했다. Production /api/capabilities HTTP200의 실제 응답은 mode=preparation 및 sharedProjects/authenticated/publicResults/push/aiVoiceLayers 모두false다. f12e10b의 GitHub deployment0/status0·pending으로 배포 메타데이터는 미확인이다. 완료 기능을 재구현하거나 기존 검증 전수를 반복하지 않았다.
+
+R3 사전 검토로 현재 사용자 transport 변경과 QA diff를 읽고 verify-service-http를 실행했다. 첫 sandbox 실행은 ServiceError NETWORK_ERROR(request, qa:78)로 실패했고 코드 변경 없이 허용된 호스트 loopback에서 같은 검사exit0이다. 실제5MiB 원본·1000bytes 미만 API metadata·인증 redirect 차단·준비/업로드 실패 미제출·제출 실패 원본 보존·검증 receipt 재시도·Storage에 API bearer 미전달이 통과했다. 로컬 격리 HTTP fixture이며 실제 Supabase/Google 로그인·DB/Storage·두 사용자 성공은 아니다. 테스트 서버는 finally에서 종료했다. 서버3파일을 수정/stage/commit하지 않았으며 이 준비 검토 결과만 로컬에 기록한다. 실제 서비스 접근과 승인 형상/정책·0원 음악 실행/품질·실기기 조건은 여전히 미확보다. Goal은 전체 미완료 상태를 유지한다.
+
 ## 2026-10-13 승인 계획 실행 — 변경분·잔여 구현계획 및 R1/R2 대조
 
 사용자가 승인한 변경을 기존 docs/IMPLEMENTATION_PLAN_2026-10-07.md의 상위 실행 기준·완료 목록·잔여 분류·예산/일정에 직접 반영했다. 별도 계획/앱을 만들지 않고 단계0와 Mix retry/Profile/VP05A의 완료 증거를 재사용한다. R3–R7 예산76–128h는 외부 대기/음악 경로/디자인/R1R2 추가 결함을 포함한 확정 납기가 아니다. 10/30 조건부 목표,10/14 의존성 판정,AI 기존4h 상한·예산0원을 유지한다.

@@ -1,5 +1,19 @@
 # 단일 앱 서비스 연결 계약
 
+## 2026-10-13 R3 Profile DB·API 준비 구현
+
+사용자 답변은 기존 서비스 없음/구성안 준비, Google 로그인 우선이다. 기존 계정/프로젝트를 다시 찾도록 같은 질문을 반복하지 않는다. 계정 생성·실제 프로젝트 설정은 수행하지 않았으며 준비 코드를 실제 연결 성공으로 표시하지 않는다.
+
+기존 Vercel Functions에 GET/PATCH /api/me/profile을 준비했다. GET은 `{profile:null,revision:0}` 또는 본인 저장 Profile과 편집 revision을 반환한다. PATCH는 `{expectedRevision,roles?,genres?,taste?,preferredSongIds?}`를 받으며 성향 필드만 부분 갱신한다. expectedRevision은 직전 GET의 revision이다. 기존 transport의 getProfile/saveProfile 경로를 재사용할 수 있으나 App에는 아직 연결하지 않았다. 이번 PATCH는 음역·Sample 원본 업로드/분석·Identity 갱신을 지원하지 않으며 해당 필드를 보내면400으로 거부한다. Profile 객체 존재만으로 측정 완료/참여 가능을 판정하면 안 된다.
+
+server/migrations/20261013_voice_profiles.sql은 선택한 Supabase 프로젝트에 적용할 신규 migration이다. 실제 auth.users에 연결된 ieum_profiles 행, 본인 SELECT RLS, 직접 쓰기/익명 접근 차단과 auth.uid() 기반 제한된 RPC를 제공한다. 사용자 ID를 PATCH 입력으로 받지 않고 검증된 사용자 bearer+publishable key를 사용한다. 성향 갱신은 행 잠금/expectedRevision 비교→해당 키만 병합→revision 증가를 동일 트랜잭션에서 처리한다. 충돌409/실패 시 성공 응답 없이 기존값 유지, 빈 선택 배열 저장 가능, 누락 키 유지, 중복 선택 정리다. 편집 revision은 음성 원본의 voiceSourceRevision/analysis/generator version과 별개이며 성향 저장으로 기존 음역·Sample·Identity를 바꾸지 않는다. 표/함수/권한의 실제 원격 적용은 아직 하지 않았다.
+
+서버 설정 IEUM_DB_PROVIDER=supabase와 기존 Auth 설정은 migration 적용 후에만 사용한다. 값이 없으면 인증 누락401 또는 서비스 미설정503이다. capabilities는 모두false를 유지한다. 세션·DB 응답은 private/no-store, 상류 오류/토큰/URL은 응답에 기록하지 않는다. PATCH JSON64KiB 제한은 전송 metadata의 크기 제한이며 선택 개수의 최소/최대 정책이 아니다. 기존 로컬/시연 데이터를 자동 이관하지 않는다.
+
+검증: npm run qa:profile-service는 인증/RPC 계약·revision 충돌·성향 필드 제한·빈 선택·실패/응답 검증의 주입 HTTP 시험이다. npm run qa:profile-db는 IEUM_PGLITE_ROOT가 가리키는 별도 QA 런타임(@electric-sql/pglite0.5.9)에서 migration SQL을 실제 실행한다. 두 테스트 Auth 문맥·본인 행 RLS·익명/직접 쓰기 거부·동일revision1승자·음역/Sample/Identity 보존·잘못된 입력을 확인했다. 실제 Supabase 역할/Google OAuth/다중 DB connection 검증은 아니며 실제 프로젝트 연결 후 같은 allow/deny·경쟁 조건을 다시 검증해야 한다. 앱 dependency에 DB 엔진/Docker를 추가하지 않는다.
+
+근거: [Supabase RLS와 grants](https://supabase.com/docs/guides/database/postgres/row-level-security), [Database RPC와 definer 권한](https://supabase.com/docs/guides/database/functions). SECURITY DEFINER는 빈 search_path·명시 schema·auth.uid() 소유자 조건·public/anon execute 해제로 제한한다. 실제 서비스 접근 이후 migration 적용→두 실제 사용자→측정 Profile/원본 업로드→App session/transport 연결 순서로 R3 잔여를 진행한다.
+
 ## 2026-10-12 로그인 방식 확정 — Google 우선
 
 사용자가 실제 서버 연결 질문에 `Google 로그인 우선`으로 답했다. 준비된 Supabase 구성안의 우선 로그인 방식은 Google로 확정한다. 이메일/Magic Link를 기본 방식으로 추가하지 않는다. 제공자 자원 생성·계정 접근·로그인 UI 배치·실제 OAuth 연결 성공은 이 답변으로 완료 처리하지 않는다.
