@@ -1,5 +1,11 @@
 # 단일 앱 서비스 연결 계약
 
+## 2026-10-13 저장 Mix 완료 확정 연결 준비
+
+project_tracks 다음 mix_completion_context migration을 적용한다. 원격에는 적용하지 않았다. service_role만 현재 job의 Project Seed·실제2–4 제출 Track snapshot/Source·상태/기존 결과를 조회한다. completeStoredProjectMix는 trusted worker 내부 호출이며 브라우저 route/서명 API가 아니다. jobId/objectId/sha256만 받고 실제 Storage bytes/hash·기존 decoder의 frame 길이를 검증한 뒤 ieum_complete_verified_mix를 호출한다. 완료 transaction의 현재 입력 재검사와 동일 결과 재시도를 재사용한다. secret은 apikey만으로 서버 RPC/Storage에 전달하고 사용자 bearer/상류 진단을 반환하지 않는다.
+
+기존 IEUM_MIX_MAX_BYTES 및 decoder 실행·길이 설정이 명시적으로 필요하다. 파일/설정/권한/DB 오류면 완료로 표시하지 않고 제출 Track·결과 원본을 유지한다. DB 성공 응답 유실도 동일 결과 재시도로 확인하며 이전 완료 파일이 유실되면 조용히 재생성/덮어쓰지 않는다. 기존 read API는 별도로 저장 결과를 검증한다. 현재 helper는 실제 Mix renderer/결과 upload·job 실행 scheduler·운영 runtime/App 연결을 대신하지 않으며 preparation capability를 true로 변경하지 않는다. qa:mix-completion의 actual short WAV/격리 DB는 실제 음악·원격 두 사용자·청취 인수가 아니다.
+
 ## 2026-10-13 공개 Project 탐색 준비
 
 GET /api/project-discovery?songId=<id>&after=<project-id>&limit=<1–50>는 선택적 Song 필터/동일 cursor 규칙으로 기존 Project 목록을 읽는다. SQL은 기존 arrangement/source와 일치하는 Project만 포함하고 실제 제출 row·Part 배정으로 submitted/ready/open을 구분한다. 공개 응답은 id/seed/songId/key/arrangementId/partCount·Part 상태/requiredRange/tessitura·제출 수/revision/lifecycle/keyLockedAt/createdAt이다. owner/participant UUID·Track/원본 참조·private 진단/URL은 SQL/HTTP whitelist로 제외한다. completed는 succeeded Mix job이 있는 경우만 포함한다.

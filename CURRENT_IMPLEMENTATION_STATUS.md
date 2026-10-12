@@ -1,4 +1,12 @@
+## 2026-10-13 R3 실제 저장 결과의 완료 확정 연결 준비
+
+서버 내부 completeStoredProjectMix는 기존 Mix job의 service-only context 조회→private Storage 실제 bytes/hash/명시적 한도·오디오 해독→기존 완료 transaction을 연결한다. 입력은 jobId/objectId/sha256뿐이며 duration/MIME/크기/실행 경로·사용자 완료 주장을 받지 않는다. DB의 실제2–4 제출 Track snapshot/Source·Project Seed/상태를 확인하고 파일 I/O 뒤 완료 transaction에서 계보를 다시 검사한다. 동일 결과 재시도는 원본을 재검사하고 기존 완료/revision을 유지하며 다른 결과나 유실은 실패한다. 새 공개 completion API·Mix DSP·worker 활성화·원본 삭제는 없다.
+
+qa:mix-completion은 실제 합성0.25초 WAV→기존 FFmpeg→격리 PostgreSQL을 연결하여2/3/4 Part 완료/재시도·파일 유실/hash/byte 한도·설정·권한·DB 실패·검증 중 입력 변경·제출수/원본 보존을 확인했다. 초기 QA는 Part를 모두 생성하기 전 제출해 PROJECT_PARTS_INCOMPLETE, 다른 Project에서 같은 사용자 요청 키를 재사용해 IDEMPOTENCY_CONFLICT였으며 fixture를 수정하고 제품 guard는 유지했다. 실제 Mix 렌더/업로드·hosted runtime·원격 Auth/DB/Storage·App 바인딩·음악/청취는 계속 미완료다. 직전4b18464 조회 gate는 반복하지 않았고 사용자3파일 변경을 보존한다.
+
 ## 2026-10-13 R3 저장 Mix 재조회 준비
+
+마감: 검토한14파일만4b184643d9032babbaeddc2f6e658df770527028로 commit/main push, main/origin0/0이다. 해당 full SHA의 Vercel status success/Deployment has completed와 Production deployment7022988271 SHA 일치를 확인했다. https://vercel.com/junes-lie/ieum-v2-react/GjiN49byAurryCLpgcAUMSLGV1Re. Production page/JS200, index-LuCsuWOM.js SHA256 0dadee8ac7863e856e39ddc8de990b42230306dfeff5dfaa86029b5fd00971c8가 local build와 일치하고 새 Mix route의 인증 없는 요청은401 AUTH_REQUIRED/private,no-store다. UI bundle은 이번 서버 준비로 바뀌지 않았다. 실제 인증 사용자/Storage 결과 청취는 미연결이며 사용자3파일 수정은 보존했다. 선택 stage의 첫 패치는 줄바꿈 불일치로 적용 실패했고 LF 정규화 후 한 줄만 stage·검증했다. 이 문단은 commit 후 로컬 증거 기록이다.
 
 기존 project-lifecycle Function에 참여자 전용 GET projects/:id/mix를 추가했다. 새로운 mix_reads migration은 Project→job 잠금 순서·실제 제출 Track snapshot/Source/Part 수·완성 상태 일치를 확인하고 비참여/익명 조회를 거부한다. queued/processing/failed는 결과 null이며 제출이나 worker 성공을 생성하지 않는다. succeeded 결과는 private 파일의 실제 SHA256·stream byte 한도·해독 frame 길이가 저장값과 맞아야 read URL을 반환한다. 공개 공유 정책/원본 접근 범위는 확대하지 않았다.
 
