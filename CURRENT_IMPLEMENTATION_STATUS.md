@@ -1,3 +1,13 @@
+## 2026-10-12 확정 계획 적용 / R1·R2 마감 기준 확인
+
+사용자가 확정한 검토 계획을 기존 docs/IMPLEMENTATION_PLAN_2026-10-07.md의 최상단 실행 기준으로 반영했다. 기존 단계 0 완료, 1–4 부분 완료(2 디자인 보류), 5 서비스 미연결, 6 종합 인수 미완료를 유지한다. 기존 단계와 R1–R7 대응표·잔여 유형·완료 조건을 명시하고 과거 엄격한 전체 단계 대기/배포 금지/미구현 목록 해석의 충돌을 정리했다. 새 문서·앱·제품 정책·디자인 변경 없음.
+
+현재 R1/R2 입력·저장·복귀 경계를 재사용하여 관련 범위만 확인했다. production build39modules/510.63KB 성공(기존500KB 경고 유지). 제출 원자성/경쟁·실패/retry 및 Node 사용자 여정(2/3/4 Part 원본/계보 재로드 포함), Profile 원본/atomic 저장 QA 통과. 실제 기존 React headless QA에서 Profile range/Sample 편집 History·취소/기존값 보존, Setup 취소/저장 후 원래 Bass Part와 Fit 재검사·자동 참여/Track 없음, 2/3/4 Part Mix 저장 실패 시 원본 hash/미완성 보존 및 정상 reload 후 하나의 Mix 저장을 통과했다. 확인한 경로에서 새 코드 결함을 발견하지 않아 기존 앱을 다시 구현하지 않았다. 물리 마이크·청취·다양한 사용자 신뢰도 인수는 아니다.
+
+최초 npm 개발 서버 인자 전달은 의도한 포트가 적용되지 않아 해당 소유 서버를 종료했다. 명시 Vite 실행의4207포트 충돌 뒤 기존 서버는 보존하고4261 전용 포트를 사용했다. sandbox Edge launch는 Target page, context or browser has been closed로 앱 QA 이전에 실패했으며 동일 headless QA와 소유 임시 서버를 허용된 실행 환경에서 재실행해 통과했다. GitHub 조회의 sandbox 연결 오류도 허용된 읽기 조회에서 main0b132f8을 확인했다. Computer Use/Remote Figma/직접 deploy 없음.
+
+현재 노출 Notion/figma-desktop 도구0개로 최신 원본을 읽지 않았다. 사용자 확정 실행 규칙 및 정책 판단 없는 기존 코드 검증만 수행했다. 다음은 최신 요구 확인 후 R2 잔여 누락 대조, R1 물리 입력/진입/음량 인수, R5 정책 독립 선행과 R6 실제 제어 검증이다. 서버 접근·개인 형상 승인·음악 품질을 임의 확정하지 않는다. 기존 사용자 서버3파일과 미커밋 AI 실행/진단 변경은 보존·이번 문서 commit 제외. 앱 build JS SHA39509AA129CA1D0F39DED94EB1C660BF021700509F272D748B7278E7715DAB1B 유지. 배포 완료 증거는 실제 자동배포 확인 후 별도 기록한다.
+
 ### R5 제출된 Track → 개인 Layer 입력 선행 연결 — 2026-10-12
 
 기존 voiceIdentitySources/Track 계약에 read-only loadSubmittedTrackIdentityInput을 추가했다. canonical Project/Part 제출 키로 실제 저장 record를 읽고 개인 결과 소유자와 participantId·live 제출 origin·원본 SHA/크기·source revision/analysis version을 확인한다. 명시적으로 전달받은 개인 결과 참조는 비동기 read 전 snapshot이며 기존 buildTrackIdentityInput에 실제 분석/지원 한계와 목적을 전달한다. 개인 user ID 원문은 반환 입력에 넣지 않는다. Review/Sample·legacy provenance·미지원 분석/불일치 원본·소유자 불일치를 거부하며 BPM/호흡 등 미지원 후보null을 유지한다. 기존 Profile/Track revision·동일 입력 digest·read-only/변조 거부 및 QA identity 회귀 통과. fixture 개인 참조를 사용한 데이터 준비 검증이며 개인 결과 승인/형상 생성·Track 변형/Record 결합 성공 또는 자동 갱신 정책이 아니다. 그래픽/제출/Mix 상태·기존 앱·디자인/원본은 변경하지 않는다. qa:identity에 유지 검사 연결, build/기존 제출 회귀→main 자동배포→Production 앱 보존으로 마감한다.
