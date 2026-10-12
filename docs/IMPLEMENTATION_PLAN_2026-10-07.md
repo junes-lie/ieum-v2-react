@@ -1,5 +1,7 @@
 # 현재 실행 기준 — 2026-10-13 변경분 및 잔여 구현계획 개정
 
+2026-10-13 R3 Google PKCE gate: Google 우선 결정을 기존 serviceSession/server identity 검증에 연결하는 로그인 URL/복귀 helper를 준비했다. 실제 Crypto와 주입 OAuth→기존 인증의 준비 상태/URL 정리·임시 verifier/state·서버 본인 검증·취소/재생/로그아웃 경쟁·refresh rotation/신원 재검증·현재 로그인 logout 실패 검사를 통과했다. SDK/계정/runtime 추가나 별도 UI는 없으며 실제 앱 로그인/복귀·운영 origin/public key/allowlist·자동 갱신/만료·새로고침 세션 복원·실제 두 사용자 인수는 잔여다. 현재 preparation capability를 유지한다. 기존 단계·예산·완료 증거/사용자3파일을 보존하고 같은 계정 접근 질문은 반복하지 않는다. 이번 실효 공수는 미측정이다.
+
 2026-10-13 R3 Key client gate: 기존 transport에 setProjectKey를 연결했고 serviceSession의 authenticated scope를 재사용한다. arrangementId/expectedRevision 및 재시도 키만 보내며 개인 ID/임의 key/source 추가 값은 제외한다.2–4 Part client→API→격리 SQL 검증, 미지정 키의 네트워크 차단·탈출 scope/사용자 변경 중 늦은 응답 거부를 확인했다. 최초 mutation receipt는 현재 상태 조회와 구분한다. 실제 App W07/canonical 재조회·운영 서비스/candidate 음악 데이터는 다음 잔여이며 capability는 preparation/false다. 이미 완료된 DB/API gate·예산·정책은 유지하고 사용자 기존3파일의 관련 없는 수정은 stage하지 않는다.
 
 2026-10-13 R3 Key 조정 gate: 사용자 승인261012 화면명세03/W07·Key.Disabled 및 PRD13의 Owner/첫 녹음 전 조정·현재 Key Fit 기준에 맞춰 기존 Project API/SQL에 key 조정을 연결했다. 승인 catalog arrangement의 같은 Song·같은 실제2–4 Part ID/수만 허용하고 실제 Source/요구 음역을 함께 갱신한다. 현재 배정자의 측정 Fit을 기존 함수로 재검사하며 배정·Seed·Profile·Track·Mix를 재생성하지 않는다. revision/Project 잠금·최초 응답 보존으로 오래된 변경·녹음 시작 이후 변경·중복 변경을 차단한다. 격리 DB 및 주입 HTTP/build 통과는 실제 원격/동시 연결/앱 W07 인수를 대신하지 않는다. 실제 서버 접근, transport/App Key 선택 연결·실제 편곡 데이터는 미완료다. 기존 서비스 없음·Google 우선 결정은 확인했고 접근 수단 질문을 반복하지 않는다. 기존 단계/예산/외부 대기·미정 정책을 유지하고 이번 실효 공수는 미측정이다.

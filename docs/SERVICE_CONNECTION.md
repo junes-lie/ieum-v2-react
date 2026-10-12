@@ -1,5 +1,17 @@
 # 단일 앱 서비스 연결 계약
 
+## 2026-10-13 Google 로그인 PKCE 연결 준비
+
+사용자의 Google 우선 결정을 기존 serviceSession에 연결하는 createGoogleLogin helper를 추가했다. [Supabase Auth OpenAPI](https://github.com/supabase/auth/blob/master/openapi.yaml)의 authorize provider=google·code_challenge_method=s256와 token?grant_type=pkce의 auth_code/code_verifier를 따른다. 신규 SDK/runtime·계정 생성·env 활성화·별도 화면은 없다. 운영에서 승인된 Auth origin/public key/App origin과 기존 session/storage를 명시적으로 공급해야 하며 실제 공급·App 버튼/복귀 바인딩은 미완료다.
+
+begin은 기존 서비스 capability가 remote/authenticated/sharedProjects일 때만 URL을 만든다. 현재 preparation은 계속 거부한다. 같은 탭 sessionStorage에는 임시 random verifier/state/Auth·App origin/복귀 hash/시각만 보존하고 access/refresh token은 저장하지 않는다. 반대 탭/기기, 변조·중복·30분 초과 임시 context는 거부한다. 30분은 임시 로그인 context의 기술 TTL이며 공급자의 일회성 code 유효기간을 연장하지 않는다. approved redirect allowlist 설정은 실제 서비스 연결 시 확인해야 한다.
+
+finish는 callback origin/path/state/code를 확인하고 외부 오류 원문을 UI에 반영하지 않는다. token 교환 전에 URL의 code/error를 기존 앱 hash로 제거하고 verifier context를 한 번 소비한다. token 교환은 credentials omit/redirect error/no-referrer/no-store/timeout이며 공개 apikey만 전송한다. secret/service_role 키는 입력에서 거부한다. OAuth user metadata를 신원으로 쓰지 않고 기존 session.connect→server verifyRequestUser로 본인 UUID를 재검증한다. 로그아웃·중복 finish/finish 중 begin 및 늦은 응답은 차단한다. Profile/Track/Mix/local app 데이터를 이관·삭제하지 않는다.
+
+refresh는 메모리 내 refresh token으로만 교환하고 새 token으로 기존 server 신원을 다시 검증한다. rotation된 token만 다음 교환에 사용하고 사용자 UUID가 달라지면 세션을 차단한다. logout은 즉시 기존 local session/context를 제거한 뒤 현재 로그인 scope=local만 서버에 폐기 요청한다. 서버 실패는 실패로 반환하지만 기존 Profile/Track/Mix를 지우거나 로그인을 다시 활성화하지 않는다. 사용자 자동 refresh 타이머/기한 처리·새로고침 재인증/복원은 App 바인딩에서 남아 있다.
+
+qa:service-auth의 실제 Crypto/주입 OAuth→기존 session→server Auth 및 refresh rotation/사용자 변경·서버 logout 실패 검증 통과는 실제 Google/OAuth allowlist·두 사용자·모바일 복귀 증거가 아니다. access/refresh token은 메모리에만 있고 reload에는 소멸한다. 따라서 R3 Auth 완료로 표시하거나 capability를 true로 변경하지 않는다.
+
 ## 2026-10-13 Owner의 녹음 전 Key 조정 준비
 
 client setProjectKey(projectId,{arrangementId,expectedRevision},requestKey)는 기존 transport와 serviceSession을 재사용한다. 본인 bearer/재시도 키만 기존 route로 전달하고 추가 user/key/source 입력은 보내지 않는다. 세션에서 탈출한 함수나 응답 대기 중 사용자 변경은 SESSION_CHANGED로 거부하며 local data에 쓰지 않는다. 최초 성공 receipt와 현재 GET 상태를 구분하고 자동 재시도 키 변경/Conflict 덮어쓰기를 하지 않는다.2–4 Part client→API→격리 SQL 및 세션 QA를 통과했으나 실제 App W07 바인딩은 아직 없다.
