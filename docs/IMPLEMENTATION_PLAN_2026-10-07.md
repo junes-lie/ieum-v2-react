@@ -1,3 +1,10 @@
+### R5 선행 — 실제 Project Mix 입력 계보 — 2026-10-12
+
+기존 Auto Mix 저장 record에 private inputManifest를 연결했다. Project ID/기존 Seed/정해진 Part 순서·실제 원본 Blob SHA256/크기·source revision·정렬 값·분석 version·유효한 Layer 파라미터 snapshot과 전체 입력 digest를 보존한다. Mix에 전달하는 Track도 같은 snapshot을 사용한다. 그래픽 미생성/유효하지 않은 그래픽은 별도 capture 상태로 기록하며 오디오 제출/Mix를 그래픽 성공으로 판단하지 않는다. 이것은 개인 Identity나 확정 Record artifact 생성 완료가 아니며 기존 backing 참조는 별도 audioSourceRef로 유지한다. legacy 원본의 revision은 임의 생성하지 않는다.
+
+Node 2–4 Part 동일 입력 재현/원본 변경 digest 차이/분석·Layer snapshot 불변/Review 거부 통과. native Edge에서 그래픽0 및 실제 PCM 분석 복원 각각 2/3/4/main Mix 저장·reload 입력 exact/원본 hash를 확인했다. 2–4 Part Mix 저장 실패/원본 보존/기존 reload 성공, 기존 사용자 여정/single App/build38modules 통과. 기존500KB chunk 경고는 남는다. 격리 음원 QA이며 실제 청취·협업·개인 형상 인수가 아니다. 관련 묶음만 main 자동배포→Production 동일 QA로 마감한다. R5 전체 G1–G5와 R6 음악 품질·실제 서비스/실기기 gate는 유지한다.
+
+직전 ac23576은 Git Integration success/Production 제출 원본 QA와 bundle 9EBDB21AA297D1E9D64C5BD5EB4A35936FB09A715426F7717E89A577119FCC17 exact로 마감했다.
 ### R5 Track 입력 source 보존 선행 — 2026-10-12
 
 실제 제출 후보의 Blob hash/크기·분석/Layer version·source revision/purpose를 원자적 제출 record에 보존했다. Sample/Track 목적을 분리하고 미지원null/legacy 원본과 다른 탭 최초 승자 snapshot을 유지한다. Review 실패/retry/reload·동시성/원본 재생·기존 여정을 검증해 자동배포/Production 동일 QA로 전달한다. 개인 Identity ref·형상 변형·Project Record artifact 연결은 미완료이며 새 정책이나 가짜 참조로 대체하지 않는다. 이전 Sample fea5769는 자동배포/Production 같은 Profile provenance QA로 마감했다.

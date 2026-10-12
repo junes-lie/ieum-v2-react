@@ -3,6 +3,7 @@ import Icon from './Icons.jsx'
 import { PITCH_ANALYSIS_VERSION } from './pitch.js'
 import { prepareVoiceSampleRecord } from './profileSource.js'
 import { prepareSubmittedTrackRecord } from './trackSource.js'
+import { prepareProjectMix } from './mixSource.js'
 import figmaAssets from './figmaAssets.json' with { type: 'json' }
 import {
   analyzeBlob,
@@ -1649,10 +1650,12 @@ export default function App() {
     const run = async () => {
       let unpublishedUrl = null
       try {
-        const value = await createAutoMix({ tracks:PARTS.map(part=>projectTracks[part.id]), duration:Math.max(...Object.values(projectTracks).map(track=>track.duration||0)), onProgress:value=>!cancelled&&setMixProgress(value) })
+        const prepared = await prepareProjectMix(PROJECT,projectTracks)
+        if(cancelled)return
+        const value = await createAutoMix({ tracks:prepared.tracks, duration:Math.max(...prepared.tracks.map(track=>track.duration||0)), onProgress:value=>!cancelled&&setMixProgress(value) })
         unpublishedUrl = value.url
         if (cancelled) return
-        const record = { id:MIX_RECORD_ID, projectId:PROJECT_ID, kind:'auto-mix', blob:value.blob, mimeType:value.blob.type || 'audio/wav', duration:value.duration, bytes:value.bytes, origin:value.origin, processing:value.processing, createdAt:new Date().toISOString() }
+        const record = { id:MIX_RECORD_ID, projectId:PROJECT_ID, kind:'auto-mix', inputManifest:prepared.inputManifest, blob:value.blob, mimeType:value.blob.type || 'audio/wav', duration:value.duration, bytes:value.bytes, origin:value.origin, processing:value.processing, createdAt:new Date().toISOString() }
         await saveTrack(record)
         if (cancelled) return
         setMix({...record,url:value.url}); setMixStatus('complete'); setMixProgress(100)
@@ -1680,10 +1683,11 @@ export default function App() {
         let unpublishedUrl = null
         try {
           assertProjectTrackAudio(project,required.map(part=>tracks[part.id]))
+          const prepared=await prepareProjectMix(project,tracks)
           const backingBlob=await loadProjectBacking(project)
-          const value=await createAutoMix({tracks:required.map(part=>tracks[part.id]),backingBlob,duration:Math.max(project.recordingDuration||0,...required.map(part=>tracks[part.id].duration || 0))})
+          const value=await createAutoMix({tracks:prepared.tracks,backingBlob,duration:Math.max(project.recordingDuration||0,...prepared.tracks.map(track=>track.duration || 0))})
           unpublishedUrl = value.url
-          const record={id:project.id+':auto-mix',projectId:project.id,kind:'auto-mix',audioSourceRef:projectAudioReference(project),blob:value.blob,mimeType:'audio/wav',duration:value.duration,bytes:value.bytes,origin:value.origin,processing:value.processing,createdAt:new Date().toISOString()}
+          const record={id:project.id+':auto-mix',projectId:project.id,kind:'auto-mix',inputManifest:prepared.inputManifest,audioSourceRef:projectAudioReference(project),blob:value.blob,mimeType:'audio/wav',duration:value.duration,bytes:value.bytes,origin:value.origin,processing:value.processing,createdAt:new Date().toISOString()}
           await saveTrack(record)
           setCreatedMixes(current=>({...current,[project.id]:{...record,url:value.url}}))
           unpublishedUrl = null

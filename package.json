@@ -10,7 +10,7 @@
     "qa": "node qa/verify-pitch-detector.mjs && node qa/verify-resonance-record.mjs && node qa/verify-audio-foundation.mjs && node qa/verify-track-store.mjs && node qa/verify-draft-cleanup.mjs && node qa/verify-profile-store.mjs && node qa/verify-project-service.mjs && node qa/verify-track-transfer.mjs && node qa/verify-signed-audio-upload.mjs && node qa/verify-service-auth.mjs && node qa/verify-server-audio-storage.mjs && node qa/verify-single-app-render.mjs && node qa/verify-user-journey.mjs",
     "qa:service-http": "node qa/verify-service-http.mjs",
     "qa:playback": "node qa/verify-player-request-ownership.mjs",
-    "qa:mix-errors": "node qa/verify-mix-save-preservation.mjs",
+    "qa:mix-errors": "node qa/verify-mix-source.mjs && node qa/verify-mix-save-preservation.mjs",
     "qa:audio-lengths": "node qa/verify-audio-lengths.mjs",
     "qa:submission": "node qa/verify-submission-atomic.mjs",
     "qa:backing-level": "node qa/verify-backing-gain.mjs && node qa/verify-provided-backing-level.mjs",

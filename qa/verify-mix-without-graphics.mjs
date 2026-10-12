@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import {createHash} from 'node:crypto'
 import {createRequire} from 'node:module'
 const require = createRequire('C:/Users/LEE/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright/package.json')
 const {chromium} = require('playwright')
@@ -30,15 +31,25 @@ try {
     await page.waitForFunction(id=>window.__IEUM_V2__?.state.activeProject.id===id && (window.__IEUM_V2__.state.createdMixes[id]?.blob || window.__IEUM_V2__.state.mix?.blob),id,{timeout:30000}).catch(async error=>{console.log(JSON.stringify({errors,state:await page.evaluate(()=>{const s=window.__IEUM_V2__?.state;return s?{id:s.activeProject?.id,tracks:Object.keys(s.activeTracks||{}),mixStatus:s.activeMixStatus,projects:s.createdProjects}:null})}));throw error})
     const result=await page.evaluate(id=>{
       const state=window.__IEUM_V2__.state
-      return {seed:state.activeProject.seed,tracks:Object.keys(state.activeTracks).length,layers:Object.values(state.activeTracks).filter(track=>track.layer).length,mixBytes:(state.createdMixes[id]||state.mix).blob.size,mixStatus:state.activeMixStatus}
+      return {manifest:(state.createdMixes[id]||state.mix).inputManifest,seed:state.activeProject.seed,tracks:Object.keys(state.activeTracks).length,layers:Object.values(state.activeTracks).filter(track=>track.layer).length,mixBytes:(state.createdMixes[id]||state.mix).blob.size,mixStatus:state.activeMixStatus}
     },id)
     assert.equal(result.seed,seed);assert.equal(result.tracks,count);assert.equal(result.layers,missingAnalysis?count:0);assert.ok(result.mixBytes>44);assert.equal(result.mixStatus,'complete')
+    assert.equal(result.manifest.version,'ieum-project-mix-input-v1')
+    assert.equal(result.manifest.projectId,id);assert.equal(result.manifest.projectSeed,seed)
+    assert.equal(result.manifest.tracks.length,count)
+    for(const track of result.manifest.tracks){
+      assert.equal(track.audioSha256,createHash('sha256').update(wav).digest('hex'))
+      assert.equal(track.byteLength,wav.length);assert.equal(track.sourceRevision,null)
+      assert.equal(track.layerCaptureStatus,missingAnalysis?'captured':'missing')
+      if(!missingAnalysis)assert.equal(track.layerSnapshot,null)
+    }
     await page.reload()
     if(mode!=='main'){
       await page.locator('[data-nav="folder"]').click()
       await page.locator('[data-action="open-created-project"]').click()
     }
     await page.waitForFunction(id=>window.__IEUM_V2__?.state.createdMixes[id]?.blob || window.__IEUM_V2__?.state.mix?.blob,id)
+    assert.deepEqual(await page.evaluate(id=>{const state=window.__IEUM_V2__.state;return (state.createdMixes[id]||state.mix).inputManifest},id),result.manifest)
     assert.deepEqual(errors,[])
     console.log(`PASS ${mode} Project / ${count} submitted audio Tracks with ${missingAnalysis?"missing analysis restored from actual PCM":"zero graphics"}: native Auto Mix succeeds, saved output/seed/Tracks reload`)
     await context.close()
