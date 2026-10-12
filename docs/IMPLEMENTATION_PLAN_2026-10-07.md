@@ -1,3 +1,7 @@
+### R5 Track 입력 source 보존 선행 — 2026-10-12
+
+실제 제출 후보의 Blob hash/크기·분석/Layer version·source revision/purpose를 원자적 제출 record에 보존했다. Sample/Track 목적을 분리하고 미지원null/legacy 원본과 다른 탭 최초 승자 snapshot을 유지한다. Review 실패/retry/reload·동시성/원본 재생·기존 여정을 검증해 자동배포/Production 동일 QA로 전달한다. 개인 Identity ref·형상 변형·Project Record artifact 연결은 미완료이며 새 정책이나 가짜 참조로 대체하지 않는다. 이전 Sample fea5769는 자동배포/Production 같은 Profile provenance QA로 마감했다.
+
 ### R5 개인 입력 source 보존 선행 — 2026-10-12
 
 기존 Profile Setup/대표 Sample 교체에 실제 원본 hash/byteLength·source revision·분석 version/purpose 저장을 연결했다. reload의 exact revision과 기존 legacy 미측정null·atomic 저장/실패 보존·대표 Sample/Project Track 분리를 검증해 자동배포한다. Sample source revision이며 전체 Profile revision/개인 형상 생성·갱신 정책의 확정은 아니다. 다음 독립 작업은 측정 출처 계약의 누락을 대조하고 개인 generator 연결 시 확정 결과 입력을 보존하는 것이다. 보류된 형태/사진/갱신/fallback 정책을 임의 적용하지 않는다. 전체 R5 G1–G5 완료 gate는 유지한다. 앞선 Mix35ad7c5는 Production 같은 저장 실패 QA로 마감했다.

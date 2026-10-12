@@ -16,7 +16,14 @@ await page.evaluate(()=>window.qaRejectSubmission=false);
 await page.locator('[data-action="record-submit"]').click();await page.waitForSelector('.workspace-screen');
 const submitted=await page.evaluate(async u=>{const t=window.__IEUM_V2__.state.projectTracks.tenor;return {url:t.url,revoked:window.qaRevoked.includes(u),hash:Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',await t.blob.arrayBuffer()))).join(','),playable:(await fetch(t.url)).ok}},submittedUrl);
 assert.equal(submitted.url,submittedUrl);assert.equal(submitted.revoked,false);assert.equal(submitted.playable,true);assert.equal(submitted.hash,originalHash);
+const submittedSource=await page.evaluate(()=>window.__IEUM_V2__.state.projectTracks.tenor.sourceProvenance);
+assert.equal(submittedSource.purpose,'project-track');
+assert.equal(submittedSource.audioSha256,originalHash.split(',').map(value=>Number(value).toString(16).padStart(2,'0')).join(''));
+assert.equal(submittedSource.analysisVersion,null,'Unanalysed restored Draft must not invent an analysis version at submission');
+assert.equal(submittedSource.layerGeneratorVersion,null,'Missing graphics do not acquire a generation version at submission');
+assert.match(submittedSource.revision,/^[a-f0-9-]{36}$/);
 await page.reload();await page.waitForFunction(()=>window.__IEUM_V2__?.state.projectTracks.tenor?.origin==='live-microphone-recording');
 const restoredHash=await page.evaluate(async()=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',await window.__IEUM_V2__.state.projectTracks.tenor.blob.arrayBuffer()))).join(','));assert.equal(restoredHash,originalHash);
+assert.deepEqual(await page.evaluate(()=>window.__IEUM_V2__.state.projectTracks.tenor.sourceProvenance),submittedSource,'Reload/reanalysis must retain the submitted source snapshot');
 assert.deepEqual(errors,[]);console.log(JSON.stringify({passed:true,failedSubmissionKeepsReviewPlayable:true,errors,reviewNavigationUrlsReleased:rows.length,successfulSubmissionKeepsPlayerUrl:true,submittedOriginalHashExact:true,reloadOriginalHashExact:true,limits:'Isolated native browser and stored fixture; no physical microphone or listening claim'}));
 }finally{await browser.close()}

@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import Icon from './Icons.jsx'
 import { PITCH_ANALYSIS_VERSION } from './pitch.js'
 import { prepareVoiceSampleRecord } from './profileSource.js'
+import { prepareSubmittedTrackRecord } from './trackSource.js'
 import figmaAssets from './figmaAssets.json' with { type: 'json' }
 import {
   analyzeBlob,
@@ -1544,7 +1545,7 @@ export default function App() {
     if (!draft?.blob || part?.id !== recordingPart) throw new Error('제출할 녹음 원본을 찾지 못했어요.')
     if (activeCreatedProject ? part.id!==activeCreatedProject.ownerPartId : (!joined || part.id!==joinedPart)) throw new Error('내가 맡은 Part만 제출할 수 있어요.')
     assertProjectTrackAudio(targetProject,[draft])
-    const candidate = {
+    const candidate = await prepareSubmittedTrackRecord({
       id:`${targetProject.id}:${part.id}`,
       projectId:targetProject.id,
       projectSeed:targetProject.seed,
@@ -1562,7 +1563,7 @@ export default function App() {
       layer:buildVoiceLayer(targetProject.seed,part.id,draft.features),
       origin:'live-microphone-recording',
       createdAt:new Date().toISOString()
-    }
+    })
     const track = await saveSubmittedTrack(candidate)
     const trackUrl = track === candidate ? draft.url : URL.createObjectURL(track.blob)
     touchProjectActivity(targetProject.id)

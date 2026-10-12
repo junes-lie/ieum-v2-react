@@ -1,3 +1,11 @@
+### R5 선행 — 제출 Track의 실제 원본 snapshot — 2026-10-12
+
+Review 직접 제출 후보에 private sourceProvenance를 연결했다. 원본 Blob SHA256/크기·opaque source revision·purpose project-track·제출 당시 analysis version/Layer generator version을 같은 원자적 제출 record에 저장한다. hash 전에 입력/분석/Layer를 snapshot으로 복제하며 다른 탭의 확정 제출 원본이 이미 있으면 그 원본과 provenance를 반환하는 기존 계약을 유지한다. 미측정 분석/미생성 Layer는null이며 대표 Sample hash를 Track hash로 사용하지 않는다. 이 snapshot 준비 성공은 제출 성공이 아니고 saveSubmittedTrack 성공 전 제출수/완성 상태를 늘리지 않는다. 개인 Identity ref가 없는 상태에서 가짜 참조는 만들지 않는다.
+
+Node actual Blob hash/snapshot·동시 제출의 최초 원본 revision/hash 보존·잘못된 Part/voice-sample 거부·atomic 실패/재시도 통과. native Review 복원/제출 실패/재시도/원본 URL·SHA 보존 및 reload 후 제출 당시null/version/revision exact, 같은 기기 다른 탭 승자 원본 재생/reload를 통과했다. build36modules/single App/기존 사용자 여정 통과. legacy Track은 원본 provenance를 임의 backfill하지 않으며 reload의 추가 분석은 제출 snapshot을 덮어쓰지 않는다. 화면/형상/믹싱/서버 정책 변경 없이 main 자동배포 후 Production 같은 QA로 마감한다. 전체 개인 생성→Track 변형→Project Record 연결과 R5 G1–G5는 여전히 미완료다.
+
+직전 Sample fea5769는 Vercel commit success/Production Profile 최초 등록·교체·실패/retry/reload hash/revision·기존 기능 QA/pageerror0 및 bundle C1FE83BFA7DD284D58B2C6FF7A8F674F8742D5265DAEB4D66B9B55702D2CF5D5 exact/main 동기화로 마감했다.
+
 ### R5 선행 — 대표 Sample 원본 출처와 revision 저장 — 2026-10-12
 
 기존 Profile 최초 등록/대표 Sample 교체의 저장 경로에 private sourceProvenance를 연결했다. 새 실제 Sample Blob의 SHA256·byteLength, 저장된 분석 version(없으면null), purpose voice-sample, opaque source revision을 같은 record에 보존하고 Profile reload에서도 같은 값을 읽는다. hash 계산 전 분석/record snapshot을 복제한다. 기존 Sample은 재분석·가짜 hash/revision backfill 없이 null로 읽는다. 사용자의 공개 ID/그래픽 URL은 추가하지 않는다. Range 측정 원본 오디오를 보관했다고 주장하거나 이 Sample revision을 전체 Profile/Identity revision으로 혼동하지 않는다.

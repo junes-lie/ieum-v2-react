@@ -1,9 +1,29 @@
 import assert from 'node:assert/strict'
 import {indexedDB,IDBObjectStore} from 'fake-indexeddb'
 import {saveTrack,saveSubmittedTrack,loadTrack} from '../src/trackStore.js'
+import {prepareSubmittedTrackRecord} from '../src/trackSource.js'
 
 globalThis.indexedDB=indexedDB
 const candidate=(name,partId='lead')=>({id:`qa-submission:${partId}`,projectId:'qa-submission',partId,participantId:'qa-user',origin:'live-microphone-recording',blob:new Blob([name]),createdAt:name})
+const input={...candidate('first source','source'),features:{version:'ieum-basic-voice-v5',brightness:.4},layer:{version:'ieum-layer-v4-voice-grain',signature:'stored-result'}}
+const pending=prepareSubmittedTrackRecord(input)
+input.features.brightness=.9
+const firstSource=await pending
+assert.equal(firstSource.features.brightness,.4)
+const secondSource=await prepareSubmittedTrackRecord(candidate('second source','source'))
+const sourceResults=await Promise.all([firstSource,secondSource].map(saveSubmittedTrack))
+const savedSource=await loadTrack(firstSource.id)
+assert.deepEqual(savedSource.sourceProvenance,firstSource.sourceProvenance)
+assert.equal(await savedSource.blob.text(),'first source')
+assert.equal(firstSource.sourceProvenance.purpose,'project-track')
+assert.equal(firstSource.sourceProvenance.layerGeneratorVersion,'ieum-layer-v4-voice-grain')
+for(const result of sourceResults)assert.deepEqual(result.sourceProvenance,firstSource.sourceProvenance,'Concurrent submit keeps original source revision/hash')
+const expected=await crypto.subtle.digest('SHA-256',await firstSource.blob.arrayBuffer())
+assert.equal(firstSource.sourceProvenance.audioSha256,[...new Uint8Array(expected)].map(v=>v.toString(16).padStart(2,'0')).join(''))
+assert.equal(secondSource.sourceProvenance.analysisVersion,null)
+assert.equal(secondSource.sourceProvenance.layerGeneratorVersion,null)
+await assert.rejects(prepareSubmittedTrackRecord({...input,kind:'voice-sample'}))
+await assert.rejects(prepareSubmittedTrackRecord({...input,id:'wrong-project-part'}))
 for(const names of [['first','second'],['third','fourth']]) {
   const tracks=names.map(name=>candidate(name))
   const results=await Promise.all(tracks.map(saveSubmittedTrack))
