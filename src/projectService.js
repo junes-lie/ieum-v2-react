@@ -94,6 +94,7 @@ export function createRemoteProjectService({ baseUrl, getAccessToken, fetchImpl 
     analyzeVoiceSample: uploadIntentId => request('me/voice-sample-analyze', { method: 'POST', data: { uploadIntentId } }),
     registerVoiceSource: (source, key) => request('me/voice-source', { method: 'POST', data: { expectedSourceRevision: source?.expectedSourceRevision, rangeData: source?.rangeData, rangeProvenance: source?.rangeProvenance, sampleUploadIntentId: source?.sampleUploadIntentId, sampleProvenance: source?.sampleProvenance }, idempotencyKey: requireKey(key) }),
     getProject: projectId => request(`projects/${id(projectId)}`),
+    setProjectKey: (projectId, selection, key) => request(`projects/${id(projectId)}/key`, { method: 'POST', data: { arrangementId: selection?.arrangementId, expectedRevision: selection?.expectedRevision }, idempotencyKey: requireKey(key) }),
     createProject: (project, key) => request('projects', { method: 'POST', data: project, idempotencyKey: requireKey(key) }),
     joinPart: (projectId, partId, key) => request(`projects/${id(projectId)}/parts/${id(partId)}/join`, { method: 'POST', data: {}, idempotencyKey: requireKey(key) }),
     loadProjectTracks: projectId => request(`projects/${id(projectId)}/tracks`),

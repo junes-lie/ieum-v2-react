@@ -1,5 +1,9 @@
 ## 2026-10-13 R3 녹음 전 Key 조정 준비
 
+후속 client: 기존 setProjectKey transport와 session scope를 연결하고 입력 whitelist·Idempotency-Key·개인 bearer, 키 누락 시 요청 차단·탈출 scope/사용자 변경 중 응답 거부를 확인했다. 기존 실제2/3/4 Part fixture에서 client→HTTP handler→격리 SQL→응답을 통과하고 build40modules/529.58KB는 유지됐다. 초기 preparation capability는 변경하지 않았고 App W07/운영 서비스·실기기 인수는 미완료다. 기존 QA에 검사를 통합했으며 새 계획·프로토타입·사용자3파일 전체 staging은 하지 않는다.
+
+마감: 검토한7파일만cf631b5b98a62fbf7ffc9de7ed7b5dd9fefc0d03로 commit/main push, main/origin0/0·사용자 기존3파일 수정 보존 확인. 해당 full SHA Vercel status success 및 Production deployment7023598957 SHA 일치·success를 확인했다. https://vercel.com/junes-lie/ieum-v2-react/6yNFmchXGUueVCJt3D2Qi9wP6FuT. Production page/JS200·index-LuCsuWOM.js bytes가 local build와 일치(SHA256 0dadee8ac7863e856e39ddc8de990b42230306dfeff5dfaa86029b5fd00971c8), POST key 무인증401/AUTH_REQUIRED/private no-store, capabilities200/preparation·실제 서비스 기능false 유지. 이는 실제 서버 migration/인증 사용자 Key 변경·App UI 인수가 아니다. 이 문단은 commit 후 로컬 증거 기록이다.
+
 기존 Project lifecycle API에 Owner의 POST key와 trusted arrangement 기반 transaction을 추가했다. 같은 Song·실제2–4 Part를 유지하고 현재 배정자 음역 Fit 재검사 후 실제 key/source/요구 음역만 갱신한다. Project Seed·배정·Profile·Track·Mix를 변경하지 않으며 첫 녹음 이후 변경·stale revision·다른 편곡 구성/음역 실패·중복 요청에 원본과 상태를 보존한다. 최초 성공 응답 유실 재시도는 같은 receipt이고 현재 상태는 별도 GET이다.
 
 기존 격리 PostgreSQL QA의2/3/4 Part·권한·Fit/구성/누락·revision·실패 보존·no-op·녹음 시작 잠금 및 기존 catalog/참여 회귀, HTTP 요청/응답·오류 privacy, build40modules/529.58KB가 통과했다. 추가 fixture가 기존 페이지 QA에 섞인 최초 실패와 fixture 이동 후 migration role 복원 오류는 시험 범위를 수정해 해결했다. 기존500KB build 경고는 유지한다. 온라인 Notion/figma-desktop tool0개이며 사용자 승인261012 export를 확인했다. 실제 서버/앱 Key UI·동시 연결·마이크·청취·시각 인수 완료가 아니다. 사용자 기존3파일은 보존했고 실제 서버 접근 질문은 반복하지 않는다.

@@ -6,6 +6,7 @@ import { evaluatePartFit } from '../src/matching.js'
 import {catalogReadRequest,catalogReadErrorResponse} from '../server/catalogRead.js'
 import {createRemoteProjectService} from '../src/projectService.js'
 import {projectDiscoveryRequest} from '../server/projectDiscovery.js'
+import {projectLifecycleRequest,projectLifecycleErrorResponse} from '../server/projectLifecycle.js'
 if (!process.env.IEUM_PGLITE_ROOT) throw new Error('IEUM_PGLITE_ROOT must identify the isolated QA runtime; no remote migrations are applied')
 const require=createRequire(join(process.env.IEUM_PGLITE_ROOT,'package.json'))
 const { PGlite }=require('@electric-sql/pglite')
@@ -231,7 +232,15 @@ try {
       await assert.rejects(setKey(initial.id,arrangement,revision,`reject-${count}-${arrangement}`),error=>error.code===code)
       assert.deepEqual(await get(initial.id),before)
     }
-    const changed=await setKey(initial.id,`key-${count}`,before.revision,`key-${count}`)
+    const client=createRemoteProjectService({baseUrl:'https://ieum.example/api',getAccessToken:()=> 'qa-key-token',fetchImpl:(url,options)=>
+      projectLifecycleRequest(new Request(url,options),{env,fetchImpl:async(upstream,init)=>{
+        assert.equal(init.headers.Authorization,'Bearer qa-key-token');assert.equal(init.headers.apikey,'qa-public')
+        if(upstream.endsWith('/auth/v1/user'))return Response.json({id:users[0]})
+        assert.ok(upstream.endsWith('/ieum_set_project_key'))
+        const input=JSON.parse(init.body)
+        return Response.json(await setKey(input.p_project_id,input.p_arrangement_id,input.p_expected_revision,input.p_request_key))
+      }}).catch(projectLifecycleErrorResponse)})
+    const changed=await client.setProjectKey(initial.id,{arrangementId:`key-${count}`,expectedRevision:before.revision},`key-${count}`)
     assert.equal(changed.key,'+1');assert.equal(changed.seed,before.seed);assert.equal(changed.revision,before.revision+1)
     assert.equal(changed.audioSourceRef.revision,'key-v1');assert.equal(changed.submittedTrackCount,0);assert.equal(changed.keyLockedAt,null)
     assert.deepEqual(changed.parts.map(part=>part.participantId),before.parts.map(part=>part.participantId))

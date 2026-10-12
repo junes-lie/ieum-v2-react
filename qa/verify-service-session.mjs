@@ -17,6 +17,12 @@ const fetchImpl=async(url,options)=>{
   if(url.endsWith('/upload-intents'))return Response.json({uploadIntentId:'intent-a'})
   if(url.endsWith('/tracks'))return Response.json({submissionStatus:'success',trackId:'p:lead',duration:0.512})
   if(url.endsWith('/mix'))return Response.json({project:{id:'p'},mix:null})
+  if(url.endsWith('/key')){
+    assert.equal(options.method,'POST');assert.equal(options.headers['Idempotency-Key'],'key-adjust')
+    assert.deepEqual(JSON.parse(options.body),{arrangementId:'verified-arrangement',expectedRevision:3})
+    if(hold)await hold.promise
+    return Response.json({id:'p',key:'+1',revision:4})
+  }
   throw new Error('Unexpected route')
 }
 const session=createServiceSession({baseUrl:'https://ieum.example/api',fetchImpl})
@@ -29,6 +35,12 @@ invalidUser=false;await session.connect('token-a')
 assert.equal(session.snapshot().userId,a);assert.ok(!JSON.stringify(session.snapshot()).includes('token-a'))
 assert.deepEqual(await session.run(({service})=>service.getProjectMix('p')),{project:{id:'p'},mix:null})
 assert.equal(calls.at(-1).token,'Bearer token-a')
+const keySelection={arrangementId:'verified-arrangement',expectedRevision:3,userId:b,key:'guessed-key',audioSourceRef:{url:'private'}}
+assert.deepEqual(await session.run(({service})=>service.setProjectKey('p',keySelection,'key-adjust')),{id:'p',key:'+1',revision:4})
+assert.equal(calls.at(-1).token,'Bearer token-a')
+const beforeMissingKey=calls.length
+await assert.rejects(session.run(({service})=>service.setProjectKey('p',keySelection,'')),error=>error.code==='IDEMPOTENCY_KEY_REQUIRED')
+assert.equal(calls.length,beforeMissingKey)
 assert.deepEqual(await session.run(({service})=>service.getCatalog()),{items:[],nextCursor:null})
 assert.deepEqual(await session.run(({service})=>service.discoverProjects({songId:'song'})),{items:[],nextCursor:null})
 const scopeA=await session.run(scope=>scope.stateKey('user-state'))
@@ -39,6 +51,7 @@ let escaped
 await session.run(scope=>{escaped=scope.service})
 session.disconnect();await assert.rejects(escaped.getProfile(),e=>e.code==='SESSION_CHANGED')
 await assert.rejects(escaped.getProjectMix('p'),e=>e.code==='SESSION_CHANGED')
+await assert.rejects(escaped.setProjectKey('p',keySelection,'key-adjust'),e=>e.code==='SESSION_CHANGED')
 await assert.rejects(escaped.getCatalog(),e=>e.code==='SESSION_CHANGED')
 await assert.rejects(escaped.discoverProjects(),e=>e.code==='SESSION_CHANGED')
 await session.connect('token-a')
@@ -46,6 +59,12 @@ let release;hold={promise:new Promise(resolve=>{release=resolve})}
 const reading=session.run(scope=>scope.service.getProfile())
 await new Promise(resolve=>setTimeout(resolve,0));session.disconnect();release()
 await assert.rejects(reading,e=>e.code==='SESSION_CHANGED');hold=null
+await session.connect('token-a')
+hold={promise:new Promise(resolve=>{release=resolve})}
+const changingKey=session.run(({service})=>service.setProjectKey('p',keySelection,'key-adjust'))
+await new Promise(resolve=>setTimeout(resolve,0));await session.connect('token-b');release()
+await assert.rejects(changingKey,error=>error.code==='SESSION_CHANGED');hold=null
+assert.equal(session.snapshot().userId,b)
 const blob=new Blob(['original'],{type:'audio/webm'}),before=createHash('sha256').update(Buffer.from(await blob.arrayBuffer())).digest('hex')
 const take={blob,userId:a,duration:0.5,syncOffsetMs:0,projectSeed:'seed'},base={session,projectId:'p',partId:'lead',take,uploadKey:'upload-a',submissionKey:'submit-a'}
 await session.connect('token-b');calls=[]

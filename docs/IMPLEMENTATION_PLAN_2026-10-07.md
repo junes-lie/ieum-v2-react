@@ -1,5 +1,7 @@
 # 현재 실행 기준 — 2026-10-13 변경분 및 잔여 구현계획 개정
 
+2026-10-13 R3 Key client gate: 기존 transport에 setProjectKey를 연결했고 serviceSession의 authenticated scope를 재사용한다. arrangementId/expectedRevision 및 재시도 키만 보내며 개인 ID/임의 key/source 추가 값은 제외한다.2–4 Part client→API→격리 SQL 검증, 미지정 키의 네트워크 차단·탈출 scope/사용자 변경 중 늦은 응답 거부를 확인했다. 최초 mutation receipt는 현재 상태 조회와 구분한다. 실제 App W07/canonical 재조회·운영 서비스/candidate 음악 데이터는 다음 잔여이며 capability는 preparation/false다. 이미 완료된 DB/API gate·예산·정책은 유지하고 사용자 기존3파일의 관련 없는 수정은 stage하지 않는다.
+
 2026-10-13 R3 Key 조정 gate: 사용자 승인261012 화면명세03/W07·Key.Disabled 및 PRD13의 Owner/첫 녹음 전 조정·현재 Key Fit 기준에 맞춰 기존 Project API/SQL에 key 조정을 연결했다. 승인 catalog arrangement의 같은 Song·같은 실제2–4 Part ID/수만 허용하고 실제 Source/요구 음역을 함께 갱신한다. 현재 배정자의 측정 Fit을 기존 함수로 재검사하며 배정·Seed·Profile·Track·Mix를 재생성하지 않는다. revision/Project 잠금·최초 응답 보존으로 오래된 변경·녹음 시작 이후 변경·중복 변경을 차단한다. 격리 DB 및 주입 HTTP/build 통과는 실제 원격/동시 연결/앱 W07 인수를 대신하지 않는다. 실제 서버 접근, transport/App Key 선택 연결·실제 편곡 데이터는 미완료다. 기존 서비스 없음·Google 우선 결정은 확인했고 접근 수단 질문을 반복하지 않는다. 기존 단계/예산/외부 대기·미정 정책을 유지하고 이번 실효 공수는 미측정이다.
 
 2026-10-13 R3 결과 저장 gate: 기존 signed uploader와 실제 완료 확정 helper에 persistProjectMix를 연결했다. job별 출력 UUID/hash/byteLength intent·private no-upsert upload·실제 파일 재검증·2–4 Part 완료/재시도와 업로드/DB/응답 유실·다른 결과 거부·원본 보존을 격리 검증했다. 기존 Mix 엔진을 병렬 DSP로 대체하지 않았다. 현재 서버 Web Audio runtime은 없고 별도 native runtime 설치는 자동 승인 검토가 기존 설치 금지로 거부했으며 우회하지 않는다. 관련 시험 설치는 사용자 응답 대기이고 renderer/운영 worker/실제 서비스/App 연결은 잔여다. 기존 단계·예산·외부 의존성·미정 정책과 실패 이력을 유지한다.

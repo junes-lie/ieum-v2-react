@@ -2,6 +2,8 @@
 
 ## 2026-10-13 Owner의 녹음 전 Key 조정 준비
 
+client setProjectKey(projectId,{arrangementId,expectedRevision},requestKey)는 기존 transport와 serviceSession을 재사용한다. 본인 bearer/재시도 키만 기존 route로 전달하고 추가 user/key/source 입력은 보내지 않는다. 세션에서 탈출한 함수나 응답 대기 중 사용자 변경은 SESSION_CHANGED로 거부하며 local data에 쓰지 않는다. 최초 성공 receipt와 현재 GET 상태를 구분하고 자동 재시도 키 변경/Conflict 덮어쓰기를 하지 않는다.2–4 Part client→API→격리 SQL 및 세션 QA를 통과했으나 실제 App W07 바인딩은 아직 없다.
+
 project_participation 이후 project_key_adjustment migration을 적용한다. 실제 원격에는 적용하지 않았다. POST /api/projects/:id/key는 본인 Auth, Idempotency-Key 및 {arrangementId,expectedRevision}만 받는다. 사용자 UUID·직접 Key/추정 음역·임의 source는 받지 않는다. SQL은 Owner→Project 잠금→동일 요청 최초 응답→첫 녹음/실제 제출/현재 revision→trusted arrangement를 검사한다. 같은 Song/실제2–4 Part ID·수만 변경하며 배정자 Fit을 현재 저장 측정값으로 다시 확인한다. Fit 실패에는 전체 transaction을 보존하고 자동 Part 재배정/제거를 하지 않는다.
 
 성공은 실제 key/source/Part 요구 음역과 revision/activity만 갱신하며 Seed·배정·Profile·제출·Mix는 유지한다. 같은 arrangement 선택은 revision을 늘리지 않는다. 첫 녹음과 동일 Project 잠금을 사용하고 시작 후 새 요청은 거부한다. 이전 성공 요청의 응답 유실 재시도는 첫 receipt만 반환하며 녹음 이후 실제 Project를 되돌리지 않는다. 현재 상태는 기존 GET으로 읽는다. 오류는 whitelist code만 제공하고 upstream 진단은 제외한다. 기존 lifecycle rewrite를 사용하며 별도 앱·화면·시연 편곡은 추가하지 않았다.
