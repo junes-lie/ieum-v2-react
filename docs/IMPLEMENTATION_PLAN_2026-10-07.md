@@ -1,3 +1,10 @@
+### R6 휴지 토큰만의 acoustic stage 대조 — 2026-10-12
+
+현재 free8.84GiB 확인 후 기존 live RAM guard(시작8GiB/여유4GiB 연속3회 해당worker 중단) 아래 한 <X>/note0/3초 입력의 기본50step diffusion과 linear 진단을 각각1회 실행했다. 같은 pinned checkpoint/vocoder/seed65359/input SHA146ec12fb0df5b88548ddd6bd94738f82f86c692b7eb33a7fe3b651ed713e065이고 노래 후보 seed 반복이 아니다. 실제 PCM16 diffusion SHA6c07b9ec4359db9ca05763f4e82e4eda76c4108146efdd64b844c3fea1f241d5·RMS.01883837/peak.08554077, linear SHA09d7264fb35c1ca5e463aa4da335b8edd277f20be6cb0a6cc0e7be579f2ee8b4·RMS.00008995를 관측했다. 양쪽 길이2.995375초(요청3초), exit0/resourceStopped=false. wall7.2917/6.1041초, free최소7.568/7.792GiB·owned working최대1.282/1.173GiB. 실행/모니터/원본은 repository 밖 기존 runtime에 보존한다.
+
+기존 upper diffusion의 앞/뒤 rest RMS.035009/.034862와 linear 기존 candidate의.010728/.001900도 원본 SHA 검증 후 비교했다. 단독 rest에서도 diffusion 잔여 에너지가 크다는 단계 차이 근거이며 vocoder 단독 문제/휴지 음질/linear 대체 승인으로 단정하지 않는다. 음원 gate/threshold 변경·silence masking/crop/새 앱 음원 등록 없음. 다음 R6 선행은 diffusion의 실제 휴지 frame 입력·denoising을 확인하여 원래 가사/음표/휴지 조건을 유지하는 제어 가능성을 검증한다. 음악·화음·권리/청취와2–4Part/catalog는 계속 미완료다.
+
+첫 비교 helper는 legacy report에 inputPurpose가 없어 KeyError였고 명시한 기존 scoreCalibration purpose로 읽는 경로만 보완해 재실행했다. 실제 가사 metadata 오류는 없었다: 전체 저장 경로가 실제 음절로 갱신함을 확인하고 불필요한 임시 소스 변경을 원상 복구했다. 이전76f2788 Profile은 자동배포 success/Production 편집 이력 및 기존 저장 실패/retry/reload QA 통과, main 일치/bundle18500D0C0A3FEB68E35D27E60D0BB871BB105E26DBA2E075582D70305A5CBAE4 exact로 마감했다. 이번 변경은 연구 기록/기존 계획 다음 작업 갱신만이며 앱/디자인/사용자 서버3파일은 유지한다.
 ### R2 Profile 편집 목적/복귀 이력 — 2026-10-12
 
 native 기존 Profile의 음역 재측정→My→Sample 재등록→Back에서 이전 음역 화면에 Sample 모드가 남는 결함을 재현했다. 첫 QA는 잘못된 selector로 timeout이었고 실제 .sample-select-stage로 교정한 뒤 assertion 실패를 확인했다. history effect만 보완한 첫 수정도 실패가 남아, go의 떠나는 entry 저장에 voiceEditMode/voiceReturnScreen을 함께 포함했다. 유효한 null/range/sample 및 기존 my/detail 복귀만 popstate 복원한다. 미저장 Take/측정 결과의 영구 복원을 새로 만들지 않는다.
