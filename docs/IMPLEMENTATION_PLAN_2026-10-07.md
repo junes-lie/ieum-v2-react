@@ -44,6 +44,10 @@ R1/R2 앱 마감을 음악 연구 종료까지 미루지 않는다. R4는 실제
 
 수정한 기능의 정상·실패·복원 및 관련 build/QA를 확인한다. 입력/버전/계약이 바뀌지 않은 검증은 재사용하고 변경 없는 전체 모델·전수 QA를 반복하지 않는다. 의미 있는 묶음마다 diff 검토→필요 파일만 stage→commit→origin/main push→Git Integration commit/성공 확인→Production QA로 마감한다. 사용자 실기기 확인 항목은 배포 후 묶어 전달한다.
 
+### R1 Draft 나가기 저장의 경쟁 상태 — 2026-10-12
+
+Review 저장 완료가 이미 떠난 Recorder에서 현재 화면을 Workspace로 되돌리는 actual 실패를 재현했다. 기존 앱에 나가기 소유권·중복 저장/제출 차단·실패 후 Review 복원을 최소 연결했다. native 지연/실패·복귀 원본 SHA/제출수 불변·확인 후 종료 저장 실패/재시도 및 기존 제출 URL/retake/atomic cleanup·build 통과. 관련 묶음을 main Git Integration→Production 동일 QA로 마감한다. 물리 입력/청취와 전체 R1 완료로 확대하지 않으며 R1/R2 독립 결함 마감 우선·형상/음악/실제 서비스 gate 유지.
+
 ### R6 실제 원본 APG/Euler 수학 대조 — 2026-10-12
 
 원본 ca1e85fe의 APG/Momentum/project 선언·Euler AST와 설치된 함수/scheduler를 모델 없이 CPU FP32 controlled tensor로 비교했다.32/50/64steps×shift1/2/3의9조건에서 schedule·momentum exact/APG와 매 step latent 최대차이0이다. 전체 actual DiT·VAE/decoder/곡·음절/화음 성공이 아니다. partial CFG interval 기준과 native DCW 기본 후처리 차이는 별도 관측하며 현재 기본0–1 CFG 후보 실패 원인으로 단정하지 않는다. 다음은 actual DiT/조건 mask·native 후처리 적용 범위의 근거 확보이며 RAM 기준과 음악 gate를 유지한다. 같은 후보 반복 생성 없음. source/hash/결과·한계는 상태 문서에 기록하고 기존 private runtime에 보존한다.

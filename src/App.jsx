@@ -1049,6 +1049,7 @@ function Recorder({ go, submit, onRecordingStart, partId, projectTracks, layers,
   const startingRef=useRef(false)
   const stoppingRef=useRef(false)
   const discardingRef=useRef(false)
+  const leavingRef=useRef(false)
   const recorderActiveRef=useRef(true)
   const [recordingBusy,setRecordingBusy]=useState(false)
   const [restoreState,setRestoreState]=useState('loading')
@@ -1129,14 +1130,29 @@ function Recorder({ go, submit, onRecordingStart, partId, projectTracks, layers,
     } finally {discardingRef.current=false;if(recorderActiveRef.current)setRecordingBusy(false)}
   }
   const leave = async () => {
-    if(recordingBusy||startingRef.current||stoppingRef.current||discardingRef.current)return
+    if(recordingBusy||startingRef.current||stoppingRef.current||discardingRef.current||leavingRef.current||submittingRef.current)return
     if (status==='recording'||status==='paused') { setConfirmAction('leave'); return }
-    if(draft){try{await saveTrack(draft)}catch{setError('임시 저장하지 못했어요. 원본을 유지하고 다시 시도해 주세요.');return}}
-    go('workspace')
+    leavingRef.current=true;setRecordingBusy(true)
+    try {
+      if(draft)await saveTrack(draft)
+      if(recorderActiveRef.current)go('workspace')
+    } catch {
+      if(recorderActiveRef.current)setError('임시 저장하지 못했어요. 원본을 유지하고 다시 시도해 주세요.')
+    } finally {leavingRef.current=false;if(recorderActiveRef.current)setRecordingBusy(false)}
   }
-  const confirmLeave = async () => { if(status==='recording'||status==='paused') { if(!await stop()) {setConfirmAction(null);return} } else if(draft) {try{await saveTrack(draft)}catch{setError('저장하지 못했어요. 원본을 유지합니다.');return}} setConfirmAction(null); go('workspace') }
+  const confirmLeave = async () => {
+    if(leavingRef.current||stoppingRef.current||discardingRef.current||submittingRef.current)return
+    leavingRef.current=true;setRecordingBusy(true)
+    try {
+      if(status==='recording'||status==='paused') { if(!await stop()) {if(recorderActiveRef.current)setConfirmAction(null);return} }
+      else if(draft)await saveTrack(draft)
+      if(recorderActiveRef.current){setConfirmAction(null);go('workspace')}
+    } catch {
+      if(recorderActiveRef.current){setConfirmAction(null);setError('저장하지 못했어요. 원본을 유지합니다.')}
+    } finally {leavingRef.current=false;if(recorderActiveRef.current)setRecordingBusy(false)}
+  }
   const send = async () => {
-    if (submittingRef.current) return
+    if (submittingRef.current||leavingRef.current) return
     submittingRef.current=true;setSubmitting(true); setError('')
     try {
       await submit({...draft,noiseFloor},currentPart)

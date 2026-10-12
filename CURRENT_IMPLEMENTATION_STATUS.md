@@ -1,3 +1,11 @@
+## 2026-10-12 R1 Draft 나가기 저장 경쟁 마감
+
+기존 승인 계획의 R1/R2 우선을 적용했다. native IndexedDB completion 지연 후 My로 이동했을 때 이전 Recorder의 save callback이 Workspace로 되돌리는 실제 실패(workspace != my)를 재현했다. 현재 Recorder에서만 나가기 완료를 처리하고, 동기 ref로 중복 저장 및 저장 중 제출을 막는다. 제출 중 Back도 무시하며 저장 실패는 Review 원본을 유지하고 버튼을 다시 활성화한다. 기존 확인 후 종료·직접 제출 계약/화면/디자인은 유지한다.
+
+신규 qa/verify-draft-leave-race.mjs: 저장 거부 후 Review 유지·중복 Back 1회 저장·저장 중 제출 차단·오래된 완료의 현재 화면 보존·복귀 Draft SHA exact/제출수2 불변·정상 나가기·합성 녹음 종료 후 저장 실패/재시도 통과. 기존 Review URL/실패 제출/성공 제출 및 reload hash·retake3상태/중복/지연 삭제 QA, atomic submission·draft cleanup 및39module build 통과. pageerror0. 물리 마이크·청취·전체 R1 완료 증거가 아니다. bundle511.16KB의 기존500KB 경고는 별도 유지한다.
+
+Notion/figma 이름의 노출 도구0개를 확인했다. 전용 원본을 읽었다고 주장하지 않으며 사용자 확정 범위의 기존 기술 결함만 수정했다. 사용자 서버3파일은 그대로 제외한다. 관련4파일만 diff 검토→commit/main push→Git Integration→Production 동일 QA로 마감하고 R2/R5/R6/실제 서비스/종합 인수의 미완료 gate를 유지한다.
+
 ## 2026-10-12 R6 고정 원본 APG/Euler 계산 대조
 
 직전604ee21과 기존 사용자 서버3파일만 남은 Git 상태를 확인했다. 모델·새 음원 없이 원본 ca1e85fe9430179831e6bc6be790c332190a3866의 APG/Momentum/project 선언 및 Euler branch AST를 설치된 Diffusers APG/FlowMatchEulerDiscreteScheduler와 비교했다. Base apg_guidance.py는 common 경로의 re-export이므로 공식 고정 common/apg_guidance.py 작은 파일만 기존 private source 폴더에 보존했다. source SHA89ecdc4686e174225d6e6d304939d75892297dc3c19fbb11e04345dc3d4685db/native SHAf3edaa0f86ce174c0c6703a8d80442673783ba96515a0fa84126a9b605b0919d을 검사한다. 원본 전체 module/main 또는 모델은 실행하지 않는다.
