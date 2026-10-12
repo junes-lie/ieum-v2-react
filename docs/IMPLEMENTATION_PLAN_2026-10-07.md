@@ -1,3 +1,10 @@
+### R6 reference sampler fresh-process 재현성 — 2026-10-12
+
+현재 free8.80GiB 확인 후 새 sampler의 같은 실제 base 입력/seed/고정 runtime을 새로운 프로세스에서1회 실행했다. 모델/code/source hashes·score/spec·generator/sampler hash·duration/peak/RMS와 실제 PCM SHA2efa01ddbb8b17dc63b037601a6cbd6a27a5bc9b4b5e20ba8f445b6e1118a0ca가 이전 결과와 exact였다. 이 입력의 current GPU/runtime fresh-process 재현만 증명하며 다른 기기·모든 입력·개인 Identity·음악 품질 보장으로 확대하지 않는다. 후보 품질을 찾는 seed/guidance 반복이나 native sampler 기본 변경 없음. guard wall7.295초/exit0/resourceStopped=false, 원본/별도재현/검증hash/모니터를 기존 runtime에 보존한다.
+
+기존 실제 backing CQT/Basic Pitch 원문 결과를 재확인했으나 첫 두 음절의 낮은 major/minor margin과 note candidate overlap은 sourceScore/화음 승인 근거가 아니다. native/reference 음정 개선과 화음 입력의 정확성을 구분하며 불확실 score를 실제 Part로 등록하지 않는다. 다음 R6은 실제 원곡 음표/화성 근거와 음절/휴지 제어의 불확실성 해결이고, 독립 앱 기능 진행을 막는 전체 blocker로 사용하지 않는다. 전체 음악·2–4Part/권리/청취·서비스/Identity·실기기 gate는 유지한다.
+
+직전6dd91aa는 자동배포 success/main일치/Production18500D0C0A3FEB68E35D27E60D0BB871BB105E26DBA2E075582D70305A5CBAE4 exact로 마감했다. 이번 실제 재현 증거는 기존 계획/상태만 수정해 main 자동배포→Production 앱 보존을 확인한다. 사용자 서버3파일/원본/디자인은 변경하지 않는다.
 ### R6 지속음 F0 지지 프레임과 음소 경계 분리 — 2026-10-12
 
 기존 고정 pYIN 측정의 fullInterval에 첫/마지막 유효 frame timestamp·최장 연속 유효 frame 수·hop/window를 추가했다. 기존.75/80ms 조건·median/min/max/frames/RMS와 PCM·gate는 변경하지 않는다. 같은 새 reference base/upper PCM의 별도 측정 경로에서 모든 기존 관측 exact를 확인하고 empty null/disjoint run을 실제 함수에 대조했다. 측정2회 wall7.310/7.240초·exit0/resourceStopped=false이며 신규 모델 생성 없음.
