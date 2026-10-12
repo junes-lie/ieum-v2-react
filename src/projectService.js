@@ -98,6 +98,7 @@ export function createRemoteProjectService({ baseUrl, getAccessToken, fetchImpl 
     createProject: (project, key) => request('projects', { method: 'POST', data: project, idempotencyKey: requireKey(key) }),
     joinPart: (projectId, partId, key) => request(`projects/${id(projectId)}/parts/${id(partId)}/join`, { method: 'POST', data: {}, idempotencyKey: requireKey(key) }),
     loadProjectTracks: projectId => request(`projects/${id(projectId)}/tracks`),
+    analyzeSubmittedTrack: (projectId, partId) => request(`projects/${id(projectId)}/parts/${id(partId)}/analysis`, { method: 'POST', data: {} }),
     getProjectMix: projectId => request(`projects/${id(projectId)}/mix`),
     prepareTrackUpload: (projectId, partId, file, key) => {
       if (!file || !Number.isSafeInteger(file.size) || file.size <= 0 || typeof file.contentType !== 'string' || !file.contentType.startsWith('audio/') || !/^[a-f0-9]{64}$/i.test(file.sha256 || '')) throw new ServiceError('업로드할 원본 파일 정보를 확인해 주세요.', { code: 'INVALID_UPLOAD_FILE' })

@@ -1,5 +1,13 @@
 # 단일 앱 서비스 연결 계약
 
+## 2026-10-13 제출 Track 실제 음향 분석 준비
+
+POST /api/projects/:projectId/parts/:partId/analysis는 기존 Auth 이후 JSON {}만 받는다. 본인 실제 submitted Track→검증된 immutable upload/decoded receipt→private Storage bytes/hash 재검사→기존 v5 특징 분석→service-only 확정 순서다. migration submitted_track_analysis는 verified_audio_receipts 이후 적용하며 아직 원격에 적용하지 않았다. 별도 ieum-track-analysis-v1 결과에는 실제 source hash/size/receipt/features hash/analysis version과 project-track assessment를 보존한다. 임의 클라이언트 features/음역·대표 Sample을 대체하지 않고 원본·Part·제출/Project revision·Mix job·Identity를 변경하지 않는다.
+
+IEUM_TRACK_ANALYSIS_MAX_PCM_BYTES는 서버의 명시적 Float32 PCM 예산이다. 부족하면 Storage 다운로드/할당 전에 거부하고 미지원 BPM·비브라토·호흡량 등을 실제 수치로 채우지 않는다. 저장 결과는 새 decoder로 재생성하지 않고 기존 원본 hash를 재검사한다. 동일 입력 재시도는 동일 결과이며 다른 결과/용도는 conflict다. 향후 generator/재분석 버전 정책은 확정하지 않았다. 기존 session.run의 service.analyzeSubmittedTrack transport는 logout 후 사용 불가하며 API 응답은 private/no-store다.
+
+qa:submitted-track-analysis의 짧은 합성 WAV/실제 기존 decoder→기존 분석기→격리 SQL/API·2–4 Part 검증은 실제 Supabase/Google/운영 저장·음악·물리 입력·생성 그래픽 성공 증거가 아니다. 원격/App 바인딩 및 R5 생성 gate는 잔여다.
+
 ## 2026-10-13 기존 인증의 만료·갱신 연결 준비
 
 serviceSession.connect(token,{expiresAt})는 명시적 Unix millisecond deadline을 받고, Google 교환/갱신의 expires_in으로 같은 deadline을 전달한다. snapshot/run/응답 적용에서 만료를 확인한다. 날짜 없는 기존 준비 call의 호환성은 유지하지만 실제 Google 연결은 항상 deadline을 공급한다. renew는 server-verified 같은 UUID만 보존하고 유효기간 내 요청 epoch를 바꾸지 않는다. scope의 다음 메서드는 현재 token transport를 참조한다. 만료 후 보존되는 context는 메모리 UUID뿐이며 토큰/접근 권한이 아니다. 새 token을 server에서 재검증한 뒤 새 scope만 열고 명시적 logout에서는 해당 context도 제거한다. 늦은 경쟁 갱신/다른 사용자·logout 이후 응답은 차단한다.

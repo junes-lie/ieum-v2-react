@@ -1,4 +1,10 @@
+## 2026-10-13 R3/R5 제출 Track 실제 분석 선행
+
+실제 제출 Track 전용 POST analysis를 기존 Project API/session transport에 연결했다. 대표 Sample용 검증 PCM/v5 분석기를 재사용하지만 project-track 목적·별도 manifest/version·원본 hash/decoded receipt·immutable 저장은 분리한다. 본인 제출 성공 원본만 분석하고 클라이언트 특징/Review/Draft를 분석 근거로 받지 않는다. 실패/미지원/예산 초과는 원본·제출/Mix를 유지하며 그래픽을 생성/확정하지 않는다. 실제 짧은 WAV 해독→HTTP→격리 SQL 및2/3/4 Part·본인/타인·동일 입력 재현·실패/재시도·저장 원본 재검사·RAM 한도·기존 Sample 회귀가 통과했다. 실제 운영 migration/Google/Storage·App 실행/청취·개인 형상/Track 레이어/Record 생성은 미완료다.
+
 ## 2026-10-13 R1/R2 상세 Key 잠금 안내
+
+마감:58c807875e17a220f931248dbb08ecc073bd4b7b main push/main-origin0/0, 사용자 기존3파일 보존. 해당 full SHA Vercel success/Production deployment7024119926 SHA 일치 확인. https://vercel.com/junes-lie/ieum-v2-react/46LXsPR4hTL8T8JGnJtR9Lpj3v43. Production page/JS200·index-DROqEnLI.js local exact/SHA256 e839ce98843d32f035149833b7a920e0c3744baf0273685732aad05c504343bd, capabilities200/preparation·서비스 기능false 유지. build 및 관련 Node 렌더 QA 통과·기존500KB 경고 유지. 실제 기기/원격 Key·로그인은 미완료이며 이 문단은 commit 후 로컬 증거 기록이다.
 
 기존 Detail이 제출수만 보고 첫 녹음 후에도 Key 조정 가능으로 표시하던 누락을 수정했다. App의 저장된 mainKeyLocked와 created Project keyLocked를 사용하고 확정 Track도 잠금 근거로 유지한다. 첫 녹음 전/후 안내만 바꾸며 배정·음역·원본·제출/Mix·디자인은 변경하지 않는다. 기존 single-app Node 렌더 QA에서 미제출 잠금과 main/created·확정 Track 경로 통과. 실제 기기/시각·원격 Key 조정·Auth 연결은 미완료다.
 

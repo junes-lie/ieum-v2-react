@@ -3,6 +3,7 @@ import { readAuthConfiguration, verifyRequestUser } from './auth.js'
 import { createSupabaseAudioStorage } from './audioStorage.js'
 import { verifySubmissionAudio } from './submissionAudio.js'
 import { isAbsolute } from 'node:path'
+import { submittedTrackAnalysis } from './submittedTrackAnalysis.js'
 
 const fail = code => new ServiceError('프로젝트 요청을 완료하지 못했어요. 녹음 원본은 유지됩니다.',{ code })
 const text = value => typeof value==='string' && Boolean(value.trim())
@@ -31,9 +32,9 @@ function routeOf(request) {
     if(request.method!=='GET')throw fail('METHOD_NOT_ALLOWED')
     return {projectId:segments[0],operation:segments[1]}
   }
-  if (segments.length===4 && segments[1]==='parts' && ['recording-start','tracks','join','upload-intents'].includes(segments[3])) {
+  if (segments.length===4 && segments[1]==='parts' && ['recording-start','tracks','join','upload-intents','analysis'].includes(segments[3])) {
     if (request.method!=='POST') throw fail('METHOD_NOT_ALLOWED')
-    return { projectId:segments[0],partId:segments[2],operation:segments[3]==='tracks'?'submit':segments[3]==='join'?'join':segments[3]==='upload-intents'?'upload':'start' }
+    return { projectId:segments[0],partId:segments[2],operation:segments[3]==='analysis'?'analysis':segments[3]==='tracks'?'submit':segments[3]==='join'?'join':segments[3]==='upload-intents'?'upload':'start' }
   }
   if (segments.length===1) throw fail('METHOD_NOT_ALLOWED')
   throw fail('PROJECT_ROUTE_NOT_FOUND')
@@ -91,6 +92,10 @@ export async function projectLifecycleRequest(request,{ env=process.env,fetchImp
   let rpc=route.operation==='tracks'?'ieum_list_project_tracks':route.operation==='mix'?'ieum_get_project_mix':'ieum_get_project', body=route.operation==='create'?{}:{ p_project_id:route.projectId }, requestedOwnerPart, storage
   if (!['get','tracks','mix'].includes(route.operation)) {
     const value=await readMetadata(request)
+    if(route.operation==='analysis'){
+      if(Object.keys(value).length)throw fail('INVALID_PROJECT_REQUEST')
+      return submittedTrackAnalysis({request,user,route,configuration,env,fetchImpl})
+    }
     if (!['create','key'].includes(route.operation)) body.p_part_id=route.partId
     if (route.operation==='upload') {
       const key=request.headers.get('idempotency-key')
@@ -246,6 +251,9 @@ export function projectLifecycleErrorResponse(error) {
     PROJECT_ROUTE_NOT_FOUND:404,PROJECT_NOT_FOUND:404,ARRANGEMENT_NOT_FOUND:404,PROFILE_REQUIRED:403,PART_FIT_FAILED:403,PART_RANGE_UNAVAILABLE:409,
     PART_NOT_ASSIGNED:403,PROJECT_OWNER_REQUIRED:403,PROJECT_AUDIO_LOCKED:409,PROJECT_REVISION_CONFLICT:409,ARRANGEMENT_PARTS_MISMATCH:409,
     PROJECT_CONFLICT:409,METHOD_NOT_ALLOWED:405,
+    INVALID_TRACK_ANALYSIS:409,SUBMITTED_TRACK_NOT_FOUND:404,TRACK_ANALYSIS_FORBIDDEN:403,TRACK_AUDIO_NOT_VERIFIED:409,
+    TRACK_ANALYSIS_CONFLICT:409,TRACK_ANALYSIS_SOURCE_MISMATCH:409,TRACK_ANALYSIS_NOT_CONFIGURED:503,
+    TRACK_ANALYSIS_BUDGET_EXCEEDED:409,TRACK_ANALYSIS_INSUFFICIENT_DATA:409,TRACK_ANALYSIS_FRAME_MISMATCH:409,
     PROJECT_UNAVAILABLE:503,INVALID_PROJECT_RESPONSE:503,INVALID_UPLOAD_FILE:400,INVALID_UPLOAD_OBJECT:503,
     STORAGE_UNAVAILABLE:503,PRIVATE_STORAGE_REQUIRED:503,INVALID_STORAGE_RESPONSE:503,UPLOAD_OBJECT_MISSING:409,UPLOAD_OBJECT_MISMATCH:409,
     INVALID_AUDIO_RECEIPT:409,INVALID_AUDIO_RECEIPT_RESPONSE:503,INVALID_AUDIO_VERIFICATION:400,AUDIO_DECODER_NOT_CONFIGURED:503,
