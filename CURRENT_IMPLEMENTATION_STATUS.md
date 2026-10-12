@@ -1,4 +1,16 @@
+## 2026-10-13 승인 계획 실행 — 변경분·잔여 구현계획 및 R1/R2 대조
+
+사용자가 승인한 변경을 기존 docs/IMPLEMENTATION_PLAN_2026-10-07.md의 상위 실행 기준·완료 목록·잔여 분류·예산/일정에 직접 반영했다. 별도 계획/앱을 만들지 않고 단계0와 Mix retry/Profile/VP05A의 완료 증거를 재사용한다. R3–R7 예산76–128h는 외부 대기/음악 경로/디자인/R1R2 추가 결함을 포함한 확정 납기가 아니다. 10/30 조건부 목표,10/14 의존성 판정,AI 기존4h 상한·예산0원을 유지한다.
+
+R1/R2 대조: 사용자 제공 최신261012 PRD·화면명세·유저플로우,실제 App의 Profile 저장·Part Fit/참여·초대·제출/Mix 상태,matching과 관련 유지 QA/완료 기록을 확인했다. 확인 범위에서 신규 핵심 코드 결함을 확정하지 못했으며 앱 전체 무결점 판정은 아니다. 실제 후보 Sample/음색/선호와 곡-Key 음역은 데이터/외부 연결,동일 Identity는R5,마이크·청취는실기기로 분류했다. 기존 retry와 최신 유저플로우의 별도 실패 UX 제외 문구는 이번 승인 계획의 기존 retry 재사용을 적용하고 UX를 확대/삭제하지 않는다.
+
+배포 기록 재확인:1dd4f43의 GitHub API deployment0개·status0개/pending. 이전 Production JS/CSS exact와 관련 QA 증거는 유지하되 배포 메타데이터/READY를 확인했다고 쓰지 않는다. 이번 세션 Notion/figma-desktop/Vercel 전용 도구 노출0개,Notion 온라인·Figma 원본 조회 없음. 로컬에는 .env.example만 발견했고 현재 shell의 IEUM_SUPABASE_URL/PUBLISHABLE_KEY/SECRET_KEY 및 VERCEL_TOKEN 존재 여부는false다. 이는 실제 프로젝트 없음이나 원격 환경 미설정을 증명하지 않는다. R3 실제 연결 수단은 이번 점검으로 확보되지 않았다. 비밀키 값은 읽거나 기록하지 않았다.
+
+RAM 조회는 샌드박스에서 '클라이언트에서 CIM 리소스에 대한 액세스를 사용할 수 없습니다.'로 실패했다. 허용된 호스트 읽기로01:28:16 KST total15.95/free2.60GiB를 확인했고 시작8GiB 기준 미달로 대형 AI를 실행하지 않았다. 샌드박스 실패에서 출력된0값은 실제 메모리로 사용하지 않는다. 자원/서버 설정·사용자 프로세스·기존 서버3파일 변경 없음. 문서 변경만 검토하므로 기존 build/앱 QA를 반복하지 않고 문서 diff·구조·수치와 실제 근거를 확인한다. 공수는 실측되지 않아 소급 차감하지 않는다.
+
 ## 2026-10-13 R2 VP05A·원형 보컬 성향 선택
+
+배포 후 검증: commit 1dd4f439102fca0c6e8404dc3b48daf2c3c7d657을 origin/main에 push했고 main/origin ahead/behind는0/0이다. Production HTTP200, index-Cy9rymZA.js SHA256 43474683303B8F9372D329117E4406BC0FE745FBE273E63F44E15DA3570619CA와 index-B6SzxD8P.css SHA256 87F3681B1AB8FAEF43718AFAAE2CC2CAE501875D64816F1359936D6E7AFD4F2E가 검증된 로컬 build와 정확히 일치한다. 직접 deploy 없이 push 이후 Production 반영을 확인했다. 다만 GitHub API의 해당 SHA deployment0개/check-run0개/status0개로 Vercel 배포 ID·commit 메타데이터/READY는 독립 확인하지 못했다. Production의 verify-circular-voice-preferences와 verify-profile-data-confidence는 통과했다. verify-vocal-profile-setup 첫 실행은 음역 샘플6개 수집 대기에서30초 timeout, 앱/QA 수정 없이 해당 검사만 한 번 재실행해 통과했다. 합성 마이크이며 물리 청취 완료를 주장하지 않는다. QA 브라우저와 자체 로컬 QA 서버는 종료했다. 이 배포 후 결과는 로컬 문서 기록이며 위 commit에 포함된 기록은 아니다.
 
 사용자가 제공한 노션/PRD·화면명세·유저플로우·IA·PROJECT의 261012.md에서 해당 변경분을 확인했다. 이는 사용자 제공 export이며 Notion 온라인을 읽었다고 주장하지 않는다. 기존 VP 번호/메인10화면과 React 앱을 유지하고 초기 VP05 음역·샘플 atomic 저장 성공 → VP05A → 성향 저장 성공 또는 건너뛰기 → VP06 → 기존 returnContext로 연결한다. 재측정·샘플 교체에 VP05A를 강제하지 않는다. VP05A Back은 저장 Sample과 선택 초안을 유지하며 VP05로 돌아가고 같은 Take를 다시 저장하지 않고 재사용한다.
 
