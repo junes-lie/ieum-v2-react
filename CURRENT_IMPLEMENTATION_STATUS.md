@@ -1,3 +1,8 @@
+### R2 Finder 방문별 후보 이력 복원 — 2026-10-12
+
+실제 native QA에서 첫 방문 Joon→다른 화면→새 Finder 방문 Luna 뒤 브라우저 Back으로 첫 방문에 돌아오면 Luna가 남는 결함을 재현했다. 기존 history entry에 selectedMatchVocalId를 보존하고 유효한 후보 또는 명시 null만 복원한다. 같은 screen 안의 후보 선택/목록 복귀도 현재 entry를 갱신한다. 서로 다른 방문의 Back/Forward 후보 exact와 후보 없는 목록 복원을 검증했다. 기존 Part/Project·정렬/필터·초대/제출수·저장 원본/시작화면 정책은 변경하지 않는다.
+
+build38modules 및 native Finder 재현→수정 성공/Collection 다른 보컬 Back·Forward 회귀 통과. 관련 묶음만 main 자동배포→Production 같은 이력 QA로 마감하며 전체 R2 인수/실제 서비스·측정 추천·실기기 완료로 확대하지 않는다. 사용자 서버3파일은 제외한다. 직전 fd9f0fe Mix 입력 보존은 Git Integration success/Production 2–4/main 저장·재접속 및 저장 실패 원본 보존 QA 통과, bundle SHA256 7A5797ABA84379E96031A2BB6E620CCDAB84BA34DF99D23CEB4DA5ADB57707D5 exact로 마감했다.
 ### R5 선행 — 실제 Project Mix 입력 계보 — 2026-10-12
 
 기존 Auto Mix 저장 record에 private inputManifest를 연결했다. Project ID/기존 Seed/정해진 Part 순서·실제 원본 Blob SHA256/크기·source revision·정렬 값·분석 version·유효한 Layer 파라미터 snapshot과 전체 입력 digest를 보존한다. Mix에 전달하는 Track도 같은 snapshot을 사용한다. 그래픽 미생성/유효하지 않은 그래픽은 별도 capture 상태로 기록하며 오디오 제출/Mix를 그래픽 성공으로 판단하지 않는다. 이것은 개인 Identity나 확정 Record artifact 생성 완료가 아니며 기존 backing 참조는 별도 audioSourceRef로 유지한다. legacy 원본의 revision은 임의 생성하지 않는다.
