@@ -11,6 +11,7 @@ p.add_argument('--output-dir',type=Path)
 p.add_argument('--start-seconds',type=float,default=0)
 p.add_argument('--end-seconds',type=float)
 p.add_argument('--lyric-line',type=int,help='Zero-based nonempty lyric line from the verified generation report; diagnostic only')
+p.add_argument('--asr-device',choices=['cpu','cuda'],default='cpu',help='Explicit FP32 ASR execution device; no automatic fallback')
 args=p.parse_args()
 name='vocal-validation-report' if args.vocals else 'song-validation-report'
 if args.chunk_seconds:name+=f'-chunks-{args.chunk_seconds}'
@@ -42,7 +43,27 @@ mono=resample_poly(audio.mean(axis=1),16000//g,sr//g)
 torch.set_num_threads(2)
 print('Loading actual Korean ASR validation model',flush=True)
 processor=WhisperProcessor.from_pretrained(args.asr_dir,local_files_only=True)
-model=WhisperForConditionalGeneration.from_pretrained(args.asr_dir,local_files_only=True,attn_implementation='eager',dtype=torch.float32,low_cpu_mem_usage=True)
+asr_options={}
+asr_weight_hashes=None
+if args.asr_device=='cuda':
+ from music_cache_bytes import tensor_header
+ assert torch.cuda.is_available(),'CUDA ASR unavailable; preserve CPU results'
+ files=sorted(args.asr_dir.glob('model*.safetensors'))
+ assert files,'Inspect local actual weights before CUDA ASR'
+ parameter_bytes=0;asr_weight_hashes={}
+ for weight_file in files:
+  header,_=tensor_header(weight_file)
+  for name,entry in header.items():
+   if name=='__metadata__':continue
+   assert entry['dtype'] in ('F32','F16','BF16'),'Unvalidated ASR weight dtype'
+   parameter_bytes+=math.prod(entry['shape'])*4
+  with weight_file.open('rb') as stream:asr_weight_hashes[weight_file.name]=hashlib.file_digest(stream,'sha256').hexdigest()
+ torch.cuda.empty_cache()
+ free,_=torch.cuda.mem_get_info()
+ assert free>parameter_bytes+2*1024**3,'Keep two GiB GPU headroom for actual FP32 ASR'
+ asr_options['device_map']={'':'cuda'}
+model=WhisperForConditionalGeneration.from_pretrained(args.asr_dir,local_files_only=True,attn_implementation='eager',dtype=torch.float32,low_cpu_mem_usage=True,**asr_options)
+assert all(parameter.device.type==args.asr_device and parameter.dtype==torch.float32 for parameter in model.parameters()),'Actual ASR compute device/dtype mismatch'
 assert args.chunk_seconds==0 or 5<=args.chunk_seconds<=30
 chunk_size=args.chunk_seconds*16000 if args.chunk_seconds else len(mono)
 segments=[]
@@ -54,7 +75,7 @@ for offset in range(0,len(mono),chunk_size):
  inputs=processor(chunk,sampling_rate=16000,return_tensors='pt',truncation=False,padding='longest',return_attention_mask=True)
  long_form=len(chunk)>30*16000
  with torch.inference_mode():
-  output=model.generate(inputs.input_features,attention_mask=inputs.attention_mask,return_segments=long_form,**generation_kwargs)
+  output=model.generate(inputs.input_features.to(args.asr_device),attention_mask=inputs.attention_mask.to(args.asr_device),return_segments=long_form,**generation_kwargs)
  ids=output['sequences'] if isinstance(output,dict) else output
  recognized=processor.batch_decode(ids,skip_special_tokens=True)[0]
  sentence_segments=[]
@@ -80,6 +101,7 @@ normalize=lambda x:re.sub(r'[^가-힣a-zA-Z0-9]','',x).lower()
 similarity=difflib.SequenceMatcher(None,normalize(expected),normalize(text)).ratio()
 asr_model,asr_revision=('openai/whisper-large-v3-turbo','41f01f3fe87f28c78e2fbf8b568835947dd65ed9') if args.asr_model=='turbo' else ('openai/whisper-small','973afd24965f72e36ca33b3055d56a652f456b4d')
 result={'actualAudioHashVerified':True,'sampleRate':sr,'duration':len(audio)/sr,'rms':float(np.sqrt(np.mean(audio**2))),'peak':float(np.max(np.abs(audio))),'asrModel':asr_model,'asrRevision':asr_revision,'recognizedLyrics':text,'timestampedRecognition':timestamped,'expectedLyrics':expected,'textSimilarity':similarity,'limits':['ASR recognition is evidence, not human listening or guaranteed lyric alignment','Requested tempo/key/Part range are not measured here','Backing separation and Guide integration remain separate verification']}
+result.update(asrExecutionDevice=args.asr_device,asrComputeDtype='float32',asrWeightHashes=asr_weight_hashes)
 timestamps=[float(t) for t in re.findall(r'<\|([0-9]+\.[0-9]+)\|>',timestamped)]
 segment_timing_valid=all(all(s['start']<=float(t)<=s['end']+.1 for t in re.findall(r'<\|([0-9]+\.[0-9]+)\|>',s['timestamped'])) for s in segments)
 timing_valid=bool(timestamps) and segment_timing_valid and all(0<=t<=len(audio)/sr+.1 for t in timestamps) and timestamps==sorted(timestamps)
@@ -90,5 +112,5 @@ result['limits'].append('Diagnostic window timestamps are relative to that windo
 result.update(validationVersion='ieum-actual-asr-window-v1',validationScriptSha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest())
 output_file.parent.mkdir(parents=True,exist_ok=True)
 output_file.write_text(json.dumps(result,ensure_ascii=False,indent=2),encoding='utf-8')
-print(json.dumps(result,ensure_ascii=False),flush=True)
+print(json.dumps(result,ensure_ascii=True),flush=True)
 if not result['lyricAcceptance']:raise SystemExit(2)

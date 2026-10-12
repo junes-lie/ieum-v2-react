@@ -44,6 +44,12 @@ R1/R2 앱 마감을 음악 연구 종료까지 미루지 않는다. R4는 실제
 
 수정한 기능의 정상·실패·복원 및 관련 build/QA를 확인한다. 입력/버전/계약이 바뀌지 않은 검증은 재사용하고 변경 없는 전체 모델·전수 QA를 반복하지 않는다. 의미 있는 묶음마다 diff 검토→필요 파일만 stage→commit→origin/main push→Git Integration commit/성공 확인→Production QA로 마감한다. 사용자 실기기 확인 항목은 배포 후 묶어 전달한다.
 
+### R6 저메모리 실행 및 가사 실패 분리 — 2026-10-12
+
+기존13개 exact Base disk cache/meta DiT/eval과 native prompt 일회 인코딩·text 반환,142tensor bounded FP32 CUDA condition 로딩을 opt-in으로 마감한다. 기존 CPU/기본 shift·원본/cache는 유지하고2GiB GPU headroom·live RAM guard를 축소하지 않는다. 보존된 실제8초/50step 실행은 finite latents/WAV 저장·worker최대4.330GiB/free최소4.372GiB로 완료했으나 마지막 cp949 stdout 오류 exit1을 별도 기록했다. 로그만 ASCII JSON으로 보완하고 실제 저장 report roundtrip을 모델 없이 검증했다. 속도·음악 품질·전체 native parity 완료가 아니다.
+
+명시 CUDA FP32 Turbo 인식은 실제 실행 wall15.047초/exit2·가사 유사도0/등록false다. 실패 후보·이전 RAM 중단은 보존한다. CPU/CUDA tiny checkpoint exact/오류 거부·pre-denoise 중단/복원·9파일 syntax 통과. 현재free6.05GiB로 대형 AI8GiB 시작 기준 미달이며 재생성하지 않았다. 다음은 실제 sampler/decoder·음절/음표 제어의 새 근거 확보이고 동일 실패 생성 반복은 하지 않는다. 앱/디자인/사용자 서버3파일과 전체 R1–R7 gate 유지. 상세 source/hash/성공과 실패·실측은 상태 문서 참조.
+
 ### R1 삭제 확인 중복과 지연 완료 마감 — 2026-10-12
 
 기존 Recorder의 중복 삭제 transaction2개를 실제 재현하고 하나의 in-flight 요청으로 제한했다. 실패 뒤 원본/URL·재시도를 유지하며 종료된 Recorder의 늦은 삭제 응답이 새 전역 녹음을 취소하지 않도록 한다. 기존 retake QA의 recording/paused/review 실패·중복 확인1transaction·지연 completion/popstate 이후 새 녹음/타이머 보존을 통과했다. atomic Draft cleanup·단일 App2–4Part 렌더/build 회귀 확인. 기존 앱/기획/디자인은 유지하고 해당 묶음만 자동배포→Production 같은 retake QA로 마감한다. 실제 마이크·청취/전체 R1 gate는 미완료 유지. 상세 최초 실패·QA 경계는 상태 문서 참조.

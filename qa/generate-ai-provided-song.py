@@ -33,6 +33,9 @@ parser.add_argument('--generation-end',type=float)
 parser.add_argument('--region-lyric-line',type=int,help='Repaint only: condition on a source candidate lyric line; keep full expected output lyrics for independent QA')
 parser.add_argument('--steps',type=int)
 parser.add_argument('--guidance-scale',type=float,help='Explicit non-turbo native APG diagnostic; default preserves 7.0')
+parser.add_argument('--timestep-shift',type=float,choices=[1.0,2.0,3.0],help='Explicit non-turbo schedule diagnostic; omit to preserve the existing pipeline default')
+parser.add_argument('--low-ram-base-cache',type=Path,help='Opt-in verified existing CUDA FP32 Base disk cache and sequential prompt initialization')
+parser.add_argument('--bounded-condition-cuda',action='store_true',help='Opt-in exact bounded condition checkpoint loading directly to CUDA; no complete CPU condition model')
 parser.add_argument('--lossless-cpu-cache',action='store_true',help='Opt-in one-shot Base lego inference with exact CPU weight restoration')
 args=parser.parse_args()
 assert (args.generation_start is None)==(args.generation_end is None),'Specify both generation mask boundaries'
@@ -55,6 +58,9 @@ assert args.source_song or args.source_start==0,'Source offset requires source a
 assert args.source_song or args.source_stem=='mix','Source stem requires source audio'
 model_config=json.loads((args.model_dir/'transformer'/'config.json').read_text(encoding='utf-8'))
 is_base=not model_config.get('is_turbo',False)
+assert args.timestep_shift is None or is_base,'Explicit schedule diagnostics require non-turbo'
+assert not args.low_ram_base_cache or (args.device=='cuda' and is_base and args.task in ('lego','repaint') and args.compute_dtype=='float32' and not args.lossless_gpu_cache),'Low-RAM initialization requires one-shot CUDA FP32 conditioning without a retained host cache'
+assert not args.bounded_condition_cuda or args.low_ram_base_cache,'Bounded condition loading requires the verified one-shot low-RAM CUDA Base path'
 assert args.guidance_scale is None or (is_base and np.isfinite(args.guidance_scale) and 1<=args.guidance_scale<=20),'Explicit guidance requires non-turbo and a finite scale from 1 to 20'
 guidance_scale=args.guidance_scale if args.guidance_scale is not None else (7.0 if is_base else 1.0)
 assert not (args.device=='cuda' and is_base and args.compute_dtype=='float16'),'Non-turbo CUDA FP16 is not validated; use FP32 (Base FP16 produced non-finite actual latents)'
@@ -132,7 +138,16 @@ if args.device=='cpu':
 args.output_dir.mkdir(parents=True,exist_ok=True)
 print(f'Loading actual converted ACE-Step weights for {args.device} inference',flush=True)
 # Load and offload large components sequentially, avoiding a full FP32 model peak.
-transformer=AceStepTransformer1DModel.from_pretrained(args.model_dir,subfolder='transformer',torch_dtype=compute_dtype,local_files_only=True,low_cpu_mem_usage=True)
+low_ram_initialization=None;preencoded_prompt=None
+if args.low_ram_base_cache:
+ from cuda_disk_offload import enable_cuda_disk_storage_release
+ from low_ram_music_init import load_verified_cached_transformer,encode_cuda_prompt_once
+ enable_cuda_disk_storage_release()
+ transformer,low_ram_initialization=load_verified_cached_transformer(args.model_dir,args.low_ram_base_cache,lineage)
+ preencoded_prompt=encode_cuda_prompt_once(args.model_dir,spec,model_lyrics,args.duration,args.task)
+ print('Verified cached DiT and complete native CUDA prompt prepared; text weights released before conditions',flush=True)
+else:
+ transformer=AceStepTransformer1DModel.from_pretrained(args.model_dir,subfolder='transformer',torch_dtype=compute_dtype,local_files_only=True,low_cpu_mem_usage=True)
 offload_dir=args.offload_dir or args.output_dir/'transformer-offload'
 if args.offload_dir:
  cached=json.loads((offload_dir.parent/'song-generation-report.json').read_text(encoding='utf-8'))
@@ -140,7 +155,7 @@ if args.offload_dir:
  assert len(list(offload_dir.glob('group_*.safetensors')))==13,'Only a complete offload cache can be reused'
 if args.device=='cpu':
  transformer.enable_group_offload(onload_device=torch.device('cpu'),offload_device=torch.device('cpu'),offload_type='block_level',num_blocks_per_group=2,offload_to_disk_path=str(offload_dir))
-else:
+elif not args.low_ram_base_cache:
  from cuda_disk_offload import enable_cuda_disk_storage_release
  enable_cuda_disk_storage_release()
  if args.lossless_gpu_cache:
@@ -148,14 +163,29 @@ else:
   enable_cuda_lossless_cache(None if args.gpu_host_cache_mib is None else args.gpu_host_cache_mib*1024*1024)
  transformer.enable_group_offload(onload_device=torch.device('cuda'),offload_device=torch.device('cpu'),offload_type='block_level',num_blocks_per_group=2,use_stream=False,offload_to_disk_path=str(offload_dir))
 print('Transformer prepared; loading text encoder separately',flush=True)
-print(f'Actual offloaded transformer storage: {sum(p.numel() for p in transformer.parameters())} tensor elements',flush=True)
-text_encoder=AutoModel.from_pretrained(args.model_dir/'text_encoder',dtype=compute_dtype,local_files_only=True,low_cpu_mem_usage=True)
+print(f"Actual transformer parameter elements: {getattr(transformer,'_ieum_original_parameter_elements',sum(p.numel() for p in transformer.parameters()))}",flush=True)
+text_encoder=None if preencoded_prompt is not None else AutoModel.from_pretrained(args.model_dir/'text_encoder',dtype=compute_dtype,local_files_only=True,low_cpu_mem_usage=True)
 # ACE-Step accesses the lyric embedding directly after text_encoder.forward.
 # Root-level text disk offload replaces that embedding with empty storage before
 # the direct call, silently corrupting lyric conditioning. Keep this small model
 # resident; only the DiT uses block offloading.
 optional_components={'audio_tokenizer':None,'audio_token_detokenizer':None} if args.task in ('lego','repaint') else {}
+bounded_condition_report=None
+if args.bounded_condition_cuda:
+ from diffusers import AceStepConditionEncoder
+ from music_cuda_checkpoint import load_bounded_fp32_model
+ condition_encoder,bounded_condition_report=load_bounded_fp32_model(AceStepConditionEncoder,args.model_dir/'condition_encoder',lineage['componentHashes']['condition_encoder/diffusion_pytorch_model.safetensors'])
+ optional_components['condition_encoder']=condition_encoder
+ print('Exact bounded CUDA condition weights loaded without a complete CPU model',flush=True)
 pipe=AceStepPipeline.from_pretrained(args.model_dir,transformer=transformer,text_encoder=text_encoder,dtype=compute_dtype,local_files_only=True,low_cpu_mem_usage=True,**optional_components)
+if preencoded_prompt is not None:
+ prompt_consumed=False
+ def use_preencoded_prompt(*values,**kwargs):
+  global prompt_consumed
+  assert not prompt_consumed,'Sequential prompt input is one-shot'
+  prompt_consumed=True
+  return preencoded_prompt
+ pipe.encode_prompt=use_preencoded_prompt
 # Oobleck exposes its implemented temporal tiling through this runtime flag.
 pipe.vae.use_tiling=True
 if args.device=='cuda':
@@ -175,6 +205,7 @@ if args.device=='cuda':
    normalized_vae_weights+=1
  print(f'Exact VAE normalized weight parity: {normalized_vae_weights} modules',flush=True)
  for name,module in pipe.components.items():
+  if name=='condition_encoder' and args.bounded_condition_cuda:continue
   if name!='transformer' and isinstance(module,torch.nn.Module):
    apply_group_offloading(module,onload_device=torch.device('cuda'),offload_device=torch.device('cpu'),offload_type='leaf_level',use_stream=False)
  assert pipe._execution_device.type=='cuda','Native pipeline must compute on CUDA'
@@ -182,7 +213,7 @@ if args.device=='cuda':
   from cuda_disk_offload import release_after_one_shot
   # Native Lego calls these once; cover's second encode_prompt is excluded.
   # Preserve condition buffers, including silence_latent used later.
-  pipe.encode_prompt=release_after_one_shot(pipe.encode_prompt,pipe.text_encoder,'text/lyric encoding')
+  if preencoded_prompt is None:pipe.encode_prompt=release_after_one_shot(pipe.encode_prompt,pipe.text_encoder,'text/lyric encoding')
   pipe.condition_encoder.forward=release_after_one_shot(pipe.condition_encoder.forward,pipe.condition_encoder,'condition encoding',preserve_parameters=('null_condition_emb',))
 if args.lossless_cpu_cache:
  encode_prompt=pipe.encode_prompt
@@ -220,7 +251,8 @@ def progress(pipeline,step,timestep,values):
  if step==steps-1:
   torch.save(values['latents'].detach().cpu(),args.output_dir/'actual-generated-latents.pt')
  return values
-result=pipe(callback_on_step_end=progress,prompt=prompt,lyrics=model_lyrics,vocal_language=spec['language'],audio_duration=args.duration,num_inference_steps=steps,guidance_scale=guidance_scale,bpm=spec['bpm'],keyscale=spec['key'],timesignature=spec['timesignature'],task_type=args.task if args.source_song else ('cover' if code_report else 'text2music'),track_name='vocals' if args.task=='lego' else None,src_audio=source_audio,audio_codes=code_report['audioCodes'] if code_report else None,audio_cover_strength=args.audio_cover_strength,generator=torch.Generator(args.device).manual_seed(args.seed),repainting_start=args.generation_start,repainting_end=args.generation_end)
+schedule_options={} if args.timestep_shift is None else {'shift':args.timestep_shift}
+result=pipe(callback_on_step_end=progress,prompt=prompt,lyrics=model_lyrics,vocal_language=spec['language'],audio_duration=args.duration,num_inference_steps=steps,guidance_scale=guidance_scale,bpm=spec['bpm'],keyscale=spec['key'],timesignature=spec['timesignature'],task_type=args.task if args.source_song else ('cover' if code_report else 'text2music'),track_name='vocals' if args.task=='lego' else None,src_audio=source_audio,audio_codes=code_report['audioCodes'] if code_report else None,audio_cover_strength=args.audio_cover_strength,generator=torch.Generator(args.device).manual_seed(args.seed),repainting_start=args.generation_start,repainting_end=args.generation_end,**schedule_options)
 audio=result.audios[0].detach().float().cpu().numpy().T
 assert np.isfinite(audio).all() and audio.ndim==2 and audio.shape[1]==2
 assert np.sqrt(np.mean(audio**2))>1e-5,'Model output is silent'
@@ -237,6 +269,8 @@ if source_report:
  report['outsideGenerationWindowPcmPreserved']=None
  report['nativeGenerationMask']=mask_report
 report.update(model=model_id,revision=model_revision,inferenceSteps=steps,modelLineageSha256=hashlib.sha256(args.model_lineage.read_bytes()).hexdigest() if lineage else None,generatorScriptSha256=script_sha,guidanceScale=guidance_scale if is_base else None)
+import inspect
+report.update(timestepShift=args.timestep_shift if args.timestep_shift is not None else inspect.signature(pipe.__call__).parameters['shift'].default,explicitTimestepShift=args.timestep_shift is not None,lowRamInitialization=low_ram_initialization,boundedConditionCuda=bounded_condition_report)
 report.update(modelLyrics=model_lyrics,regionLyricLineIndex=args.region_lyric_line,fullExpectedLyricsUnchanged=True)
 if args.region_lyric_line is not None:
  report['limitations'].append('Region repair uses modelLyrics for the selected line; lyrics retains all expected output lines for independent ASR. No automatic syllable/timing/harmony approval.')
@@ -253,4 +287,6 @@ if args.device=='cuda' and args.lossless_gpu_cache:
  from cuda_disk_offload import release_cuda_lossless_cache
  report['gpuCacheRelease']=release_cuda_lossless_cache()
 (args.output_dir/'song-generation-report.json').write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding='utf-8')
-print(json.dumps(report,ensure_ascii=False),flush=True)
+# JSON stdout is a machine-readable protocol on Windows code-page consoles.
+# Keep the saved report UTF-8 while escaping non-ASCII only in this log line.
+print(json.dumps(report,ensure_ascii=True),flush=True)

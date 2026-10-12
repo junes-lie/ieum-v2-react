@@ -1,3 +1,17 @@
+## 2026-10-12 R6 저메모리 실행 경로 마감 / 음악 품질 미통과
+
+직전c46c548/4caf550의 R1 마감 코드와 사용자/AI 미커밋 상태를 확인했다. 기존 단계·Goal·앱은 보존하고 아직 미커밋이던 실제 실행 검증 경로를 검토했다. opt-in low-ram-base-cache는 기존13개 FP32 disk group을 변환 원본476tensor의 exact F32/BF16 bytes와 bounded 비교한 뒤 meta DiT/eval·native2block offload로 재사용한다. cache/원본을 새로 만들거나 바꾸지 않는다. native prompt 출력은 유지하고 text 모델과 bound-method 순환 참조를 반환한다. bounded-condition-cuda는 실제142개 FP32 checkpoint를 tensor별로 CUDA에 직접 로드하고 원본/전송 bytes·shape/finite를 검사한다. 완전한 CPU condition 모델을 먼저 만들지 않으며 각각의 CPU staging tensor 상한64MiB와 CUDA2GiB headroom을 유지한다. 전체 staging 메모리가64MiB라는 뜻은 아니다. 기본 CPU 환경/기존 생성 경로는 유지한다.
+
+보존된 actual 실행 증거: condition checkpoint2437318656bytes·largest50331648bytes·142tensor exact, standalone loader wall21.21095초/exit0/guard 중단false/free최소7.969GiB/worker최대.754GiB. 전체8초/50step CUDA FP32 생성은 finite latents 및 WAV SHAe5115769aee201c71088245fcccc12772a67c663ab60658742ecc0f8ccb9b05b을 저장했다. inference390.81864초/전체wall545.65474초/free최소4.37174GiB/worker최대4.33031GiB·guard 중단false다. 종료는 마지막 stdout의 cp949 UnicodeEncodeError로 exit1이므로 CLI 성공으로 표시하지 않는다. inference 속도 해결이나 native 전체 sampler/decoder parity 승인도 아니다.
+
+두 실행 report의 UTF-8 파일은 유지하고 JSON stdout만 ASCII escape하도록 보완했다. 보존된 실제 generation/ASR report의 마지막 print AST를 cp949 콘솔로 실행해 JSON roundtrip exact와 실패 가사 판정 불변을 확인했다. 이 로그 수정 때문에 동일 대형 생성을 반복하지 않았다. explicit timestep shift는 진단 옵션이며 기본값을 바꾸지 않는다. 같은 seed만으로 source posterior를 포함한 전체 PCM 재현을 보장하지 않는다.
+
+ASR은 명시 asr-device cuda에서 같은 FP32/native 모델 계산·실제 weight SHA·2GiB GPU headroom을 검사한다. CPU 기본/자동 fallback 없음. 보존된 실제 Turbo CUDA 실행 wall15.04709초/exit2/guard 중단false/free최소6.96393GiB/worker최대1.64240GiB이며 가사 유사도0.0/등록false다. CPU Turbo의 RAM 중단과 실제 GPU 인식의 품질 실패는 구분한다. CPU 기본 경로를 바꾸지 않았으나 이번 마감에서 실제 CPU 모델을 다시 로드하지 않았다.
+
+작은 CPU/CUDA48byte checkpoint fixtures의 exact F32/signed-zero·params/buffers/eval·잘못된SHA/shape/dtype/NaN/누락/잘림 거부, 모델 없는 pre-denoise 강제 중단·native 실패/기존 method/hook 복원,9파일 AST syntax 검증 통과. 현재 PC15.95GiB/free6.05GiB·GPU830MiB/12%로 대형 모델 시작 기준8GiB 미달이라 재생성하지 않았다. 런타임의 'Failed to find real location of C:\\Python313\\python.exe' 경고와 QA exit0를 구분한다.
+
+보존된 초기 source/condition·일괄 condition.to(cuda)의 RAM 중단, headroom 실패, prompt 순환 참조와 실패 결과도 유지한다. resident-condition-cuda 진단은 실패한 경로이며 기본/성공 경로가 아니다. 모델/checkpoint/음원/trace/result는 기존 private runtime에 보존하고 유지 실행/QA9파일만 이번 묶음에 포함한다. 사용자 서버3파일은 제외한다. 앱 변경 없는 묶음이므로 검증된 동일 build/Production bundle을 재사용한다. 다음 R6는 실제 sampler/decoder 이식 정확성 또는 실제 음절/음표 제어 근거이며 같은 실패 seed/guidance 반복·QA 문턱 완화·후보 등록은 하지 않는다. R5 형상·서비스·물리 인수와 전체 음악 gate는 미완료다.
+
 ### R1 배포 마감 / R6 보존된 독립 인식 결과 확인 — 2026-10-12
 
 R1 수정4caf55077d785d1856c186950e44f8c0dae017e1은 origin/main push/동기화0/0·동일 commit Vercel success를 확인했다. Production HTTP200/index-CmugzJuL.js SHA7D1119CC141D9DC490A6AE3CEBA7EE8868AC08A66D0EBD878EF320AD2C342207은 검증 build와 exact다. Production retake QA에서 실패3상태 원본 보존·중복 확인1transaction·지연 삭제 완료 이후 새 recording/타이머·pageerror0 통과. QA의 개발 전용 /src/audio.js import를 기존 공개 진단 audioRuntime.recorder.state 조회로 바꿔 Production에서도 같은 검증을 재사용한다. 실제 마이크·청취/전체 R1 완료는 아니다.
