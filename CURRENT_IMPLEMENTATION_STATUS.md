@@ -1,3 +1,11 @@
+### R1/R2 Collection의 실제 제출·Mix 상태 — 2026-10-12
+
+저장한 새 Project의 Collection 카드가 모든 필수 Track 제출 뒤에도 RECORDING · 0/2로 표시되는 native assertion 실패를 재현했다. 기존 submittedProjectTracks/allProjectTracksSubmitted와 저장된 createdMixes를 표시식에 연결해 My Projects와 같은 제출 수·MIXING/COMPLETE 판정을 사용한다. Mix 저장 실패를 완료로 바꾸지 않으며 Project 저장값·원본·그래픽·화면 구조·서버 정책은 변경하지 않는다.
+
+기존 native Mix 저장 실패 QA를 확장해 2/3/4 Part의 원본 hash 보존, 실패 시 Collection 실제 제출 수/MIXING 및 작업실 오류 복귀, 성공·reload 뒤 COMPLETE/같은 완성곡 연결을 통과했다. 기존 Collection 저장 객체·해제·탭별 scroll/복귀 QA와 Node 사용자 여정·2–4 Part 제출/복원, build39modules/510.03KB 성공(기존500KB 경고 유지). 첫 sandbox Edge launch는 Target page, context or browser has been closed, sandbox 개발 서버에 대한 외부 QA는 ERR_CONNECTION_TIMED_OUT였다. 소유 서버만 종료하고 허용된 동일 terminal/headless QA 실행으로 바로잡았으며 Computer Use는 사용하지 않았다.
+
+관련 변경만 main Git Integration→Production 동일 QA로 마감한다. 실제 마이크/청취·전체 R1/R2·음악/Identity·서버 gate는 미완료다. 사용자 서버3파일과 디자인/모델 원본은 보존한다.
+
 ### R1/R2 이전 종료 응답과 새 Take 소유권 — 2026-10-12
 
 실제 Sample 종료의 stop callback을 보류→My로 이탈→새 Sample 녹음→이전 callback 해제 시 새 Take chunks 배열이 지워지는 actual assertion 실패를 재현했다. stopRecording은 시작 시 recorder/chunks/sync offset을 캡처하고 stop 완료 시 같은 recorder와 collector를 소유하는지 확인한다. 취소/교체된 종료 응답은 새 timeline/Guide/RAF/collector·분석/URL을 변경하지 않고 null로 반환한다. 반환 offset도 이전 녹음의 snapshot을 유지한다. 기존 UI의 이탈/저장 정책이나 데이터 원본을 변경하지 않는다.

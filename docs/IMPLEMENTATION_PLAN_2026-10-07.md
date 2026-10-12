@@ -1,3 +1,7 @@
+### R1/R2 Collection의 실제 제출·Mix 상태 — 2026-10-12
+
+My Projects에 이미 연결한 실제 제출/Mix 판정을 Collection에도 적용했다. 모든 제출 뒤 오래된 status/progress가 RECORDING · 0/2를 표시하는 실제 실패를 재현했고 기존 제출 함수·저장된 Mix만 사용해 수정했다. 2/3/4 Part 저장 실패에서 원본/제출 수·MIXING·작업실 오류 복귀, 정상 저장/reload 뒤 COMPLETE·같은 완성곡 연결을 검증했다. 기존 Collection 저장/해제·탭/scroll/복귀 및 Node 사용자 흐름·build 통과. 관련 묶음만 main 자동배포→Production 동일 QA로 마감한다. 새로운 완료 정책·디자인·서버 작업은 없으며 전체 R1/R2·음악/Identity·실기기 gate는 유지한다.
+
 ### R1/R2 늦은 종료 응답의 새 녹음 보호 — 2026-10-12
 
 취소된 Sample의 stop 응답이 새 Sample 시작 뒤 도착해 현재 collector를 지우는 actual 실패를 재현했다. 공통 종료 처리를 캡처한 recorder/collector 소유권으로 제한하고 offset을 해당 녹음에 묶는다. 새 Take timeline/Guide와 실제 Review bytes SHA exact·기존 Profile 보존, 정상/오류 재시도·늦은 chunk·collector release·종료 길이 회귀를 통과했다. 기존 이탈/직접 제출/성공 후 Mix 조건은 유지하며 관련 build→main 자동배포→Production qa:delayed-stop으로 마감한다. 실기기/음질·전체 단계 완료로 확대하지 않는다.
