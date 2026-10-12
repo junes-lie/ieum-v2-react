@@ -1,3 +1,29 @@
+### R1 재개 Guide 실패의 녹음 상태 보존 — 2026-10-12
+
+8285787 main push/Vercel Git Integration success·Production 동일 Guide 실패/재시도 QA 통과·HTTP200·index-DxyvU9pA.js SHAFEE1DA9AA36D5D43D5924A90D6A82954555DF0EE6B5BB1B2E17AD443C2451C24 exact 확인.
+
+실제 Guide 노드 생성 거부에서 화면은 paused인데 MediaRecorder는 recording인 assertion 실패를 재현했다. 기존 resumeRecording에서 Guide 준비 성공 후에만 recorder.resume/활성 구간을 시작하고 실패 시 소유 Guide를 정리한다. 기존 같은 버튼 오류·재시도 처리와 결합해 실제 paused/segment=false·Guide0·재시도/Review, 기존 중복 제어·audio foundation/build39modules/510.25KB 통과. 실제 청취/물리 마이크/전체 R1은 미완료이며 디자인·서버3파일·음원/모델 원본 보존. 기능 묶음만 main 자동배포→Production 동일 QA로 마감한다.
+
+### R1 일시정지·재개 거부의 Take 보존 — 2026-10-12
+
+기존 Project Recorder의 pause 거부에서 처리되지 않은 QA pause refused를 실제 재현했다. 기존 오류 영역에서 pause/resume 거부를 처리하고 현재 녹음·구간·Guide 상태를 유지하며 같은 버튼 재시도 성공 때 오류를 지운다. 새 정책/화면/디자인 변경 없음. native 합성 마이크의 두 거부→재시도→재생 가능한 Review, 기존 중복 시작/재개/정지 및 Sample/Project stop retry, audio foundation·build39modules/510.22KB 통과(기존500KB 경고 유지). 5f3c2cd main push 완료, Vercel 자동배포 success·Production 동일 pause/resume QA 통과·HTTP200·index-BEl5YOXJ.js SHAA2E6C44343D453E57B91312A7001E4B959F8EA50B93B505FA1BD4FE19B2FEFD6 exact 확인. 물리 마이크/음질·전체 R1 완료는 미검증이다.
+
+R6 low-RAM 초기화 시험 v1/v2는 기존 live guard가 ResourceStopped=true/ExitCode=-1로 종료했다. v2 wall177.687초이며 음악 결과 성공으로 등록하지 않는다. 기존 모델/실패 증거·CPU 환경을 보존하고 추가 대형 시험 대신 독립 기능 마감을 우선한다. 관련 연구 코드/문서 및 사용자 서버3파일은 이번 기능 commit에서 제외했다.
+
+### R6 RAM guard의 중첩 worker 보호 — 2026-10-12
+
+run-ai-resource-guard는 소유한 launcher의 전체 자손을 실제 CIM으로 탐색해 monitor wrapper 뒤 실제 생성 worker까지 표본/중단한다. root→child→grandchild의 실제 실행에서 정상 종료와 가상 RAM 압력(물리 메모리 부하 없음)의 4GiB/3회 중단, 별도 sentinel 보존을 검증했다. 기존 guard-descendant-tree-v2의 normal exit0/4.875초와 pressure resourceStopped=true/3.690초를 보존한다. 기존 임계값은 유지하고 무관한 사용자 앱을 종료하지 않는다. guard parent exit0과 worker summary ExitCode는 구분한다. bounded cache bytes QA는 F32/BF16의 정확한 byte·signed zero·끝 chunk 변조·비유한 값/잘못된 길이 거부를 통과했다. 전체 음악 초기화/품질 성공은 아니며 미검증 low-RAM generator 변경은 별도 로컬에 보존한다.
+
+### R6 실제 한국어 입력의 Base 조건 forward 대조 — 2026-10-12
+
+기존 tensor 변환/랜덤 lyric 부분 비교와 구분해 공식 ACE-Step 저장소 ca1e85fe9430179831e6bc6be790c332190a3866의 Base 조건 처리 선언을 실제 입력으로 대조했다. Hugging Face의 추정 Base Python URL은 web 도구에서 is not accessible via this tool이었고, 공식 GitHub tree API로 실제 acestep/models/base 경로와 revision을 확인했다. 작은 원본 코드/config만 기존 격리 runtime의 새 경로에 보존했으며 모델 설치/환경 변경/전체 생성 없음. [원본 Base 코드](https://github.com/ace-step/ACE-Step-1.5/blob/ca1e85fe9430179831e6bc6be790c332190a3866/acestep/models/base/modeling_acestep_v15_base.py)의 선택된 선언은 AST로 그대로 실행하고 native sampler/decoder/main/import side effect는 실행하지 않았다.
+
+qa/verify-ace-condition-forward.py는 고정 코드 SHA·기존 Base raw weights SHA4177f600...·한정된 컴포넌트 크기를 확인한다. 실제 기존 한국어 spec의 caption108/lyric91 tokens와 기존 local Qwen caption forward/lyric token lookup, 실제 silence latent750frames를 사용했다. text model은 조건 컴포넌트 로딩 전에 반환했고 원본/변환 클래스는 같은 raw weights를 공유해 두 전체 모델의 중복 RAM 점유를 피했다. 현재 변환 파일을 새로 변환/저장한 것이 아니며 같은 weight의 두 조건 알고리즘 대조다.
+
+padding0/17의 valid200 tokens·mask exact, 상대 RMSE3.0011e-8/2.6316e-8로 두 사례가 통과했다. 이는 이 입력에서 조건 처리 차이를 관측하지 못했다는 근거이며 전체 decoder/sampler·가사 타이밍·화음·원곡 score·발성/휴지·서비스 사용 권한/전체2–4Part 품질 승인이 아니다. 다음 R6 계산 대조는 아직 비교하지 않은 decoder/sampler와 실제 음절/음표 제어이며 같은 실패 seed/guidance 생성 반복으로 대체하지 않는다.
+
+실행 직전 PC 여유8.41GiB/GPU559MiB, 조건 FP32 크기2.266GiB. live guard wall67.825초/exit0/resourceStopped=false·PC 여유최소5.040GiB/owned최대3.255GiB, Python 종료 확인. 음악 추론/GPU 생성은 없었다. 실제 source/report/guard logs는 기존 runtime에 보존한다. 재사용 QA/현재 문서만 main Git Integration→Production 기존 앱 보존으로 마감한다. 직전47b3427은 main 일치/Vercel success, Production Collection2–4Part QA 성공·index-BYxT9p9X.js SHA337F06A6282F3CF86328C4B0C9A0BE7D4502355133ACD709A43D50019D7239C1 exact/HTTP200으로 마감했다. Node fetch의 UNABLE_TO_VERIFY_LEAF_SIGNATURE는 Windows 인증서 검증 HTTP로 확인했으며 TLS 검증을 끄지 않았다. 사용자 서버3파일/디자인/음원은 보존한다.
+
 ### R1/R2 Collection의 실제 제출·Mix 상태 — 2026-10-12
 
 저장한 새 Project의 Collection 카드가 모든 필수 Track 제출 뒤에도 RECORDING · 0/2로 표시되는 native assertion 실패를 재현했다. 기존 submittedProjectTracks/allProjectTracksSubmitted와 저장된 createdMixes를 표시식에 연결해 My Projects와 같은 제출 수·MIXING/COMPLETE 판정을 사용한다. Mix 저장 실패를 완료로 바꾸지 않으며 Project 저장값·원본·그래픽·화면 구조·서버 정책은 변경하지 않는다.

@@ -1,3 +1,23 @@
+### R1 재개 Guide 실패의 상태 마감 — 2026-10-12
+
+8285787 main/Vercel success·Production 동일 Guide 실패/복구 QA·HTTP200/build JS SHA exact로 배포 검증 마감. 전체 R1/음악/실기기 인수는 계속 미완료.
+
+Guide 준비 거부 시 실제 녹음만 재개되는 불일치를 재현했다. 준비 성공 후 recorder 재개·실패 시 소유 Guide 정리로 일시정지/현재 Take를 유지하고 같은 버튼 재시도와 Review를 native 검증했다. 기존 중복 제어·audio foundation/build 회귀 통과, main Git Integration→Production QA로 전달한다. 물리 입력/청취·전체 R1 완료와 구분하며 음악 연구/디자인/실제 서버의 미완료 gate는 유지한다.
+
+### R1 녹음 제어 오류 마감 — 2026-10-12
+
+Project pause/resume 거부의 현재 Take·구간·Guide 보존과 같은 버튼 재시도를 기존 Recorder에 연결했다. native 오류 재현/수정·Review 및 중복 제어/stop retry·audio foundation/build 검증 완료, 5f3c2cd main push/Git Integration success·Production 동일 QA/HTTP200·build asset SHA exact 확인. 전체 R1/실기기 완료로 확대하지 않는다. R6 low-RAM v1/v2는 실제 guard 중단이며 가사·음정·화음 성공 증거가 아니다. 대형 모델 반복 대신 R1/R2 독립 앱 마감을 우선하며 보류 디자인/사용자 서버3파일과 기존 음악 gate를 유지한다.
+
+### R6 자원 guard·bounded cache 검증 — 2026-10-12
+
+기존 guard를 전체 소유 자손 탐색으로 보완하고 실제 root/child/grandchild 정상·가상 압력 종료/무관 sentinel 보존을 검증했다. 물리 RAM 압력/임계값 변경 없음. cache F32/BF16 bounded exact 비교·손상/비유한/잘못된 길이 거부 QA 통과. 실제 초기화 v1/v2 중단과 구분하며 음악 성공으로 확대하지 않는다. 검증된 재사용 도구/증거 기록만 보존하고 미검증 low-RAM generator 경로는 이번 commit에서 제외한다.
+
+### R6 실제 한국어 입력의 Base 조건 forward 대조 — 2026-10-12
+
+공식 Base 원본 ca1e85fe9430179831e6bc6be790c332190a3866의 선택된 조건 선언과 현재 Diffusers 조건 클래스를 같은 고정 Base weights로 비교했다. 실제 한국어 caption108/lyric91 tokens·caption forward/lyric lookup·silence750frames, padding0/17에서 mask exact/valid200·relative RMSE3.0011e-8/2.6316e-8이었다. 기존 weight tensor/랜덤 lyric 부분 QA보다 넓은 조건 처리 대조이며 실제 생성 음악/decoder/sampler·음절/음표/화음·권리 gate 완료가 아니다. 다음은 아직 비교하지 않은 decoder/sampler 또는 새 실제 음절·음표 제어 경로이며 같은 실패 생성의 seed/guidance 반복을 하지 않는다.
+
+작은 공식 source/config는 기존 격리 runtime에 보존, 전체 모델 설치·음악 생성 없음. text model을 조건 weights 전에 반환하고 동일 weights 공유·CPU2스레드/live RAM guard를 적용했다. wall67.825초/exit0/resourceStopped=false·free최소5.040GiB/owned최대3.255GiB와 종료 확인. 관련 재사용 QA/현재 문서만 main 자동배포→Production 기존 앱 보존으로 마감하며 R1–R7 요구/미완료 gate·사용자 서버3파일/디자인/음원은 유지한다.
+
 ### R1/R2 Collection의 실제 제출·Mix 상태 — 2026-10-12
 
 My Projects에 이미 연결한 실제 제출/Mix 판정을 Collection에도 적용했다. 모든 제출 뒤 오래된 status/progress가 RECORDING · 0/2를 표시하는 실제 실패를 재현했고 기존 제출 함수·저장된 Mix만 사용해 수정했다. 2/3/4 Part 저장 실패에서 원본/제출 수·MIXING·작업실 오류 복귀, 정상 저장/reload 뒤 COMPLETE·같은 완성곡 연결을 검증했다. 기존 Collection 저장/해제·탭/scroll/복귀 및 Node 사용자 흐름·build 통과. 관련 묶음만 main 자동배포→Production 동일 QA로 마감한다. 새로운 완료 정책·디자인·서버 작업은 없으며 전체 R1/R2·음악/Identity·실기기 gate는 유지한다.
