@@ -6,6 +6,8 @@
 
 ## 원본 오디오 해독 경계
 
+2026-10-13 receipt 연결 준비: 해독 결과는 실제 executable SHA256/FFmpeg version을 포함한다. verifyOwnedOriginalAudio는 인증/본인 DB 조회에서 얻은 context에 대해서만 내부 worker에서 호출하고 실제 Storage 검증 결과를 service-only ieum_confirm_original_audio RPC로 확정한다. 새 audio_receipt에는 바이트/hash/MIME와 frame/sampleRate/실제 duration·analysis/decoder version/hash를 보존한다. RPC는 Project→intent 잠금, 소유자/배정/원본 식별 정보 일치, 첫 녹음 잠금과 상태를 재검사한다. 검증 success는 Track/Mix를 생성하지 않는다. 같은 receipt만 재시도 가능하며 다른 검증 결과는 충돌로 남긴다. 이는 Identity 알고리즘 갱신 정책을 확정하는 변경이 아니다. 공개 HTTP 경계/hosted runtime은 아직 연결하지 않았으므로 클라이언트가 이 context를 직접 제출하거나 service credential을 받지 않는다.
+
 verifyOriginalAudio는 기존 private Storage 원본의 byte/hash 검증을 재사용하고 서버 TEMP 사본을 실제 decoder로 해독한다. decodeOriginalAudio의 executable/filePath는 신뢰된 서버 설정/사본 경로이며 브라우저 입력 URL이나 실행 명령을 허용하지 않는다. WebM DocType/MP4 ftyp/WAV header와 실제 오디오 해독을 확인한다. PCM frame을 세며 RAM에 누적하지 않고 decoder stdout/stderr를 사용자에게 노출하지 않는다. [FFmpeg의 stream 선택·해독 문서](https://ffmpeg.org/ffmpeg.html)를 참고했다.
 
 현재는 로컬 FFmpeg7.1로 기술 검증한 worker helper이며 Vercel용 binary/runtime은 준비되지 않았다. Windows 로컬 executable을 배포 설정이나 repository 자산으로 옮기지 않는다. maxDurationSeconds는 호출자가 확정 원본/서비스 한도에 맞춰 제공해야 하는 기술 제한으로 신규 녹음 길이 정책을 의미하지 않는다. 반환 analysisVersion=decoded-pcm-v1은 길이 계산 규칙 버전이며 실제 decoder binary/version·hash를 보존하는 receipt와 별개다. 제출 verified_at/duration을 쓰거나 capability를 true로 만들지 않는다. 실제 서버 runtime과 trusted receipt 연결 후 원본 재검증·권한·실제 제출을 검증해야 한다.

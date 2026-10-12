@@ -19,6 +19,7 @@
     "qa:track-upload-db": "node qa/verify-track-upload-database.mjs",
     "qa:track-upload-api": "node qa/verify-track-upload-api.mjs",
     "qa:audio-decoder": "node qa/verify-audio-decoder.mjs",
+    "qa:audio-receipt": "node qa/verify-original-audio-receipt.mjs",
     "qa:playback": "node qa/verify-player-request-ownership.mjs",
     "qa:mix-errors": "node qa/verify-mix-source.mjs && node qa/verify-mix-save-preservation.mjs",
     "qa:audio-lengths": "node qa/verify-audio-lengths.mjs",

@@ -1,9 +1,33 @@
 import { spawn } from 'node:child_process'
+import { createReadStream } from 'node:fs'
+import { createHash } from 'node:crypto'
 import { open } from 'node:fs/promises'
 import { isAbsolute } from 'node:path'
 import { ServiceError } from '../src/projectService.js'
 
 const error = (code,status=409) => new ServiceError('녹음 파일의 실제 오디오를 확인하지 못했어요. 원본은 유지됩니다.',{code,status})
+
+async function decoderIdentity(executable) {
+  const hash=createHash('sha256')
+  try {for await(const chunk of createReadStream(executable))hash.update(chunk)}
+  catch {throw error('AUDIO_DECODER_UNAVAILABLE',503)}
+  const decoderSha256=hash.digest('hex')
+  const decoderVersion=await new Promise((resolve,reject)=>{
+    const child=spawn(executable,['-version'],{shell:false,windowsHide:true,stdio:['ignore','pipe','ignore']})
+    let firstLine='',failure
+    const timer=setTimeout(()=>{failure=error('AUDIO_DECODE_TIMEOUT',503);child.kill()},5000)
+    child.on('error',()=>{failure=error('AUDIO_DECODER_UNAVAILABLE',503)})
+    child.stdout.on('data',chunk=>{if(!firstLine.includes('\n') && firstLine.length<1024)firstLine+=chunk.toString().slice(0,1024-firstLine.length)})
+    child.on('close',code=>{
+      clearTimeout(timer)
+      const value=firstLine.split(/\r?\n/)[0]
+      if(failure)return reject(failure)
+      if(code!==0 || !/^ffmpeg version [^\x00-\x1f]+$/.test(value))return reject(error('AUDIO_DECODER_UNAVAILABLE',503))
+      resolve(value)
+    })
+  })
+  return {decoderVersion,decoderSha256}
+}
 
 function webmHeader(bytes) {
   if(!bytes.subarray(0,4).equals(Buffer.from([0x1a,0x45,0xdf,0xa3])))return false
@@ -55,6 +79,7 @@ export async function decodeOriginalAudio(filePath,{ executable,contentType,maxD
       ? header.length>=12 && header.toString('ascii',4,8)==='ftyp'
       : header.length>=12 && header.toString('ascii',0,4)==='RIFF' && header.toString('ascii',8,12)==='WAVE'
   if (!validHeader) throw error('AUDIO_FORMAT_MISMATCH')
+  const identity=await decoderIdentity(executable)
   const sampleRate=48000,bytesPerFrame=2
   return new Promise((resolve,reject)=>{
     let failure,pcmBytes=0
@@ -78,7 +103,7 @@ export async function decodeOriginalAudio(filePath,{ executable,contentType,maxD
       if (failure) return reject(failure)
       if (code!==0 || pcmBytes===0 || pcmBytes%bytesPerFrame!==0) return reject(error('AUDIO_DECODE_FAILED'))
       resolve({duration:pcmBytes/(sampleRate*bytesPerFrame),decodedFrames:pcmBytes/bytesPerFrame,
-        sampleRate,contentType:mime,analysisVersion:'decoded-pcm-v1'})
+        sampleRate,contentType:mime,analysisVersion:'decoded-pcm-v1',...identity})
     })
   })
 }

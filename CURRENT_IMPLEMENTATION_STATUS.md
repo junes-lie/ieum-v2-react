@@ -1,4 +1,14 @@
+## 2026-10-13 R3 원본 검증 receipt 확정 준비
+
+기존 해독 결과에 실제 decoder executable SHA256·FFmpeg version을 추가하고 originalAudioVerification worker와 service_role 전용 ieum_confirm_original_audio RPC를 구현했다. 원본 intent의 Project/Part/사용자/object/크기/hash/MIME가 모두 일치해야 실제 frame 기반 길이·analysis version·decoder identity를 원자적으로 보존한다. 반복 확인은 같은 receipt를 반환하고 다른 원본/길이/decoder로 덮어쓰지 않는다. 인증 사용자·익명은 이 확인 RPC를 실행할 수 없다. 검증은 Track 제출/Mix 성공과 분리한다.
+
+실제 AAC 파일→주입 private Storage→실제 FFmpeg 해독→격리 PostgreSQL receipt→직접 제출2개→마지막 제출의 Mix1개 연결 QA를 통과했다. 검증만으로0Track/0Mix, 위조/사용자 불일치/길이·frame 불일치/버전 충돌 거부, 제출 후 verification 응답 유실 재시도, 0.5초 client duration 거부·0.512초 확정 길이 제출을 확인했다. 첫 실행은 QA 쿼리의 잘못된 문자열 연결 연산 때문에42725 operator is not unique: unknown + unknown으로 실패했고 해당 테스트 요청만 수정한 뒤 통과했다. 실제 Supabase 두 사용자나 remote Storage/Production decoder의 증거가 아니다.
+
+기존4형식 실제 decoder QA·Storage/업로드 API 회귀·build40modules/525.39KB도 통과했다. 기존 공개 API/로컬 React 화면·사용자 서버3파일·원본은 유지했다. 실제 서버 runtime 준비, authenticated owned intent 조회→worker→RPC의 HTTP 연결, 서버 확정 길이를 사용하는 실제 제출 경계/App 연결은 남아 있다. 준비 receipt를 실제 공유 서버 완료로 계산하지 않는다.
+
 ## 2026-10-13 R3 원본 오디오 해독·길이 검증 준비
+
+Git/Production 마감 확인: 검증된7파일만d01cb7183eed54513e5bb4e96d2989a00516d140으로 commit/push, main/origin0/0이다. 기존 사용자 서버3파일은 미커밋 보존했다. Production 앱HTTP200/index-Cy9rymZA.js·capabilities200/preparation/모두false를 확인했다. 해당full SHA는GitHub status pending/statuses0·deployment0으로 자동배포 성공/READY는 미확인이다. worker helper의 로컬 기술 검증과 실제 Production 실행을 구분한다. 이 문단은 commit 이후 로컬 검증 기록이다.
 
 server/audioDecoder.js와 기존 private Storage의 verifyOriginalAudio를 연결했다. 원본 stream의 size/hash/MIME 검사→이번 호출만의 private TEMP 사본→실제 FFmpeg 해독→PCM frame 수 기반 duration 순서이며 hash 불일치 시 해독하지 않는다. PCM을 메모리에 모으지 않고 한 thread로 처리하며 시간/해독 길이 한도를 넘으면 실패 처리한다. 생성한 TEMP 사본만 정리하고 Storage 원본은 변경하지 않는다. HTTP 제출/API 활성화·DB verified_at/verified_duration 쓰기는 아직 연결하지 않았다.
 
