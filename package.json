@@ -15,6 +15,7 @@
     "qa:profile-sample-upload-db": "node qa/verify-profile-sample-upload-database.mjs",
     "qa:profile-sample-upload-api": "node qa/verify-profile-sample-upload-api.mjs",
     "qa:profile-sample-verification": "node qa/verify-profile-sample-verification.mjs",
+    "qa:profile-sample-analysis": "node qa/verify-profile-sample-analysis.mjs",
     "qa:saves": "node qa/verify-saved-objects.mjs",
     "qa:saves-db": "node qa/verify-saved-objects-database.mjs",
     "qa:project-track-db": "node qa/verify-project-track-database.mjs",

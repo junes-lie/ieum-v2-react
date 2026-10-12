@@ -1,5 +1,13 @@
 # 단일 앱 서비스 연결 계약
 
+## 2026-10-13 실제 대표 Sample 특징 분석 준비
+
+POST /api/me/voice-sample-analyze는 {uploadIntentId}만 받는다. Auth/본인 Sample lookup과 기존 audio receipt 확인 후, private 원본 byte/hash 재검증 및 같은 decoder의 실제 PCM을 기존 analyzeAudioBuffer(v5)에 전달한다. PCM은 기존 count/discard 경로의 선택적 synchronous consumer로 읽으며 전체 Track 저장/submit에 버퍼 할당을 추가하지 않는다. 확정 decodedFrames에 해당하는 mono Float32만 할당하고 IEUM_SAMPLE_ANALYSIS_MAX_PCM_BYTES 예산을 초과하면 다운로드 전에 거부한다. 이는 PCM 버퍼 예산이며 전체 Node process RAM 보장은 아니다. 새 server-only 설정은 비어 있고 실제 환경을 변경하지 않았다.
+
+profile_sample_receipts 다음 profile_sample_analysis migration을 적용한다. service-only confirm RPC는 본인 원본 ID/hash/byteLength·기존 audio receipt에 연결된 v5 features/featuresSha256/assessment를 immutable하게 보존한다. 같은 분석만 재시도하고 저장된 분석은 새 decoder/예산 설정 없이도 원본 byte 재확인 후 재사용한다. 브라우저 features/분석 성공 선언을 받지 않는다. 분석 완료는 대표 Sample 등록·음역 측정·Identity 생성·Track 제출·Mix 완료가 아니며 sampleVerification은pending이다.
+
+밝기/거칠기/dynamics는 기존 signal proxy estimated 표현을 유지하고 호흡량/비브라토/평균 음역 등 미지원 추출은unsupported/null로 둔다. sampled F0는 기존 제한된 monophonic 관찰이며 Sample로 편한 음역을 대체하거나 과학적 음색·실력 판정으로 표시하지 않는다. 원격 migration/hosted decoder/실제 가창 데이터·Profile 등록/App 연결은 미완료다. 실제 짧은 AAC와 격리 SQL의 source/version/예산/권한/실패·보존 검증만 완료했다.
+
 ## 2026-10-13 개인 대표 Sample 업로드·오디오 검증 준비
 
 POST /api/me/voice-sample-upload는 {size,sha256,contentType}와 Idempotency-Key를 받는다. Auth의 실제 UUID→본인 목적의 ieum_prepare_profile_sample_upload RPC→private Storage byte 검사/없는 원본의 no-upsert 서명 순서다. 기존 Profile/Part가 없어도 초기 Setup 원본을 준비할 수 있으며 사용자 ID/purpose/음역/features/검증 성공 입력은 거부한다. 개인 Sample intent는 Project upload intent와 별도 테이블·키 공간이다. opaque 원본 UUID는 기존 Storage adapter를 재사용하고 API bearer를 Storage에 전달하지 않는다.

@@ -1,4 +1,16 @@
+## 2026-10-13 R3 대표 Sample 실제 특징 분석 준비
+
+voice-sample-analyze API와 service-only sample_analysis 확정을 추가했다. 클라이언트 분석/features를 받지 않고 본인 원본 lookup·기존 실제 audio receipt→private Storage 원본 재검사→같은 decoder의 실제 PCM→기존 v5 분석기→features SHA256/assessment 저장으로 연결했다. source hash·byteLength·decoder receipt·분석 version을 보존하고 다른 분석으로 덮지 않는다. 기존 결과 재시도는 원본 byte를 재확인하며 새 decoder가 없어도 보존한 결과를 사용한다.
+
+개인 Sample 분석에만 명시된 server PCM byte 예산을 적용하고 확정 frame 수의 Float32를 할당한다. 예산 초과는 다운로드 전 실패하며 나머지 Track decode는 기존 count/discard를 유지한다. RAM 예산은 buffer 범위이며 process 전체 보장이 아니다. 서버 설정 이름만.env.example에 추가했고 실제 환경/모델을 실행하거나 사용자 앱을 종료하지 않았다. 기존 proxy 특성 estimated·미지원/null·sampled F0 한계를 유지하고 음역 Gate나 Identity 생성에 결과를 임의 적용하지 않는다.
+
+실제 AAC→PCM v5 분석→격리 PostgreSQL 저장 QA에서 source/receipt/hash·A4 sampled F0·미지원 특성·RAM 초과/미설정·권한·위조 입력·DB 실패·재시도·odd-byte PCM 연결과 기존 Profile/0Track/0Mix 보존을 확인했다. 변경 decoder의 실제WebM/MP4/fragmentedMP4/WAV consumer/count·예외 안전 종료와 기존 Sample 실제 receipt/Project 제출 회귀, build40modules/525.39KB도 통과했다. >500KB 기존 경고는 유지한다. 물리 가창 분석·음색 품질·AI 그래픽·원격 서비스 인수 증거는 아니다.
+
+실제 Profile source 등록 transaction·원격 migration/Auth/Storage/hosted runtime·App 연결·R5 실제 형상 생성은 미완료다. sampleVerification=pending을 유지하고 다음은 기존 음역 측정 provenance와 대표 Sample 분석을 source revision 등록에 연결하는 것이다. 사용자 미커밋3파일·기존 React·미정 갱신 정책은 보존한다.
+
 ## 2026-10-13 R3 대표 Sample 원본 업로드·오디오 해독 준비
+
+Git/Production 확인: 검토한14파일만cd43cf249ed5c7f400b17f2a2635cef9032f241d로 commit/push했고 main/origin0/0이다. 사용자 변경3파일은 별도 미커밋 보존했다. full SHA GitHub status pending/statuses0·deployment0으로 Git Integration READY/commit 메타데이터는 미확인이다. Production 두 Sample API에 비실제 bearer/빈 입력으로 POST해503 SERVICE_NOT_CONFIGURED, capabilities200/preparation/모두false를 확인했다. 이는 route의 미연결 거부 응답이며 최신 SHA 일치·실제 upload/decoder/SQL 적용·Profile 등록 성공 증거로 확대하지 않는다. 이 문단은 commit 후 로컬 기록이다.
 
 기존 개인 측정/대표 Sample과 Project Track의 목적을 분리하는 profile_sample_upload_intents 및 본인 prepare/lookup RPC를 추가했다. voice-sample-upload API는 본인 Auth→DB 할당→private Storage byte 검사/서명 순서로 동작한다. 동일 사용자/key/파일은 같은 원본 ID, 바뀐 파일은409이며 다른 사용자의 같은 key와 Track의 같은 key는 별개다. 이전 Profile/Part가 없는 초기 Setup도 준비 가능하다. 사용자 입력의 userId/purpose/features/검증 완료는 거부한다.
 

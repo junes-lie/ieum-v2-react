@@ -27,10 +27,12 @@ try {
     const file=join(directory,'original.'+extension)
     await generate([...options,file])
     const before=hash(await readFile(file))
-    const result=await decodeOriginalAudio(file,{executable,contentType,maxDurationSeconds:2})
+    let consumedBytes=0
+    const result=await decodeOriginalAudio(file,{executable,contentType,maxDurationSeconds:2,onPcmChunk:chunk=>{consumedBytes+=chunk.length}})
     assert.ok(result.duration>=0.49 && result.duration<=0.55,JSON.stringify(result))
     assert.equal(result.decodedFrames,result.duration*result.sampleRate)
     assert.equal(result.analysisVersion,'decoded-pcm-v1')
+    assert.equal(consumedBytes,result.decodedFrames*2)
     assert.equal(hash(await readFile(file)),before,'Decoder must preserve the original')
     const bytes=await readFile(file),objectId='12345678-1234-4234-8234-123456789abc'
     const storage=createSupabaseAudioStorage({env:{IEUM_STORAGE_PROVIDER:'supabase',IEUM_SUPABASE_URL:'https://example.supabase.co',
@@ -48,6 +50,8 @@ try {
       {executable:join(directory,'missing.exe'),maxDurationSeconds:2}),e=>e.code==='UPLOAD_OBJECT_MISMATCH','Hash failure must precede decoding')
     await assert.rejects(decodeOriginalAudio(file,{executable,contentType,maxDurationSeconds:0.1}),e=>e.code==='AUDIO_DURATION_EXCEEDED')
     await assert.rejects(decodeOriginalAudio(file,{executable,contentType:contentType==='audio/wav'?'audio/webm':'audio/wav',maxDurationSeconds:2}),e=>e.code==='AUDIO_FORMAT_MISMATCH')
+    if(contentType==='audio/wav')await assert.rejects(decodeOriginalAudio(file,{executable,contentType,maxDurationSeconds:2,
+      onPcmChunk:()=>{throw new Error('private consumer detail')}}),e=>e.code==='AUDIO_ANALYSIS_FAILED' && !e.message.includes('private consumer'))
     console.log(`${extension}: real decoder ${result.decodedFrames} frames/${result.duration}s; original preserved`)
   }
   const invalid=join(directory,'invalid.webm')

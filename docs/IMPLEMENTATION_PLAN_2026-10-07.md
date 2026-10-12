@@ -4,6 +4,8 @@
 
 ## 이미 확정된 서비스·비용 답변
 
+2026-10-13 R3/R5 Sample 분석 선행: 검증된 개인 Sample 실제 PCM에 기존 v5 분석기를 연결하고 features hash/기존 decoder receipt·source hash에 묶인 immutable 분석을 준비했다. 확정 frame 수·explicit PCM RAM 예산을 적용하고 미지원/추정 특성 표기를 유지한다. 실제 AAC→특징/F0→격리 SQL·실패/재시도/예산/권한 검증 및 관련 decoder/제출 회귀/build 통과. 이는 Profile 등록/개인 형상 완료가 아니며 기존 단계·미정 정책·예산은 유지한다. 다음은 기존 측정 source의 출처와 대표 Sample 분석을 Profile 등록 revision에 연결하는 transaction; 실제 서비스/App/Identity 생성은 미완료다.
+
 2026-10-13 R3 Profile 등록 선행: 대표 Sample 전용 intent/본인 lookup·private no-upsert upload API·실제 해독/immutable receipt API를 추가했다. 초기 Setup에 이전 Profile/Part를 요구하지 않고 개인 원본을 Project Track intent와 분리했다. 개인 업로드/byte 검증/실제 audio 길이 검증/대표 Sample 등록을 분리하며 현재 등록은pending이다. 실제 AAC+격리 SQL+주입 HTTP·기존 Project 제출 회귀/build 통과. 다음은 실제 측정 출처·Sample 분석과 이력 revision의 Profile 등록 transaction이며 실제 Auth/Storage/hosted decoder·App 바인딩은 여전히 미완료다. 기존 단계·예산·미정 Identity 정책은 보존한다.
 
 2026-10-13 R3/R5 원본 계보 선행 gate: 현재 Profile source와 private revision별 immutable snapshot을 분리했다. 재측정/대표 Sample 변경 후에도 이전 hash/참조/분석 version을 남기고 동일 revision 재사용으로 내용을 덮지 않는다. 현재 Part Fit은 현재 source를 사용하며 이력 보존은 Identity 갱신·과거 Track/Record 재생성 정책을 확정하지 않는다. 기존2–4 Part QA 및 새 실제 격리 SQL QA/build 통과. 실제 source ingestion·원격 migration·생성 결과는 미완료다. 기존 예산/실효 공수 미측정 상태·완료 증거·단계 번호는 유지한다.

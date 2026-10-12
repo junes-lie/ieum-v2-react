@@ -57,11 +57,13 @@ function webmHeader(bytes) {
 
 // Server worker only. Both paths are trusted server configuration/staging paths,
 // never URLs or executable arguments supplied by a client. PCM is counted and
-// discarded as it arrives; it is not accumulated in RAM or saved over the input.
-export async function decodeOriginalAudio(filePath,{ executable,contentType,maxDurationSeconds,timeoutMs=60000 }={}) {
+// discarded by default. A trusted synchronous consumer may use an explicitly
+// bounded buffer for analysis; the decoder itself never accumulates PCM.
+export async function decodeOriginalAudio(filePath,{ executable,contentType,maxDurationSeconds,timeoutMs=60000,onPcmChunk }={}) {
   if (!isAbsolute(executable || '')) throw error('AUDIO_DECODER_NOT_CONFIGURED',503)
   if (!isAbsolute(filePath || '') || !Number.isFinite(maxDurationSeconds) || maxDurationSeconds<=0 ||
-      !Number.isInteger(timeoutMs) || timeoutMs<=0) throw error('INVALID_AUDIO_VERIFICATION',400)
+      !Number.isInteger(timeoutMs) || timeoutMs<=0 ||
+      (onPcmChunk!==undefined && typeof onPcmChunk!=='function')) throw error('INVALID_AUDIO_VERIFICATION',400)
   const mime=typeof contentType==='string'?contentType.split(';')[0].trim().toLowerCase():''
   const formats={'audio/webm':'matroska','audio/mp4':'mov','audio/wav':'wav','audio/x-wav':'wav'}
   if (!Object.hasOwn(formats,mime)) throw error('AUDIO_FORMAT_UNSUPPORTED')
@@ -95,8 +97,10 @@ export async function decodeOriginalAudio(filePath,{ executable,contentType,maxD
     // Never expose decoder diagnostics: they can include private local paths.
     child.stderr.resume()
     child.stdout.on('data',chunk=>{
+      if(failure)return
       pcmBytes+=chunk.length
-      if (pcmBytes>maxDurationSeconds*sampleRate*bytesPerFrame) stop(error('AUDIO_DURATION_EXCEEDED'))
+      if (pcmBytes>maxDurationSeconds*sampleRate*bytesPerFrame) {stop(error('AUDIO_DURATION_EXCEEDED'));return}
+      if(onPcmChunk){try{onPcmChunk(chunk)}catch{stop(error('AUDIO_ANALYSIS_FAILED'))}}
     })
     child.on('close',code=>{
       clearTimeout(timer)
