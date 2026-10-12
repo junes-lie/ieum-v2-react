@@ -1,3 +1,7 @@
+### R2 공통 Player 재생 실패 마감 — 2026-10-12
+
+이전 취소된 재생 요청의 늦은 거부가 새 재생을 정지하는 native 결함을 재현하고 effect 요청 소유권을 보호했다. 현재 요청의 실패 처리는 유지한다. qa:playback/기존 사용자 여정·공유 Sample 플레이어 회귀로 검증해 main 자동배포 후 Production 같은 QA로 전달한다. 탐색 순위·Identity 정책/디자인·서버 상태는 변경하지 않으며 전체 R2 완료로 계산하지 않는다. 앞선 Project 첫 가사 안내는04af003 자동배포 및 Production 같은 QA로 마감했다.
+
 ### R1 녹음 진입 안내 후속 — 2026-10-12
 
 서버와 독립적으로 기존 Project Recorder의 실제 첫 가사 timestamp 안내를 연결했다. 준비/녹음/일시정지의 동일 Take 시간 기준이며 첫 진입만 짧게 표시한다. BPM 없는 곡의 박자를 추정하거나 Sample 준비반주를 Project에 대체하지 않는다. build/계약 및 native 실제 반주·pause/resume·직접 제출/2–4Mix·실패 보존 검증을 통과했다. 자동배포 후 Production 동일 QA로 마감하고 실제 모바일 음량·청취/진입 및 R6 원곡 timing gate는 별도로 남긴다. 서버 blocker는 이 독립 기능의 중단 사유가 아니다.

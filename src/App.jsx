@@ -1175,10 +1175,11 @@ function Player({ source, playing, setPlaying, duration: durationProp = 18, dura
   }, [source,durationHint,durationProp])
   useEffect(() => {
     const audio = audioRef.current
+    let active = true
     if (source && audio) {
-      if (playing) audio.play().catch(() => setPlaying(false))
+      if (playing) audio.play().catch(() => { if (active) setPlaying(false) })
       else audio.pause()
-      return
+      return () => { active = false }
     }
     if(playing)setPlaying(false)
   }, [playing,duration,source,setPlaying])

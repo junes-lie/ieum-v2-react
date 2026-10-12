@@ -1,3 +1,9 @@
+### R2 재생 요청의 늦은 실패 소유권 — 2026-10-12
+
+Current Mix의 재생→정지→재생 뒤 이전 play Promise를 늦게 거부하면 현재 native 재생까지 멈추는 assertion 실패를 재현했다. 공통 Player effect cleanup에서 이전 요청을 비활성화하고 현재 요청의 거부만 setPlaying(false)에 반영하도록 수정했다. 새 화면·오디오 gain·저장/Track/Identity 데이터 변경은 없다. 유지 QA qa:playback은 지연된 취소 요청이 새 실제 재생을 유지하는 조건과 현재 요청 실패가 제어/오디오를 정지하는 조건을 함께 확인한다. 초기 QA는 hidden audio를 visible로 기다려 timeout했고 attached 대기 및 기존 My Projects→Workspace 진입으로 수정한 뒤 실제 앱 결함을 재현했다.
+
+build34modules, single App/기존 사용자 여정, native 재생 소유권 QA 통과. 공유 Player의 Profile Sample 편집/교체·실패·재시도/재로드 QA도 실행한다. 관련 변경만 main 자동배포 후 Production 같은 소유권 QA로 마감한다. 물리 청취/모바일·서버·음악 품질 완료로 확대하지 않는다. 앞선 첫 lyric 안내04af003은 Git Integration7004881368 success, Production HTTP200/bundle5D6044FB62C2B3114F44D509CF2C223CF51FB80A358606EF8E3B6A313E8A06CE exact 및 같은 native 반주/진입/2–4Mix QA를 통과했다.
+
 ### R1 Project 녹음 첫 가사 진입 안내 — 2026-10-12
 
 Sample에는 준비 반주/카운트다운이 있지만 Project Recorder에는 첫 가사 시각이 있어도 REC 시간만 표시됐다. 기존 recording-clock에 실제 첫 lyric.time 기준의 시작 후 시각·남은 초·첫 진입 안내를 연결했다. 일시정지에서는 Take 시간과 안내를 함께 유지한다. Review/미등록·잘못된 timestamp에는 안내를 만들지 않는다. 임의 BPM/박자·새 화면·디자인·오디오 gain·녹음 원본은 변경하지 않았다.
