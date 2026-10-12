@@ -20,6 +20,10 @@ R2 전체 미완료 목록은 새로 확인한 다음 항목을 포함한다:05 
 
 완료 gate: 범위 기반 순서/초기 preview·직접 선택·맞는 곡 없음·취소 시 기존 Profile/Track 보존,기존3곡 hash/Guide·지정 구간/가사/오류복원,현재 Project/Key/Part/Team과 후보 일치 및 Sample 없음,build/기존 여정→Git Integration→Production 같은 변경 QA. 실제 후보 Sample/음색·저장곡 기반 취향 매칭,공유 서비스·Identity·음악 청취/물리 인수는 여전히 잔여다. 전체 R2 완료를 선언하지 않는다.
 
+### R2 Home 가용성의 고정 수치 제거
+
+PRD Home Discovery/Data Confidence와 현재 React 대조에서 Profile 등록 뒤에도 Ocean Eyes2/Love Poem1을 음역 확인 없이 참여 가능한 수로 표시하는 누락을 확인했다. 기존 두 Song Row/화면 구조는 유지하고 실제 현재 Project 수·등록 Part 요구 음역/내 측정 음역 비교로 확인된 OPEN Project 수와 미확인 Project 수를 분리한다. 현재 생성 Project와 저장된 제출/배정 정보를 포함하며 음역 없는 곡에 임의 범위를 넣지 않는다. source에 Part 음역이 없는 Project는 추천 적합성 확보 완료가 아니다. 그 데이터/실제 음악 제공·사용자별 전체 Song 추천은 다음 잔여이며 확인된0과 미확인을 구분한다. 완료 gate는 Profile 전/후 실제 수·마감/배정/범위 이탈 제외·미확인 분리·곡 상세 경로/제출수 보존→관련 build/QA→main Git Integration/Production이다.
+
 이 절은 과거 2–4주 및 아래 '잔여 기능 일정 재산정 — 서버 외 범위 포함'의 일정 추정보다 우선한다. 단계 번호·완료 증거·G1–G5·미정 정책은 유지한다. 이전 Plan Mode의 파일 수정 금지는 검토 시점의 제한이며 현재 승인된 실행에서는 기존 파일을 직접 개정한다. 새 계획/앱/중복 생성 경로를 만들지 않는다.
 
 ### R6 비용 제한 — 사용자 확정: 예산 0원

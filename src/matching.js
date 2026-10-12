@@ -50,3 +50,14 @@ export function recommendSampleSongs(rangeData, songs) {
   return songs.map(song=>({song,fit:evaluatePartFit({rangeData,part:song})}))
     .sort((a,b)=>Number(b.fit.eligible)-Number(a.fit.eligible))
 }
+
+export function openProjectRangeAvailability(rangeData, projects) {
+  let matchingProjects=0,unverifiedProjects=0
+  for(const project of projects){
+    const openParts=(project.parts || []).filter(part=>!part.participantId && !part.participant && ['open','recruiting'].includes(part.status))
+    const fits=openParts.map(part=>evaluatePartFit({rangeData,part}))
+    if(fits.some(fit=>fit.eligible))matchingProjects++
+    else if(fits.some(fit=>['unavailable','profile-required'].includes(fit.status)) || !project.parts)unverifiedProjects++
+  }
+  return {matchingProjects,unverifiedProjects}
+}

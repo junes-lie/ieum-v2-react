@@ -1,3 +1,11 @@
+## 2026-10-12 R2 Home 가용성의 실제 등록 데이터 연결
+
+29739a2 VP03/Match 묶음은 main/origin 일치,Git Integration Production7011459599 success,HTTP200/index-CYRfz7SF.js SHA256 580AEBA774E5893D2B885D93988E0AEA16411C99823D7AC251C9339187B92D31 exact. Production 추천·Match/Finder·05A Setup 저장/복귀 QA 통과로 마감했다.
+
+Home에서 Profile이 있다는 이유만으로 고정2/1을 참여 가능한 수로 표시하던 코드를 실제 Project/Part 정보 비교로 변경했다. 첫 방문은 현재 관련 Project 수를 중립 표시,Profile 등록 후는 확인된 음역 적합 OPEN Project 수와 음역 정보가 없는 Project 수를 구분한다. 생성 Project·실제 제출/배정 상태를 포함하고 현재 For You의두 Song/Home 구조를 유지한다. 미확인을0개 가능 또는 실제 분석 성공으로 처리하지 않는다. Node/native QA는 적합/음역 없음/범위 이탈/제출됨/이미배정,Profile 전후 생성Project 포함3개·확인된1/미확인2와확인된0/미확인1,곡 상세/미참여/기존 제출2개 보존 통과. 실제 카탈로그 Part 음역·개인별 전체 곡 추천/실기기·협업·음색 분석은 남아 있다.
+
+자원19:06:51KST total15.95/free3.26GiB,Python 프로세스 없음. 기존8GiB 대형 AI 시작 기준 미달로 모델을 실행하지 않았다. 사용자 서버3파일은 이번에도 제외하며 관련 기능만 main→Git Integration→Production으로 마감한다.
+
 ## 2026-10-12 R2 VP03 음역 추천·Match 대상/Team 연결
 
 앞선8fe0345 main/origin push 및 Vercel Git Integration Production7011339105 success. HTTP200/index-xGqs2nRY.js SHA256 D40FDBD79B6352998752831EA2705B4AFBBCEDCAC36D5F63CF2FEDDF9FAD2D41 local exact. 배포된 commit의 Finder QA 원본을 TEMP에 read-only 추출해 Production에서 실행했고 취향/필터/이력·Collection/05A Setup 취소/저장 복귀 모두 통과했다. 임시 QA 파일은 repository에 포함하지 않았다.
