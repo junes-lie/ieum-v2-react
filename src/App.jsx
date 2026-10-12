@@ -24,7 +24,7 @@ import {
   loadProvidedAudio,
   updateRecordingGuides
 } from './audio.js'
-import { loadProjectBacking, projectAudioReference, assertProjectTrackAudio } from './projectAudio.js'
+import { loadProjectBacking, projectAudioReference, assertProjectTrackAudio, recordingEntryPrompt } from './projectAudio.js'
 import { readLocalUserState, writeLocalUserState } from './projectService.js'
 import { evaluatePartFit } from './matching.js'
 import { buildVoiceLayer, projectRecordSignature, isSupportedVoiceAnalysis } from './voiceAnalysis.js'
@@ -1042,6 +1042,7 @@ function Recorder({ go, submit, onRecordingStart, partId, projectTracks, layers,
   const draftId = `${CURRENT_USER_ID}:${legacyDraftId}`
   const lyricIndex = project.lyrics?.length ? project.lyrics.findLastIndex(line=>seconds>=line.time) : 0
   const lyrics = project.lyrics?.length ? project.lyrics.map(line=>line.text) : ['가사 없음']
+  const entryPrompt = recordingEntryPrompt(project,seconds,status)
   const begin = async () => {
     if(startingRef.current || restoreState!=='ready')return
     startingRef.current=true;setRecordingBusy(true)
@@ -1138,7 +1139,7 @@ function Recorder({ go, submit, onRecordingStart, partId, projectTracks, layers,
   return <div className="screen recording-screen" data-recording-status={status}>
     <TopBar figmaHeader title={status==='review'?'녹음 확인':`${currentPart.name} 녹음`} back={leave} meta={status === 'review' ? project.key || 'C major' : undefined}/>
     <main>
-      <div className="recording-heading"><h1>{project.songTitle || project.name || "내 Part 녹음"}</h1><p>{project.name} · {currentPart.name} · {project.key || "C major"}</p><span className="recording-clock" data-state={status}>{status === "recording" ? "REC" : status === "paused" ? "PAUSED" : status === "review" ? "REVIEW" : "READY"} · {fmt(seconds)}</span></div>
+      <div className="recording-heading"><h1>{project.songTitle || project.name || "내 Part 녹음"}</h1><p>{project.name} · {currentPart.name} · {project.key || "C major"}</p><span className="recording-clock" data-state={status} data-recording-entry>{status === "recording" ? "REC" : status === "paused" ? "PAUSED" : status === "review" ? "REVIEW" : "READY"} · {fmt(seconds)}{entryPrompt && ` · ${entryPrompt}`}</span></div>
       <section className="guide-panel" aria-label="듣기 전용 Guide">
         <label className="backing-guide"><span>Guide · 반주</span><input aria-label="Guide 반주" type="checkbox" checked={guides.backing} onChange={e=>setGuides({...guides,backing:e.target.checked})}/><i/></label>
         <div className="section-head"><h2>함께 듣는 Track</h2><span>{guideTracks.filter(track=>guides.parts[parts.findIndex(part=>part.id===track.partId)]).length}개 선택</span></div>

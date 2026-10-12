@@ -1,5 +1,16 @@
 import { loadProvidedAudio } from './audio.js'
 
+// Lyric timestamps describe entry, not beats or a measured BPM.
+export function recordingEntryPrompt(project, elapsedSec, state) {
+  if (!['ready','recording','paused'].includes(state) || !Number.isFinite(elapsedSec) || elapsedSec < 0) return ''
+  const first = project?.lyrics?.[0]?.time
+  if (!Number.isFinite(first) || first < 0) return ''
+  if (state === 'ready') return first > 0 ? `첫 가사 · 시작 후 ${first.toFixed(1)}초` : '녹음 시작과 함께 첫 가사'
+  const remaining = first - elapsedSec
+  if (remaining > 0) return `첫 가사까지 ${remaining.toFixed(1)}초${state === 'paused' ? ' · 일시정지' : ''}`
+  return state === 'recording' && elapsedSec - first < 1 ? '지금 첫 가사를 부르세요' : ''
+}
+
 // A Profile excerpt is not a Project backing. Bind the verified arrangement
 // to both the song and its recorded key before requesting any audio bytes.
 export async function loadProjectBacking(project, load = loadProvidedAudio) {

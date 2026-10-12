@@ -1,3 +1,9 @@
+### R1 Project 녹음 첫 가사 진입 안내 — 2026-10-12
+
+Sample에는 준비 반주/카운트다운이 있지만 Project Recorder에는 첫 가사 시각이 있어도 REC 시간만 표시됐다. 기존 recording-clock에 실제 첫 lyric.time 기준의 시작 후 시각·남은 초·첫 진입 안내를 연결했다. 일시정지에서는 Take 시간과 안내를 함께 유지한다. Review/미등록·잘못된 timestamp에는 안내를 만들지 않는다. 임의 BPM/박자·새 화면·디자인·오디오 gain·녹음 원본은 변경하지 않았다.
+
+build34modules, Project audio 계약·backing gain·audio foundation 통과. native Edge/격리 IndexedDB에서 실제19초 반주와 등록된3.5초 lyric fixture의 ready/countdown/pause freeze/resume/첫 진입·직접 제출/원본 참조를 검증했고 2–4 Track Mix/잘못된 반주 HTTP·hash·key/변경된 snapshot 거부·원본 보존도 통과했다. 가짜 마이크 및 합성 Track 입력이며 실제 모바일/청취·원곡 timing 정확도·박자 인수를 대신하지 않는다. 관련 묶음은 main push→Git Integration→Production 동일 QA로 마감한다. R3/R4 외부 연결과 R5/R6/R7 완료 조건은 유지한다.
+
 ### R3 Google 로그인 우선 결정 — 2026-10-12
 
 사용자가 `Google 로그인 우선`으로 답했다. SERVICE_CONNECTION과 기존 구현계획에 반영했다. 확정 범위는 우선 로그인 방식이며 실제 Supabase/Google OAuth 자원·로그인 UI·계정 연결·공유 DB/Storage 성공은 아니다. 기존 서버 session/Auth 준비 코드를 재사용할 계획이고 현재 서비스 미연결/capabilities false를 유지한다. 앱 코드와 보류된 서버3파일은 변경하지 않았다. 과거 로그인 미정 기록은 당시 상태로 보존하며 이 결정이 현재 우선 방식을 대체한다.
