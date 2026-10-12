@@ -1,4 +1,10 @@
+## 2026-10-13 R5 실제 제출 분석 입력 연결
+
+검증된 remote 제출 Track 분석을 기존 voiceIdentitySources/buildTrackIdentityInput에 연결했다. 기존 session 본인 경계 안에서 Track ID·원본/특징 hash·PCM receipt·project-track 목적/v5 분석을 대조하고 source revision/digest를 만든다. 이미 존재하는 개인 참조의 snapshot만 받으며 helper가 개인 결과를 생성·승인하거나 결과 소유권 registry를 대체하지 않는다. 같은 입력/버전 재현·다른 generator version·요청 중 참조 변이·목적/특징/receipt/임의 URL 변조·logout 늦은 응답 차단을 기존 실제 WAV→격리 SQL/API QA에 통합해 통과했다. 기존 local 입력/Identity 계약/build도 통과했고 Profile/Track/Mix·시각·사용자3파일은 보존한다. App 호출/실제 remote 데이터·개인 결과 registry/승인 형상 및 Track 변형/Record 결합은 미완료다.
+
 ## 2026-10-13 R3/R5 제출 Track 실제 분석 선행
+
+마감:검토한11파일만5d6a0ede74b39376fa31638ea4e9c3c797714da1 commit/main push·main/origin0/0, 사용자3파일 보존 및 transport 신규 메서드 한 줄만 stage. Vercel full SHA success/Production deployment7024266320 SHA 일치를 확인했다. https://vercel.com/junes-lie/ieum-v2-react/7bMidBS8mPyAmeaDr7aCQEAEs8Np. Production page/JS200·index-DROqEnLI.js local exact/SHA256 e839ce98843d32f035149833b7a920e0c3744baf0273685732aad05c504343bd, 새 분석 경로 무인증401/AUTH_REQUIRED/private no-store 확인. 관련 Track 실제 해독/SQL/API/session 및 기존 Sample/Project API/session 회귀·exact-index transport·build 통과, 기존500KB 경고 유지. 실제 원격/운영 분석·App/생성 그래픽 인수는 미완료이며 이 문단은 commit 후 로컬 증거 기록이다.
 
 실제 제출 Track 전용 POST analysis를 기존 Project API/session transport에 연결했다. 대표 Sample용 검증 PCM/v5 분석기를 재사용하지만 project-track 목적·별도 manifest/version·원본 hash/decoded receipt·immutable 저장은 분리한다. 본인 제출 성공 원본만 분석하고 클라이언트 특징/Review/Draft를 분석 근거로 받지 않는다. 실패/미지원/예산 초과는 원본·제출/Mix를 유지하며 그래픽을 생성/확정하지 않는다. 실제 짧은 WAV 해독→HTTP→격리 SQL 및2/3/4 Part·본인/타인·동일 입력 재현·실패/재시도·저장 원본 재검사·RAM 한도·기존 Sample 회귀가 통과했다. 실제 운영 migration/Google/Storage·App 실행/청취·개인 형상/Track 레이어/Record 생성은 미완료다.
 

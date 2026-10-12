@@ -1,5 +1,7 @@
 # 현재 실행 기준 — 2026-10-13 변경분 및 잔여 구현계획 개정
 
+2026-10-13 R5 실제 분석 입력 연결: 검증된 remote 제출 Track 분석을 기존 voiceIdentitySources/buildTrackIdentityInput에 연결했다. 기존 session 본인 경계 안에서 Track ID·원본/특징 hash·PCM receipt·project-track 목적/v5 분석을 대조하고 source revision/digest를 만든다. 이미 존재하는 개인 참조의 snapshot만 받으며 helper가 개인 결과를 생성·승인하거나 결과 소유권 registry를 대체하지 않는다. 같은 입력/버전 재현·다른 generator version·요청 중 참조 변이·목적/특징/receipt/임의 URL 변조·logout 늦은 응답 차단을 기존 실제 WAV→격리 SQL/API QA에 통합해 통과했다. 기존 local 입력/Identity 계약/build도 통과했고 Profile/Track/Mix·시각·사용자3파일은 보존한다. App 호출/실제 remote 데이터·개인 결과 registry/승인 형상 및 Track 변형/Record 결합은 미완료다. 기존 단계/예산·미정 정책은 유지하고 실효 공수는 미측정이다.
+
 2026-10-13 R3/R5 제출 Track 실제 분석 선행: 실제 제출 Track 전용 POST analysis를 기존 Project API/session transport에 연결했다. 대표 Sample용 검증 PCM/v5 분석기를 재사용하지만 project-track 목적·별도 manifest/version·원본 hash/decoded receipt·immutable 저장은 분리한다. 본인 제출 성공 원본만 분석하고 클라이언트 특징/Review/Draft를 분석 근거로 받지 않는다. 실패/미지원/예산 초과는 원본·제출/Mix를 유지하며 그래픽을 생성/확정하지 않는다. 실제 짧은 WAV 해독→HTTP→격리 SQL 및2/3/4 Part·본인/타인·동일 입력 재현·실패/재시도·저장 원본 재검사·RAM 한도·기존 Sample 회귀가 통과했다. 실제 운영 migration/Google/Storage·App 실행/청취·개인 형상/Track 레이어/Record 생성은 미완료다. 기존 단계·예산/미정 형상·버전 정책·사용자3파일을 보존하고 공수는 미측정이다.
 
 ## 2026-10-13 R1/R2 상세 Key 잠금 안내

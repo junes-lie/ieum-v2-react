@@ -1,5 +1,11 @@
 # 단일 앱 서비스 연결 계약
 
+## 2026-10-13 기존 Identity 입력과 제출 분석 연결
+
+loadRemoteSubmittedTrackIdentityInput는 기존 session.run 안에서 service.analyzeSubmittedTrack을 호출하고 기존 buildTrackIdentityInput 계약으로 private 입력을 만든다. local Blob/demo의 remote 자동 이관이나 그래픽 성공/제출/Mix 쓰기는 없다. 본인과 identityOwnerId를 대조하고 개인 opaque ref/revision/output hash를 await 전에 snapshot한다. 이는 caller가 이미 보유한 개인 참조를 받는 준비 경계이며 실제 개인 artifact 생성/승인·서버 owner registry 검증은 아직 없다.
+
+source revision은 실제 Track ID·원본 hash/크기·decoded receipt/decoder version·분석 manifest version/features hash를 묶은 private SHA256이다. generator version과 개인 ref는 기존 input digest에 반영한다. 응답의 목적/버전/수치 hash/assessment/receipt를 검사하고 임의 URL/추가 metadata·다른 Track·logout 뒤 결과는 반환하지 않는다. 해당 입력을 completed artwork로 저장/표시하거나 userId를 공개 URL로 변환하지 않는다. 개인→Track→Project의 실제 생성·자연 혼합·G1–G5와 미정 갱신/버전/fallback 정책은 기존 잔여다.
+
 ## 2026-10-13 제출 Track 실제 음향 분석 준비
 
 POST /api/projects/:projectId/parts/:partId/analysis는 기존 Auth 이후 JSON {}만 받는다. 본인 실제 submitted Track→검증된 immutable upload/decoded receipt→private Storage bytes/hash 재검사→기존 v5 특징 분석→service-only 확정 순서다. migration submitted_track_analysis는 verified_audio_receipts 이후 적용하며 아직 원격에 적용하지 않았다. 별도 ieum-track-analysis-v1 결과에는 실제 source hash/size/receipt/features hash/analysis version과 project-track assessment를 보존한다. 임의 클라이언트 features/음역·대표 Sample을 대체하지 않고 원본·Part·제출/Project revision·Mix job·Identity를 변경하지 않는다.

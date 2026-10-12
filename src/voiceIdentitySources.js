@@ -65,3 +65,43 @@ export async function loadSubmittedTrackIdentityInput({projectId,partId,identity
       data:{projectId,partId,sourceRevision:source.revision,analysis:track.features,
         assessment:assessVoiceCandidates(track.features,'project-track')}}})
 }
+
+// Remote counterpart of the persisted Track bridge above. This prepares a
+// private input only; the personal result reference must already exist. It does
+// not generate a shape, import local/demo data, or change submission/Mix state.
+export async function loadRemoteSubmittedTrackIdentityInput({session,projectId,partId,identityOwnerId,identityRef,generatorVersion}) {
+  const personalRef=structuredClone(identityRef)
+  if(typeof session?.run!=='function' || ![projectId,partId,identityOwnerId,generatorVersion].every(value=>typeof value==='string' && value.trim()) ||
+    ![personalRef?.id,personalRef?.revision].every(value=>typeof value==='string' && value.trim()) ||
+    !/^[a-f0-9]{64}$/.test(personalRef.outputSha256 || ''))throw new Error('Existing personal result and submitted Track are required')
+  return session.run(async({userId,service,assertCurrent})=>{
+    if(userId!==identityOwnerId)throw new Error('Personal result owner and connected Track owner must match')
+    const result=await service.analyzeSubmittedTrack(projectId,partId)
+    const analysis=structuredClone(result?.analysis),receipt=analysis?.audioReceipt,features=analysis?.features
+    if(result?.trackId!==`${projectId}:${partId}` || result.analysisStatus!=='verified' || Object.keys(result).length!==3 ||
+      analysis?.version!=='ieum-track-analysis-v1' || Object.keys(analysis).length!==7 ||
+      !/^[a-f0-9]{64}$/.test(analysis.sourceSha256 || '') || !Number.isSafeInteger(analysis.byteLength) || analysis.byteLength<=0 ||
+      !receipt || Object.keys(receipt).length!==9 || receipt.sha256!==analysis.sourceSha256 || receipt.size!==analysis.byteLength ||
+      !['audio/wav','audio/x-wav','audio/mp4','audio/webm'].includes(receipt.contentType) ||
+      !Number.isSafeInteger(receipt.decodedFrames) || receipt.decodedFrames<=0 || receipt.sampleRate!==48000 ||
+      receipt.duration!==receipt.decodedFrames/receipt.sampleRate || receipt.analysisVersion!=='decoded-pcm-v1' ||
+      !/^ffmpeg version [^\x00-\x1f]+$/.test(receipt.decoderVersion || '') || !/^[a-f0-9]{64}$/.test(receipt.decoderSha256 || '') ||
+      !isSupportedVoiceAnalysis(features) || features.sampleRate!==receipt.sampleRate ||
+      features.pitchAnalysisVersion!=='normalized-difference-v1' || features.pitchFrameLength!==4096 ||
+      canonicalIdentityInput(analysis.assessment)!==canonicalIdentityInput(assessVoiceCandidates(features,'project-track')) ||
+      await digest(new TextEncoder().encode(canonicalIdentityInput(features)))!==analysis.featuresSha256) {
+      throw new Error('Verified submitted Track analysis provenance is unavailable or inconsistent')
+    }
+    assertCurrent()
+    const sourceRevision=await digest(new TextEncoder().encode(canonicalIdentityInput({trackId:result.trackId,
+      version:analysis.version,sourceSha256:analysis.sourceSha256,byteLength:analysis.byteLength,
+      audioReceipt:receipt,featuresSha256:analysis.featuresSha256})))
+    assertCurrent()
+    const manifest=await buildTrackIdentityInput({trackId:result.trackId,identityRef:personalRef,generatorVersion,
+      source:{recordId:result.trackId,purpose:'project-track',sha256:analysis.sourceSha256,analysisVersion:features.version,
+        data:{projectId,partId,sourceRevision,verificationVersion:analysis.version,audioReceipt:receipt,
+          analysis:features,assessment:analysis.assessment}}})
+    assertCurrent()
+    return manifest
+  })
+}

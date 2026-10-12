@@ -6,6 +6,7 @@ import {createHash} from 'node:crypto'
 import {createSupabaseAudioStorage} from '../server/audioStorage.js'
 import {projectLifecycleRequest,projectLifecycleErrorResponse} from '../server/projectLifecycle.js'
 import {createServiceSession} from '../src/serviceSession.js'
+import {loadRemoteSubmittedTrackIdentityInput} from '../src/voiceIdentitySources.js'
 import {checkedStoredTrackAnalysis} from '../server/sampleVoiceAnalysis.js'
 
 assert.ok(process.env.IEUM_PGLITE_ROOT && process.env.IEUM_QA_FFMPEG_PATH,'Existing isolated SQL/decoder required; no installation/model')
@@ -114,16 +115,54 @@ try{
     const context={receipt,size:bytes.length,sha256,contentType:'audio/wav',analysis:result.analysis}
     assert.deepEqual(checkedStoredTrackAnalysis(context),result.analysis)
     assert.throws(()=>checkedStoredTrackAnalysis({...context,analysis:{...result.analysis,featuresSha256:'0'.repeat(64)}}),e=>e.code==='INVALID_TRACK_ANALYSIS')
+    let tamper=null,mutateRef=null,disconnectAfterResponse=false
     const session=createServiceSession({baseUrl:'https://ieum.example/api',fetchImpl:async(url,init)=>{
       if(url.endsWith('/capabilities'))return Response.json({contractVersion:'ieum-service-v1',mode:'remote',authenticated:true,sharedProjects:true})
       if(url.endsWith('/me/session'))return Response.json({authenticated:true,user:{id:caller}})
-      try{return await projectLifecycleRequest(new Request(url,init),{env,fetchImpl})}catch(e){return projectLifecycleErrorResponse(e)}
+      try{
+        mutateRef?.();mutateRef=null
+        const response=await projectLifecycleRequest(new Request(url,init),{env,fetchImpl})
+        if(disconnectAfterResponse)session.disconnect()
+        if(tamper){const data=await response.json();tamper(data);return Response.json(data)}
+        return response
+      }catch(e){return projectLifecycleErrorResponse(e)}
     }})
     await session.connect('qa-token')
     let escaped
     const client=await session.run(async({service})=>{escaped=service.analyzeSubmittedTrack;return service.analyzeSubmittedTrack(project,'part-0')})
     assert.deepEqual(client,result,'Existing client/session routes to actual HTTP/SQL analysis')
-    session.disconnect()
+
+    // Opaque fixture reference only: no personal graphic generation/approval is claimed.
+    const identityRef={id:'opaque-fixture-personal-result',revision:'fixture-r1',outputSha256:'a'.repeat(64)}
+    const input={session,projectId:project,partId:'part-0',identityOwnerId:caller,identityRef,generatorVersion:'fixture-layer-v1'}
+    const manifest=await loadRemoteSubmittedTrackIdentityInput(input)
+    assert.deepEqual(await loadRemoteSubmittedTrackIdentityInput(input),manifest)
+    assert.equal(manifest.source.purpose,'project-track');assert.equal(manifest.source.sha256,sha256)
+    assert.equal(manifest.source.data.verificationVersion,'ieum-track-analysis-v1')
+    assert.deepEqual(manifest.source.data.audioReceipt,receipt)
+    assert.deepEqual(manifest.source.data.analysis,result.analysis.features)
+    assert.equal(manifest.source.data.assessment.candidates.bpm.status,'unsupported')
+    assert.ok(!('userId' in manifest) && !('url' in manifest) && !('layerStatus' in manifest))
+    await assert.rejects(loadRemoteSubmittedTrackIdentityInput({...input,identityOwnerId:users[1]}),/owner/)
+    await assert.rejects(loadRemoteSubmittedTrackIdentityInput({...input,identityRef:null}),/personal result/)
+    assert.notEqual((await loadRemoteSubmittedTrackIdentityInput({...input,generatorVersion:'fixture-layer-v2'})).inputDigest,manifest.inputDigest)
+    const mutableRef=structuredClone(identityRef)
+    mutateRef=()=>{mutableRef.revision='changed-during-request'}
+    assert.deepEqual(await loadRemoteSubmittedTrackIdentityInput({...input,identityRef:mutableRef}),manifest,'Capture existing personal ref before awaiting analysis')
+    for(const change of [
+      data=>{data.analysis.version='ieum-sample-analysis-v1'},
+      data=>{data.trackId='other:part'},
+      data=>{data.analysis.features.brightness=.987},
+      data=>{data.analysis.assessment.candidates.bpm={status:'estimated',value:120,confidence:1}},
+      data=>{data.analysis.audioReceipt.sha256='0'.repeat(64)},
+      data=>{data.audioUrl='https://private.example/token'}
+    ]){
+      tamper=change
+      await assert.rejects(loadRemoteSubmittedTrackIdentityInput(input),/provenance/)
+    }
+    tamper=null;disconnectAfterResponse=true
+    await assert.rejects(loadRemoteSubmittedTrackIdentityInput(input),e=>e.code==='SESSION_CHANGED')
+    assert.equal(session.snapshot().authenticated,false)
     await assert.rejects(escaped(project,'part-0'),e=>e.code==='SESSION_CHANGED')
 
     assert.deepEqual(await snapshot(project),before,'Analysis success cannot change submission count, original, Seed or Mix')
@@ -137,5 +176,5 @@ try{
     assert.equal(projectLifecycleErrorResponse(Object.assign(new Error('secret'),{code:'TRACK_ANALYSIS_CONFLICT'})).status,409)
     assert.deepEqual(await snapshot(project),before)
   }
-  console.log('PASS submitted Track analysis: real short WAV decoder→existing v5 extractor→HTTP→isolated SQL; 2/3/4 Part owner/submit gate, replay/reproducibility, source/purpose/version, RAM bound, failures and unchanged Track/Mix. No remote service, music/graphic or physical mic claim.')
+  console.log('PASS submitted Track analysis: real short WAV decoder→existing v5 extractor→HTTP→isolated SQL; 2/3/4 Part owner/submit gate, replay/reproducibility, source/purpose/version and private Identity-input bridge, tamper/logout denial, RAM bound, failures and unchanged Track/Mix. No remote service, music/graphic or physical mic claim.')
 }finally{await db.close()}
