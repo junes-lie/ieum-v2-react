@@ -1,4 +1,10 @@
+## 2026-10-13 R1/R2 확정 원본 복원
+
+2026-10-13 R1/R2 저장 복원 입구: 기본/생성 Project의 bootstrap에서 기존 submittedProjectTracks 판정으로 확정 원본만 분석/제출 목록에 연결한다. 실패·Review·알 수 없는 Part/잘못된 ID는 실제 Track 수를 늘리거나 재분석으로 덮어쓰지 않으며 기존 저장 원본/임시 파일은 유지한다. Recorder는 live origin만으로 내 Draft를 숨기지 않고 실제 확정 제출일 때만 완료 원본을 우선한다. 격리 DOM/IndexedDB App의 기본 Project·2–4 Part 생성 Project에서 제외/미분석/원본 불변·정상 제출/reload와 실제 Recorder의 실패 레코드+내 Draft Review 복원을 검증했다. build 통과·기존500KB 경고 유지. 실제 기기/청취·음악·원격 서비스·Identity 생성은 기존 잔여다. 사용자3파일·기존 단계/예산/정책은 보존한다. 실효 공수는 미측정이다.
+
 ## 2026-10-13 R1/R2 녹음 Guide 확정 입력
+
+마감:818bc4abeb77769bcdbf8be792c9d50a7fda297b 관련4파일 commit/main push·main/origin0/0 및 사용자3파일 보존. Vercel full SHA success/Production deployment7024743867 SHA 일치·https://vercel.com/junes-lie/ieum-v2-react/5eysKHZLmUW38XzFawUP89BGzdYr. Production page/JS200·index-B-57mExm.js local exact/SHA256 81c9473b8dda4a8e09d36fb5ee8ac5013b9e26bc5beecd9174ce3f79bb6c91ec. 실제 Recorder callback/격리 저장·2–4 Part·기존 App/렌더 QA 및 build 통과, 기존500KB 경고 유지. 실제 소리/마이크/실기기·협업/음악/Identity 생성 완료로 확대하지 않는다. 이 문단은 commit 후 로컬 증거 기록이다.
 
 2026-10-13 R1/R2 녹음 Guide 연결: Recorder도 기존 확정 제출 공통 판정을 사용한다. Review/실패·다른 Project 입력은 함께 듣기/녹음 길이/확정 Record Layer에 포함하지 않고 내 Review provisional layer만 기존 흐름대로 표시한다. 다른 확정 Track의 partIndex는 원본을 변경하지 않는 사본에서 현재 실제 Part 순서로 연결하여 Guide 선택과 audio scheduling slot 불일치를 막는다. 격리 Node DOM/IndexedDB의 실제 Recorder 시작 callback에서2/3/4 Part·Guide 체크 선택·잘못된 기존 index/입력 제외·원본 불변을 확인하고 기존 App 흐름/렌더 및 build 통과. 초기 QA는 renderer 옵션 projectId/layers가 존재하지 않아 TypeError였으며 실제 projectSeed/slots 계약으로 고쳐 통과했다. 마이크/반주/녹음 시작은 QA stub이며 실제 청취·녹음 하드웨어/시각·음악·원격 서비스 인수를 대체하지 않는다. 사용자3파일 및 기존 단계/예산/미정 정책을 보존하고 실효 공수는 미측정이다.
 

@@ -1247,7 +1247,7 @@ function Recorder({ go, submit, onRecordingStart, partId, projectTracks, layers,
     let active=true
     setRestoreState('loading')
     setError('')
-    loadTrack(`${project.id}:${currentPart.id}`).then(submitted=>submitted?.origin==='live-microphone-recording'?null:loadTrack(draftId).then(async stored=>stored || await loadTrack(legacyDraftId))).then(stored=>{
+    loadTrack(`${project.id}:${currentPart.id}`).then(submitted=>submitted?.origin==='live-microphone-recording' && submittedProjectTracks(project,{[currentPart.id]:submitted}).length?null:loadTrack(draftId).then(async stored=>stored || await loadTrack(legacyDraftId))).then(stored=>{
       if (!active || stored?.kind!=='temporary-recording' || !stored.blob) return
       if(stored.userId && stored.userId!==CURRENT_USER_ID)return
       const restored={...stored,url:URL.createObjectURL(stored.blob)}
@@ -1912,7 +1912,7 @@ export default function App() {
         fetch('/demo-stems/manifest.json').then(response=>response.ok?response.json():Promise.reject(new Error('데모 Track manifest 없음')))
       ])
       const stored = await Promise.all(projectStored
-        .filter(track => ['live-microphone-recording','local-formant-singing-demo'].includes(track.origin) && track.blob)
+        .filter(track => ['live-microphone-recording','local-formant-singing-demo'].includes(track.origin) && submittedProjectTracks(PROJECT,{[track.partId]:track}).length)
         .map(async track => ({
           ...await refreshTrackAnalysis(track,PROJECT_SEED),
           participantId:track.participantId || personFromName(track.participant)?.id || null
@@ -1938,7 +1938,7 @@ export default function App() {
       const createdTrackEntries = await Promise.all(createdProjects.map(async project=>{
         const records = await loadProjectTracks(project.id)
         const tracks = await Promise.all(records
-          .filter(track=>!['auto-mix','temporary-recording'].includes(track.kind)&&track.blob)
+          .filter(track=>submittedProjectTracks(project,{[track.partId]:track}).length)
           .map(async track=>{const refreshed=await refreshTrackAnalysis(track,project.seed);return {...refreshed,url:restoredUrl(refreshed.blob)}}))
         const storedMix=records.find(track=>track.kind==='auto-mix'&&track.blob)
         if(storedMix){setCreatedMixes(current=>({...current,[project.id]:{...storedMix,url:restoredUrl(storedMix.blob)}}));setCreatedMixStates(current=>({...current,[project.id]:'complete'}))}

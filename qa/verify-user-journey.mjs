@@ -60,6 +60,12 @@ try{
  await saveTrack({id:profileId+':range',projectId:profileId,kind:'voice-range',range:'C3–G4',rangeData:{lowMidi:48,highMidi:67}})
  await saveTrack({id:profileId+':sample',projectId:profileId,kind:'voice-sample',blob,duration:7,songLabel:'QA personal sample',features})
  await saveTrack({id:draftId,projectId,partId:'tenor',kind:'temporary-recording',userId:'jisun',blob,features,duration:7,guides:{backing:false,parts:[false,false,false,false]}})
+ const incompleteStored=[
+  {...track('bass'),kind:'project-track',submissionStatus:'failed',features:{version:'unsupported'},layer:null},
+  {...track('soprano'),id:projectId+':soprano:review',kind:'temporary-recording',submissionStatus:'review',features:{version:'unsupported'},userId:'other-owner',layer:null},
+  {...track('soprano'),id:projectId+':unknown-part',partId:'unknown-part',features:{version:'unsupported'},layer:null}
+ ]
+ for(const item of incompleteStored)await saveTrack(item)
  window.history.replaceState({ieumScreen:'complete'},'','#complete')
  const container=document.createElement('div');document.body.append(container);root=createRoot(container)
  await act(async()=>root.render(React.createElement(App)));await settle();await settle()
@@ -72,6 +78,15 @@ try{
  assert.equal((await loadTrack(projectId+':soprano')).origin,'live-microphone-recording')
  assert.equal(await (await loadTrack(projectId+':soprano')).blob.text(),await blob.text())
  check('App bootstrap restores submitted Blob, project seed and exact deterministic Layer; pending invitation does not create a Track')
+ for(const item of incompleteStored){
+  const original=await loadTrack(item.id)
+  assert.equal(original.submissionStatus,item.submissionStatus)
+  assert.equal(original.features.version,'unsupported','Non-final source must not be refreshed/analyzed as a submitted Track')
+  assert.equal(original.layer,null)
+  assert.equal(await original.blob.text(),await item.blob.text())
+ }
+ check('Bootstrap excludes failed/Review/unknown Part sources before analysis while preserving all stored originals')
+
  assert.equal(state().profile.sampleSong,'QA personal sample');assert.equal(state().profile.rangeData.lowMidi,48);assert.equal(state().songSaves.length,1)
  check('Profile range, personal sample and collection restore from isolated persistence')
  assert.equal(state().screen,'workspace');assert.equal(window.location.hash,'#workspace')
@@ -284,9 +299,13 @@ try{
   localStorage.setItem('ieum-v2:user-state:v7',JSON.stringify({joined:true,joinedPart:'tenor',createdProjects:[customProject],activeCreatedProjectId:customId}))
   const customDraftId=`jisun:${customId}:free-0:temporary-recording`
   await saveTrack({id:customDraftId,projectId:customId,partId:'free-0',kind:'temporary-recording',userId:'jisun',blob,features,duration:7})
+  const failedOther={id:customId+':free-1',projectId:customId,partId:'free-1',kind:'project-track',submissionStatus:'failed',origin:'live-microphone-recording',blob,features:{version:'unsupported'},layer:null}
+  const unknownOther={...failedOther,id:customId+':unknown',partId:'unknown'}
+  await saveTrack(failedOther);await saveTrack(unknownOther)
   root=createRoot(container);await act(async()=>root.render(React.createElement(App)));await settle();await settle()
   assert.equal(state().activeProject.id,customId)
   assert.equal(state().activeProject.parts.length,count)
+  assert.deepEqual(state().activeTracks,{},'Created Project restore excludes failed/unknown records before analysis')
   await click('[data-action="record-part"]')
   assert.equal(state().screen,'record',document.body.textContent)
   assert.ok(document.querySelector('[data-action="record-submit"]'),'Owned project draft must restore to Review')
@@ -309,6 +328,8 @@ try{
   root=createRoot(container);await act(async()=>root.render(React.createElement(App)));await settle();await settle()
   assert.equal(state().activeTracks['free-0'].layer.signature,submitted.layer.signature)
   assert.equal(state().activeProject.keyLocked,true)
+  assert.equal((await loadTrack(failedOther.id)).features.version,'unsupported')
+  assert.equal((await loadTrack(unknownOther.id)).features.version,'unsupported')
   await clearProjectTracks(customId)
   check(`${count}-Part owned project preserves project/part/user/seed/Blob and Record layer through draft submit and reload`)
  }
@@ -351,6 +372,17 @@ try{
   if(pending)assert.equal(record.slots[1],null,'Review is not a submitted Record layer')
   for(const original of originals){assert.equal(original.item.partIndex,original.index);assert.equal(original.item.duration,original.duration);assert.equal(original.item.blob,original.blob);assert.equal(original.item.layer,original.layer)}
   await act(async()=>root.unmount());root=null
+  const blockedOwn={...finals[ownPart.id],origin:'live-microphone-recording',submissionStatus:'failed'}
+  const ownDraftId='jisun:'+recorderProject.id+':'+ownPart.id+':temporary-recording'
+  await saveTrack(blockedOwn)
+  await saveTrack({id:ownDraftId,projectId:recorderProject.id,partId:ownPart.id,kind:'temporary-recording',userId:'jisun',blob,features,duration:7})
+  root=createRoot(container)
+  await act(async()=>root.render(React.createElement(Recorder,{go:()=>{},submit:async()=>{},partId:ownPart.id,project:recorderProject,parts:recorderParts,projectTracks:{},layers:recorderParts.map(()=>null)})));await settle();await settle()
+  assert.ok(document.querySelector('[data-action="record-submit"]'),'Failed live-origin record must not suppress my saved Review')
+  assert.equal((await loadTrack(blockedOwn.id)).submissionStatus,'failed')
+  assert.equal(await (await loadTrack(ownDraftId)).blob.text(),await blob.text())
+  await act(async()=>root.unmount());root=null
+  await clearProjectTracks(recorderProject.id)
   check(count+'-Part Recorder uses final sources/current Guide slots only, excludes Review/foreign/failed inputs and preserves originals')
  }
  assert.deepEqual(errors,[],'Unexpected App console errors')
