@@ -1221,3 +1221,9 @@ Node 테스트 성공은 모듈 계약과 수치 처리의 근거다. HTTP 테�
 기존 range/sample sourceProvenance의 purpose/revision/hash/analysis version을 canonical 순서로 결합한 private voiceSourceRevision을 기존 Profile 저장/재측정/Sample 교체/재로드에 연결했다. 생성 이미지 revision이나 선호 설정을 포함한 전체 Profile revision은 아니며 개인 형상 갱신·기존 Track 재생성 정책을 확정하지 않는다. 두 원본 출처가 준비되지 않은 legacy는 null 유지, 저장 성공 전에 새 값을 게시하지 않는다. 저장된 두 source로 재구성하므로 별도 DB/화면이나 중복 원본을 추가하지 않는다. bootstrap hash await 뒤 lifecycle 확인을 유지한다.
 
 Node 실제 저장 재읽기·같은 입력 재현·원본/분석/revision 차이·immutable hash·legacy null, 기존 Identity 입력 계약/단일 App 렌더 통과. native Profile 편집 QA의 초기 등록·range/Sample 저장 실패/retry·Sample 원본 URL·재접속/선호값 보존 및 실제 저장 source와 조합 revision 일치를 통과했다. build38modules/506.10KB 기존500KB 경고 유지. 이 입력 연결은 전체 G1–G5/실제 형상·음악·서비스·물리 인수 완료가 아니다. 사용자 서버3파일/디자인/모델 원본 보존. 해당 묶음만 main Git Integration→Production Profile QA로 마감한다.
+
+### R5 실제 저장 Profile → 개인 생성 입력 연결 — 2026-10-12
+
+기존 private Identity 계약과 source-set revision을 실제 IndexedDB Profile 읽기에 연결했다. 하나의 range/sample을 같은 read transaction에서 읽고 metadata snapshot을 hash await 전에 고정한다. 측정 canonical hash·실제 Sample Blob SHA/byteLength·purpose/동일 Profile 영역·실제 저장 extractor version을 확인하고 명시 generator version으로 private 입력 manifest를 만든다. 저장된 분석값을 사용하며 이를 독립 재분석/지각 신뢰도 검증으로 주장하지 않는다. 생성 모델을 호출하거나 정책/디자인/제출 상태를 변경하지 않는다. 현재 앱의 기존 진단 경계에서 해당 준비 API를 검증하며 실제 generator는 연결되지 않았다. 원문 사용자 ID는 private manifest 안에만 있고 공개 URL/시각 metadata로 게시하지 않는다.
+
+유지 qa:identity에 실제 persisted-source bridge QA를 포함했다. 실제 파일/hash/version/source purpose 확인·legacy/불일치 거부·입력/revision/사용자/버전 구분·immutable snapshot·read-only를 검증했다. native 기존 Profile 편집/초기 Setup/실패/retry/reload와 실제 저장 원본 manifest 재현 통과. 단일 App Node 렌더/build39modules/509.42KB 통과(기존500KB 경고 유지). 사용자 서버3파일/원본·디자인은 보존. 관련 묶음만 main Git Integration→Production Profile QA로 마감하며 전체 G1–G5/음악/실기기/실제 서비스 gate는 미완료다.

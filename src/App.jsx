@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import Icon from './Icons.jsx'
 import { PITCH_ANALYSIS_VERSION } from './pitch.js'
 import { prepareVoiceRangeRecord, prepareVoiceSampleRecord, voiceSourceRevision } from './profileSource.js'
+import { loadMeasuredProfileIdentityInput } from './voiceIdentitySources.js'
 import { prepareSubmittedTrackRecord } from './trackSource.js'
 import { prepareProjectMix } from './mixSource.js'
 import figmaAssets from './figmaAssets.json' with { type: 'json' }
@@ -1793,7 +1794,8 @@ export default function App() {
       get state(){return {activeProject,activeTracks,activeMix,activeMixStatus,createdProjects,createdProjectTracks,createdMixes,screen,profile,joined,invited,candidateAccepted,projectLiked,projectLikes,vocalSaves,songSaved,songSaves,projectTracks,mix,mixStatus,mixProgress,readyForMix,projectActivity,delayedProjectIds,recordSignature:projectRecordSignature(PROJECT_SEED,layers)}},
       audioRuntime,
       projectSeed:PROJECT_SEED,
-      supportedPartCounts:SUPPORTED_PART_COUNTS
+      supportedPartCounts:SUPPORTED_PART_COUNTS,
+      prepareIdentityInput:generatorVersion=>loadMeasuredProfileIdentityInput({userId:CURRENT_USER_ID,profileProjectId:PROFILE_PROJECT_ID,generatorVersion})
     }
   }, [screen,profile,joined,invited,candidateAccepted,projectLiked,projectLikes,vocalSaves,songSaved,songSaves,projectTracks,mix,mixStatus,mixProgress,readyForMix,recordingPart,projectActivity,delayedProjectIds.join(',')])
 
