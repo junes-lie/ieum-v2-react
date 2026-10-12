@@ -1,19 +1,30 @@
 import assert from 'node:assert/strict'
 import { projectLifecycleRequest,projectLifecycleErrorResponse } from '../server/projectLifecycle.js'
 import { GET } from '../api/project-lifecycle.js'
-const env={IEUM_AUTH_PROVIDER:'supabase',IEUM_DB_PROVIDER:'supabase',IEUM_SUPABASE_URL:'https://example.supabase.co',IEUM_SUPABASE_PUBLISHABLE_KEY:'qa-public'}
+import { createHash } from 'node:crypto'
+const env={IEUM_AUTH_PROVIDER:'supabase',IEUM_DB_PROVIDER:'supabase',IEUM_SUPABASE_URL:'https://example.supabase.co',IEUM_SUPABASE_PUBLISHABLE_KEY:'qa-public',
+  IEUM_STORAGE_PROVIDER:'supabase',IEUM_SUPABASE_SECRET_KEY:'sb_secret_qa_only',IEUM_AUDIO_BUCKET:'private-audio'}
 const user='11111111-1111-4111-8111-111111111111', intent='33333333-3333-4333-8333-333333333333'
+const original=new Uint8Array([1,2,3,4]),originalSha=createHash('sha256').update(original).digest('hex')
 const project={id:'p',seed:'stable',songId:'song',key:'original',partCount:2,submittedTrackCount:0,revision:0,lifecycle:'recruiting',keyLockedAt:null,
   audioSourceRef:{songId:'song',key:'original',revision:'v1',duration:20,sourceSha256:'a'.repeat(64),backingSha256:'b'.repeat(64)},
   parts:[{id:'lead',participantId:user,requiredRange:{lowMidi:48,highMidi:67},status:'ready',trackId:null},
     {id:'harmony',participantId:null,requiredRange:{lowMidi:48,highMidi:67},status:'open',trackId:null}]}
 let result=structuredClone(project), calls=[]
 const fetchImpl=async(url,init)=>{
+  if(url.includes('/storage/v1/')){
+    assert.equal(init.headers.apikey,'sb_secret_qa_only');assert.equal(init.headers.Authorization,undefined)
+    return url.includes('/bucket/')?Response.json({id:'private-audio',public:false}):new Response(original,{headers:{'Content-Type':'audio/wav'}})
+  }
   assert.equal(init.headers.Authorization,'Bearer qa-token');assert.equal(init.headers.apikey,'qa-public')
   assert.equal(init.credentials,'omit');assert.equal(init.redirect,'error')
   if(url.endsWith('/auth/v1/user'))return Response.json({id:user})
   assert.equal(init.referrerPolicy,'no-referrer')
   calls.push({url,body:JSON.parse(init.body)})
+  if(url.endsWith('/ieum_get_owned_upload'))return Response.json({projectId:'p',partId:'lead',userId:user,uploadIntentId:intent,
+    objectId:'22222222-2222-4222-8222-222222222222',size:4,sha256:originalSha,contentType:'audio/wav',
+    receipt:{size:4,sha256:originalSha,contentType:'audio/wav',duration:20,decodedFrames:960000,sampleRate:48000,
+      analysisVersion:'decoded-pcm-v1',decoderVersion:'ffmpeg version qa-fixture',decoderSha256:'d'.repeat(64)}})
   return result instanceof Response?result.clone():Response.json(result)
 }
 const options={env,fetchImpl}

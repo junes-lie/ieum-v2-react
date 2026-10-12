@@ -6,6 +6,10 @@
 
 ## 원본 오디오 해독 경계
 
+현행 HTTP 연결 준비: tracks 요청은 본인 bearer로 ieum_get_owned_upload를 호출해 DB의 본인 Project/Part/intent/원본 정보를 얻는다. 조회 권한/응답 일치 확인 후에만 private Storage를 읽는다. 미확정 원본은 실제 해독→service-only receipt RPC→사용자 권한 제출로 처리하고 이미 확정된 receipt는 원본 byte/hash를 재검사해 확정 길이를 사용한다. POST tracks의 duration은 클라이언트 선언값이며 결과 duration은 서버 확정값이다. syncOffsetMs는 확정 길이 범위 안에서 다시 검사한다. 이전 helper-only/HTTP 미연결 문단은 당시 기록이다. 실제 remote 환경/App 연결 완료와 구분한다.
+
+IEUM_AUDIO_DECODER_PATH와 IEUM_AUDIO_MAX_DECODE_SECONDS는 비어 있는 server-only 실행 설정이다. hosted 환경과 운영 자원 한도를 확인한 뒤 설정해야 하며 임의 기본 경로나 로컬 Windows binary를 자동 적용하지 않는다. secret key는 privileged receipt 요청의 apikey에만, 사용자의 bearer는 본인 lookup/submit에만 전달한다. 키별 Postgres 역할 구분은 [Supabase 공식 API key 문서](https://supabase.com/docs/guides/getting-started/api-keys)로 확인했으며 실제 gateway/원격 호출 성공은 아직 확인하지 않았다.
+
 2026-10-13 receipt 연결 준비: 해독 결과는 실제 executable SHA256/FFmpeg version을 포함한다. verifyOwnedOriginalAudio는 인증/본인 DB 조회에서 얻은 context에 대해서만 내부 worker에서 호출하고 실제 Storage 검증 결과를 service-only ieum_confirm_original_audio RPC로 확정한다. 새 audio_receipt에는 바이트/hash/MIME와 frame/sampleRate/실제 duration·analysis/decoder version/hash를 보존한다. RPC는 Project→intent 잠금, 소유자/배정/원본 식별 정보 일치, 첫 녹음 잠금과 상태를 재검사한다. 검증 success는 Track/Mix를 생성하지 않는다. 같은 receipt만 재시도 가능하며 다른 검증 결과는 충돌로 남긴다. 이는 Identity 알고리즘 갱신 정책을 확정하는 변경이 아니다. 공개 HTTP 경계/hosted runtime은 아직 연결하지 않았으므로 클라이언트가 이 context를 직접 제출하거나 service credential을 받지 않는다.
 
 verifyOriginalAudio는 기존 private Storage 원본의 byte/hash 검증을 재사용하고 서버 TEMP 사본을 실제 decoder로 해독한다. decodeOriginalAudio의 executable/filePath는 신뢰된 서버 설정/사본 경로이며 브라우저 입력 URL이나 실행 명령을 허용하지 않는다. WebM DocType/MP4 ftyp/WAV header와 실제 오디오 해독을 확인한다. PCM frame을 세며 RAM에 누적하지 않고 decoder stdout/stderr를 사용자에게 노출하지 않는다. [FFmpeg의 stream 선택·해독 문서](https://ffmpeg.org/ffmpeg.html)를 참고했다.

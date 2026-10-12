@@ -1,4 +1,14 @@
+## 2026-10-13 R3 본인 원본 검증과 HTTP 제출 연결 준비
+
+기존 tracks 제출 API에 인증 사용자별 ieum_get_owned_upload 조회→private Storage의 실제 원본 해독→service-only receipt 확정→기존 사용자 권한의 직접 제출 RPC를 연결했다. 브라우저가 보낸 duration은 입력 형식 검증용이며 DB 확정 제출에는 서버 PCM frame 기반 길이를 사용한다. 응답 duration도 확정 길이다. 이미 확인된 원본의 재시도는 저장한 decoder/analysis version·길이를 유지하고 현재 Storage의 byte/hash/MIME를 다시 검사한다. 클라이언트에게 secret/object path/receipt를 공개하지 않는다. decoder 설정이 없는 새 원본은503이며 준비만으로 Track를 확정하지 않는다.
+
+qa:submission-audio-api는 실제 짧은 AAC와 주입 Auth/DB/Storage를 사용해 0.5초 client→0.512초 확정 제출, 본인 확인 전 Storage 접근 없음, secret은 receipt/Storage만·bearer는 본인 조회/제출만, 재시도 바이트 재검증·버전 유지, 원본 없음/변조/타인 응답/권한 거부/decoder 미설정/receipt DB 실패의 제출 차단·원본 보존을 통과했다. 격리 PostgreSQL receipt QA에 lookup/다른 사용자 거부를 추가해 통과했다. 기존 Project/업로드 API 회귀와 production build40modules/525.39KB도 통과했다. 실제 hosted runtime/Auth/Storage·두 실제 사용자·App remote session은 미완료다.
+
+빈 server-only IEUM_AUDIO_DECODER_PATH/IEUM_AUDIO_MAX_DECODE_SECONDS 설정 이름만 추가했다. 실제 설정값/서버 자원/계정은 변경하지 않았고 로컬 Windows runtime을 배포 자산으로 복제하지 않았다. 원격 migration 적용·환경 호환·쿼터/운영 decode 한도·실제 로그인/원본/동시성·App 연결이 다음 gate다. 기존 사용자 서버3파일을 이번 묶음에 포함하지 않는다.
+
 ## 2026-10-13 R3 원본 검증 receipt 확정 준비
+
+Git/Production 확인: 이번8파일만be45bde854410b7c5b07ff34d07fac851382d512로 commit/push,main/origin0/0이다. 기존 사용자 서버3파일만 미커밋 보존했다. Production 앱200/index-Cy9rymZA.js·capabilities200/preparation/모두false를 확인했다. 해당full SHA GitHub status pending/statuses0·deployment0이므로 Git Integration 성공/READY와 이 worker의 실제 Production 실행은 미확인이다. 이 문단은 commit 이후 로컬 증거다.
 
 기존 해독 결과에 실제 decoder executable SHA256·FFmpeg version을 추가하고 originalAudioVerification worker와 service_role 전용 ieum_confirm_original_audio RPC를 구현했다. 원본 intent의 Project/Part/사용자/object/크기/hash/MIME가 모두 일치해야 실제 frame 기반 길이·analysis version·decoder identity를 원자적으로 보존한다. 반복 확인은 같은 receipt를 반환하고 다른 원본/길이/decoder로 덮어쓰지 않는다. 인증 사용자·익명은 이 확인 RPC를 실행할 수 없다. 검증은 Track 제출/Mix 성공과 분리한다.
 

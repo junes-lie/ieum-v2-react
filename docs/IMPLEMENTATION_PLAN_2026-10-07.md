@@ -4,6 +4,8 @@
 
 ## 이미 확정된 서비스·비용 답변
 
+2026-10-13 R3 HTTP 후속: 본인 업로드 조회→실제 원본 검증/receipt 확정→서버 길이의 사용자 권한 제출을 기존 tracks API에 연결했다. 새 원본의 decoder 미설정/Storage 불일치/권한/DB 실패는 제출을 차단한다. 실제 AAC+주입 HTTP 및 lookup/receipt 격리 SQL·관련 API/build 통과. hosted 실행 환경/실제 원격 연결·App session boundary는 미완료이고 capability false를 유지한다. 기존 사용자의 서버3파일은 따로 보존하며 R3 전체 완료로 기록하지 않는다.
+
 2026-10-13 R3 후속 gate: 실제 decoder identity를 포함한 검증 receipt의 service-only DB 확정을 구현했다. 실제 짧은 AAC 해독→격리 SQL receipt→직접 제출→마지막 제출 Mix 연결로 상태 분리를 검증했다. 실제 서비스 runtime/Auth/Storage와 HTTP/App 확정 제출 연결은 다음 잔여이며 R3 전체 미완료를 유지한다. User Flow2C/R07·마지막 필수 Track 조건은 사용자 승인261012 로컬 export 관련 절과 대조했다. Notion 온라인 원본이나 물리 마이크 인수를 확인한 것으로 기록하지 않는다. 신규 기획/IA/시각 변경·중복 계획은 없다.
 
 2026-10-13 R3 잔여 진행: private Storage byte/hash 검증 뒤 실제 WebM/MP4/WAV 해독과 frame 기반 길이 계산 helper를 구현·로컬 검증했다. 실제 서버 decoder runtime/버전 receipt 및 trusted DB 검증 확정·제출 연결은 남겨 두며 R3 완료로 계산하지 않는다. 합성0.5초 AAC의 실제 해독 길이가0.512/0.533333초로 달라지는 근거를 확보했으므로 브라우저 시간과 서버 길이를 임의로 동일시하지 않는다. 이 gate의 실제 시험·기존 Storage/업로드 API 회귀/build 통과 기록은 현재 상태 문서에 보존한다. 기존 완료 기능 QA를 반복하거나 AI 시험 예산을 초기화하지 않았다.

@@ -1,10 +1,11 @@
 import { ServiceError } from '../src/projectService.js'
 import { readAuthConfiguration, verifyRequestUser } from './auth.js'
 import { createSupabaseAudioStorage } from './audioStorage.js'
+import { verifySubmissionAudio } from './submissionAudio.js'
 
 const fail = code => new ServiceError('프로젝트 요청을 완료하지 못했어요. 녹음 원본은 유지됩니다.',{ code })
 const text = value => typeof value==='string' && Boolean(value.trim())
-const uuid = value => /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(value || '')
+const uuid = value => typeof value==='string' && /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(value)
 
 function routeOf(request) {
   const url = new URL(request.url)
@@ -121,6 +122,9 @@ export async function projectLifecycleRequest(request,{ env=process.env,fetchImp
       rpc='ieum_submit_verified_track'
       Object.assign(body,{ p_upload_intent_id:value.uploadIntentId,p_request_key:key,p_duration:value.duration,p_sync_offset_ms:value.syncOffsetMs,
         p_features:value.features ?? null,p_project_seed:value.projectSeed ?? null })
+      const verified=await verifySubmissionAudio({request,user,route,uploadIntentId:value.uploadIntentId,configuration,env,fetchImpl})
+      if(value.syncOffsetMs>=verified.duration*1000)throw fail('INVALID_PROJECT_REQUEST')
+      body.p_duration=verified.duration
     }
   }
   let response
@@ -160,7 +164,7 @@ export async function projectLifecycleRequest(request,{ env=process.env,fetchImp
     if (result?.submissionStatus!=='success' || result.trackId!==`${route.projectId}:${route.partId}`) throw fail('INVALID_PROJECT_RESPONSE')
     const project=projectSnapshot(result.project,route.projectId)
     if (!project.parts.some(part=>part.id===route.partId && part.status==='submitted' && part.participantId===user.id)) throw fail('INVALID_PROJECT_RESPONSE')
-    result={trackId:result.trackId,submissionStatus:'success',project}
+    result={trackId:result.trackId,submissionStatus:'success',duration:body.p_duration,project}
   } else {
     result=projectSnapshot(result,route.operation==='create'?result?.id:route.projectId)
     if (route.operation==='start' && (!result.keyLockedAt || result.lifecycle!=='recruiting' ||
@@ -178,7 +182,10 @@ export function projectLifecycleErrorResponse(error) {
     PROJECT_ROUTE_NOT_FOUND:404,PROJECT_NOT_FOUND:404,ARRANGEMENT_NOT_FOUND:404,PROFILE_REQUIRED:403,PART_FIT_FAILED:403,PART_RANGE_UNAVAILABLE:409,
     PART_NOT_ASSIGNED:403,PROJECT_CONFLICT:409,METHOD_NOT_ALLOWED:405,
     PROJECT_UNAVAILABLE:503,INVALID_PROJECT_RESPONSE:503,INVALID_UPLOAD_FILE:400,INVALID_UPLOAD_OBJECT:503,
-    STORAGE_UNAVAILABLE:503,PRIVATE_STORAGE_REQUIRED:503,INVALID_STORAGE_RESPONSE:503,UPLOAD_OBJECT_MISSING:409,UPLOAD_OBJECT_MISMATCH:409 }
+    STORAGE_UNAVAILABLE:503,PRIVATE_STORAGE_REQUIRED:503,INVALID_STORAGE_RESPONSE:503,UPLOAD_OBJECT_MISSING:409,UPLOAD_OBJECT_MISMATCH:409,
+    INVALID_AUDIO_RECEIPT:409,INVALID_AUDIO_RECEIPT_RESPONSE:503,INVALID_AUDIO_VERIFICATION:400,AUDIO_DECODER_NOT_CONFIGURED:503,
+    AUDIO_DECODER_UNAVAILABLE:503,AUDIO_SOURCE_UNAVAILABLE:503,AUDIO_DECODE_TIMEOUT:503,AUDIO_DECODE_FAILED:409,
+    AUDIO_FORMAT_UNSUPPORTED:409,AUDIO_FORMAT_MISMATCH:409,AUDIO_DURATION_EXCEEDED:409 }
   const code=Object.hasOwn(statuses,error?.code)?error.code:'PROJECT_UNAVAILABLE'
   return Response.json({ error:{ code } },{ status:statuses[code],headers:{ 'Cache-Control':'private, no-store',Vary:'Authorization' } })
 }

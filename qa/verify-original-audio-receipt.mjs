@@ -28,7 +28,7 @@ try {
     create table auth.users(id uuid primary key);insert into auth.users values('${users[0]}'),('${users[1]}');
     create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
     grant usage on schema auth to authenticated;grant execute on function auth.uid() to authenticated;`)
-  for(const name of ['project_tracks','track_uploads','verified_audio_receipts'])
+  for(const name of ['project_tracks','track_uploads','verified_audio_receipts','owned_upload_lookup'])
     await db.exec(await readFile(new URL(`../server/migrations/20261013_${name}.sql`,import.meta.url),'utf8'))
   await db.exec(`insert into public.ieum_projects(id,seed,song_id,project_key,audio_source_ref,part_count) values('p','seed','qa-song','original','{}',2);
     insert into public.ieum_project_parts values('p','lead','${users[0]}','{}'),('p','harmony','${users[1]}','{}');`)
@@ -44,6 +44,11 @@ try {
     const intent=(await db.query("select public.ieum_prepare_track_upload('p',$1,$2,$3,$4,'audio/mp4') as result",
       [partId,'upload-'+index,bytes.length,sha256])).rows[0].result
     const context={projectId:'p',partId,userId:users[index],uploadIntentId:intent.uploadIntentId,objectId:intent.objectId,size:bytes.length,sha256,contentType:'audio/mp4'}
+    const lookedUp=(await db.query("select public.ieum_get_owned_upload('p',$1,$2) as result",[partId,intent.uploadIntentId])).rows[0].result
+    assert.deepEqual(lookedUp,{...context,receipt:null})
+    await asUser(users[1-index])
+    await assert.rejects(db.query("select public.ieum_get_owned_upload('p',$1,$2)",[partId,intent.uploadIntentId]),e=>e.code==='PT403')
+    await asUser(users[index])
     await db.exec('reset role;set role service_role')
     let args
     const result=await verifyOwnedOriginalAudio({context,storage,decoderOptions:{executable:process.env.IEUM_QA_FFMPEG_PATH,maxDurationSeconds:2},
