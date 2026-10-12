@@ -1010,3 +1010,20 @@ generator의 torch/numpy/soundfile/scipy 및 모델 import를 모든 실제 toke
 project-track 후보의 actualRange는 충분한 유효 관측과 지원 version/count/range가 있을 때만 estimated/confidence=null로 연결한다. Sample 관측을 편한 Profile 음역이나 평균 개인 음역으로 대체하지 않는다. averageRange/호흡/비브라토/BPM/리듬은 미지원null 유지, 무음/짧은/legacy·잘못된 관측도 null이다. 미정 형상/사진/갱신/매칭 정책이나 화면을 추가하지 않는다.
 
 3 sample rate·저/중음·두 음정 변화·동일 입력 재현·무음/짧은입력·잘못된값과 synthetic WAV의 제출 원본/관측/Layer 저장 재읽기를 검증했다. 기존 저음 회귀 및 변경 전 Record fixtures의 fingerprint959ec28d/2f3bc4dc·Layer d60d64d4/4082a169·2–4 signature0cb8b1c3/85797d10/35c8f287 exact 유지. native Profile 초기 등록/편집/실패/retry/reload·실제 Sample의 observation/private 생성 입력 보존, 단일 App Node 렌더/build39modules/509.99KB 통과(기존500KB 경고). synthetic 검증이며 실제 사람의 전체 음역/청취/형상 gate를 통과한 것으로 처리하지 않는다. 관련 기능 묶음만 main Git Integration→Production Profile QA로 마감하고 사용자 서버3파일/디자인/AI 원본은 보존한다.
+# 2026-10-12 잔여 기능 일정 재산정 — 서버 외 범위 포함
+
+사용자의 전체 잔여 구현 기간 재산정 요청에 따른 작업 규모 추정이다. 서버 연결만 남았다는 판단을 사용하지 않는다. 단계 번호·기존 완료 증거·제품 요구·미정 정책과 디자인 보류는 유지한다. 아래는 사람이 수행하는 구현/검증 작업일 환산이며 모델 실행 시간, 확정 납기 또는 실제 연속 자동 작업 속도의 보장이 아니다.
+
+| 잔여 묶음 | 현재 코드의 재사용 근거 | 닫아야 할 완료 조건 | 예상 작업일 |
+| --- | --- | --- | --- |
+| R1 로컬 녹음/Guide/Mix | 기존 Recorder, audio.js, 원자적 제출 및 2–4 Mix, 실패 원본 보존 | 실제 반주 음량/첫 진입/물리 마이크 지연 확인과 발견된 결함 수정. 자동 합성 마이크 통과를 실기기 완료로 대체하지 않음 | 2–3 |
+| R2 탐색/Profile/Collection | 기존 Finder, MatchDetail, OtherVocalProfile, ProfilePreferences, CollectionArea와 방문별 복귀 | 확정된 요구와 전체 경로의 누락 대조, 저장/편집/복귀 통합 마감. 이미 통과한 경로의 무조건 반복 검증 금지 | 2–3 |
+| R5 개인→Track→Project | voiceIdentityContract, 측정 Profile/제출 Track 입력 bridge, 기존 AI Layer 검증/Record renderer | 실제 개인 결과 생성·구분/재현 → 실제 Track 변형 후 개인 흔적 → 2–4 결합 → 동일 사용자/Project의 화면·세션 계보. G1–G5 전부 유지 | 4–7 |
+| R6 실제 AI 음악 | 기존 생성/분리/분석 도구와 연구 원본 | 사용할 권리가 확인된 실제 곡/반주/2–4 Part, 정확한 가사·음정·화음·진입 및 청취 검증, 통과 결과만 catalog/Guide 연결 | 5–10 이상 |
+| R7 서버 외 통합 인수 | 기존 개별 자동 QA와 Git Integration 배포 경로 | 변경된 기능 조합·모바일/물리 마이크/청취·Production 확인. 서버 협업/디자인 인수는 별도 | 2–4 |
+
+서버·디자인 제외 합계는 15–27작업일 이상(약3–6주 이상의 작업량)이다. R1/R2 일반 앱 마감만은 4–6작업일 추정이다. R3 실제 Auth/DB/Storage/RLS, R4 실제 초대/공유/7일 Push와 디자인 통합은 위 합계에 포함하지 않았으므로 전체 출시일로 해석하지 않는다.
+
+R5 형상 검토 및 갱신/버전/fallback 등 미정 정책 대기는 별도 외부 의존성이다. R6 5–10일은 적합한 생성 방법과 서비스 사용 권한을 확보하는 조건의 추정이며 상한이 아니다. 현재 큰 모델의 RAM guard 중단과 짧은 후보의 품질 실패를 고려하면 전체 기능 완료일은 확정할 수 없다. 시간을 줄이기 위해 요구를 축소하거나 실패 음원/임의 그래픽을 등록하지 않는다.
+
+실행은 기존 독립 묶음 순서에 따라 R1/R2 마감을 AI 연구 대기와 분리한다. R5는 승인된 형상/정책에 의존하지 않는 선행 작업까지만 진행하고, 실제 생성·통합 성공과 입력 준비를 구분한다. R6는 동일 실패 경로 반복을 중단하고 실제 제어/권리/메모리 근거가 있는 다음 실험만 실행한다. 의미 있는 묶음의 관련 QA/build/diff 검토 후 main push→Git Integration→Production으로 전달한다.
