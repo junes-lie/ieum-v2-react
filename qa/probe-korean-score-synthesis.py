@@ -22,6 +22,7 @@ if a.score_spec:
 assert len(syllables)==len(notes)==len(seconds)
 assert syllables and all(isinstance(s,str) and (s=='<X>' or len(s)==1 and '\uac00'<=s<='\ud7a3') for s in syllables)
 assert all(isinstance(n,int) and not isinstance(n,bool) and 0<=n<128 for n in notes)
+assert all((syllable=='<X>')==(note==0) for syllable,note in zip(syllables,notes)),'Rest and sung note encoding must agree'
 assert all(isinstance(d,(int,float)) and not isinstance(d,bool) and math.isfinite(d) and d>0 for d in seconds)
 assert sum(seconds)<=10,'Short score feasibility only; verify resource bounds before longer input'
 if note_curves is not None:
@@ -51,7 +52,10 @@ torch.set_num_threads(2);torch.manual_seed(65359)
 hp=Recursive_Parse(yaml.safe_load((root/'Hyper_Parameters.yaml').read_text(encoding='utf-8')))
 token_dict=yaml.safe_load((root/'YAML/Token.yaml').read_text(encoding='utf-8'))
 converted=Convert_Feature_Based_Music(list(zip(seconds,syllables,notes)),hp.Sound.Sample_Rate,hp.Sound.Frame_Shift,hp.Duration.Consonant_Duration,hp.Duration.Equality)
+from score_frame_timeline import score_frame_timeline
+expanded_score_segments=score_frame_timeline(syllables,notes,seconds,converted,hp.Sound.Sample_Rate,hp.Sound.Frame_Shift)
 tokens,expanded_notes,expanded_durations=Expand_by_Duration(*converted)
+assert expanded_score_segments[-1]['endFrame']==len(tokens)
 assert all(n<hp.Notes for n in notes)
 expanded_note_events=[]
 if note_curves is not None:
@@ -117,7 +121,8 @@ assert np.max(np.abs(audio))<=1,'Do not silently clip the native vocoder output'
 a.output_dir.mkdir(parents=True)
 file=a.output_dir/'ieum-original-song.wav';sf.write(file,audio,48000,subtype='PCM_16')
 report={'status':'actual-model-inference','model':'CODEJIN/DiffSingerKR','revision':'26f95ac2554b6a6725706ed2a7991a62f7f714a9','checkpointSha256':'6482992a43b8a98554e7ef9e487a381c2717c5828d564e6dfc6cac16a0e16092','outputSha256':hashlib.sha256(file.read_bytes()).hexdigest(),'outputFile':file.name,'duration':len(audio)/48000,'sampleRate':48000,'lyrics':'오늘도 함께해요','score':{'syllables':syllables,'modelNoteIndices':notes,'expectedMidi':[n-12 if n else None for n in notes],'noteEncoding':{'version':'diffsingerkr-main9beec10-note-index-v1','formula':'440 * 2 ** ((index - 69 - 12) / 12); index 0 is rest','source':'https://github.com/CODEJIN/DiffSingerKR/blob/9beec10ffe3dd1068913b0f65827d31134f9460e/Pattern_Generator.py#L679-L692'},'durationsSeconds':seconds,'purpose':'Explicit synthetic diagnostic score, not measured original melody or approved harmony'},'inferenceSeconds':time.perf_counter()-start,'parameterBytes':parameter_bytes,'ownGpuPeakAllocatedBytes':torch.cuda.max_memory_allocated(),'executionDevice':'cuda','seed':65359,'steps':50,'sourceSongConnected':False,'catalogRegistrationApproved':False,'limitations':['Pretrained CSD single singer diagnostic, not user voice or selected singer identity','Explicit score is a feasibility input, not original-song harmony approval','No physical listening, lyric accuracy or production license approval']}
-report.update(lyrics=''.join(s for s in syllables if s!='<X>'),scoreSpecSha256=file_hash(a.score_spec) if a.score_spec else None,scoreCalibration=score_spec,generatorScriptSha256=file_hash(Path(__file__)),modelCodeCommit='9beec10ffe3dd1068913b0f65827d31134f9460e',runtimeSourceHashes={path.relative_to(root/'probe-source').as_posix():file_hash(path) for path in (root/'probe-source').rglob('*.py')},vocoderOutputDtype=vocoder_dtype,pcmScale=pcm_scale,peak=float(np.max(np.abs(audio))),rms=float(np.sqrt(np.mean(audio**2))))
+report.update(lyrics=''.join(s for s in syllables if s!='<X>'),scoreSpecSha256=file_hash(a.score_spec) if a.score_spec else None,scoreCalibration=score_spec,generatorScriptSha256=file_hash(Path(__file__)),frameTimelineScriptSha256=file_hash(Path(__file__).with_name('score_frame_timeline.py')),modelCodeCommit='9beec10ffe3dd1068913b0f65827d31134f9460e',runtimeSourceHashes={path.relative_to(root/'probe-source').as_posix():file_hash(path) for path in (root/'probe-source').rglob('*.py')},vocoderOutputDtype=vocoder_dtype,pcmScale=pcm_scale,peak=float(np.max(np.abs(audio))),rms=float(np.sqrt(np.mean(audio**2))))
+report['score'].update(expandedScoreSegments=expanded_score_segments,nativeSampleRate=hp.Sound.Sample_Rate,nativeFrameShift=hp.Sound.Frame_Shift,frameTimelineScope='Exact conditioning frames; not measured output phonetic or audible entry boundaries')
 report['score'].update(noteCurves=note_curves,expandedNoteEvents=expanded_note_events,noteCurveScope='Diagnostic frame-level note embedding input; no output pitch shift or original-song score approval')
 report['score'].update(purpose='Explicit diagnostic score synthesis; no original melody or harmony approval',inputPurpose=input_purpose)
 report.update(generationStage=a.generation_stage,steps=50 if a.generation_stage=='diffusion' else None,diffusionExecuted=a.generation_stage=='diffusion')

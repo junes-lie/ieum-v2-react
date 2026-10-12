@@ -3,7 +3,7 @@ import argparse,hashlib,json,math
 from pathlib import Path
 import numpy as np,soundfile as sf,librosa
 from scipy.signal import resample_poly
-p=argparse.ArgumentParser();p.add_argument('--song-dir',type=Path,required=True);p.add_argument('--output-dir',type=Path);p.add_argument('--legacy-model-index',action='store_true',help='Explicitly interpret old notesMidi field as pinned model indices; preserve prior evidence');a=p.parse_args()
+p=argparse.ArgumentParser();p.add_argument('--song-dir',type=Path,required=True);p.add_argument('--output-dir',type=Path);p.add_argument('--frame-timeline',type=Path,help='Verified converter timeline sidecar for retained inference; preserves requested-time observations');p.add_argument('--legacy-model-index',action='store_true',help='Explicitly interpret old notesMidi field as pinned model indices; preserve prior evidence');a=p.parse_args()
 root=a.song_dir.resolve()
 target=(a.output_dir or root)/'score-measurement.json';assert not target.exists()
 report=json.loads((root/'song-generation-report.json').read_text(encoding='utf-8'))
@@ -57,6 +57,24 @@ for event in score.get('expandedNoteEvents',[]):
  event_observations.append({**event,'confidentFrames':int(selected.sum()),'observedMedianMidi':observed,'differenceSemitones':observed-event['expectedMidi'] if observed is not None else None})
  event_observations[-1].update(fullInterval=full_interval_observation(start,end),interiorWindowSeconds=max(0,end-start-.16))
 result={'sourceSha256':report['outputSha256'],'inputDuration':position,'actualDuration':len(audio)/sr,'durationDifference':len(audio)/sr-position,'observations':observations,'noteEventObservations':event_observations,'inputEncoding':'pinned model index offset +12' if encoded else 'legacy uncalibrated MIDI label','legacyReinterpretation':a.legacy_model_index,'measurementScriptSha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),'analysis':'pYIN probability >= .75, excluding 80ms segment edges; measured output, not inferred input','musicalHarmonyApproved':False,'sourceSongConnected':False,'catalogRegistrationApproved':False,'limitations':['Explicit diagnostic score; no original-song chord or syllable alignment validation','F0 estimates can contain octave/separation errors','No listening or voice identity acceptance']}
+conditioning_observations=[]
+if a.frame_timeline or score.get('expandedScoreSegments'):
+ timeline=json.loads(a.frame_timeline.read_text(encoding='utf-8')) if a.frame_timeline else {'segments':score['expandedScoreSegments'],'nativeSampleRate':score['nativeSampleRate'],'nativeFrameShift':score['nativeFrameShift']}
+ if a.frame_timeline:
+  assert timeline['sourceAudioSha256']==report['outputSha256']
+  assert timeline['generationReportSha256']==hashlib.sha256((root/'song-generation-report.json').read_bytes()).hexdigest()
+ segments=timeline['segments'];native_rate=timeline['nativeSampleRate'];native_shift=timeline['nativeFrameShift']
+ assert len(segments)==len(score['syllables']) and native_rate>0 and native_shift>0
+ previous_frame=0
+ for index,row in enumerate(segments):
+  assert row['syllableIndex']==index and row['syllable']==score['syllables'][index] and row['modelNoteIndex']==indices[index]
+  assert row['startFrame']==previous_frame and row['endFrame']>row['startFrame']
+  assert row['nativeStartSeconds']==row['startFrame']*native_shift/native_rate and row['nativeEndSeconds']==row['endFrame']*native_shift/native_rate
+  start=row['nativeStartSeconds'];end=row['nativeEndSeconds'];previous_frame=row['endFrame']
+  segment=audio[round(start*sr):round(end*sr)]
+  conditioning_observations.append({**row,'fullInterval':full_interval_observation(start,end),'rms':float(np.sqrt(np.mean(segment**2))) if segment.size else None})
+ result['conditioningFrameObservations']=conditioning_observations
+ result['conditioningFrameScope']='Output measurements at verified input-conditioning frame intervals; not a measured phonetic boundary or music pass criterion. Requested-time observations remain unchanged.'
 result['inputPurpose']=score.get('inputPurpose',(report.get('scoreCalibration') or {}).get('purpose'))
 result['fullIntervalScope']='Untrimmed interval distribution alongside unchanged interior estimate; not a substitute pass criterion. Short windows/glides and confidence filtering can bias either estimate.'
 result['frameTimingScope']='Centered analysis-frame timestamps and consecutive voiced-confidence support only; not phonetic/note boundaries, exact sustained duration or validation of the expected pitch. Gaps and the 2048-sample analysis window limit timing interpretation.'
