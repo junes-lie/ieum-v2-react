@@ -18,7 +18,7 @@
 | R1 / 단계3 | 녹음·Draft·Review 직접 제출·Auto Mix 재시도 구현과 관련 자동 검증 재사용 | 실제 음악, 물리 입력·음량·진입·지연·청취 |
 | R2 / 단계4 | 탐색·참여·Profile 편집·Collection·복귀 및 VP05A 기능 구현·관련 검증 완료 목록 | 실제 후보/Sample/음색·곡/Key 음역 자료, 동일 Identity(R5), 실기기/최종 디자인 인수 |
 | 1dd4f43 보컬 성향 | main push·Production JS/CSS exact·관련 Production QA 확인 | Vercel 배포 ID·commit 메타데이터/READY 독립 확인 |
-| R3 / 단계5 기반 | Auth/Storage 계약, Profile 성향·개인 저장 목록·공유 Project 제출/Mix DB/API 준비 및 격리 SQL/HTTP 검증 | 실제 프로젝트/OAuth 접근, 원격 migration·두 사용자 권한·전체 Profile·Project 생성/Part Fit 참여·원본 검증/원자적 제출·Mix worker·대상 접근 검증·App 연결 |
+| R3 / 단계5 기반 | Auth/Storage 계약, Profile 성향·개인 저장 목록·공유 Project 생성/Part Fit 참여/제출/Mix DB/API 준비 및 격리 SQL/HTTP 검증 | 실제 프로젝트/OAuth 접근, 원격 migration·두 사용자 권한·catalog/전체 Profile 원본 ingestion·Key 조정·원본 검증/원자적 제출·Mix worker·대상 접근 검증·App 연결 |
 | R4 / 단계5 협업 | 기존 계약/로컬 흐름 보존 | R3 이후 실제 초대·경쟁·공유·7일 Push |
 | R5 / 단계1·2·4 | 측정 원본·revision·입력 계약 준비 | 실제 개인 생성→Track 변형→Project 결합, 승인 형상·미정 정책·G1–G5 |
 | R6 / 단계3 음악 | 기존 분석·실험 기록 보존 | 0원 실행 경로·권리·가창 품질 및 실제 곡/반주/2–4 Part 연결 |
@@ -70,6 +70,8 @@ R5는 승인 형상·갱신/버전/fallback 정책 의존 작업과 독립 데�
 VP05A Production 통과 증거를 재사용하고 변경된 정상/실패/복원 경로만 재검증한다. 물리 마이크·음량·진입·지연·청취/최종 디자인은 배포본에서 한 묶음으로 인수하며 합성 입력으로 대신하지 않는다. 의미 있는 묶음은 diff→필요 파일 명시stage→commit→origin/main push→Git Integration→Production QA로 마감한다. 기존 서버3파일은 R3 검토 전까지 별도 보존한다. Computer Use/Remote Figma/직접 Production deploy/중복 앱·계획은 금지한다.
 
 ## R1/R2 잔여 대조 결과 — 2026-10-13
+
+Project 생성/참여 준비 추가: trusted catalog와 개인 Profile 원본 저장 경계, 최초 요청 결과 보존, 기존 Part Fit 규칙으로 생성/OPEN 참여하는 SQL·API를 구현했다. 실제 곡별2–4 Part·생성자 배정/나머지OPEN/0Track·재시도·음역/tessitura 대조와 권한 거부를 격리 검증했다. 원격 실제 catalog·Profile source ingestion·두 사용자·upload/Key 조정·초대 경쟁 정리·App 연결은 아직 미완료다. 앱/실제 서비스 완료를 주장하지 않으며 기존 R3 예산은 실효 공수 미측정으로 임의 차감하지 않는다.
 
 공유 Project 저장 준비 추가: Project/실제 Part/원본 intent/확정 Track/Mix job SQL 및 GET/녹음 시작/직접 제출 API를 구현하고 격리 SQL·HTTP 계약을 검증했다. 실제 원본 hash/크기/MIME와 duration을 검증한 trusted receipt 없이는 제출되지 않는다. 마지막 제출은 Mix job만 생성하고 실제 저장 결과 검증 성공만 completed다. 원격 catalog/Profile-backed Project 생성·Part Fit 참여·upload API·Mix worker·실제 사용자/App 연결은 미완료다. R3 예산은 실효 공수 미측정으로 소급 차감하지 않고 전체 완료로 표시하지 않는다.
 

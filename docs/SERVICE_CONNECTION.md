@@ -1,5 +1,15 @@
 # 단일 앱 서비스 연결 계약
 
+## 2026-10-13 R3 곡 기반 Project 생성·Part Fit 참여 준비
+
+기존 project-lifecycle Function에 POST `/api/projects`와 POST `/api/projects/:id/parts/:partId/join`을 추가했다. 생성 입력은 `{arrangementId,ownerPartId}`, 참여 입력은 `{}`이며 둘 다 Idempotency-Key를 사용한다. 클라이언트가 사용자 ID·Part 음역·eligible·Track 수·프로젝트 Seed를 지정하지 않는다. 준비된 remote transport의 createProject/joinPart 경로를 재사용하며 App의 기존 로컬 흐름은 아직 연결/이관하지 않았다.
+
+`20261013_project_participation.sql`은 검증된 곡·Key별 audioSourceRef/실제2–4 Part를 저장하는 catalog_arrangements, 개인 측정·대표 Sample의 원본 hash/revision/analysis version·private object 참조를 저장하는 profile_voice_sources, 최초 요청 결과를 보관하는 operation_results를 추가한다. 이 source 테이블에는 authenticated/anon 직접 접근 권한이 없으며 검증된 서버 ingestion만 쓸 수 있다. 원격 자료는 아직 등록하지 않았고 시연 곡·고정 사용자·임의 음역을 실제 자료로 채우지 않는다. catalog revision은 같은 ID의 UPDATE를 막으며 새 검증 revision은 다른 ID로 등록한다. 이는 오디오 catalog의 버전 규칙이며 Voice Identicon의 미정 갱신 정책을 확정하는 것이 아니다.
+
+생성 RPC는 auth.uid()·저장된 Profile 원본·곡의 선택 Part Fit을 확인하고 서버 Project ID/Seed·Owner를 저장한다. 생성자 Part만 ready, 나머지는 OPEN, Track0이며 아직 Key 잠금은 없다. 참여 RPC는 Project/Part를 잠그고 현재 상태·OPEN·실제 음역/주 음역대 적합성을 확인한 뒤 배정만 확정한다. 성향/Identity 상태는 Gate 입력이 아니다. 같은 요청 키는 최초 성공 응답을 유지하고 키를 다른 대상에 재사용하면409다. 실패/경쟁에서는 자리·Track·Mix가 늘지 않는다. 현재 SQL 경쟁 검증은 격리된 한 DB connection이며 실제 두 사용자/동시 connection 검증은 원격 연결 후 수행한다.
+
+`qa:project-participation-db`는 세 migration을 순서대로 실제 PostgreSQL PGlite에 적용하고2/3/4 Part 생성·OPEN/0Track·원본 version 보존·누락 Profile/기존 배정 거부·재시도·기존 matching.evaluatePartFit의 음역/comfortableRange/tessitura 판정 일치·직접 source 변경 차단을 확인한다. API QA는 생성/참여·위조 payload 거부·안전한 PROFILE_REQUIRED/PART_FIT_FAILED 안내 코드와 root rewrite 계약을 추가 검증한다. 실제 Google/Supabase·catalog ingestion·측정/Sample 등록·upload 검증·Key 조정 API·초대 경쟁 정리·App 연결은 미완료다. Owner는 저장하되 초대를 Owner 전용 권한으로 제한하지 않는다. 기존 로컬 기능/문서 이력과 미정 디자인·Identity 정책을 보존한다.
+
 ## 2026-10-13 R3 공유 Project·제출·Mix 저장 경계
 
 `20261013_project_tracks.sql`은 Project·실제 Part·upload intent·확정 Track·Mix job의 준비 스키마/RPC다. 원격에 적용하거나 실제 곡·사용자를 등록하지 않았다. 인증 사용자의 GET Project, POST `projects/:id/parts/:partId/recording-start`, POST `projects/:id/parts/:partId/tracks`를 하나의 project-lifecycle Function과 제한된 rewrite로 연결한다. 기존 Track 제출 transport의 JSON metadata와 Idempotency-Key를 받으며 클라이언트 사용자 ID/검증 완료 주장은 거부한다. 초기 Project 생성/Part Fit 참여·초대/API 업로드 준비·실제 DB/App 연결은 아직 없다.

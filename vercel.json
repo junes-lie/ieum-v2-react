@@ -4,6 +4,7 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "rewrites": [
+    { "source": "/api/projects", "destination": "/api/project-lifecycle?route=" },
     { "source": "/api/projects/:path*", "destination": "/api/project-lifecycle?route=:path*" }
   ],
   "headers": [

@@ -57,4 +57,33 @@ await assert.rejects(projectLifecycleRequest(new Request('https://ieum.example/a
 await assert.rejects(projectLifecycleRequest(req('p/parts/lead/unknown'),options),error=>error.code==='PROJECT_ROUTE_NOT_FOUND')
 await assert.rejects(projectLifecycleRequest(req(),{...options,env:{...env,IEUM_DB_PROVIDER:''}}),error=>error.code==='SERVICE_NOT_CONFIGURED')
 assert.equal((await GET(new Request('https://ieum.example/api/projects/p'))).status,401)
+const createdId='44444444-4444-4444-8444-444444444444'
+result={...structuredClone(project),id:createdId}
+const createRequest=value=>new Request('https://ieum.example/api/projects',{
+  method:'POST',headers:{Authorization:'Bearer qa-token','Content-Type':'application/json','Idempotency-Key':'create-1'},body:JSON.stringify(value)})
+assert.equal((await(await projectLifecycleRequest(createRequest({arrangementId:'verified-arrangement',ownerPartId:'lead'}),options)).json()).id,createdId)
+assert.deepEqual(calls.at(-1).body,{p_arrangement_id:'verified-arrangement',p_owner_part_id:'lead',p_request_key:'create-1'})
+assert.ok(calls.at(-1).url.endsWith('/ieum_create_project'))
+for(const value of [{arrangementId:'a',ownerPartId:'lead',userId:user},{arrangementId:'a',ownerPartId:'lead',parts:[]},
+  {arrangementId:'a',ownerPartId:'lead',rangeData:{lowMidi:0,highMidi:127}},{}]) {
+  const count=calls.length
+  await assert.rejects(projectLifecycleRequest(createRequest(value),options),error=>error.code==='INVALID_PROJECT_REQUEST')
+  assert.equal(calls.length,count)
+}
+const rewrittenCreate=new Request('https://ieum.example/api/project-lifecycle?route=',{
+  method:'POST',headers:{Authorization:'Bearer qa-token','Content-Type':'application/json','Idempotency-Key':'create-1'},
+  body:JSON.stringify({arrangementId:'verified-arrangement',ownerPartId:'lead'})})
+assert.equal((await(await projectLifecycleRequest(rewrittenCreate,options)).json()).id,createdId)
+result=structuredClone(project)
+const joined=await projectLifecycleRequest(req('p/parts/lead/join',{}, {'Idempotency-Key':'join-1'}),options)
+assert.equal((await joined.json()).parts[0].participantId,user)
+assert.deepEqual(calls.at(-1).body,{p_project_id:'p',p_part_id:'lead',p_request_key:'join-1'})
+await assert.rejects(projectLifecycleRequest(req('p/parts/lead/join',{eligible:true},{'Idempotency-Key':'join-1'}),options),error=>error.code==='INVALID_PROJECT_REQUEST')
+for(const [message,status] of [['PROFILE_REQUIRED',403],['PART_FIT_FAILED',403],['PART_RANGE_UNAVAILABLE',409],['ARRANGEMENT_NOT_FOUND',404]]) {
+  result=Response.json({message},{status})
+  const error=await projectLifecycleRequest(req('p/parts/lead/join',{}, {'Idempotency-Key':'join-1'}),options).catch(projectLifecycleErrorResponse)
+  assert.equal(error.status,status);assert.deepEqual(await error.json(),{error:{code:message}})
+}
+result=null
+await assert.rejects(projectLifecycleRequest(createRequest({arrangementId:'a',ownerPartId:'lead'}),options),error=>error.code==='INVALID_PROJECT_RESPONSE')
 console.log('PASS shared Project API: verified user, route/rewrite mapping, recording start, idempotent metadata submission contract, no forged receipts/user IDs, bounded JSON, conflict/failure privacy, inconsistent response denial. Injected HTTP; no live collaboration claim.')

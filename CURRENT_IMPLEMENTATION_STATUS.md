@@ -1,4 +1,10 @@
+## 2026-10-13 R3 독립 구현 — Project 생성·Part Fit 참여 준비
+
+기존 project-lifecycle Function에 곡/Key별 검증 arrangement 참조의 Project 생성과 저장된 개인 음역의 Part Fit 참여를 추가했다. 신규 catalog/source/최초 operation 결과 migration과 관련 PGlite QA로2/3/4 Part·생성자/Owner 배정·나머지OPEN/0Track·기존 matching의 range/comfortableRange/tessitura 일치·Profile 누락/자리 경쟁 거부·중복 요청 결과 보존·source 직접 변경 거부를 확인했다. API QA는 클라이언트 사용자/음역/eligible 위조 및 malformed 성공 응답 거부·원본/변경 payload·root rewrite·안내 코드를 확인했다. 실제 catalog/Profile 원본 ingestion·Google 로그인·원격 DB·upload 검증/Key 조정·초대 경쟁 처리·App 연결은 미완료다. 미정 Identicon/디자인 정책을 확정하지 않았고 기존 앱과 사용자 서버3파일을 보존한다. 배포 후 결과는 실제 확인해서 기록한다.
+
 ## 2026-10-13 R3 독립 구현 — 공유 Project·제출·Mix 트랜잭션 준비
+
+Git/Production 결과: 관련10파일만5a49641로 commit/push, main/origin0/0이다. Production GET projects/qa-read-only·POST recording-start/tracks의 미인증401 AUTH_REQUIRED, 비실제 QA bearer503 SERVICE_NOT_CONFIGURED 및 private/no-store를 확인해 신규 rewrite/Function 반영을 검증했다. 실제 Project/DB/원본 쓰기는 하지 않았다. 앱HTTP200/index-Cy9rymZA.js·capabilities preparation/모두false 유지다. GitHub 해당 SHA는pending/statuses0·deployment0으로 Vercel 배포 ID/commit READY 메타데이터는 미확인이다. 기존500KB 경고 외 build40modules 통과다. 이 문단은 배포 후 로컬 기록이며 전체 R3 완료가 아니다.
 
 기존 서버에 Project/Part/upload intent/확정 Track/Mix job 스키마와 GET Project·녹음 시작 잠금·JSON 제출 API를 추가했다. 2–4 실제 Part·배정/원본 검증 receipt·원본 duration 확인·Key/곡/반주/구성 잠금·최초 제출 결과 보존·마지막 필수 제출의 한 Mix job·서버 전용 결과 확정 transaction을 격리 PostgreSQL에서 검증했다. API의 경로/rewrite·인증·클라이언트 검증/사용자 ID 위조 거부·크기 제한·오류와 불일치 응답 거부도 통과했다. 원격 DB/실제 사용자·원본 upload/실제 duration 분석·Mix worker·Project 생성/Part Fit 참여·App 연결은 미완료이며 capabilitiesfalse다. 기존 로컬 앱/원본/사용자 서버3파일과 기존 기능 증거를 보존한다. 실제 서비스 완료가 아닌 R3 준비 묶음이다. Git/Production 마감은 확인 후 기록한다.
 

@@ -8,16 +8,21 @@ const uuid = value => /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]
 function routeOf(request) {
   const url = new URL(request.url)
   let path
-  if (url.pathname.startsWith('/api/projects/')) path = url.pathname.slice('/api/projects/'.length)
+  if (url.pathname==='/api/projects') path=''
+  else if (url.pathname.startsWith('/api/projects/')) path = url.pathname.slice('/api/projects/'.length)
   else if (url.pathname==='/api/project-lifecycle' && url.searchParams.getAll('route').length===1) path=url.searchParams.get('route')
   else throw fail('PROJECT_ROUTE_NOT_FOUND')
+  if (path==='') {
+    if (request.method!=='POST') throw fail('METHOD_NOT_ALLOWED')
+    return {operation:'create'}
+  }
   let segments
   try { segments=path.split('/').map(decodeURIComponent) } catch { throw fail('INVALID_PROJECT_REQUEST') }
   if (segments.some(value=>!text(value) || value.includes('/') || ['.','..'].includes(value))) throw fail('INVALID_PROJECT_REQUEST')
   if (segments.length===1 && request.method==='GET') return { projectId:segments[0],operation:'get' }
-  if (segments.length===4 && segments[1]==='parts' && ['recording-start','tracks'].includes(segments[3])) {
+  if (segments.length===4 && segments[1]==='parts' && ['recording-start','tracks','join'].includes(segments[3])) {
     if (request.method!=='POST') throw fail('METHOD_NOT_ALLOWED')
-    return { projectId:segments[0],partId:segments[2],operation:segments[3]==='tracks'?'submit':'start' }
+    return { projectId:segments[0],partId:segments[2],operation:segments[3]==='tracks'?'submit':segments[3]==='join'?'join':'start' }
   }
   if (segments.length===1) throw fail('METHOD_NOT_ALLOWED')
   throw fail('PROJECT_ROUTE_NOT_FOUND')
@@ -47,7 +52,7 @@ async function readMetadata(request) {
 
 function projectSnapshot(value,projectId) {
   const source=value?.audioSourceRef
-  if (value?.id!==projectId || !text(value.seed) || !text(value.songId) || !text(value.key) ||
+  if (!value || typeof value!=='object' || value.id!==projectId || !text(value.seed) || !text(value.songId) || !text(value.key) ||
     ![2,3,4].includes(value.partCount) || !Array.isArray(value.parts) || value.parts.length!==value.partCount ||
     !Number.isInteger(value.submittedTrackCount) || value.submittedTrackCount<0 || value.submittedTrackCount>value.partCount ||
     !Number.isInteger(value.revision) || value.revision<0 || !['recruiting','mixing','completed'].includes(value.lifecycle) ||
@@ -72,11 +77,25 @@ export async function projectLifecycleRequest(request,{ env=process.env,fetchImp
   const user=await verifyRequestUser(request,{ env,fetchImpl })
   if (env.IEUM_DB_PROVIDER!=='supabase') throw fail('SERVICE_NOT_CONFIGURED')
   const route=routeOf(request), configuration=readAuthConfiguration(env)
-  let rpc='ieum_get_project', body={ p_project_id:route.projectId }
+  let rpc='ieum_get_project', body=route.operation==='create'?{}:{ p_project_id:route.projectId }, requestedOwnerPart
   if (route.operation!=='get') {
     const value=await readMetadata(request)
-    body.p_part_id=route.partId
-    if (route.operation==='start') {
+    if (route.operation!=='create') body.p_part_id=route.partId
+    if (route.operation==='create' || route.operation==='join') {
+      const key=request.headers.get('idempotency-key')
+      if (!text(key)) throw fail('IDEMPOTENCY_KEY_REQUIRED')
+      body.p_request_key=key
+      if (route.operation==='create') {
+        if (Object.keys(value).length!==2 || Object.keys(value).some(field=>!['arrangementId','ownerPartId'].includes(field)) ||
+          !text(value.arrangementId) || !text(value.ownerPartId)) throw fail('INVALID_PROJECT_REQUEST')
+        rpc='ieum_create_project'
+        body.p_arrangement_id=value.arrangementId;body.p_owner_part_id=value.ownerPartId
+        requestedOwnerPart=value.ownerPartId
+      } else {
+        if (Object.keys(value).length) throw fail('INVALID_PROJECT_REQUEST')
+        rpc='ieum_join_project_part'
+      }
+    } else if (route.operation==='start') {
       if (Object.keys(value).length) throw fail('INVALID_PROJECT_REQUEST')
       rpc='ieum_start_project_recording'
     } else {
@@ -101,7 +120,14 @@ export async function projectLifecycleRequest(request,{ env=process.env,fetchImp
     })
   } catch { throw fail('PROJECT_UNAVAILABLE') }
   const codes={ 400:'INVALID_PROJECT_REQUEST',401:'AUTH_REQUIRED',403:'PART_NOT_ASSIGNED',404:'PROJECT_NOT_FOUND',409:'PROJECT_CONFLICT' }
-  if (!response.ok) throw fail(codes[response.status] || 'PROJECT_UNAVAILABLE')
+  if (!response.ok) {
+    // Only known RPC error identifiers; never echo arbitrary upstream diagnostics.
+    let detail
+    try {detail=await response.json()} catch {}
+    const specific={PROFILE_REQUIRED:403,PART_FIT_FAILED:403,PART_RANGE_UNAVAILABLE:409,ARRANGEMENT_NOT_FOUND:404}
+    if (specific[detail?.message]===response.status) throw fail(detail.message)
+    throw fail(codes[response.status] || 'PROJECT_UNAVAILABLE')
+  }
   let result
   try { result=await response.json() } catch { throw fail('INVALID_PROJECT_RESPONSE') }
   if (route.operation==='submit') {
@@ -110,9 +136,12 @@ export async function projectLifecycleRequest(request,{ env=process.env,fetchImp
     if (!project.parts.some(part=>part.id===route.partId && part.status==='submitted' && part.participantId===user.id)) throw fail('INVALID_PROJECT_RESPONSE')
     result={trackId:result.trackId,submissionStatus:'success',project}
   } else {
-    result=projectSnapshot(result,route.projectId)
+    result=projectSnapshot(result,route.operation==='create'?result?.id:route.projectId)
     if (route.operation==='start' && (!result.keyLockedAt || result.lifecycle!=='recruiting' ||
       !result.parts.some(part=>part.id===route.partId && part.status==='ready' && part.participantId===user.id))) throw fail('INVALID_PROJECT_RESPONSE')
+    if (route.operation==='create' && (!uuid(result.id) || result.keyLockedAt!==null || result.lifecycle!=='recruiting' || result.submittedTrackCount!==0 ||
+      result.parts.filter(part=>part.status==='ready').length!==1 || !result.parts.some(part=>part.id===requestedOwnerPart && part.participantId===user.id))) throw fail('INVALID_PROJECT_RESPONSE')
+    if (route.operation==='join' && !result.parts.some(part=>part.id===route.partId && part.participantId===user.id && part.status!=='open')) throw fail('INVALID_PROJECT_RESPONSE')
   }
   return Response.json(result,{ headers:{ 'Cache-Control':'private, no-store',Vary:'Authorization' } })
 }
@@ -120,7 +149,8 @@ export async function projectLifecycleRequest(request,{ env=process.env,fetchImp
 export function projectLifecycleErrorResponse(error) {
   const statuses={ AUTH_REQUIRED:401,SERVICE_NOT_CONFIGURED:503,INVALID_SERVICE_CONFIGURATION:503,AUTH_UNAVAILABLE:503,
     INVALID_AUTH_RESPONSE:503,INVALID_PROJECT_REQUEST:400,PROJECT_PAYLOAD_TOO_LARGE:413,IDEMPOTENCY_KEY_REQUIRED:400,
-    PROJECT_ROUTE_NOT_FOUND:404,PROJECT_NOT_FOUND:404,PART_NOT_ASSIGNED:403,PROJECT_CONFLICT:409,METHOD_NOT_ALLOWED:405,
+    PROJECT_ROUTE_NOT_FOUND:404,PROJECT_NOT_FOUND:404,ARRANGEMENT_NOT_FOUND:404,PROFILE_REQUIRED:403,PART_FIT_FAILED:403,PART_RANGE_UNAVAILABLE:409,
+    PART_NOT_ASSIGNED:403,PROJECT_CONFLICT:409,METHOD_NOT_ALLOWED:405,
     PROJECT_UNAVAILABLE:503,INVALID_PROJECT_RESPONSE:503 }
   const code=Object.hasOwn(statuses,error?.code)?error.code:'PROJECT_UNAVAILABLE'
   return Response.json({ error:{ code } },{ status:statuses[code],headers:{ 'Cache-Control':'private, no-store',Vary:'Authorization' } })
