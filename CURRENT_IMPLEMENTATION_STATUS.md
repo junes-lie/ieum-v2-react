@@ -1,4 +1,10 @@
+## 2026-10-13 R1/R2 작업실 제출 판정
+
+기존03 Workspace도 Home/02/08/09와 같은 submittedProjectTracks/allProjectTracksSubmitted 판정을 사용한다. Review/실패·다른 Project 원본·오래된 Part submitted 표시는 제출수/청취/확정 Record Layer에서 제외하고 미제출 내 Part의 녹음/Review 복귀를 유지한다. 전원 실제 제출+저장 Mix에만07 버튼·Mix 결과를 제공하고 불완전 Mix/processing 표시는 차단한다. 초대 Track 도착 badge의 고정4/4도 실제 제출수/N으로 연결한다. Record의 Track 참조를 memo해 작업실 재생 상태만으로 불필요한 AI field reload를 만들지 않는다. 기존 화면/디자인·원본·배정·제출/Mix 처리 자체는 바꾸지 않는다.2/3/4 Part SSR/callback과 기존 App bootstrap/Draft 실패/직접 제출·reload/완성 복원·레이어 계보 QA 및 build 통과. 실제 마이크/청취/시각·원격 협업/음악/Identity 생성은 기존 잔여다.
+
 ## 2026-10-13 R5 실제 제출 분석 입력 연결
+
+마감:f4f9ff6fe31a61957dcce22b8e7664b3b89cfb24 관련5파일 commit/main push·main/origin0/0, 사용자 기존3파일 보존. full SHA Vercel success/Production deployment7024352762 SHA 일치, https://vercel.com/junes-lie/ieum-v2-react/7ysvWztzDGKDHu1ysgrEmHUCPfYP. Production page/JS200·index-DROqEnLI.js local exact/SHA256 e839ce98843d32f035149833b7a920e0c3744baf0273685732aad05c504343bd, capabilities preparation/전체 서비스false다. helper의 App 호출은 아직 없으므로 화면 변화/생성 완료를 주장하지 않는다. 관련 실제 SQL/API·기존 local Identity 계약 및 build 통과·기존500KB 경고 유지. PC 실제 조회 total15.95GiB/free7.06GiB, GTX1660SUPER6144MiB 중851MiB·GPU10%; 대형 AI 시작8GiB 미달로 실행하지 않았고 사용자 앱/자원 설정은 그대로다. 이 문단은 commit 후 로컬 증거 기록이다.
 
 검증된 remote 제출 Track 분석을 기존 voiceIdentitySources/buildTrackIdentityInput에 연결했다. 기존 session 본인 경계 안에서 Track ID·원본/특징 hash·PCM receipt·project-track 목적/v5 분석을 대조하고 source revision/digest를 만든다. 이미 존재하는 개인 참조의 snapshot만 받으며 helper가 개인 결과를 생성·승인하거나 결과 소유권 registry를 대체하지 않는다. 같은 입력/버전 재현·다른 generator version·요청 중 참조 변이·목적/특징/receipt/임의 URL 변조·logout 늦은 응답 차단을 기존 실제 WAV→격리 SQL/API QA에 통합해 통과했다. 기존 local 입력/Identity 계약/build도 통과했고 Profile/Track/Mix·시각·사용자3파일은 보존한다. App 호출/실제 remote 데이터·개인 결과 registry/승인 형상 및 Track 변형/Record 결합은 미완료다.
 

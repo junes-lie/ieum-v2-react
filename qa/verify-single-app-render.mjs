@@ -93,6 +93,45 @@ try {
   for(const button of buttons)button.onClick()
   assert.deepEqual(opened,[{songId:homeProject.songId,id:homeProject.id},{songId:homeProject.songId,id:homeProject.id}],'Both actual handlers select the same Song/Project in existing Detail')
   console.log('PASS Home rendered local discovery: created Project recruiting/recent/completed lists, real saved Track counts, assigned seats not OPEN, Review/invites do not submit, Mix success plus all Tracks required. Node render, not physical/visual/browser navigation acceptance.')
+  for(const count of [2,3,4]){
+    const workspaceProject={...homeProject,id:'qa-workspace-'+count,parts:Array.from({length:count},(_,index)=>({id:'ws-'+index,name:'Part '+index,
+      participantId:index?'person-'+index:'jisun',participant:index?'Person '+index:'나',status:'submitted'})),partCount:count,totalParts:count}
+    const finals=Object.fromEntries(workspaceProject.parts.map(part=>[part.id,{id:workspaceProject.id+':'+part.id,projectId:workspaceProject.id,partId:part.id,
+      kind:'project-track',submissionStatus:'success',blob:new Blob(['saved final']),participantId:part.participantId,participant:part.participant,duration:1,
+      layer:{qaMarker:'submitted-'+part.id}}]))
+    const review={...finals['ws-0'],kind:'temporary-recording',submissionStatus:'review'}
+    const invalid={'ws-0':review,'ws-1':{...finals['ws-1'],projectId:'other-project'}}
+    const recordInputs=[],mixInputs=[],actions=[],destinations=[]
+    const props={...common,project:workspaceProject,isCreated:true,ownerPartId:'ws-0',findVocal:noop,recordPart:noop,go:target=>destinations.push(target)}
+    const renderWorkspace=extra=>renderToStaticMarkup(React.createElement(Workspace,{...props,...extra}))
+    try{
+      React.createElement=(type,props,...children)=>{
+        if(typeof type==='function' && type.name==='ResonanceRecord')recordInputs.push(props)
+        if(typeof type==='function' && type.name==='CurrentMixPanel')mixInputs.push(props)
+        if(type==='button' && props?.['data-action'])actions.push(props)
+        return originalCreateElement(type,props,...children)
+      }
+      const stale=renderWorkspace({projectTracks:invalid,layers:workspaceProject.parts.map(()=>review.layer),mix:{url:'blob:stale'},mixStatus:'processing',hasDraft:true})
+      assert.ok(stale.includes('0/'+count+' Tracks'),'Review/stale Part labels cannot create Workspace submissions')
+      assert.ok(stale.includes('녹음 이어서 확인하기'),'Own unsubmitted Part remains available for Review')
+      assert.ok(!stale.includes('완성곡 듣기') && !stale.includes('곡을 완성하고 있어요.'))
+      assert.deepEqual(recordInputs[0].tracks,{})
+      assert.deepEqual(recordInputs[0].layers,workspaceProject.parts.map(()=>null),'Unsubmitted graphics cannot become finalized Record layers')
+      assert.equal(mixInputs[0].mix,null)
+      assert.deepEqual(mixInputs[0].projectTracks,{})
+      const partial=renderWorkspace({projectTracks:{'ws-0':finals['ws-0']},mix:{url:'blob:stale'},mixStatus:'processing'})
+      assert.ok(partial.includes('1/'+count+' Tracks'))
+      assert.ok(partial.includes('현재 Mix 듣기') && !partial.includes('완성곡 듣기'))
+      assert.ok(!partial.includes('곡을 완성하고 있어요.'))
+      assert.ok(renderWorkspace({projectTracks:finals,mixStatus:'processing'}).includes('Auto Mix 확인'))
+      const completed=renderWorkspace({projectTracks:finals,mix:{url:'blob:confirmed'},mixStatus:'success'})
+      assert.ok(completed.includes(count+'/'+count+' Tracks') && completed.includes('완성곡 듣기'))
+      actions.find(button=>button['data-action']==='open-complete').onClick()
+      assert.deepEqual(destinations,['complete'])
+      assert.equal(invalid['ws-0'],review,'Rendering does not mutate Review/original records')
+    }finally{React.createElement=originalCreateElement}
+  }
+  console.log('PASS Workspace: actual final Tracks only, Review/wrong Project/stale Part labels and incomplete Mix excluded; 2–4 Part progress/Record/listening/record CTA/complete action agree. Node render only.')
   const detailSong={...song,id:homeProject.songId,projects:[{id:'qa-static-project',name:'Other Project',partCount:2,progress:0,status:'RECRUITING',seed:'other',key:'C major'}]}
   const detailProps={...homeProps,song:detailSong,go:noop,back:noop,join:noop,toggleSongSave:noop,openVocalProfile:noop,
     onCreateProject:noop,onOpenCreatedProject:noop,onSelectProject:noop,initialProjectId:homeProject.id}
@@ -145,6 +184,10 @@ try {
   const mainId='ieum-thousand-years-v7'
   const mainSong={...song,id:'a-thousand-years',projects:[{id:mainId,name:'Original C · Quartet',partCount:4,progress:2,status:'RECORDING',seed:'main-seed',key:'C major'}]}
   const mainFinals=Object.fromEntries(['soprano','alto','tenor','bass'].map(partId=>[partId,{id:`${mainId}:${partId}`,projectId:mainId,partId,blob:new Blob(['final']),kind:'project-track',submissionStatus:'success',duration:7,participant:`QA ${partId}`}]))
+  const partialMainWorkspace=renderToStaticMarkup(React.createElement(Workspace,{...common,project:undefined,projectTracks:{bass:mainFinals.bass},
+    ownerPartId:'tenor',joined:true,invited:true,candidateAccepted:true,invitedPerson:{id:'luna',name:'Luna'},findVocal:noop,recordPart:noop}))
+  assert.ok(partialMainWorkspace.includes('SUBMITTED · 1/4'),'Invitation arrival badge uses actual submitted count instead of fixed 4/4')
+  assert.ok(!partialMainWorkspace.includes('SUBMITTED · 4/4'))
   const existingTwo={soprano:mainFinals.soprano,alto:mainFinals.alto}
   const renderMainDetail=extra=>renderDetail({song:mainSong,initialProjectId:mainId,createdProjects:[],projectTracks:existingTwo,...extra})
   assert.ok(renderMainDetail({projectTracks:{},mainKeyLocked:true}).includes('첫 녹음 시작 후 Key 고정'),'Main Project uses its persisted recording lock even before submission')

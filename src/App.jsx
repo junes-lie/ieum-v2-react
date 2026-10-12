@@ -951,16 +951,21 @@ function VoiceSetup({ complete, go, back, existing, editMode, songSaves }) {
 
 function Workspace({ go, project = PROJECT, song, isCreated = false, ownerPartId, findVocal, joined, invited, invitedPerson, candidateAccepted, candidateArrivalStatus, projectTracks, layers, recordPart, projectLiked, toggleProjectLike, openVocalProfile, mix, mixStatus = 'idle', retryAutoMix, completionDelayed = false, hasDraft = false }) {
   const [mixPlaying,setMixPlaying]=useState(false)
+  const finalTracks=useMemo(()=>Object.fromEntries(submittedProjectTracks(project,projectTracks).map(track=>[track.partId,track])),
+    [project.id,project.partIds?.join(':') || project.parts?.map(part=>part.id).join(':'),projectTracks])
+  const allSubmitted=allProjectTracksSubmitted(project,finalTracks)
+  const completedMix=allSubmitted ? mix : null
+  const currentMixStatus=allSubmitted ? mixStatus : 'idle'
   const baseParts = project.parts || PART_CATALOG.slice(0,project.partCount)
   const projectParts = baseParts.map(part => {
-    const track = projectTracks[part.id]
+    const track = finalTracks[part.id]
     if (track) return {...part, participantId:track.participantId || personFromName(track.participant)?.id, participant:track.participant, status:'submitted', duration:fmt(track.duration), demo:track.demo, disclosure:track.disclosure}
     const pendingInvites = (part.invitations||[]).filter(invitation=>invitation.status==='sent')
     if (pendingInvites.length && !part.participantId) return {...part,participant:null,status:'open',invitationStatus:'sent'}
     if (isCreated && part.id === ownerPartId) return {...part,participantId:CURRENT_USER_ID,participant:'JISUN',status:'ready'}
     if (!isCreated && part.id === ownerPartId && joined) return {...part,participantId:CURRENT_USER_ID,participant:'JISUN',status:'ready'}
     if (part.id === 'bass' && candidateAccepted) return {...part,participantId:invitedPerson.id,participant:invitedPerson.name,status:'accepted'}
-    return part
+    return part.status==='submitted' ? {...part,status:part.participantId?'ready':'open',duration:null} : part
   })
   const submitted = projectParts.filter(p => p.status === 'submitted').length
   const invitedParts = isCreated ? projectParts.filter(part=>part.invitationStatus) : []
@@ -969,7 +974,7 @@ function Workspace({ go, project = PROJECT, song, isCreated = false, ownerPartId
   const partAction = part => {
     if (isCreated && part.invitationStatus==='sent') return {action:()=>findVocal(part.id),label:'다른 보컬 찾기'}
     if (isCreated && ownerPartId && !part.participantId && !part.invitationStatus) return {action:()=>findVocal(part.id),label:'보컬 찾기'}
-    if (!isCreated && !part.participantId && part.id==='bass' && !projectTracks.bass && !candidateAccepted) return {action:()=>findVocal(part.id),label:invited?'다른 보컬 찾기':'보컬 찾기'}
+    if (!isCreated && !part.participantId && part.id==='bass' && !finalTracks.bass && !candidateAccepted) return {action:()=>findVocal(part.id),label:invited?'다른 보컬 찾기':'보컬 찾기'}
     return {}
   }
   return <div className="screen workspace-screen">
@@ -977,19 +982,19 @@ function Workspace({ go, project = PROJECT, song, isCreated = false, ownerPartId
     <main>
       <div className="title-row"><div><h1>{song?.title || project.name}</h1><p className="workspace-project-name">{project.name}</p></div></div>
       {completionDelayed&&<section className="completion-delay-banner" role="status" data-state="completion-delayed"><strong>내 녹음을 이어갈 차례예요.</strong><p>마지막 유효 활동 후 7일이 지났습니다. 미완료된 내 Part를 제출하면 프로젝트가 다시 진행돼요.</p></section>}
-      <ResonanceRecord parts={projectParts} tracks={projectTracks} projectId={project.id} layers={layers} state={mixStatus==='processing'?'processing':mixPlaying?'playing':'rest'} seed={project.seed}/>
+      <ResonanceRecord parts={projectParts} tracks={finalTracks} projectId={project.id} layers={projectParts.map(part=>finalTracks[part.id]?.layer || null)} state={currentMixStatus==='processing'?'processing':mixPlaying?'playing':'rest'} seed={project.seed}/>
 
       {isCreated && invitedParts.map(part=><section className="invite-status" data-invite-state={part.invitationStatus} key={part.id}><span>{part.invitationStatus==='accepted'?`${part.participant} · ${part.name} 참여 확정`:`${part.name} · ${(part.invitations||[]).filter(item=>item.status==='sent').length}명 수락 대기`}</span><b>{part.invitationStatus==='accepted'?'TRACK WAIT':'ACCEPT WAIT'}</b></section>)}
       {!isCreated && invited && !candidateAccepted && <section className="invite-status" data-invite-state="sent"><span>{invitedPerson.name}에게 Bass 초대 보냄</span><b>ACCEPT WAIT</b></section>}
-      {!isCreated && candidateAccepted && !projectTracks.bass && <section className="invite-status" data-invite-state="accepted"><span>{invitedPerson.name} · Bass 초대 수락</span><b>{candidateArrivalStatus==='loading'?'TRACK ARRIVING':'TRACK WAIT'}</b></section>}
-      {!isCreated && invited && projectTracks.bass && <section className="invite-status" data-invite-state="submitted"><span>{invitedPerson.name}의 Bass 데모 Track 도착</span><b>SUBMITTED · 4/4</b></section>}
+      {!isCreated && candidateAccepted && !finalTracks.bass && <section className="invite-status" data-invite-state="accepted"><span>{invitedPerson.name} · Bass 초대 수락</span><b>{candidateArrivalStatus==='loading'?'TRACK ARRIVING':'TRACK WAIT'}</b></section>}
+      {!isCreated && invited && finalTracks.bass && <section className="invite-status" data-invite-state="submitted"><span>{invitedPerson.name}의 Bass 데모 Track 도착</span><b>SUBMITTED · {submitted}/{projectParts.length}</b></section>}
       <dl className="workspace-meta"><div className="workspace-key"><dt>현재 키</dt><dd>{project.key || 'C major'}</dd></div><div className="workspace-progress"><dt>제출 진행률</dt><dd>{submitted}/{projectParts.length} Tracks</dd></div></dl>
       {canRecordMyPart&&<p className="workspace-record-note">{hasDraft?'임시 저장한 녹음을 확인해 주세요.':`내 ${myPart.name} 녹음이 남았어요.`}</p>}
       <div className="workspace-actions">
-        {submitted > 0 && <button className={canRecordMyPart?'secondary':'primary'} data-action={mix?'open-complete':'focus-current-mix'} onClick={() => mix ? go('complete') : document.getElementById('current-mix')?.scrollIntoView({behavior:'smooth',block:'start'})}><Icon name="headphones"/> {mix?'완성곡 듣기':mixStatus==='processing'?'Auto Mix 확인':'현재 Mix 듣기'}</button>}
+        {submitted > 0 && <button className={canRecordMyPart?'secondary':'primary'} data-action={completedMix?'open-complete':'focus-current-mix'} onClick={() => completedMix ? go('complete') : document.getElementById('current-mix')?.scrollIntoView({behavior:'smooth',block:'start'})}><Icon name="headphones"/> {completedMix?'완성곡 듣기':currentMixStatus==='processing'?'Auto Mix 확인':'현재 Mix 듣기'}</button>}
         {canRecordMyPart && <button className="primary" data-action="record-part" onClick={() => recordPart(myPart.id)}><img src={figmaAssets.imgFaFaMicrophone} alt="" aria-hidden="true"/>{hasDraft?'녹음 이어서 확인하기':'내 Part 녹음하기'}</button>}
       </div>
-      <CurrentMixPanel parts={projectParts} projectTracks={projectTracks} project={project} mix={mix} mixStatus={mixStatus} retryAutoMix={retryAutoMix} openVocalProfile={openVocalProfile} onPlayingChange={setMixPlaying} partAction={partAction} completionDelayed={completionDelayed}/>
+      <CurrentMixPanel parts={projectParts} projectTracks={finalTracks} project={project} mix={completedMix} mixStatus={currentMixStatus} retryAutoMix={retryAutoMix} openVocalProfile={openVocalProfile} onPlayingChange={setMixPlaying} partAction={partAction} completionDelayed={completionDelayed}/>
     </main>
   </div>
 }
