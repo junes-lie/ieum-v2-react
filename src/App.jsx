@@ -1386,7 +1386,7 @@ function ProfilePreferences({profile,save}) {
   const [error,setError]=useState('')
   const [saving,setSaving]=useState(false)
   const savingRef=useRef(false)
-  if(!editing)return <button className="secondary" onClick={()=>{setError('');setEditing(true)}}>선호 역할 · 장르 · 취향 수정</button>
+  if(!editing)return <button className="secondary" onClick={()=>{setValues({roles:(profile.roles||[]).join(', '),genres:(profile.genres||[]).join(', '),taste:(profile.taste||[]).join(', ')});setError('');setEditing(true)}}>선호 역할 · 장르 · 취향 수정</button>
   const submit=async()=>{
     if(savingRef.current)return
     savingRef.current=true;setSaving(true);setError('')

@@ -1,3 +1,7 @@
+### R2 Profile 편집 재진입 값 — 2026-10-12
+
+역할 저장 후 이전 입력 문자열이 남는 실제 실패를 재현하고 편집 진입 때 현재 저장 Profile의 역할/장르/취향을 읽도록 수정했다. native 재진입/취소/이력, 기존 전체 Profile 실패·retry/reload·음역/Sample 독립성·최초 복귀·profile store/build 통과. 관련 main 자동배포→Production QA로 마감하며 전체 R2/Identity/실기기 gate를 유지한다. Notion/figma-desktop 도구0개 확인, 새 정책·보류 디자인 판단 없음. 직전809b6cf Production 상태/4 원본 SHA/asset exact 검증 마감.
+
 ### R2 기본 Project Collection 상태 마감 — 2026-10-12
 
 실제4 Track 제출·Mix 저장 실패 시 기본 Collection 카드의 RECORDING 오표시를 재현하고 기존 readyForMix의 MIXING 판정을 연결했다. Mix 성공/reload 후 COMPLETE/같은 완성곡, 실패 시 같은 작업실·원본4 SHA 보존, 기존 Collection 저장 객체/탭/복귀 QA/build를 통과했다. bootstrap 허용 demo origin의 격리 실제 오디오 시험이며 물리 녹음/청취·전체 R2 완료로 확대하지 않는다. 관련 변경만 main Git Integration→Production 동일 QA로 마감하고 사용자 서버3파일/디자인/AI gate는 유지한다. 직전6f1b9e3 Production 두 Guide QA/asset exact 마감 확인.

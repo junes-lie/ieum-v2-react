@@ -1,3 +1,9 @@
+### R2 저장된 Profile의 편집 재진입 — 2026-10-12
+
+역할 저장에서 빈 항목/공백이 제거된 실제 Profile과 재진입 편집기의 이전 입력 문자열 불일치를 native assertion으로 재현했다. 편집 시작 때 현재 Profile의 역할/장르/취향을 다시 읽는다. 저장 형식/정책·음역/대표 Sample/Track·디자인 변경 없음. 재진입 입력 exact·취소/Back/Forward와 기존 전체 Profile 취향 실패/retry/reload·음역만 변경·Sample 교체/기존 URL·최초 Setup 복귀/자동 참여 없음·중복 저장 QA, profile store 원자성/build39modules/510.63KB 통과(기존500KB 경고 유지). 관련 묶음만 main 자동배포→Production으로 전달하며 최신 정책/형상 결정·실기기/전체 R2 완료는 미검증이다. 현재 Notion/figma-desktop 노출 도구0개 확인, 새 정책/시각 구현은 하지 않는다.
+
+직전809b6cf main0·0/Git Integration success·Production main Collection 실패/MIXING→성공/COMPLETE·원본4 SHA/완성곡 QA 통과, HTTP200/index-DnYmEX2x.js SHA9FCF6F61ADA986C43A156862797F96EDCB9FF465975EF734053739EBCEAA069E exact 확인. 사용자 서버3파일/미검증 AI 초기화·원본 보존.
+
 ### R2 기본 Project Collection Mix 상태 — 2026-10-12
 
 새 Project와 달리 기본 Project의 Collection에서 실제4 Track/Mix 저장 실패가 RECORDING · 04/04로 표시되는 native assertion 실패를 재현했다. 기존 readyForMix를 카드에 전달해 저장된 Mix 전 MIXING, 성공 후 COMPLETE를 표시한다. 기존 생성/제출/오디오/정책은 변경하지 않는다. 실제 native Mix 저장 실패→작업실 오류/완성곡 없음→정상 reload/Mix 저장→완성곡 연결과4 원본 Blob SHA exact, 기존 Collection 저장 해제/탭별 scroll/프로필·곡 이력/Home focus 회귀, build39modules/510.53KB 통과. 첫 fixture는 bootstrap에서 거부하는 임의 origin으로 timeout이었고 명시된 local-formant-singing-demo origin으로 교정했다. 사람 녹음/실기기 인수가 아니며 기존 전체 R2/음악/Identity gate 유지. 관련 묶음만 main 자동배포→Production 동일 QA로 마감한다.
