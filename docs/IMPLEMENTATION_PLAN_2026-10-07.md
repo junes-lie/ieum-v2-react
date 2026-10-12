@@ -17,8 +17,8 @@
 | 단계0 | 완료 유지; 재수행하지 않음 | 전체 제품 완성과 구분 |
 | R1 / 단계3 | 녹음·Draft·Review 직접 제출·Auto Mix 재시도 구현과 관련 자동 검증 재사용 | 실제 음악, 물리 입력·음량·진입·지연·청취 |
 | R2 / 단계4 | 탐색·참여·Profile 편집·Collection·복귀 및 VP05A 기능 구현·관련 검증 완료 목록 | 실제 후보/Sample/음색·곡/Key 음역 자료, 동일 Identity(R5), 실기기/최종 디자인 인수 |
-| 1dd4f43 보컬 성향 | main push·Production JS/CSS exact·관련 Production QA 확인 | Vercel 배포 ID·commit 메타데이터/READY 독립 확인 |
-| R3 / 단계5 기반 | Auth/Storage 계약, Profile 성향·개인 저장 목록·공유 Project 생성/Part Fit 참여/제출/Mix DB/API 준비 및 격리 SQL/HTTP 검증 | 실제 프로젝트/OAuth 접근, 원격 migration·두 사용자 권한·catalog/전체 Profile 원본 ingestion·Key 조정·원본 검증/원자적 제출·Mix worker·대상 접근 검증·App 연결 |
+| 1dd4f43 보컬 성향 | main push·Production JS/CSS exact·관련 Production QA 및 deployment7019224015/full SHA success 확인 | 실기기/최종 디자인은 R2 잔여 유지 |
+| R3 / 단계5 기반 | Auth/Storage 계약, Profile 성향·개인 저장 목록·공유 Project 생성/Part Fit 참여/업로드 준비/제출/Mix DB/API 준비 및 격리 SQL/HTTP 검증 | 실제 프로젝트/OAuth 접근, 원격 migration·두 사용자 권한·catalog/전체 Profile 원본 ingestion·Key 조정·실제 format/duration 원본 검증/제출·Mix worker·대상 접근 검증·App 연결 |
 | R4 / 단계5 협업 | 기존 계약/로컬 흐름 보존 | R3 이후 실제 초대·경쟁·공유·7일 Push |
 | R5 / 단계1·2·4 | 측정 원본·revision·입력 계약 준비 | 실제 개인 생성→Track 변형→Project 결합, 승인 형상·미정 정책·G1–G5 |
 | R6 / 단계3 음악 | 기존 분석·실험 기록 보존 | 0원 실행 경로·권리·가창 품질 및 실제 곡/반주/2–4 Part 연결 |
@@ -71,6 +71,8 @@ VP05A Production 통과 증거를 재사용하고 변경된 정상/실패/복원
 
 ## R1/R2 잔여 대조 결과 — 2026-10-13
 
+원본 업로드 준비 추가: 기존 upload-intents 계약에 본인 Part·녹음 잠금·중복 키/원본 ID의 SQL allocation과 private Storage 바이트 재검증/서명 URL을 연결했다. 준비만으로 Track/Mix를 늘리지 않으며 바이트 receipt는 재업로드 생략만 의미한다. 실제 duration 검증/receipt 확정·원격 Storage·App 연결은 미완료다. SQL·주입 HTTP 관련 검증만 통과했으며 실제 서비스나 음악 품질 완료로 표시하지 않는다.
+
 Project 생성/참여 준비 추가: trusted catalog와 개인 Profile 원본 저장 경계, 최초 요청 결과 보존, 기존 Part Fit 규칙으로 생성/OPEN 참여하는 SQL·API를 구현했다. 실제 곡별2–4 Part·생성자 배정/나머지OPEN/0Track·재시도·음역/tessitura 대조와 권한 거부를 격리 검증했다. 원격 실제 catalog·Profile source ingestion·두 사용자·upload/Key 조정·초대 경쟁 정리·App 연결은 아직 미완료다. 앱/실제 서비스 완료를 주장하지 않으며 기존 R3 예산은 실효 공수 미측정으로 임의 차감하지 않는다.
 
 공유 Project 저장 준비 추가: Project/실제 Part/원본 intent/확정 Track/Mix job SQL 및 GET/녹음 시작/직접 제출 API를 구현하고 격리 SQL·HTTP 계약을 검증했다. 실제 원본 hash/크기/MIME와 duration을 검증한 trusted receipt 없이는 제출되지 않는다. 마지막 제출은 Mix job만 생성하고 실제 저장 결과 검증 성공만 completed다. 원격 catalog/Profile-backed Project 생성·Part Fit 참여·upload API·Mix worker·실제 사용자/App 연결은 미완료다. R3 예산은 실효 공수 미측정으로 소급 차감하지 않고 전체 완료로 표시하지 않는다.
@@ -86,7 +88,7 @@ R3 독립 준비 진행: 기존 /api/me/profile 경로의 본인 조회/성향 P
 | 카탈로그 곡/Key별 실제 Part 음역·검증된 제공곡 | 데이터/음악(R6) | 실제 source/분석 버전·음역/진입/반주 품질 확보 후 기존 추천/Gate 연결 |
 | 동일 Voice Identity 사용처 | 기술/정책/디자인(R5) | 승인 개인 형상·재현/갱신/버전/fallback 정책 및 G1–G5 |
 | 마이크·음량·진입·지연·청취·모바일 터치 | 실기기 인수 | 배포된 같은 버전의 실제 입력/청취 결과. 합성 QA로 완료 처리하지 않음 |
-| Vercel 1dd4f43 배포 ID·commit 메타데이터/READY | 외부 연결/운영 | GitHub API 재확인: deployment0/status0·pending. Production exact 증거와 분리; 인증된 배포 메타데이터 접근 후 확인 |
+| Vercel 1dd4f43 배포 ID·commit 메타데이터/READY | 10/13 확인 완료 | 짧은 SHA 조회의 오류를 정정. 필터 없는 목록/full SHA 조회로 deployment7019224015 success·commit status success 확인. 해당 VP05A를 재배포/재구현하지 않음 |
 | 기존 explicit Mix retry와 유저플로우2C의 별도 실패/재시도 UX 제외 문구 | 정책 대조 기록 | 이번 사용자 승인 계획이 기존 retry 재사용을 명시하므로 유지. 별도 UX 추가/삭제나 재시도 정책 확대 안 함 |
 
 현재 확인된 신규 R1/R2 결함 추가 구현 공수는0h(확인 범위 내)이며 부족한 데이터·정책·실기기를 완료로 간주하지 않는다. 다음은 접근 가능한 배포 메타데이터 확인과 R3 접근 준비 상태 점검이다. 실제 연결 수단이 없으면 임의 인증/자료/형상을 생성하지 않고 독립 작업 가능 여부를 확인한다.

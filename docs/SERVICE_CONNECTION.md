@@ -1,5 +1,15 @@
 # 단일 앱 서비스 연결 계약
 
+## 2026-10-13 R3 권한 확인 후 원본 업로드 준비
+
+기존 project-lifecycle Function의 POST `projects/:id/parts/:partId/upload-intents`에 `{size,sha256,contentType}`와 Idempotency-Key를 연결했다. 인증·DB/Storage 설정 확인→배정된 본인 Part/첫 녹음 잠금의 SQL 확인→opaque 원본 ID 할당→비공개 Storage 원본 검사→없으면 no-upsert 서명 URL을 준비한다. API bearer는 Auth/본인 RPC에만 전달하고 Storage는 server-only secret을 사용한다. 준비 성공은 Track·Mix·Layer 생성이 아니다. 기존 transferAndSubmitTrack/signed uploader 계약을 재사용하며 App에 아직 연결하지 않는다.
+
+`20261013_track_uploads.sql`의 사용자+upload key unique와 행/작업 잠금은 원본 ID를 안정되게 유지한다. 같은 키의 파일 hash/크기/MIME 또는 Project/Part 변경은409, 다른 사용자의 Part는403이다. 최초 Track 제출 후에도 원래 intent는 재조회 가능해 성공 응답 유실 시 기존 제출 재시도를 막지 않는다. 새 intent나 원본 재검증 실패는 제출로 확정하지 않는다. 원격 migration/실제 원본 쓰기는 수행하지 않았다.
+
+응답 `uploadStatus:'verified',verifiedFile`은 현재 Storage의 바이트·hash·크기·MIME가 일치한다는 증거이며 재업로드만 생략한다. 별도 `submissionVerification:'pending'|'verified'`는 DB의 실제 duration을 포함한 제출 검증 상태다. 바이트만 확인한 경우 SQL verified_at/verified_duration을 쓰지 않고 pending을 유지한다. 준비 재시도에서도 Storage를 재검사하며 이미 검증된 intent의 원본이 없거나 바뀌면409를 반환한다. 실제 오디오 포맷/길이 검증과 trusted receipt 기록을 연결하기 전에는 정상 제출 완료로 사용할 수 없다. WebM/MP4 등을 WAV-only로 축소하지 않았으며 오디오 MIME metadata를 처리하는 준비 경계일 뿐 실제 디코딩 지원 완료가 아니다.
+
+`qa:track-upload-db`는 권한·안정된 원본 ID·키/파일 변경 충돌·준비의0Track/0Mix·검증값 위조 거부·제출 후 재조회·익명 거부를 실제 격리 PostgreSQL로 확인한다. `qa:track-upload-api`는 주입 Auth/RPC/Storage의 서명 순서·비공개/no-upsert·스트림 hash 재검사·두 검증 상태 분리·원본 유실/불일치·미설정/잘못된 입력·Storage에 API bearer 미전달을 확인한다. 기존 Project API 회귀와 build도 검증한다. 실제 Google/DB/Storage·원본 duration 검증·App 연결과 전체 R3/R4는 미완료다.
+
 ## 2026-10-13 R3 곡 기반 Project 생성·Part Fit 참여 준비
 
 기존 project-lifecycle Function에 POST `/api/projects`와 POST `/api/projects/:id/parts/:partId/join`을 추가했다. 생성 입력은 `{arrangementId,ownerPartId}`, 참여 입력은 `{}`이며 둘 다 Idempotency-Key를 사용한다. 클라이언트가 사용자 ID·Part 음역·eligible·Track 수·프로젝트 Seed를 지정하지 않는다. 준비된 remote transport의 createProject/joinPart 경로를 재사용하며 App의 기존 로컬 흐름은 아직 연결/이관하지 않았다.

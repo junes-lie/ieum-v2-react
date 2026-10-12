@@ -1,4 +1,12 @@
+## 2026-10-13 R3 독립 구현 — 원본 업로드 준비 연결
+
+기존 project-lifecycle Function에 upload-intents metadata 요청과 본인 Part/녹음 잠금·중복 키/opaque object SQL allocation→기존 private Storage 검증/no-upsert signing을 연결했다. 바이트 검증 receipt와 duration 포함 제출 검증을 분리하고 Track/Mix 수를 준비만으로 바꾸지 않는다. 격리 PostgreSQL QA와 주입 HTTP/Auth/Storage QA로 재시도 ID 보존·파일 변경/권한 거부·0Track/0Mix·클라이언트 검증 위조 거부·원본 유실/불일치·Storage bearer 분리 및 기존 Project API 회귀를 통과했다. 실제 원격 설정/원본 쓰기·오디오 format/duration 분석·trusted receipt 확정·App 연결은 미완료다. 기존 사용자 서버3파일과 로컬 앱/원본을 보존한다. Git/Production 마감은 실제 결과로 기록한다.
+
 ## 2026-10-13 R3 독립 구현 — Project 생성·Part Fit 참여 준비
+
+Git/Production 확인: 9파일만6c3c283d76fcc8ccf88d56c69768c274b3c88708로 commit/push,main/origin0/0이다. Production POST /api/projects와 parts/lead/join 미인증401·QA용 비실제 bearer503 SERVICE_NOT_CONFIGURED/private,no-store 및 기존 Profile/앱200·capabilitiesfalse를 확인했다. 이는 경로/거부 응답의 증거이며 실제 생성/참여 또는 해당 SHA 로직 배포 완료의 증거가 아니다. 해당 full SHA의 GitHub deployment0/status0·pending으로 새 commit의 배포 ID/READY는 미확인이다. 기존 사용자 서버3파일은 그대로 미커밋이다. 이 문단은 배포 후 로컬 기록이다.
+
+이전 조회 오류 정정: 짧은 SHA 조회만으로1dd4f43의 배포/status 기록이 없다고 판단했던 기록은 불충분했다. 필터 없는 최신 목록에서 Production deployment7019224015의 full SHA1dd4f439102fca0c6e8404dc3b48daf2c3c7d657를 찾았고 상태success/Deployment has completed(2026-10-12T17:07:39Z), target https://ieum-v2-react-51gcqztfi-junes-lie.vercel.app 을 확인했다. full SHA commit status도success이며 https://vercel.com/junes-lie/ieum-v2-react/6u8SbzTaCkLRAjCh7ZV1QU34TCoh 를 반환한다. 이전 VP05A Production exact/QA와 합쳐 해당 배포 메타데이터 미확인 항목은 해소한다. 과거0개 조회 기록은 당시 잘못된 조회 근거로 보존하며 이후는 full SHA/필터 없는 목록을 함께 사용한다. 실제 R3 미연결/R5/R6/실기기·디자인 미완료와는 구분한다.
 
 기존 project-lifecycle Function에 곡/Key별 검증 arrangement 참조의 Project 생성과 저장된 개인 음역의 Part Fit 참여를 추가했다. 신규 catalog/source/최초 operation 결과 migration과 관련 PGlite QA로2/3/4 Part·생성자/Owner 배정·나머지OPEN/0Track·기존 matching의 range/comfortableRange/tessitura 일치·Profile 누락/자리 경쟁 거부·중복 요청 결과 보존·source 직접 변경 거부를 확인했다. API QA는 클라이언트 사용자/음역/eligible 위조 및 malformed 성공 응답 거부·원본/변경 payload·root rewrite·안내 코드를 확인했다. 실제 catalog/Profile 원본 ingestion·Google 로그인·원격 DB·upload 검증/Key 조정·초대 경쟁 처리·App 연결은 미완료다. 미정 Identicon/디자인 정책을 확정하지 않았고 기존 앱과 사용자 서버3파일을 보존한다. 배포 후 결과는 실제 확인해서 기록한다.
 

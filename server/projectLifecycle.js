@@ -1,5 +1,6 @@
 import { ServiceError } from '../src/projectService.js'
 import { readAuthConfiguration, verifyRequestUser } from './auth.js'
+import { createSupabaseAudioStorage } from './audioStorage.js'
 
 const fail = code => new ServiceError('프로젝트 요청을 완료하지 못했어요. 녹음 원본은 유지됩니다.',{ code })
 const text = value => typeof value==='string' && Boolean(value.trim())
@@ -20,9 +21,9 @@ function routeOf(request) {
   try { segments=path.split('/').map(decodeURIComponent) } catch { throw fail('INVALID_PROJECT_REQUEST') }
   if (segments.some(value=>!text(value) || value.includes('/') || ['.','..'].includes(value))) throw fail('INVALID_PROJECT_REQUEST')
   if (segments.length===1 && request.method==='GET') return { projectId:segments[0],operation:'get' }
-  if (segments.length===4 && segments[1]==='parts' && ['recording-start','tracks','join'].includes(segments[3])) {
+  if (segments.length===4 && segments[1]==='parts' && ['recording-start','tracks','join','upload-intents'].includes(segments[3])) {
     if (request.method!=='POST') throw fail('METHOD_NOT_ALLOWED')
-    return { projectId:segments[0],partId:segments[2],operation:segments[3]==='tracks'?'submit':segments[3]==='join'?'join':'start' }
+    return { projectId:segments[0],partId:segments[2],operation:segments[3]==='tracks'?'submit':segments[3]==='join'?'join':segments[3]==='upload-intents'?'upload':'start' }
   }
   if (segments.length===1) throw fail('METHOD_NOT_ALLOWED')
   throw fail('PROJECT_ROUTE_NOT_FOUND')
@@ -77,11 +78,22 @@ export async function projectLifecycleRequest(request,{ env=process.env,fetchImp
   const user=await verifyRequestUser(request,{ env,fetchImpl })
   if (env.IEUM_DB_PROVIDER!=='supabase') throw fail('SERVICE_NOT_CONFIGURED')
   const route=routeOf(request), configuration=readAuthConfiguration(env)
-  let rpc='ieum_get_project', body=route.operation==='create'?{}:{ p_project_id:route.projectId }, requestedOwnerPart
+  let rpc='ieum_get_project', body=route.operation==='create'?{}:{ p_project_id:route.projectId }, requestedOwnerPart, storage
   if (route.operation!=='get') {
     const value=await readMetadata(request)
     if (route.operation!=='create') body.p_part_id=route.partId
-    if (route.operation==='create' || route.operation==='join') {
+    if (route.operation==='upload') {
+      const key=request.headers.get('idempotency-key')
+      if (!text(key)) throw fail('IDEMPOTENCY_KEY_REQUIRED')
+      const contentType=typeof value.contentType==='string'?value.contentType.split(';')[0].trim().toLowerCase():''
+      if (Object.keys(value).length!==3 || Object.keys(value).some(field=>!['size','sha256','contentType'].includes(field)) ||
+        !Number.isSafeInteger(value.size) || value.size<=0 || typeof value.sha256!=='string' || !/^[a-f0-9]{64}$/i.test(value.sha256) ||
+        !/^audio\/[a-z0-9][a-z0-9!#$&^_.+-]*$/.test(contentType)) throw fail('INVALID_UPLOAD_FILE')
+      // Check provider configuration before allocating an intent. Signing follows the ownership RPC.
+      storage=createSupabaseAudioStorage({env,fetchImpl})
+      rpc='ieum_prepare_track_upload'
+      Object.assign(body,{p_request_key:key,p_size:value.size,p_sha256:value.sha256.toLowerCase(),p_content_type:contentType})
+    } else if (route.operation==='create' || route.operation==='join') {
       const key=request.headers.get('idempotency-key')
       if (!text(key)) throw fail('IDEMPOTENCY_KEY_REQUIRED')
       body.p_request_key=key
@@ -130,7 +142,21 @@ export async function projectLifecycleRequest(request,{ env=process.env,fetchImp
   }
   let result
   try { result=await response.json() } catch { throw fail('INVALID_PROJECT_RESPONSE') }
-  if (route.operation==='submit') {
+  if (route.operation==='upload') {
+    if (!uuid(result?.uploadIntentId) || !uuid(result?.objectId) || result.size!==body.p_size || result.sha256!==body.p_sha256 ||
+      result.contentType!==body.p_content_type || typeof result.submissionVerified!=='boolean') throw fail('INVALID_PROJECT_RESPONSE')
+    const expected={size:body.p_size,sha256:body.p_sha256,contentType:body.p_content_type}
+    let verified
+    try {verified=await storage.verifyOriginal(result.objectId,expected)}
+    catch(error) {if(error?.code!=='UPLOAD_OBJECT_MISSING')throw error}
+    if (verified) result={uploadIntentId:result.uploadIntentId,uploadStatus:'verified',verifiedFile:verified,
+      submissionVerification:result.submissionVerified?'verified':'pending'}
+    else {
+      if(result.submissionVerified)throw fail('UPLOAD_OBJECT_MISSING')
+      const signed=await storage.createSignedUpload(result.objectId)
+      result={uploadIntentId:result.uploadIntentId,uploadStatus:'pending',signedUploadUrl:signed.signedUploadUrl,submissionVerification:'pending'}
+    }
+  } else if (route.operation==='submit') {
     if (result?.submissionStatus!=='success' || result.trackId!==`${route.projectId}:${route.partId}`) throw fail('INVALID_PROJECT_RESPONSE')
     const project=projectSnapshot(result.project,route.projectId)
     if (!project.parts.some(part=>part.id===route.partId && part.status==='submitted' && part.participantId===user.id)) throw fail('INVALID_PROJECT_RESPONSE')
@@ -151,7 +177,8 @@ export function projectLifecycleErrorResponse(error) {
     INVALID_AUTH_RESPONSE:503,INVALID_PROJECT_REQUEST:400,PROJECT_PAYLOAD_TOO_LARGE:413,IDEMPOTENCY_KEY_REQUIRED:400,
     PROJECT_ROUTE_NOT_FOUND:404,PROJECT_NOT_FOUND:404,ARRANGEMENT_NOT_FOUND:404,PROFILE_REQUIRED:403,PART_FIT_FAILED:403,PART_RANGE_UNAVAILABLE:409,
     PART_NOT_ASSIGNED:403,PROJECT_CONFLICT:409,METHOD_NOT_ALLOWED:405,
-    PROJECT_UNAVAILABLE:503,INVALID_PROJECT_RESPONSE:503 }
+    PROJECT_UNAVAILABLE:503,INVALID_PROJECT_RESPONSE:503,INVALID_UPLOAD_FILE:400,INVALID_UPLOAD_OBJECT:503,
+    STORAGE_UNAVAILABLE:503,PRIVATE_STORAGE_REQUIRED:503,INVALID_STORAGE_RESPONSE:503,UPLOAD_OBJECT_MISSING:409,UPLOAD_OBJECT_MISMATCH:409 }
   const code=Object.hasOwn(statuses,error?.code)?error.code:'PROJECT_UNAVAILABLE'
   return Response.json({ error:{ code } },{ status:statuses[code],headers:{ 'Cache-Control':'private, no-store',Vary:'Authorization' } })
 }
