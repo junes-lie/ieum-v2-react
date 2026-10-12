@@ -1,4 +1,10 @@
+## 2026-10-13 R1/R2 완성 화면 직접 진입
+
+2026-10-13 R1/R2 완성 진입 gate: 기존 App의 direct #complete·History 복원도 실제 필수 submitted Track과 저장 Mix가 모두 있을 때만07을 유지한다. 불완전 입력은 기존03을 즉시 렌더하고 현재 History entry를 workspace로 교체하여 잘못된 완료/반복 back 경로를 막는다. 저장된 Mix/Track을 삭제·재생성하지 않으며 기존 정상 완성 이동은 유지한다. 격리 DOM/IndexedDB user-journey에서 Mix 없음·불완전 Track+저장 Mix·popstate·원본 보존 및 정상 완성 복원/기존2–4 Part 회귀를 확인했다. production build 통과, 기존500KB 경고 유지. 실제 기기·청취·시각/디자인·원격 서비스 및 R5/R6 생성 인수는 기존 잔여이며 사용자 서버3파일은 이번 stage에서 제외한다. 실효 공수는 미측정이다.
+
 ## 2026-10-13 R1/R2 작업실 제출 판정
+
+마감:694545ca583aaffd7108bff06c83cf245dba52da 관련4파일 commit/main push·main/origin0/0, 사용자 기존3파일 보존. 해당 full SHA Vercel success/Production deployment7024479254 SHA 일치·https://vercel.com/junes-lie/ieum-v2-react/7hQmmj9EgHJ9AAPoqArzW9ZJLRRB 확인. Production page/JS200·index-BwSGRNSf.js local exact/SHA256 4fe56e1d58af909bc3ee132355ae8e5352fdd58c612c5d3823725ddd6d32348d. 관련2–4 Part Node 렌더/callback 및 App user-journey·build 통과; 기존500KB build 경고 유지. user-journey의 cleanup error는 의도한 저장 실패 주입 후 원본 보존/재시도 PASS이며 실제 오류 은폐가 아니다. 실제 기기/청취/시각·서버·음악/Identity 생성 인수는 미완료다. 이 문단은 commit 후 로컬 증거 기록이다.
 
 기존03 Workspace도 Home/02/08/09와 같은 submittedProjectTracks/allProjectTracksSubmitted 판정을 사용한다. Review/실패·다른 Project 원본·오래된 Part submitted 표시는 제출수/청취/확정 Record Layer에서 제외하고 미제출 내 Part의 녹음/Review 복귀를 유지한다. 전원 실제 제출+저장 Mix에만07 버튼·Mix 결과를 제공하고 불완전 Mix/processing 표시는 차단한다. 초대 Track 도착 badge의 고정4/4도 실제 제출수/N으로 연결한다. Record의 Track 참조를 memo해 작업실 재생 상태만으로 불필요한 AI field reload를 만들지 않는다. 기존 화면/디자인·원본·배정·제출/Mix 처리 자체는 바꾸지 않는다.2/3/4 Part SSR/callback과 기존 App bootstrap/Draft 실패/직접 제출·reload/완성 복원·레이어 계보 QA 및 build 통과. 실제 마이크/청취/시각·원격 협업/음악/Identity 생성은 기존 잔여다.
 
