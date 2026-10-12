@@ -39,7 +39,7 @@ try{
  await page.evaluate(async()=>{
   const id='ieum-v2:voice-profile:v7',blob=await(await fetch('/demo-stems/soprano.wav')).blob()
   const db=await new Promise(resolve=>{const r=indexedDB.open('ieum-v2-records',1);r.onsuccess=()=>resolve(r.result)})
-  await new Promise(resolve=>{const tx=db.transaction('tracks','readwrite'),s=tx.objectStore('tracks');s.put({id:id+':range',projectId:id,kind:'voice-range',range:'C3–G4',rangeData:{lowMidi:48,highMidi:67,label:'C3–G4'}});s.put({id:id+':sample',projectId:id,kind:'voice-sample',blob,duration:7,songLabel:'Protected original sample'});tx.oncomplete=resolve});db.close()
+  await new Promise(resolve=>{const tx=db.transaction('tracks','readwrite'),s=tx.objectStore('tracks');s.put({id:id+':range',projectId:id,kind:'voice-range',range:'C3–C6',rangeData:{lowMidi:48,highMidi:84,label:'C3–C6'}});s.put({id:id+':sample',projectId:id,kind:'voice-sample',blob,duration:7,songLabel:'Protected original sample'});tx.oncomplete=resolve});db.close()
  })
  await page.reload();await page.waitForFunction(()=>window.__IEUM_V2__?.state?.profile?.sampleSong==='Protected original sample')
  await page.locator('[data-nav="user"]').click()
@@ -47,7 +47,7 @@ try{
  await page.waitForSelector('.sample-song-list')
  assert.equal(await page.locator('.sample-song-list button').count(),samples.length)
  for(let i=0;i<samples.length;i++){
-  await page.locator('.sample-song-list button').nth(i).click()
+  await page.locator('.sample-song-list button').filter({has:page.getByText(samples[i].title,{exact:true})}).click()
   await page.waitForFunction(file=>document.querySelector('.sample-select-stage audio')?.getAttribute('src')===file,samples[i].audioFile)
   await page.waitForFunction(()=>document.querySelector('.sample-select-stage audio')?.readyState>=1)
   const state=await page.locator('.sample-select-stage audio').evaluate(audio=>({paused:audio.paused,time:audio.currentTime,duration:audio.duration}))
@@ -168,7 +168,7 @@ try{
  for(let i=1;i<samples.length;i++){
   await page.reload();await page.waitForFunction(()=>window.__IEUM_V2__?.state?.profile?.sampleSong==='Protected original sample')
   await page.locator('[data-nav="user"]').click();await page.getByRole('button',{name:'다시 등록',exact:true}).click()
-  await page.locator('.sample-song-list button').nth(i).click()
+  await page.locator('.sample-song-list button').filter({has:page.getByText(samples[i].title,{exact:true})}).click()
   await page.locator('.sample-select-stage > button.primary').click()
   await page.locator('[data-action="sample-start"]').click();await page.waitForSelector('[data-action="sample-stop"]')
   const duration=await page.evaluate(()=>window.__IEUM_V2__.audioRuntime.recordingGuideState.decodedBacking.duration)

@@ -45,3 +45,8 @@ export function sharedVoicePreferences(profile, candidate) {
   const taste = shared('taste')
   return {genres,taste,count:genres.length+taste.length}
 }
+
+export function recommendSampleSongs(rangeData, songs) {
+  return songs.map(song=>({song,fit:evaluatePartFit({rangeData,part:song})}))
+    .sort((a,b)=>Number(b.fit.eligible)-Number(a.fit.eligible))
+}

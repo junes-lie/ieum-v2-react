@@ -18,7 +18,7 @@
     "qa:project-song-history": "node qa/verify-project-song-history.mjs",
     "qa:submission": "node qa/verify-submission-atomic.mjs",
     "qa:backing-level": "node qa/verify-backing-gain.mjs && node qa/verify-provided-backing-level.mjs",
-    "qa:provided": "node qa/verify-provided-samples.mjs",
+    "qa:provided": "node qa/verify-sample-recommendations.mjs && node qa/verify-provided-samples.mjs",
     "qa:identity": "node qa/verify-voice-identity-contract.mjs && node qa/verify-measured-identity-sources.mjs && node qa/verify-submitted-identity-input.mjs && node qa/verify-sampled-pitch-observation.mjs",
     "qa:submission-graphics": "node qa/verify-submission-graphics-separation.mjs && node qa/verify-mix-without-graphics.mjs",
     "qa:motion": "node qa/verify-resonance-motion.mjs",

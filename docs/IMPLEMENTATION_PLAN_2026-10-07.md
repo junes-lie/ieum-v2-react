@@ -12,6 +12,14 @@ R2 전체 미완료 목록은 새로 확인한 다음 항목을 포함한다:05 
 
 ## 기간 단축·마감 통제 — 2026-10-12 사용자 승인 개정
 
+### R2 후속 — VP03 추천과 Match 대상 연결
+
+앞선 Finder/05A 묶음8fe0345는 main동기화/Vercel Production deployment7011339105 success,HTTP200·bundle index-xGqs2nRY.js SHA256 D40FDBD79B6352998752831EA2705B4AFBBCEDCAC36D5F63CF2FEDDF9FAD2D41 exact 및 Production Finder/Collection/05A Setup QA로 마감했다.
+
+다음 확인된 누락을 같은 R2에서 연결한다. VP03은 현재 측정 음역에 들어오는 기존 제공 구간을 먼저 추천·초기 선택하되 수동 선택을 막지 않는다. 맞는 구간이 없으면 사실대로 안내한다. 제공 음역은 기존 pYIN 추정치이며 곡 품질·가창 성공·실기기 청취 승인이 아니다. 기존3개 음원/가사/반주/원본·Profile 저장 흐름은 유지한다.05 Match는 실제 선택 Song/Project/Part/Key/요구 음역·현재 배정/제출 참여자를 표시하고, 후보 자신의 대표 Sample이 없으면 빈 상태를 표시한다. Project Track을 Sample로 대신 재생하지 않는다. 현재 Team의 등록 음역/역할 확인과 실제 음색 비교 성공은 구분한다.
+
+완료 gate: 범위 기반 순서/초기 preview·직접 선택·맞는 곡 없음·취소 시 기존 Profile/Track 보존,기존3곡 hash/Guide·지정 구간/가사/오류복원,현재 Project/Key/Part/Team과 후보 일치 및 Sample 없음,build/기존 여정→Git Integration→Production 같은 변경 QA. 실제 후보 Sample/음색·저장곡 기반 취향 매칭,공유 서비스·Identity·음악 청취/물리 인수는 여전히 잔여다. 전체 R2 완료를 선언하지 않는다.
+
 이 절은 과거 2–4주 및 아래 '잔여 기능 일정 재산정 — 서버 외 범위 포함'의 일정 추정보다 우선한다. 단계 번호·완료 증거·G1–G5·미정 정책은 유지한다. 이전 Plan Mode의 파일 수정 금지는 검토 시점의 제한이며 현재 승인된 실행에서는 기존 파일을 직접 개정한다. 새 계획/앱/중복 생성 경로를 만들지 않는다.
 
 ### R6 비용 제한 — 사용자 확정: 예산 0원

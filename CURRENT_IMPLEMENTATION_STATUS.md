@@ -1,3 +1,11 @@
+## 2026-10-12 R2 VP03 음역 추천·Match 대상/Team 연결
+
+앞선8fe0345 main/origin push 및 Vercel Git Integration Production7011339105 success. HTTP200/index-xGqs2nRY.js SHA256 D40FDBD79B6352998752831EA2705B4AFBBCEDCAC36D5F63CF2FEDDF9FAD2D41 local exact. 배포된 commit의 Finder QA 원본을 TEMP에 read-only 추출해 Production에서 실행했고 취향/필터/이력·Collection/05A Setup 취소/저장 복귀 모두 통과했다. 임시 QA 파일은 repository에 포함하지 않았다.
+
+후속 앱 변경: VP03의 실제 저장/측정 음역→기존 제공곡 참고 음역 비교→맞는 구간 우선·초기 preview 연결. manual 선택 유지·맞는 구간 없음 안내.05 Match에 선택된 곡/Project/Part/Key/요구 음역과 현재 배정·제출 참여자를 연결하고 현재 Gate의 이유를 표시한다. 후보 대표 Sample 없으면 빈 상태이며 다른 Track을 대체하지 않는다. 현재 Team 음역/역할은 등록 정보 비교이고 음색 조화 분석은 준비되지 않음으로 유지한다.
+
+로컬 native 추천 QA는 좁은 범위의1개 추천·correct preview·다른곡 직접 선택·미추천 범위·Profile/제출2개/미참여 보존 통과. 기존 provided QA는3곡 asset hash/실제 Guide·15–20초 구간·가사/Guide toggle·권한 지연/파일 실패·원본 보존 통과. 새 Match target/Team/대표 Sample 없음·기존 Finder 정렬/이력 통과. build39modules/516.18KB 및 기존 Node 여정 통과,기존500KB 경고 유지. 음원 신규 등록·음악 품질 승인·로컬 대형 AI/비용 지출 없음. 실제 마이크/청취/협업·음색 분석과R5/R6는 미완료다. 관련 묶음만 검토/stage→main→Git Integration→Production QA로 마감한다.
+
 ## 2026-10-12 R2 최신 로컬 Notion 대조와 Finder/05A 기능 연결
 
 사용자 승인 fallback으로 `레코드판/노션/*_261009.md`5개를 최신 파일 집합으로 확인했다. Notion 도구0개·온라인 미확인 상태는 유지한다. 관련 PRD8–10/화면명세04·05·05A·09·10·VP/유저플로우2D·3·Identity/IA 경로를 읽고 실제 React와 대조했다. 화면명세는 이전 export와 동일 SHA이고 IA/PRD/PROJECT/유저플로우는 다르다. 미정 Identity 정책은 최신 로컬본에서도 미정이며 임의 확정하지 않는다.
