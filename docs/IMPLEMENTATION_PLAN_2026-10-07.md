@@ -6,6 +6,26 @@
 
 이 절은 과거 2–4주 및 아래 '잔여 기능 일정 재산정 — 서버 외 범위 포함'의 일정 추정보다 우선한다. 단계 번호·완료 증거·G1–G5·미정 정책은 유지한다. 이전 Plan Mode의 파일 수정 금지는 검토 시점의 제한이며 현재 승인된 실행에서는 기존 파일을 직접 개정한다. 새 계획/앱/중복 생성 경로를 만들지 않는다.
 
+### R6 비용 제한 — 사용자 확정: 예산 0원
+
+외부 AI 실행 예산은 0원이다. 아래 유료 후보 비교는 조사 이력으로만 보존하며 Runpod 조건부 추천을 현재 실행안으로 사용하지 않는다. 유료 GPU/API, PRO 구독, 크레딧 충전, 무료 기간 뒤 자동 결제로 이어지는 시험은 실행하지 않는다. 계정 생성도 자동으로 수행하지 않는다. 무료 경로의 대기·할당량 제한을 별도 기록하고 로컬 대형 모델의 기존 RAM guard는 유지한다.
+
+현재 우선 검증 경로는 [공식 ACE-Step 무료 Space](https://huggingface.co/spaces/ACE-Step/Ace-Step-v1.5)의 공개 API다. [공식 ZeroGPU 문서](https://huggingface.co/docs/hub/spaces-zerogpu)는 비로그인 사용자 일일 GPU 할당량을 2분으로 안내한다. 이는 실제 잔여 할당량이나 생성 성공·서비스 상용 권리·음악 품질 보장이 아니다. 공개 데모를 앱의 상시 음악 생성 서버로 연결하지 않는다.
+
+실행 gate: 공개 runtime/입력 확인 → 사용자 음성 업로드 없이 직접 작성한 짧은 가사로 1회 요청 → 실제 출력/모델·입력 기록 → 기존 가사·음정·화음·진입·음역·청취 및 권리 확인. 실패하면 실제 오류를 보존하고 원인 근거 없이 같은 요청을 반복하지 않는다. 생성 성공만으로 catalog에 등록하지 않는다.
+
+2026-10-12 실제 조회: Space runtime RUNNING/zero-a10g, private=false/gated=false, revision7403460e9b34972f760317b56048f6cb9d4a3a11, 공개 generation_wrapper 입력49개 확인. XL Turbo/12초/한국어/80 BPM/G major/직접 작성한 '오늘도 함께해요'/seed6534626/batch1 요청이 event04debbb63afb4331bf2727076eb9db40을 반환했으나 결과 SSE는 `event: error`와 `data: null`이다. 출력 음원/상세 원인은 제공되지 않았다. 인증·할당량·모델 오류 중 어느 것인지 단정하지 않는다. 실제 지출0원, 로컬 모델 실행0회, 후보 등록 없음. 요청/SSE는 로컬 TEMP에 보존한다.
+
+R6 경로 선정은 무료 후보 발견까지 진행했으나 실제 실행 성공 gate는 미완료다. 기존 16–32h 음악 연결 예산은 무료 경로에서 품질을 확보한 뒤 적용하며, 10/30 목표/10/27–11/5 예상 창은 계속 조건부다. 무료 할당량만으로 이 일정이 가능하다고 확정하지 않는다. 다음은 공식 API 실패 정보 확인이며 유료 전환이나 실패 seed 탐색으로 시간을 연장하지 않는다.
+
+#### 무료 경로 실행 판정 — 2026-10-12 후속 실제 결과
+
+공식 queue의 상세 오류로 첫 요청의 미지원 `wav` 형식을 확인했다: `Value: wav is not in the list of choices: ['mp3', 'flac']`. 공개 스키마의 enum을 확인하지 않은 실행 오류다. `flac`로만 교정한 event95e02866a1d04d70a8a6cf76ffdcdec8은 실제 CoT metadata → audio codes 생성에 진입했으나 `GPU task is exceeding its requested duration and might be aborted` 이후 `GPU task aborted`/success=false로 종료했다. 요청 시작18:16:58 KST, terminal 관측은18:21:55 이전이다. 관측 대기를 실효 개발 공수 또는 GPU 시간으로 환산하지 않는다.
+
+공식 source에서 Thinking/CoT 옵션을 확인하고 이 LM 단계만 제외하는 1회 대조(event92ee9605ea3f4ce79926ec179d399666)를 수행했다. 결과는 `You have exceeded your ZeroGPU quota (180s requested vs. 0s left). Try again in 23:53:04. Authenticate with a Hugging Face token for more quota - https://huggingface.co/settings/tokens`/success=false다. 대조 요청은 생성 성공/LM 제외 품질의 증거가 아니다. source의120초 decorator와 실제180초 요청 오류의 차이는 원인을 확인하지 못해 그대로 구분한다. 공개 config의54입력은49공개 +5내부 State다.
+
+현재 무료 실행 경로는 API 접근 가능하지만 비로그인 할당량0초로 당일 추가 시험 불가다. 할당량 우회/새 계정 생성/유료 전환/동일 실패 반복은 하지 않는다. 외부 대기는 quota 응답 기준으로 기록하며 리셋 시각을 측정 없이 확정하지 않는다. 다음 음악 gate는 할당량이 실제 확보된 뒤 LM 제외 시험의 결과·가사/음정 검증이다. 무료 데모의 대기와 가창 품질 미확보 때문에 R6 연결16–32h 및 전체 목표일은 계속 조건부이며 실행 경로 선정 완료로 표시하지 않는다.
+
 ### 현재 기준과 공수
 
 cc5155b의 Draft 나가기 수정은 main/Git Integration/Production 검증 완료이며 재수행하지 않는다. Auto Mix 화면 내 재시도는 로컬 구현과2/3/4 Part·기본 프로젝트 실패/재시도 QA가 통과한 상태에서 마감한다. 사용자 서버3파일(src/projectService.js, qa/verify-project-service.mjs, qa/verify-service-http.mjs)은 별도로 보존하고 임의 포함하지 않는다. 실제 음악/Identity/협업/디자인/물리 인수는 여전히 미완료다.

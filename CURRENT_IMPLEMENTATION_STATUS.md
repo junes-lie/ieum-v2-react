@@ -1,3 +1,19 @@
+## 2026-10-12 R6 무료 시험의 실제 입력 오류 확인
+
+직전 단순 call의 null 오류를 공식 Gradio queue 경로에서 좁혔다. 공개 config의 실제 fn77/54입력(49공개 + 5내부 State)을 대조하고 상세 이벤트를 읽었다. event938e52e9e6f84305b6d2e81a182a4f0c는 success=false, 실제 오류 `Value: wav is not in the list of choices: ['mp3', 'flac']`다. 앞선 요청에서 출력 형식 enum을 검증하지 않은 실행 오류이며 인증/무료 할당량 문제로 단정하지 않는다.
+
+공식 지원 flac로만 교정한 event95e02866a1d04d70a8a6cf76ffdcdec8은 실제 CoT metadata→audio codes 생성에 진입했지만 duration 초과 경고 뒤 `GPU task aborted`/success=false로 종료했다. 18:16:58 KST 요청/18:21:55 이전 terminal 관측이며 정확한 GPU 사용시간은 제공되지 않았다. 실제 진행 증거와 음악 생성 실패를 구분한다. 관측 session84761 exit0는 HTTP 조회 성공이며 생성 성공이 아니다. 추가 observer3023도 종료 확인, live 생성 요청 없음.
+
+공식 Thinking/CoT 네 옵션만 끄고 다른 입력을 유지한 대조 event92ee9605ea3f4ce79926ec179d399666은 `You have exceeded your ZeroGPU quota (180s requested vs. 0s left). Try again in 23:53:04. Authenticate with a Hugging Face token for more quota - https://huggingface.co/settings/tokens`/success=false로 종료했다. 이 요청 전 숫자 ID의 형식 차이를 preflight에서 거부한 Unknown LM control 오류를 교정했으며 해당 preflight에는 API 요청이 없었다. 실제 quota 차단 뒤 추가 요청 없음. 결제/계정 생성/모델 설치/로컬 AI 실행/출력 음원/후보 등록 없음. 기존 오류와 요청·terminal SSE는 TEMP에 각각 보존한다. 익명 무료 경로는 현재0초로 미완료이며 quota 우회 없이 실제 할당량 확보 후에만 다음 음악 검증을 진행한다.
+
+## 2026-10-12 R6 예산 0원 / 무료 공개 API 실제 시험
+
+사용자가 외부 AI 예산0원을 확정했다. 기존 구현계획에 유료 GPU/API/구독·크레딧·자동 결제 시험 제외와 무료 실행 gate를 직접 반영했다. 과거 유료 후보 비교는 이력이며 현재 실행 추천이 아니다. 앱/사용자 서버3파일/기존 CPU·GPU 환경 변경 없음.
+
+공식 Hugging Face REST 조회에서 ACE-Step/Ace-Step-v1.5 runtime RUNNING/zero-a10g·공개/비gated·revision7403460e9b34972f760317b56048f6cb9d4a3a11, 공개 generation_wrapper49입력을 확인했다. 비로그인/결제 없이 XL Turbo에 직접 작성한 한국어 한 줄/12초/80 BPM/G major/seed6534626/batch1을 실제 요청했다. event04debbb63afb4331bf2727076eb9db40 반환 이후 결과 스트림이 `event: error`, `data: null`로 실패했다. 상세 원인/출력 음원은 제공되지 않아 인증·할당량·모델 실패를 추측하지 않는다. 요청과 SSE는 TEMP의 ieum-free-space-trial-6534626.json/.sse에 보존한다. 로컬 AI 실행0회/실제 비용0원/앱 후보 등록 없음.
+
+최초 sandbox HTTP는 '알려진 호스트가 없습니다'였고 허용된 네트워크 조회에서 API에 연결했다. Computer Use/Notion·Figma 웹 접근/결제/계정 생성 없음. 무료 공개 데모의 접근 성공과 실제 생성 실패를 구분하며 R6 음악 gate·전체 일정은 미완료/조건부다. 코드 변경이 없으므로 직전 ab12ca1의 build/Production 증거를 재사용하고 동일 QA·실패 생성은 반복하지 않는다.
+
 ## 2026-10-12 승인 일정 반영 / R1 Auto Mix 재시도 마감
 
 기존 구현계획의 상위 실행 절에 승인된88–144h/11–18작업일 잠정 예산·10/14 선행 판정·10/30 조건부 목표/10/27–11/5 예상 창, 탐색2h/AI 가설2h·경로 선정4h·관련 검증/배포 묶음·실제 시간/외부 대기 분리 표를 직접 반영했다. 과거 단계/증거/미정 정책과 사용자 서버3파일을 보존한다. 이전15–27일과 범위가 달라 확정 단축량을 주장하지 않는다. 과거 실제 공수/대기 시간은 측정하지 않아 임의 값을 쓰지 않는다.
