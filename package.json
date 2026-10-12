@@ -11,6 +11,8 @@
     "qa:service-http": "node qa/verify-service-http.mjs",
     "qa:profile-service": "node qa/verify-profile-service.mjs",
     "qa:profile-db": "node qa/verify-profile-database.mjs",
+    "qa:saves": "node qa/verify-saved-objects.mjs",
+    "qa:saves-db": "node qa/verify-saved-objects-database.mjs",
     "qa:playback": "node qa/verify-player-request-ownership.mjs",
     "qa:mix-errors": "node qa/verify-mix-source.mjs && node qa/verify-mix-save-preservation.mjs",
     "qa:audio-lengths": "node qa/verify-audio-lengths.mjs",

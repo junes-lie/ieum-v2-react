@@ -1,5 +1,13 @@
 # 단일 앱 서비스 연결 계약
 
+## 2026-10-13 R3 개인 저장 목록 DB·API 준비
+
+기존 transport의 `listSavedObjects/saveObject` 계약에 맞춰 GET/PUT `/api/me/saves`를 준비했다. PUT 입력은 `{type:'project'|'vocal'|'song',objectId,saved:boolean}`이며 사용자 ID는 입력받지 않는다. GET은 `{saves:[{type,objectId,savedAt}]}`, PUT은 해당 객체의 `{type,objectId,saved,savedAt}`를 반환한다. private/no-store와 검증된 bearer 기반 RPC를 사용하고 미인증401·미설정503·잘못된 입력400·상류 실패503을 구분한다. 성공 응답의 대상/상태/시간을 확인하기 전 성공으로 표시하지 않는다.
+
+`20261013_saved_objects.sql`은 사용자·종류·객체 ID의 복합 기본키, 본인 SELECT RLS, 직접 쓰기/익명 접근 차단 및 auth.uid() 기반 저장/해제 RPC를 제공한다. 같은 객체의 반복 저장은 행이나 savedAt을 늘리지 않고, 없는 항목의 반복 해제도 안전하다. 세 종류는 같은 ID라도 별개이며 Profile의 preferredSongIds, 참여, Track, Mix를 변경하지 않는다. 저장 참조가 실제 대상의 존재·열람 권한을 부여하지 않는다. Project/후보 조회 서비스 연결 시 대상 존재와 접근 가능성 검증이 추가로 필요하다. 여러 요청의 순서는 DB 처리 순서이며 다중 기기 동시성은 실제 연결 후 검증한다.
+
+`qa:saves`는 주입 HTTP 계약/입력/개인정보 제외/실패 응답 검사, `qa:saves-db`는 기존 격리 PGlite 런타임에서 실제 SQL·두 Auth 문맥·종류 독립성·반복 저장/해제·성향 보존·RLS 거부를 검사한다. 원격 migration·실제 Google 로그인·App 연결은 수행하지 않았으며 capabilities는 false다. 기존 로컬 Bookmark를 자동 이관하지 않는다. DB 엔진은 앱 dependency에 추가하지 않았다.
+
 ## 2026-10-13 R3 Profile DB·API 준비 구현
 
 사용자 답변은 기존 서비스 없음/구성안 준비, Google 로그인 우선이다. 기존 계정/프로젝트를 다시 찾도록 같은 질문을 반복하지 않는다. 계정 생성·실제 프로젝트 설정은 수행하지 않았으며 준비 코드를 실제 연결 성공으로 표시하지 않는다.
