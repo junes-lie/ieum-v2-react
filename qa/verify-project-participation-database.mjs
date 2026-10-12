@@ -5,6 +5,7 @@ import { join } from 'node:path'
 import { evaluatePartFit } from '../src/matching.js'
 import {catalogReadRequest,catalogReadErrorResponse} from '../server/catalogRead.js'
 import {createRemoteProjectService} from '../src/projectService.js'
+import {projectDiscoveryRequest} from '../server/projectDiscovery.js'
 if (!process.env.IEUM_PGLITE_ROOT) throw new Error('IEUM_PGLITE_ROOT must identify the isolated QA runtime; no remote migrations are applied')
 const require=createRequire(join(process.env.IEUM_PGLITE_ROOT,'package.json'))
 const { PGlite }=require('@electric-sql/pglite')
@@ -20,10 +21,11 @@ try {
     create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
     grant usage on schema auth to authenticated;grant execute on function auth.uid() to authenticated;`)
   for(const user of users)await db.query('insert into auth.users values($1)',[user])
-  for(const file of ['20261013_voice_profiles.sql','20261013_project_tracks.sql','20261013_project_participation.sql','20261013_profile_source_history.sql','20261013_catalog_reads.sql'])
+  for(const file of ['20261013_voice_profiles.sql','20261013_project_tracks.sql','20261013_project_participation.sql','20261013_profile_source_history.sql','20261013_catalog_reads.sql','20261013_project_discovery.sql'])
     await db.exec(await readFile(new URL(`../server/migrations/${file}`,import.meta.url),'utf8'))
   await db.exec('set role anon')
   assert.deepEqual((await db.query('select public.ieum_list_catalog_arrangements() as result')).rows[0].result,{items:[],nextCursor:null})
+  assert.deepEqual((await db.query('select public.ieum_list_discovery_projects() as result')).rows[0].result,{items:[],nextCursor:null})
   await db.exec('reset role')
   const source={songId:'qa-song',key:'original',revision:'qa-v1',duration:20,sourceSha256:'a'.repeat(64),backingSha256:'b'.repeat(64)}
   const insertArrangement=(id,parts,audio=source)=>db.query('insert into public.ieum_catalog_arrangements values($1,$2,$3,$4,$5)',
@@ -148,6 +150,64 @@ try {
   }})
   assert.deepEqual(await client.getCatalog({limit:2}),await page())
   assert.deepEqual(await client.getCatalog({after:'a-3',limit:2}),await page('a-3'))
+  const discover=async(song=null,after=null,limit=20)=>(await db.query('select public.ieum_list_discovery_projects($1,$2,$3) as result',[song,after,limit])).rows[0].result
+  const projectPage=await discover('qa-song')
+  assert.equal(projectPage.items.length,3)
+  assert.ok(projectPage.items.every(item=>item.parts.length===item.partCount))
+  const publicMixing=projectPage.items.find(item=>item.id===originalCreated.id)
+  assert.equal(publicMixing.lifecycle,'mixing');assert.equal(publicMixing.submittedTrackCount,2)
+  assert.ok(publicMixing.parts.every(part=>part.status==='submitted'))
+  assert.ok(!JSON.stringify(projectPage).includes(users[0]));assert.ok(!JSON.stringify(projectPage).includes(users[1]))
+  assert.deepEqual(await discover('missing-song'),{items:[],nextCursor:null})
+  const pageOne=await discover(null,null,1),pageTwo=await discover(null,pageOne.nextCursor,1)
+  assert.equal(pageOne.items.length,1);assert.notEqual(pageTwo.items[0].id,pageOne.items[0].id)
+  await assert.rejects(db.exec('select * from public.ieum_projects'),error=>error.code==='42501')
+  // Existing Profile/Part Fit gate remains mandatory for creation, but not reads.
+  await asUser(users[3]);assert.deepEqual(await discover('qa-song'),projectPage)
+  await assert.rejects(create('a-4','vocal-0','discovery-profile-required'),error=>error.code==='PT403')
+  await db.exec('reset role')
+  await db.query("update public.ieum_mix_jobs set status='failed' where project_id=$1",[originalCreated.id])
+  await db.exec('set role anon')
+  assert.equal((await discover()).items.find(item=>item.id===originalCreated.id).lifecycle,'mixing')
+  await db.exec('reset role')
+  // Corrupted trusted writes must not publish a completed item without success.
+  await db.query("update public.ieum_projects set lifecycle='completed' where id=$1",[originalCreated.id])
+  await db.exec('set role anon')
+  assert.ok(!(await discover()).items.some(item=>item.id===originalCreated.id))
+  await db.exec('reset role')
+  await db.query("update public.ieum_projects set lifecycle='mixing' where id=$1",[originalCreated.id])
+  const job=(await db.query('select id from public.ieum_mix_jobs where project_id=$1',[originalCreated.id])).rows[0].id
+  await db.query('select public.ieum_complete_verified_mix($1,gen_random_uuid(),$2,20)',[job,'f'.repeat(64)])
+  await db.exec('set role anon')
+  assert.equal((await discover()).items.find(item=>item.id===originalCreated.id).lifecycle,'completed')
+  let discoveryCalls=0,invalidDiscovery=false,failDiscovery=false
+  const discoveryFetch=async(url,options)=>{
+    discoveryCalls++;assert.ok(url.endsWith('/ieum_list_discovery_projects'));assert.equal(options.headers.Authorization,undefined)
+    assert.equal(options.headers.apikey,'qa-public');assert.equal(options.redirect,'error');assert.equal(options.referrerPolicy,'no-referrer');assert.equal(options.credentials,'omit')
+    if(failDiscovery)throw new Error('private diagnostic token')
+    const body=JSON.parse(options.body),value=await discover(body.p_song_id,body.p_after_id,body.p_limit)
+    if(invalidDiscovery)value.items[0].submittedTrackCount=99
+    return Response.json(value)
+  }
+  const projectRead=query=>projectDiscoveryRequest(new Request('https://ieum.example/api/project-discovery'+query,{headers:{Authorization:'Bearer must-not-forward'}}),{env,fetchImpl:discoveryFetch})
+  assert.deepEqual(await(await projectRead('?songId=qa-song')).json(),await discover('qa-song'))
+  for(const query of ['?songId=','?songId=qa-song&songId=another','?limit=51','?owner=private']){
+    const before=discoveryCalls;await assert.rejects(projectRead(query),error=>error.code==='INVALID_CATALOG_REQUEST');assert.equal(discoveryCalls,before)
+  }
+  invalidDiscovery=true;await assert.rejects(projectRead(''),error=>error.code==='INVALID_CATALOG_RESPONSE');invalidDiscovery=false
+  failDiscovery=true;assert.deepEqual(await(await projectRead('').catch(catalogReadErrorResponse)).json(),{error:{code:'CATALOG_UNAVAILABLE'}});failDiscovery=false
+  const discoveryClient=createRemoteProjectService({baseUrl:'https://ieum.example/api',getAccessToken:()=>{assert.fail('Discovery must not read personal bearer')},
+    fetchImpl:(url,options)=>projectDiscoveryRequest(new Request(url,options),{env,fetchImpl:discoveryFetch})})
+  assert.deepEqual(await discoveryClient.discoverProjects({songId:'qa-song',limit:1}),await discover('qa-song',null,1))
+  await asUser(users[0])
+  const privateMetadataProject=await create('zz-private','one','private-metadata-discovery')
+  await db.exec('reset role;set role anon')
+  const sanitized=(await discover()).items.find(item=>item.id===privateMetadataProject.id)
+  assert.ok(sanitized)
+  assert.ok(!JSON.stringify(sanitized).includes('secret'))
+  assert.ok(!JSON.stringify(sanitized).includes(users[0]))
+  assert.deepEqual(sanitized.parts.find(part=>part.id==='one').requiredRange,{lowMidi:50,highMidi:65,tessitura:{lowMidi:53,highMidi:61}})
+  console.log('PASS public Project discovery SQL→HTTP→client: same Song/bounded pages, actual 2–4 Part/submission states, no participant IDs/originals, missing Profile can browse but not create, failed Mix stays mixing and successful receipt required for completed. Isolated fixtures, not live Mix/rights/App integration.')
   console.log('PASS public catalog SQL→HTTP→client: no Profile/login dependency, 2–4 actual Part metadata, deterministic bounded pages, no private extra fields/personal bearer, request/upstream failures, direct table access denied. Trusted fixtures only; no real approved songs/rights/App discovery activation.')
   console.log('PASS actual PostgreSQL Project creation/join: catalog-backed 2/3/4 Parts, creator assignment/others OPEN/0 Tracks, immutable sources, stored-profile range+tessitura parity, missing Profile denial, repeated-operation results, occupied-seat denial, no duplicate participation or direct source edits. Isolated fixtures, not live users/catalog/audio/cross-connection concurrency.')
 } finally {await db.close()}

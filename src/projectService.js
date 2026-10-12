@@ -79,6 +79,13 @@ export function createRemoteProjectService({ baseUrl, getAccessToken, fetchImpl 
       return request(`catalog-arrangements${query.size?'?'+query:''}`,{publicRead:true})
     },
     getSession: () => request('me/session'),
+    discoverProjects: ({songId,after,limit}={}) => {
+      const query=new URLSearchParams()
+      if(songId!==undefined && songId!==null)query.set('songId',songId)
+      if(after!==undefined && after!==null)query.set('after',after)
+      if(limit!==undefined)query.set('limit',String(limit))
+      return request(`project-discovery${query.size?'?'+query:''}`,{publicRead:true})
+    },
     getProfile: () => request('me/profile'),
     saveProfile: profile => request('me/profile', { method: 'PATCH', data: profile }),
     getVoiceSource: () => request('me/voice-source'),

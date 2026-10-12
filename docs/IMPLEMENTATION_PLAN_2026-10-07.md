@@ -4,6 +4,8 @@
 
 ## 이미 확정된 서비스·비용 답변
 
+2026-10-13 R3 public Project discovery gate: 기존 catalog/실제 Project의 Song 필터·bounded cursor·2–4 Part/실제 제출 상태를 anonymous SQL/HTTP/client/session에 연결했다. 개인 UUID/원본/추가 metadata는 제외하고 기존 음역·참여 Gate와 Record Seed·처리 상태를 유지한다. failed Mix→mixing·성공 fixture receipt→completed/거짓 completed 비노출·기존 catalog/Part Fit/참여/제출·세션 QA/build 통과. 이는 실제 원격/믹스 파일·참여자 Profile/청취·Home/02 Carousel 바인딩 완료가 아니다. 다음은 기존 App 탐색·복귀 모델과 실제 데이터 연결이며 사용자3파일/미정 정책/기존 예산·단계를 보존한다.
+
 2026-10-13 R3 catalog read gate: 기존 trusted arrangement의 공개 조회·bounded cursor·2–4 Part/source revision/hash 계약과 기존 anonymous client/session을 연결했다. Profile 없는 탐색과 authenticated Part Fit 생성/참여를 구분하며 개인 metadata/private URL은 SQL/HTTP whitelist로 제외한다. 빈 목록/권한/페이지/실패·기존 생성/제출·session QA/build 통과. 실제 승인 음악/카탈로그 ingest·원격 migration·Home/Setup data 바인딩은 미완료다. 기존 public token 미조회 변경 한 줄만 R3 필수 의존성으로 검토해 포함하며 나머지 사용자3파일 수정은 보존한다. 다음은 기존 App 모델·remote Project 탐색 연결이며 이미 완료된 source 등록/측정·AI 시험은 반복하지 않는다.
 
 2026-10-13 R3 client source gate: 기존 transport/session과 profileSource에 개인 원본 upload→verify→analyze→등록/현재 조회를 연결했다. 본인 소유·immutable provenance/hash·별도 키·서버 결과 대조·logout/늦은 응답·실패 보존 및 실제 AAC→HTTP handlers→격리 SQL 검증, Profile store/build 통과. actual App/OAuth/원격 migration/hosted decoder와 catalog·실제 Sample 청취는 미완료다. 완료된 원본 등록/API를 재구현하지 않고 다음은 실제 서비스 활성화에 필요한 기존 App session/데이터 연결 및 실제 catalog 준비다. 사용자3파일 변경·기존 단계/예산/미정 Identity 정책을 유지한다.

@@ -3,22 +3,32 @@ import {readAuthConfiguration} from './auth.js'
 const fail=code=>new ServiceError('곡 정보를 불러오지 못했어요.',{code})
 const text=value=>typeof value==='string' && Boolean(value.trim())
 const range=value=>value && Number.isFinite(value.lowMidi) && Number.isFinite(value.highMidi) && value.lowMidi>=0 && value.highMidi<=127 && value.lowMidi<=value.highMidi
-export async function catalogReadRequest(request,{env=process.env,fetchImpl=globalThis.fetch}={}) {
+export function parsePublicCatalogPage(request,extraKeys=[]) {
   if(request.method!=='GET')throw fail('METHOD_NOT_ALLOWED')
   const query=new URL(request.url).searchParams
-  if([...query.keys()].some(key=>!['after','limit'].includes(key)) || ['after','limit'].some(key=>query.getAll(key).length>1))throw fail('INVALID_CATALOG_REQUEST')
+  const keys=['after','limit',...extraKeys]
+  if([...query.keys()].some(key=>!keys.includes(key)) || keys.some(key=>query.getAll(key).length>1))throw fail('INVALID_CATALOG_REQUEST')
   const after=query.get('after'),limitText=query.get('limit'),limit=limitText===null?20:Number(limitText)
   if((after!==null && (!text(after) || after.length>2048)) || (limitText!==null && !/^[1-9][0-9]*$/.test(limitText)) || !Number.isInteger(limit) || limit<1 || limit>50)throw fail('INVALID_CATALOG_REQUEST')
+  return {query,after,limit}
+}
+export async function readPublicCatalogRpc(name,body,{env=process.env,fetchImpl=globalThis.fetch}={}) {
+  if(!['ieum_list_catalog_arrangements','ieum_list_discovery_projects'].includes(name))throw fail('INVALID_CATALOG_REQUEST')
   if(env.IEUM_DB_PROVIDER!=='supabase')throw fail('SERVICE_NOT_CONFIGURED')
   const configuration=readAuthConfiguration(env)
   let response
-  try{response=await fetchImpl(`${configuration.url}/rest/v1/rpc/ieum_list_catalog_arrangements`,{
+  try{response=await fetchImpl(`${configuration.url}/rest/v1/rpc/${name}`,{
     method:'POST',credentials:'omit',redirect:'error',referrerPolicy:'no-referrer',signal:AbortSignal.timeout(10000),
     headers:{apikey:configuration.publishableKey,'Content-Type':'application/json',Accept:'application/json'},
-    body:JSON.stringify({p_after_id:after,p_limit:limit})})}catch{throw fail('CATALOG_UNAVAILABLE')}
+    body:JSON.stringify(body)})}catch{throw fail('CATALOG_UNAVAILABLE')}
   if(!response.ok)throw fail('CATALOG_UNAVAILABLE')
   let result
   try{result=await response.json()}catch{throw fail('INVALID_CATALOG_RESPONSE')}
+  return result
+}
+export async function catalogReadRequest(request,options={}) {
+  const {after,limit}=parsePublicCatalogPage(request)
+  const result=await readPublicCatalogRpc('ieum_list_catalog_arrangements',{p_after_id:after,p_limit:limit},options)
   if(!Array.isArray(result?.items) || result.items.length>limit || !(result.nextCursor===null ||
     (result.items.length===limit && result.nextCursor===result.items.at(-1)?.id)) || new Set(result.items.map(item=>item?.id)).size!==result.items.length)throw fail('INVALID_CATALOG_RESPONSE')
   const items=result.items.map(item=>{

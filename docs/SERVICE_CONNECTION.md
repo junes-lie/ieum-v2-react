@@ -1,5 +1,11 @@
 # 단일 앱 서비스 연결 계약
 
+## 2026-10-13 공개 Project 탐색 준비
+
+GET /api/project-discovery?songId=<id>&after=<project-id>&limit=<1–50>는 선택적 Song 필터/동일 cursor 규칙으로 기존 Project 목록을 읽는다. SQL은 기존 arrangement/source와 일치하는 Project만 포함하고 실제 제출 row·Part 배정으로 submitted/ready/open을 구분한다. 공개 응답은 id/seed/songId/key/arrangementId/partCount·Part 상태/requiredRange/tessitura·제출 수/revision/lifecycle/keyLockedAt/createdAt이다. owner/participant UUID·Track/원본 참조·private 진단/URL은 SQL/HTTP whitelist로 제외한다. completed는 succeeded Mix job이 있는 경우만 포함한다.
+
+RPC만 anon/auth 읽기를 허용하고 기본 Project table 직접 접근은 계속 금지한다. create/join/recording/submit/Mix 권한은 변경하지 않았다. 기존 catalog의 public request/query parsing을 재사용하며 bearer·쿠키·referrer를 DB read로 보내지 않는다. 기존 discoverProjects는 public transport이고 session.run은 anonymous 경로/세션 변경 차단을 유지한다. project_participation 이후 project_discovery migration을 적용한다. 원격 적용·실제 공개 참여자 Profile/청취·Home/02 data 연결·음악 권리/품질 인수는 미완료다.
+
 ## 2026-10-13 공개 catalog arrangement 조회 준비
 
 GET /api/catalog-arrangements?after=<id>&limit=<1–50>는 Profile/login 없이 기존 trusted catalog의 arrangement 선택 입력을 조회한다. 기본20개이며 id의 C collation 순서·마지막 id cursor를 사용하고 {items,nextCursor}를 반환한다. source revision/hash/실제 duration과2–4 Part requiredRange/tessitura만 제공하며 추가 개인 metadata·private asset URL·사용자 ID는 SQL/HTTP에서 제외한다. underlying table은 anon/auth 직접 읽기·쓰기를 계속 금지하고 public RPC만 허용한다. 음악 권리/품질 승인을 생략해 실제 곡을 seed하지 않았다.

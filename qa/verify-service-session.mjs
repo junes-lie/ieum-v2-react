@@ -12,6 +12,7 @@ const fetchImpl=async(url,options)=>{
   if(url.endsWith('/capabilities')){assert.equal(options.headers.Authorization,undefined);return Response.json({contractVersion:'ieum-service-v1',mode,authenticated:mode==='remote',sharedProjects:mode==='remote'})}
   if(url.endsWith('/me/session'))return Response.json({authenticated:true,user:{id:invalidUser?'demo-user':options.headers.Authorization==='Bearer token-a'?a:b}})
   if(url.includes('/catalog-arrangements')){assert.equal(options.headers.Authorization,undefined);return Response.json({items:[],nextCursor:null})}
+  if(url.includes('/project-discovery')){assert.equal(options.headers.Authorization,undefined);return Response.json({items:[],nextCursor:null})}
   if(url.endsWith('/me/profile')){if(hold)await hold.promise;return Response.json({roles:[],revision:0})}
   if(url.endsWith('/upload-intents'))return Response.json({uploadIntentId:'intent-a'})
   if(url.endsWith('/tracks'))return Response.json({submissionStatus:'success',trackId:'p:lead',duration:0.512})
@@ -26,6 +27,7 @@ mode='remote';invalidUser=true;await assert.rejects(session.connect('token-a'),e
 invalidUser=false;await session.connect('token-a')
 assert.equal(session.snapshot().userId,a);assert.ok(!JSON.stringify(session.snapshot()).includes('token-a'))
 assert.deepEqual(await session.run(({service})=>service.getCatalog()),{items:[],nextCursor:null})
+assert.deepEqual(await session.run(({service})=>service.discoverProjects({songId:'song'})),{items:[],nextCursor:null})
 const scopeA=await session.run(scope=>scope.stateKey('user-state'))
 await session.connect('token-b')
 const scopeB=await session.run(scope=>scope.stateKey('user-state'))
@@ -34,6 +36,7 @@ let escaped
 await session.run(scope=>{escaped=scope.service})
 session.disconnect();await assert.rejects(escaped.getProfile(),e=>e.code==='SESSION_CHANGED')
 await assert.rejects(escaped.getCatalog(),e=>e.code==='SESSION_CHANGED')
+await assert.rejects(escaped.discoverProjects(),e=>e.code==='SESSION_CHANGED')
 await session.connect('token-a')
 let release;hold={promise:new Promise(resolve=>{release=resolve})}
 const reading=session.run(scope=>scope.service.getProfile())

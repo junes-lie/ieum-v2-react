@@ -1,4 +1,14 @@
+## 2026-10-13 R3 공개 Project 탐색 연결 준비
+
+기존 trusted arrangement를 참조하는 실제 Project의 공개 목록을 GET project-discovery와 기존 anonymous transport/session에 연결했다. Song ID 필터·id cursor/최대50개로 조회하며 같은 Project Seed·Key·arrangement·실제2–4 Part/제출 상태·createdAt/revision을 유지한다. assigned participant UUID·owner·Track ID/원본 URL·private metadata는 SQL/HTTP에서 제외한다. 준비된 read 경로에 별도 Project나 demo를 seed하지 않으며 기존 authenticated 상세/참여/음역 Gate는 변경하지 않았다.
+
+실제 격리 PostgreSQL→HTTP→client에서 미등록 Profile 탐색/생성 차단·같은 Song 필터/빈 목록/페이지·Part/제출 수·private extra field 제거·직접 table 거부·요청/서버 실패를 검증했다. 실제 제출만 submitted로 집계하고 failed Mix는mixing, 성공 receipt 이후 completed를 반환한다. 잘못된 trusted completed 상태에 succeeded job이 없으면 공개 완료 목록에 포함하지 않는다. SQL receipt는 합성 fixture이며 실제 Mix 파일/음악 품질·원격 성공 증거가 아니다. 기존 catalog/생성/참여/제출·session QA/build40modules/525.40KB 통과, 기존>500KB 경고 유지.
+
+실제 원격 migration/Auth/DB·승인 제공곡·공개 참여자 Profile/청취·Home/02 Carousel/App 바인딩은 미완료다. 서버 participant UUID를 공개 discovery에 임의 노출하거나 이름/Avatar·맞춤 추천 이유를 만들지 않았다. 다음은 실제 서비스 데이터에 맞는 기존 App 모델의 탐색/복귀 바인딩이며 디자인·새 IA/화면·기존 사용자3파일 수정은 유지한다.
+
 ## 2026-10-13 R3 공개 카탈로그 arrangement 조회 준비
+
+Git/Production 확인: 검토한10파일을8ab31c48efbaf33f7c75463dcc717c39d0a9c932로 commit/push,main/origin0/0이다. 나머지 사용자 transport/QA3파일 수정은 보존했다. index snapshot의 catalog/session·실제 격리 SQL→HTTP→client 검증도 통과했다. full SHA status pending/statuses0·deployment0으로 자동배포 READY/commit 메타데이터는 미확인이다. Production200·capabilities preparation/모두false, catalog 무인증 GET503 SERVICE_NOT_CONFIGURED·limit=0 GET400 INVALID_CATALOG_REQUEST를 확인했다. 이 응답은 실제 catalog/원격 migration 성공이나 latest commit 배포 일치를 증명하지 않는다. 이 문단은 commit 후 로컬 기록이다.
 
 기존 trusted arrangement의 id/songId/key·source revision/hash/실제 길이·2–4 Part 음역을 공개 GET catalog-arrangements와 기존 transport/session에 연결했다. Profile 없는 탐색은 로그인/측정을 요구하지 않으며 Project 생성은 기존 authenticated Profile/Part Fit 조건을 유지한다. id cursor·최대50개 조회로 전체 목록을 무제한 읽지 않는다. SQL과 HTTP 양쪽에서 명시된 필드만 반환하며 개인 ID/진단·private URL/추가 metadata는 제외한다. 실제 곡/권리/제공 음원을 임의 등록하거나 제목·아티스트·추천점수를 만들어내지 않았다.
 
