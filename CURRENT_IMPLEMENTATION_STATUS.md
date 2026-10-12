@@ -1,3 +1,8 @@
+### R2 Finder Part/Project 이력 복원 — 2026-10-12
+
+현재 방문을 떠나기 전에 브라우저 Back→Forward하면 최신 Alto Finder에 이전 Tenor Part가 남는 native assertion 실패를 재현했다. 기존 history 동기화 effect에 finderPartId/activeCreatedProjectId를 보존한다. 새 IA/시작화면/참여·초대/제출 정책을 추가하지 않는다. 같은 Project의 두 Part와 서로 다른 Project의 두 Part에서 Back/Forward의 제목·Project ID exact/제출 Track0을 확인했다. 기존 후보/목록 이력과 Collection 프로필·저장/복귀 회귀 및 build38modules 통과. 기존500KB chunk 경고는 남는다. 관련 묶음만 main 자동배포→Production 같은 Part QA로 마감한다. 실제 협업/측정 추천/실기기·전체 R2 인수로 확대하지 않는다.
+
+직전 dfc3148 후보 이력 수정은 main/origin 동기화, Git Integration success, Production Finder/Collection 이력 QA 통과와 bundle SHA256 E20914C5C644ECBF29FC5C0A817468A0536862D6B400FBA683B97F75698A91C9 exact로 마감했다. 사용자 서버3파일/디자인 보류와 기존 R3–R7 gate는 보존한다.
 ### R2 Finder 방문별 후보 이력 복원 — 2026-10-12
 
 실제 native QA에서 첫 방문 Joon→다른 화면→새 Finder 방문 Luna 뒤 브라우저 Back으로 첫 방문에 돌아오면 Luna가 남는 결함을 재현했다. 기존 history entry에 selectedMatchVocalId를 보존하고 유효한 후보 또는 명시 null만 복원한다. 같은 screen 안의 후보 선택/목록 복귀도 현재 entry를 갱신한다. 서로 다른 방문의 Back/Forward 후보 exact와 후보 없는 목록 복원을 검증했다. 기존 Part/Project·정렬/필터·초대/제출수·저장 원본/시작화면 정책은 변경하지 않는다.

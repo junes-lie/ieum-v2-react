@@ -1620,8 +1620,8 @@ export default function App() {
   }, [])
 
   useEffect(() => {
-    window.history.replaceState({...window.history.state,ieumScreen:screen,selectedVocalId,selectedMatchVocalId},'',`#${screen}`)
-  }, [screen,selectedVocalId,selectedMatchVocalId])
+    window.history.replaceState({...window.history.state,ieumScreen:screen,selectedVocalId,selectedMatchVocalId,finderPartId,activeCreatedProjectId},'',`#${screen}`)
+  }, [screen,selectedVocalId,selectedMatchVocalId,finderPartId,activeCreatedProjectId])
 
   useEffect(() => {
     if(persisted.storageReadFailed)return
