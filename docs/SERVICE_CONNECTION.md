@@ -1,5 +1,11 @@
 # 단일 앱 서비스 연결 계약
 
+## 2026-10-13 클라이언트 Profile 원본 연결 준비
+
+기존 createRemoteProjectService에 getVoiceSource/prepareVoiceSampleUpload/verifyVoiceSample/analyzeVoiceSample/registerVoiceSource를 추가했다. 기존 createServiceSession.run 범위의 registerOwnedVoiceSource는 현재 실제 UUID 사용자 소유의 저장 rangeRecord/sampleRecord와 expectedSourceRevision(null=초기), 서로 다른 uploadKey/registrationKey, 기존 signed uploader를 받는다. Blob/provenance hash를 재검사하고 immutable metadata snapshot→Sample 업로드(검증된 같은 byte 재시도는 skip)→서버 audio verify→실제 feature analyze→Profile source 등록 순서다. 서버 features hash/원본 hash/길이·source 계보/출처를 확인하고 최종 등록 응답만 반환한다.
+
+실패/세션 변경은 기존 원본이나 Profile을 삭제하지 않는다. 재시도 키·저장 source revision은 호출자가 유지하고 같은 등록 응답은 최초 성공 결과이므로 현재 상태는 getVoiceSource로 구분한다. 성향 저장/VP05A·Project 제출/Mix/Identity 생성과 분리한다. actual App/OAuth 바인딩·서비스 설정은 활성화하지 않으며 preparation capability에서는 기존 session 연결 거부를 유지한다. 주입 session QA 및 실제 AAC/격리 SQL·서버 handlers를 이은 client 검증만 통과했다. 실서비스 로그인/Storage/물리 입력/청취 인수는 미완료다.
+
 ## 2026-10-13 개인 Voice Profile 원본 등록 준비
 
 GET/POST /api/me/voice-source를 추가했다. GET은 auth.uid()의 현재 source와 저장 출처를 반환하고 미등록은source:null, 기존 출처 없는 source는provenanceStatus:unavailable로 유지한다. POST는 {expectedSourceRevision,rangeData,rangeProvenance,sampleUploadIntentId,sampleProvenance}와 Idempotency-Key를 받는다. 사용자 ID/선언 features/등록 성공 값은 받지 않는다. 현재 브라우저 측정 range의 버전·정수 음역·기존6표본 조건/검출 confidence·canonical SHA256와 provenance를 검사하고 본인 서버 Sample 분석/receipt/hash·실제 Storage byte를 재검증한다.

@@ -2,6 +2,8 @@ import assert from 'node:assert/strict'
 import {createHash} from 'node:crypto'
 import {createServiceSession} from '../src/serviceSession.js'
 import {transferAndSubmitTrack} from '../src/trackTransfer.js'
+import {prepareVoiceRangeRecord,prepareVoiceSampleRecord,voiceSourceRevision,registerOwnedVoiceSource} from '../src/profileSource.js'
+import {canonicalIdentityInput} from '../src/voiceIdentityContract.js'
 const a='11111111-1111-4111-8111-111111111111',b='22222222-2222-4222-8222-222222222222'
 let mode='remote',calls=[],hold=null,invalidUser=false
 const fetchImpl=async(url,options)=>{
@@ -50,3 +52,74 @@ assert.equal(result.duration,0.512);assert.ok(calls.every(call=>call.token==='Be
 assert.equal(createHash('sha256').update(Buffer.from(await blob.arrayBuffer())).digest('hex'),before)
 session.disconnect();assert.equal(session.snapshot().userId,null)
 console.log('PASS session boundary: verified capability/user, no preparation activation, in-memory token, isolated user keys, stale/escaped response denial, logout-during-upload blocks submit, original/key preservation and canonical result. Injected Auth/HTTP; no actual login/App activation.')
+
+const rangeRecord=await prepareVoiceRangeRecord({id:'range',projectId:'profile',userId:a,kind:'voice-range',rangeData:{lowMidi:48,highMidi:67,analysisVersion:'normalized-difference-v1',sampleCount:10,confidence:0.9}})
+const sampleRecord=await prepareVoiceSampleRecord({id:'sample',projectId:'profile',userId:a,kind:'voice-sample',blob,features:{version:'ieum-basic-voice-v5'}})
+const sourceRevision=await voiceSourceRevision(rangeRecord.sourceProvenance,sampleRecord.sourceProvenance)
+const intentId='33333333-3333-4333-8333-333333333333'
+const features={version:'ieum-basic-voice-v5',brightness:null,roughness:null}
+const featuresSha256=createHash('sha256').update(canonicalIdentityInput(features)).digest('hex')
+const analysis={version:'ieum-sample-analysis-v1',sourceSha256:before,byteLength:blob.size,features,featuresSha256,audioReceipt:{duration:0.512}}
+const source={sourceRevision,rangeData:rangeRecord.rangeData,rangeProvenance:rangeRecord.sourceProvenance,sampleProvenance:sampleRecord.sourceProvenance,
+  rangeOrigin:'browser-pitch-analysis',sampleOrigin:'server-decoded-private-original',sampleDuration:0.512,sampleFeatures:features,sampleAnalysisRef:{uploadIntentId:intentId,featuresSha256}}
+let profileCalls=[],failure=null,uploaded=false,malformed=false,stored=null,delayed=null
+const profileSession=createServiceSession({baseUrl:'https://ieum.example/api',fetchImpl:async(url,options)=>{
+  if(url.endsWith('/capabilities'))return Response.json({contractVersion:'ieum-service-v1',mode:'remote',authenticated:true,sharedProjects:true})
+  if(url.endsWith('/me/session'))return Response.json({authenticated:true,user:{id:options.headers.Authorization==='Bearer token-a'?a:b}})
+  assert.equal(options.headers.Authorization,'Bearer token-a');assert.equal(options.credentials,'omit');assert.equal(options.redirect,'error')
+  const route=url.split('/').at(-1);profileCalls.push(route)
+  if(failure===route)return Response.json({error:{code:'INJECTED_FAILURE'}},{status:409})
+  if(delayed?.route===route)await delayed.promise
+  if(route==='voice-sample-upload'){
+    assert.deepEqual(JSON.parse(options.body),{size:blob.size,contentType:'audio/webm',sha256:before})
+    assert.equal(options.headers['Idempotency-Key'],'sample-key')
+    return Response.json({uploadIntentId:intentId,purpose:'voice-sample',sampleVerification:'pending',uploadStatus:uploaded?'verified':'pending',verifiedFile:{size:blob.size,contentType:'audio/webm',sha256:before}})
+  }
+  if(route==='voice-sample-verify')return Response.json({uploadIntentId:intentId,purpose:'voice-sample',audioVerification:'verified',sampleVerification:'pending',duration:0.512})
+  if(route==='voice-sample-analyze')return Response.json({uploadIntentId:intentId,analysisStatus:'verified',sampleVerification:'pending',analysis:{...analysis,...(malformed?{sourceSha256:'0'.repeat(64)}:{})}})
+  if(route==='voice-source'){
+    if(options.method==='GET')return Response.json({source:stored})
+    assert.equal(options.headers['Idempotency-Key'],'source-key')
+    assert.deepEqual(JSON.parse(options.body),{expectedSourceRevision:null,rangeData:rangeRecord.rangeData,rangeProvenance:rangeRecord.sourceProvenance,sampleProvenance:sampleRecord.sourceProvenance,sampleUploadIntentId:intentId})
+    stored=structuredClone(source)
+    return Response.json({registrationStatus:'success',source:stored})
+  }
+  throw new Error('Unexpected Profile route')
+}})
+await profileSession.connect('token-a')
+let uploads=0
+const registerOptions={session:profileSession,rangeRecord,sampleRecord,expectedSourceRevision:null,uploadKey:'sample-key',registrationKey:'source-key',uploadOriginal:async()=>{uploads++;uploaded=true;return{uploaded:true}}}
+const originalRange=structuredClone(rangeRecord),originalSample=sampleRecord.sourceProvenance
+assert.equal((await profileSession.run(({service})=>service.getVoiceSource())).source,null)
+assert.deepEqual(await registerOwnedVoiceSource(registerOptions),{registrationStatus:'success',source})
+assert.deepEqual(profileCalls.slice(-4),['voice-sample-upload','voice-sample-verify','voice-sample-analyze','voice-source'])
+assert.equal(uploads,1)
+assert.deepEqual(await registerOwnedVoiceSource(registerOptions),{registrationStatus:'success',source});assert.equal(uploads,1,'Verified exact bytes retry must not overwrite the original')
+assert.deepEqual((await profileSession.run(({service})=>service.getVoiceSource())).source,source)
+for(const stage of ['voice-sample-upload','voice-sample-verify','voice-sample-analyze','voice-source']){
+  profileCalls=[];failure=stage
+  await assert.rejects(registerOwnedVoiceSource(registerOptions),e=>e.code==='CONFLICT')
+  assert.equal(profileCalls.at(-1),stage);assert.deepEqual(stored,source)
+}
+failure=null;malformed=true;profileCalls=[]
+await assert.rejects(registerOwnedVoiceSource(registerOptions),e=>e.code==='INVALID_RESPONSE')
+assert.ok(!profileCalls.includes('voice-source'));malformed=false
+await profileSession.connect('token-b');profileCalls=[]
+await assert.rejects(registerOwnedVoiceSource(registerOptions),e=>e.code==='TAKE_OWNER_MISMATCH');assert.equal(profileCalls.length,0)
+await profileSession.connect('token-a')
+await assert.rejects(registerOwnedVoiceSource({...registerOptions,sampleRecord:{...sampleRecord,userId:'jisun'}}),e=>e.code==='TAKE_OWNER_MISMATCH')
+await assert.rejects(registerOwnedVoiceSource({...registerOptions,rangeRecord:{...rangeRecord,rangeData:{...rangeRecord.rangeData,lowMidi:49}}}),e=>e.code==='INVALID_PROFILE_SOURCE')
+profileCalls=[];uploaded=false
+await assert.rejects(registerOwnedVoiceSource({...registerOptions,uploadOriginal:async()=>{profileSession.disconnect();return{uploaded:true}}}),e=>e.code==='SESSION_CHANGED')
+assert.deepEqual(profileCalls,['voice-sample-upload'])
+await profileSession.connect('token-a');uploaded=true;profileCalls=[]
+let releaseProfile;delayed={route:'voice-sample-analyze',promise:new Promise(resolve=>{releaseProfile=resolve})}
+const pendingSource=registerOwnedVoiceSource(registerOptions)
+const deadline=Date.now()+2000
+while(!profileCalls.includes('voice-sample-analyze') && Date.now()<deadline)await new Promise(resolve=>setTimeout(resolve,0))
+assert.ok(profileCalls.includes('voice-sample-analyze'),'Analysis request must start within the bounded fixture wait')
+profileSession.disconnect();releaseProfile()
+await assert.rejects(pendingSource,e=>e.code==='SESSION_CHANGED');assert.ok(!profileCalls.includes('voice-source'));delayed=null
+assert.deepEqual(rangeRecord,originalRange);assert.deepEqual(sampleRecord.sourceProvenance,originalSample)
+assert.equal(createHash('sha256').update(Buffer.from(await blob.arrayBuffer())).digest('hex'),before)
+console.log('PASS session-scoped Profile source pipeline: owned immutable snapshots, exact-byte retry, separate upload/decode/analysis/registration, GET source, stable keys, failures and logout/user-change block registration, original preservation. Injected HTTP fixtures, not real Auth/Storage/physical analysis/App activation.')

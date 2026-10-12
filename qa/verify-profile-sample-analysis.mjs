@@ -9,8 +9,10 @@ import {profileSampleVerificationRequest} from '../server/profileSampleVerificat
 import {profileSampleAnalysisRequest} from '../server/profileSampleAnalysis.js'
 import {analyzeVerifiedSample} from '../server/sampleVoiceAnalysis.js'
 import {canonicalIdentityInput} from '../src/voiceIdentityContract.js'
-import {prepareVoiceRangeRecord,prepareVoiceSampleRecord} from '../src/profileSource.js'
+import {prepareVoiceRangeRecord,prepareVoiceSampleRecord,registerOwnedVoiceSource} from '../src/profileSource.js'
 import {voiceSourceRegistrationRequest} from '../server/voiceSourceRegistration.js'
+import {profileSampleUploadRequest,profileSampleUploadErrorResponse} from '../server/profileSampleUpload.js'
+import {createServiceSession} from '../src/serviceSession.js'
 assert.ok(process.env.IEUM_QA_FFMPEG_PATH && process.env.IEUM_PGLITE_ROOT,'Existing isolated decoder/SQL runtime required; no AI models or installation')
 const require=createRequire(join(process.env.IEUM_PGLITE_ROOT,'package.json'))
 const {PGlite}=require('@electric-sql/pglite'),db=new PGlite()
@@ -44,6 +46,13 @@ try{
   const fetchImpl=async(url,init)=>{
     calls.push(url);assert.equal(init.redirect,'error');assert.equal(init.credentials,'omit')
     if(url.endsWith('/auth/v1/user'))return Response.json({id:caller})
+    if(url.endsWith('/ieum_prepare_profile_sample_upload')){
+      assert.equal(init.headers.apikey,'qa-public');assert.equal(init.headers.Authorization,'Bearer qa-token')
+      await asUser(caller)
+      const body=JSON.parse(init.body)
+      return Response.json((await db.query('select public.ieum_prepare_profile_sample_upload($1,$2,$3,$4) as result',
+        [body.p_request_key,body.p_size,body.p_sha256,body.p_content_type])).rows[0].result)
+    }
     if(url.endsWith('/ieum_get_owned_profile_sample_upload')){
       assert.equal(init.headers.apikey,'qa-public');assert.equal(init.headers.Authorization,'Bearer qa-token')
       await asUser(caller)
@@ -213,6 +222,28 @@ try{
   await db.exec('reset role')
   assert.deepEqual((await db.query('select source_data from public.ieum_profile_voice_source_history where user_id=$1 and source_revision=$2',[a,registered.source.sourceRevision])).rows[0].source_data,oldSnapshot)
   assert.equal((await db.query('select count(*)::int n from public.ieum_profile_voice_source_history')).rows[0].n,2)
+  // Exercise the client orchestration against the actual handlers and SQL, not
+  // only shape-matched HTTP fixtures. The Sample is actual synthetic AAC audio.
+  const client=createServiceSession({baseUrl:'https://ieum.example/api',fetchImpl:async(url,options)=>{
+    if(url.endsWith('/capabilities'))return Response.json({contractVersion:'ieum-service-v1',mode:'remote',authenticated:true,sharedProjects:true})
+    if(url.endsWith('/me/session'))return Response.json({authenticated:true,user:{id:a}})
+    const handlers={'voice-sample-upload':profileSampleUploadRequest,'voice-sample-verify':profileSampleVerificationRequest,
+      'voice-sample-analyze':profileSampleAnalysisRequest,'voice-source':voiceSourceRegistrationRequest}
+    const handler=handlers[url.split('/').at(-1)];assert.ok(handler)
+    try{return await handler(new Request(url,options),{env,fetchImpl})}
+    catch(error){return profileSampleUploadErrorResponse(error)}
+  }})
+  await client.connect('qa-token')
+  const ownedSample=await prepareVoiceSampleRecord({...sample,userId:a})
+  const clientResult=await registerOwnedVoiceSource({session:client,rangeRecord:{...range,userId:a},sampleRecord:ownedSample,
+    expectedSourceRevision:registered.source.sourceRevision,uploadKey:'sample-2',registrationKey:'client-source-3',
+    uploadOriginal:async()=>{assert.fail('Existing exact private bytes must not be overwritten')}})
+  assert.equal(clientResult.registrationStatus,'success')
+  assert.deepEqual(clientResult.source.sampleFeatures,analysis.features)
+  assert.equal(clientResult.source.sampleAnalysisRef.uploadIntentId,next.uploadIntentId)
+  assert.deepEqual((await client.run(({service})=>service.getVoiceSource())).source,clientResult.source)
+  client.disconnect()
+  console.log('PASS client session→real Sample HTTP handlers→actual AAC analysis→source SQL registration/read, preserving separate browser range and Sample evidence. Auth/Storage network injected, not live service.')
   console.log('PASS Profile source registration: browser range hash/provenance separate from real Sample analysis, transactional revision CAS, original retry result, prior source history, current Part Fit, private owned reads, no preference/Identity/Track/Mix changes. Synthetic range fixture, not server/physical range measurement or live registration.')
   console.log('PASS actual AAC→PCM v5 analysis→SQL immutable evidence: explicit RAM budget, actual sampled F0/proxy labels/unsupported values, owned source/hash/receipt, retry without decoder, foreign/forged/DB failures, odd-byte streaming, preserved Profile/0 Track/Mix. Fixtures, not physical singer/AI graphics or live Profile registration.')
 }finally{

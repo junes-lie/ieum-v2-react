@@ -4,6 +4,8 @@
 
 ## 이미 확정된 서비스·비용 답변
 
+2026-10-13 R3 client source gate: 기존 transport/session과 profileSource에 개인 원본 upload→verify→analyze→등록/현재 조회를 연결했다. 본인 소유·immutable provenance/hash·별도 키·서버 결과 대조·logout/늦은 응답·실패 보존 및 실제 AAC→HTTP handlers→격리 SQL 검증, Profile store/build 통과. actual App/OAuth/원격 migration/hosted decoder와 catalog·실제 Sample 청취는 미완료다. 완료된 원본 등록/API를 재구현하지 않고 다음은 실제 서비스 활성화에 필요한 기존 App session/데이터 연결 및 실제 catalog 준비다. 사용자3파일 변경·기존 단계/예산/미정 Identity 정책을 유지한다.
+
 2026-10-13 R3 Profile 원본 등록 gate: 기존 browser range provenance/hash와 본인 실제 Sample 분석·receipt/원본을 기존 current source·revision history/metadata에 연결하는 GET/POST API 및 service-only CAS transaction을 구현했다. 성향/Identity/Track/Mix는 유지하고 Sample F0로 편한 음역을 대체하지 않는다. 실제 AAC 분석+선언 range fixture→등록/수정/재시도/권한/실패 보존→기존2–4 Part 생성/Part Fit 연결과 관련 QA/build 통과. 실제 원격·물리 range 인수·App 바인딩·Sample 청취/개인 생성은 미완료다. 다음은 기존 session/Setup의 원격 source 조회·등록 바인딩과 catalog 연결이며 접근 정보 요청을 반복하지 않는다. 기존 단계·예산·미정 갱신 정책을 유지한다.
 
 2026-10-13 R3/R5 Sample 분석 선행: 검증된 개인 Sample 실제 PCM에 기존 v5 분석기를 연결하고 features hash/기존 decoder receipt·source hash에 묶인 immutable 분석을 준비했다. 확정 frame 수·explicit PCM RAM 예산을 적용하고 미지원/추정 특성 표기를 유지한다. 실제 AAC→특징/F0→격리 SQL·실패/재시도/예산/권한 검증 및 관련 decoder/제출 회귀/build 통과. 이는 Profile 등록/개인 형상 완료가 아니며 기존 단계·미정 정책·예산은 유지한다. 다음은 기존 측정 source의 출처와 대표 Sample 분석을 Profile 등록 revision에 연결하는 transaction; 실제 서비스/App/Identity 생성은 미완료다.

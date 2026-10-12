@@ -1,4 +1,14 @@
+## 2026-10-13 R3 클라이언트 Profile 원본 등록 연결 준비
+
+기존 remote transport에 개인 Sample upload/verify/analyze·voice-source GET/POST를 추가하고 기존 profileSource에 session-scoped 등록 순서를 연결했다. 저장된 본인 range/Sample provenance·Blob hash를 재확인하고 호출 시작 시 metadata를 고정한다. exact-byte upload retry는 재업로드하지 않으며 실제 서버 해독·분석 결과를 확인한 뒤에만 source CAS 등록을 요청한다. 업로드/분석 성공만으로 등록 성공을 표시하지 않고 별도 키·기존 원본/기존 Profile을 유지한다. logout·사용자 변경·늦은 응답은 후속 등록/적용을 차단한다. source 현재 조회와 최초 등록 응답은 구분한다.
+
+기존 session QA에 정상·실패4단계·타인/demo 원본·hash 변조·재시도·업로드/분석 중 logout·원본 보존을 추가해 통과했다. 기존 실제 AAC 분석/격리 SQL QA에도 client→실제 Sample HTTP handlers→v5 분석→source 등록/조회까지 연결해 통과했다. Auth/Storage network는 주입이며 합성 range/가창 fixture로 실제 Google 로그인·물리 음성·실서비스를 검증한 것은 아니다. 기존 Profile store 및 build40modules/525.40KB 통과, 기존>500KB 경고 유지.
+
+현재 App의 로컬 Setup/재측정/교체 UI를 원격 모드로 활성화하지 않았다. 실제 OAuth/서버·원격 migration/hosted decoder·카탈로그/App 연결·실제 Sample 청취·Identity 생성은 미완료다. 기존 사용자 transport 변경은 별도 보존하고 API 연결 추가분만 분리한다. 중복 앱/계획/화면·시각 변경·자동 원본 이관은 없다.
+
 ## 2026-10-13 R3 Voice Profile 원본 등록 transaction 준비
+
+Git/Production 확인: 관련10파일만a6d03fd2459db8983f26a4b1ab399ac0f4689ad6로 commit/push했고 main/origin0/0이다. 사용자 변경3파일은 보존했다. full SHA GitHub status pending/statuses0·deployment0으로 자동배포 READY/commit 일치는 미확인이다. Production 페이지200·capabilities200/preparation/모두false, voice-source GET 무인증401 AUTH_REQUIRED·비실제 bearer503 SERVICE_NOT_CONFIGURED를 확인했다. 원격 등록 성공이나 최신 SHA 배포 증거로 쓰지 않는다. 이 문단은 commit 이후 로컬 기록이다.
 
 기존 range provenance/voiceSourceRevision과 서버 확정 개인 Sample 분석을 GET/POST voice-source에 연결했다. 본인 Auth·명시적 source revision·원본 metadata/hash를 확인하고 private Storage를 재검사한 뒤 service-only SQL로 current source·이력/immutable metadata·최초 응답을 atomically 저장한다. 재측정/교체에 사용할 source CAS를 제공하며 stale revision/변경 입력/원본·DB 실패는 기존 source를 보존한다. 이후 source 수정 뒤에도 같은 최초 요청의 재시도 응답은 원래 결과이며 현재 상태는 GET으로 구분한다.
 
