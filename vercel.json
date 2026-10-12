@@ -3,6 +3,9 @@
   "framework": "vite",
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
+  "rewrites": [
+    { "source": "/api/projects/:path*", "destination": "/api/project-lifecycle?route=:path*" }
+  ],
   "headers": [
     {
       "source": "/(.*)",

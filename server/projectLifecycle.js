@@ -1,0 +1,127 @@
+import { ServiceError } from '../src/projectService.js'
+import { readAuthConfiguration, verifyRequestUser } from './auth.js'
+
+const fail = code => new ServiceError('프로젝트 요청을 완료하지 못했어요. 녹음 원본은 유지됩니다.',{ code })
+const text = value => typeof value==='string' && Boolean(value.trim())
+const uuid = value => /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(value || '')
+
+function routeOf(request) {
+  const url = new URL(request.url)
+  let path
+  if (url.pathname.startsWith('/api/projects/')) path = url.pathname.slice('/api/projects/'.length)
+  else if (url.pathname==='/api/project-lifecycle' && url.searchParams.getAll('route').length===1) path=url.searchParams.get('route')
+  else throw fail('PROJECT_ROUTE_NOT_FOUND')
+  let segments
+  try { segments=path.split('/').map(decodeURIComponent) } catch { throw fail('INVALID_PROJECT_REQUEST') }
+  if (segments.some(value=>!text(value) || value.includes('/') || ['.','..'].includes(value))) throw fail('INVALID_PROJECT_REQUEST')
+  if (segments.length===1 && request.method==='GET') return { projectId:segments[0],operation:'get' }
+  if (segments.length===4 && segments[1]==='parts' && ['recording-start','tracks'].includes(segments[3])) {
+    if (request.method!=='POST') throw fail('METHOD_NOT_ALLOWED')
+    return { projectId:segments[0],partId:segments[2],operation:segments[3]==='tracks'?'submit':'start' }
+  }
+  if (segments.length===1) throw fail('METHOD_NOT_ALLOWED')
+  throw fail('PROJECT_ROUTE_NOT_FOUND')
+}
+
+async function readMetadata(request) {
+  if (!/^application\/json(?:\s*;|$)/i.test(request.headers.get('content-type') || '')) throw fail('INVALID_PROJECT_REQUEST')
+  const reader=request.body?.getReader()
+  if (!reader) throw fail('INVALID_PROJECT_REQUEST')
+  const chunks=[]; let size=0
+  try {
+    while (true) {
+      const { done,value }=await reader.read()
+      if (done) break
+      size+=value.byteLength
+      if (size>65536) { await reader.cancel(); throw fail('PROJECT_PAYLOAD_TOO_LARGE') }
+      chunks.push(value)
+    }
+  } finally { reader.releaseLock() }
+  const bytes=new Uint8Array(size); let offset=0
+  for (const chunk of chunks) { bytes.set(chunk,offset);offset+=chunk.length }
+  let result
+  try { result=JSON.parse(new TextDecoder('utf-8',{ fatal:true }).decode(bytes)) } catch { throw fail('INVALID_PROJECT_REQUEST') }
+  if (!result || Array.isArray(result) || typeof result!=='object') throw fail('INVALID_PROJECT_REQUEST')
+  return result
+}
+
+function projectSnapshot(value,projectId) {
+  const source=value?.audioSourceRef
+  if (value?.id!==projectId || !text(value.seed) || !text(value.songId) || !text(value.key) ||
+    ![2,3,4].includes(value.partCount) || !Array.isArray(value.parts) || value.parts.length!==value.partCount ||
+    !Number.isInteger(value.submittedTrackCount) || value.submittedTrackCount<0 || value.submittedTrackCount>value.partCount ||
+    !Number.isInteger(value.revision) || value.revision<0 || !['recruiting','mixing','completed'].includes(value.lifecycle) ||
+    !source || Array.isArray(source) || typeof source!=='object' || source.songId!==value.songId || source.key!==value.key ||
+    !text(source.revision) || !Number.isFinite(source.duration) || source.duration<=0 ||
+    !/^[a-f0-9]{64}$/.test(source.sourceSha256 || '') || !/^[a-f0-9]{64}$/.test(source.backingSha256 || '') ||
+    !(value.keyLockedAt===null || (typeof value.keyLockedAt==='string' && Number.isFinite(Date.parse(value.keyLockedAt)))) ||
+    value.parts.some(part=>!text(part?.id) || !['open','ready','submitted'].includes(part.status) ||
+      (part.participantId!==null && !uuid(part.participantId)) || (part.status==='open' && part.participantId!==null) ||
+      (part.status!=='open' && !uuid(part.participantId)) ||
+      (part.status==='submitted' && part.trackId!==`${projectId}:${part.id}`) || (part.status!=='submitted' && part.trackId!==null)) ||
+    new Set(value.parts.map(part=>part.id)).size!==value.partCount ||
+    value.parts.filter(part=>part.status==='submitted').length!==value.submittedTrackCount ||
+    (value.lifecycle!=='recruiting' && value.submittedTrackCount!==value.partCount)) throw fail('INVALID_PROJECT_RESPONSE')
+  return { id:value.id,seed:value.seed,songId:value.songId,key:value.key,
+    audioSourceRef:Object.fromEntries(['songId','key','revision','duration','sourceSha256','backingSha256'].map(key=>[key,source[key]])),
+    partCount:value.partCount,parts:value.parts.map(({id,participantId,requiredRange,status,trackId})=>({id,participantId,requiredRange,status,trackId})),
+    submittedTrackCount:value.submittedTrackCount,revision:value.revision,lifecycle:value.lifecycle,keyLockedAt:value.keyLockedAt }
+}
+
+export async function projectLifecycleRequest(request,{ env=process.env,fetchImpl=globalThis.fetch }={}) {
+  const user=await verifyRequestUser(request,{ env,fetchImpl })
+  if (env.IEUM_DB_PROVIDER!=='supabase') throw fail('SERVICE_NOT_CONFIGURED')
+  const route=routeOf(request), configuration=readAuthConfiguration(env)
+  let rpc='ieum_get_project', body={ p_project_id:route.projectId }
+  if (route.operation!=='get') {
+    const value=await readMetadata(request)
+    body.p_part_id=route.partId
+    if (route.operation==='start') {
+      if (Object.keys(value).length) throw fail('INVALID_PROJECT_REQUEST')
+      rpc='ieum_start_project_recording'
+    } else {
+      const key=request.headers.get('idempotency-key')
+      if (!text(key)) throw fail('IDEMPOTENCY_KEY_REQUIRED')
+      if (Object.keys(value).some(field=>!['uploadIntentId','duration','syncOffsetMs','features','projectSeed'].includes(field)) ||
+        !uuid(value.uploadIntentId) || !Number.isFinite(value.duration) || value.duration<=0 ||
+        !Number.isFinite(value.syncOffsetMs) || value.syncOffsetMs<0 || value.syncOffsetMs>=value.duration*1000 ||
+        (value.features!==undefined && value.features!==null && (!value.features || Array.isArray(value.features) || typeof value.features!=='object')) ||
+        (value.projectSeed!==undefined && !text(value.projectSeed))) throw fail('INVALID_PROJECT_REQUEST')
+      rpc='ieum_submit_verified_track'
+      Object.assign(body,{ p_upload_intent_id:value.uploadIntentId,p_request_key:key,p_duration:value.duration,p_sync_offset_ms:value.syncOffsetMs,
+        p_features:value.features ?? null,p_project_seed:value.projectSeed ?? null })
+    }
+  }
+  let response
+  try {
+    response=await fetchImpl(`${configuration.url}/rest/v1/rpc/${rpc}`,{
+      method:'POST',credentials:'omit',redirect:'error',referrerPolicy:'no-referrer',signal:AbortSignal.timeout(10000),
+      headers:{ Authorization:request.headers.get('authorization'),apikey:configuration.publishableKey,'Content-Type':'application/json',Accept:'application/json' },
+      body:JSON.stringify(body)
+    })
+  } catch { throw fail('PROJECT_UNAVAILABLE') }
+  const codes={ 400:'INVALID_PROJECT_REQUEST',401:'AUTH_REQUIRED',403:'PART_NOT_ASSIGNED',404:'PROJECT_NOT_FOUND',409:'PROJECT_CONFLICT' }
+  if (!response.ok) throw fail(codes[response.status] || 'PROJECT_UNAVAILABLE')
+  let result
+  try { result=await response.json() } catch { throw fail('INVALID_PROJECT_RESPONSE') }
+  if (route.operation==='submit') {
+    if (result?.submissionStatus!=='success' || result.trackId!==`${route.projectId}:${route.partId}`) throw fail('INVALID_PROJECT_RESPONSE')
+    const project=projectSnapshot(result.project,route.projectId)
+    if (!project.parts.some(part=>part.id===route.partId && part.status==='submitted' && part.participantId===user.id)) throw fail('INVALID_PROJECT_RESPONSE')
+    result={trackId:result.trackId,submissionStatus:'success',project}
+  } else {
+    result=projectSnapshot(result,route.projectId)
+    if (route.operation==='start' && (!result.keyLockedAt || result.lifecycle!=='recruiting' ||
+      !result.parts.some(part=>part.id===route.partId && part.status==='ready' && part.participantId===user.id))) throw fail('INVALID_PROJECT_RESPONSE')
+  }
+  return Response.json(result,{ headers:{ 'Cache-Control':'private, no-store',Vary:'Authorization' } })
+}
+
+export function projectLifecycleErrorResponse(error) {
+  const statuses={ AUTH_REQUIRED:401,SERVICE_NOT_CONFIGURED:503,INVALID_SERVICE_CONFIGURATION:503,AUTH_UNAVAILABLE:503,
+    INVALID_AUTH_RESPONSE:503,INVALID_PROJECT_REQUEST:400,PROJECT_PAYLOAD_TOO_LARGE:413,IDEMPOTENCY_KEY_REQUIRED:400,
+    PROJECT_ROUTE_NOT_FOUND:404,PROJECT_NOT_FOUND:404,PART_NOT_ASSIGNED:403,PROJECT_CONFLICT:409,METHOD_NOT_ALLOWED:405,
+    PROJECT_UNAVAILABLE:503,INVALID_PROJECT_RESPONSE:503 }
+  const code=Object.hasOwn(statuses,error?.code)?error.code:'PROJECT_UNAVAILABLE'
+  return Response.json({ error:{ code } },{ status:statuses[code],headers:{ 'Cache-Control':'private, no-store',Vary:'Authorization' } })
+}

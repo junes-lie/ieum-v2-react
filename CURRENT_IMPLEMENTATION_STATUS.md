@@ -1,4 +1,10 @@
+## 2026-10-13 R3 독립 구현 — 공유 Project·제출·Mix 트랜잭션 준비
+
+기존 서버에 Project/Part/upload intent/확정 Track/Mix job 스키마와 GET Project·녹음 시작 잠금·JSON 제출 API를 추가했다. 2–4 실제 Part·배정/원본 검증 receipt·원본 duration 확인·Key/곡/반주/구성 잠금·최초 제출 결과 보존·마지막 필수 제출의 한 Mix job·서버 전용 결과 확정 transaction을 격리 PostgreSQL에서 검증했다. API의 경로/rewrite·인증·클라이언트 검증/사용자 ID 위조 거부·크기 제한·오류와 불일치 응답 거부도 통과했다. 원격 DB/실제 사용자·원본 upload/실제 duration 분석·Mix worker·Project 생성/Part Fit 참여·App 연결은 미완료이며 capabilitiesfalse다. 기존 로컬 앱/원본/사용자 서버3파일과 기존 기능 증거를 보존한다. 실제 서비스 완료가 아닌 R3 준비 묶음이다. Git/Production 마감은 확인 후 기록한다.
+
 ## 2026-10-13 R3 독립 구현 — 개인 저장 목록 DB·API 준비
+
+마감 결과: 9파일만0a3c610으로 commit/push했고 main/origin0/0, 기존 서버3파일만 미커밋이다. Production 신규 /api/me/saves GET/PUT 미인증401 AUTH_REQUIRED, QA용 비실제 bearer 미설정503 SERVICE_NOT_CONFIGURED, POST405 METHOD_NOT_ALLOWED와 각 private/no-store를 실제 HTTP로 확인했다. capabilities preparation/모두false·앱HTTP200/index-Cy9rymZA.js도 유지한다. 첫 Node HTTP는 UNABLE_TO_VERIFY_LEAF_SIGNATURE였고 --use-system-ca로 TLS 검증을 유지해 동일 검사를 통과했다. GitHub SHA status는pending/statuses0·deployment0으로 Vercel 배포 ID/commit READY 메타데이터는 미확인이다. 신규 API의 Production 반영과 실제 DB 연결 성공은 구분한다. 이 문단은 commit 이후 로컬 증거 기록이다.
 
 기존 GET/PUT me/saves transport 계약의 server handler와 신규 saved_objects migration을 구현했다. 검증된 Auth 사용자만 자신의 Project/보컬/Song 저장을 조회·변경하며 같은 ID의 세 종류는 독립이다. 반복 저장의 중복/시간 변경 없음, 반복 해제, 다른 사용자/익명/직접 DB 쓰기 거부, Profile 선호 곡 보존을 격리 PostgreSQL PGlite에서 확인했다. 주입 HTTP 입력/미설정/잘못된 성공 응답/오류 비노출 QA와 build도 exit0이다. 기존 앱 bundle은 index-Cy9rymZA.js/index-B6SzxD8P.css로 유지하고 500KB 경고도 기존과 같다. 원격 migration/실제 사용자/App 연결·대상의 실제 존재/접근 확인은 미완료이며 R3 전체 완료가 아니다. 기존 사용자 서버3파일은 보존·이번 commit 제외한다. 반복 계정 질문 대신 확정된 답변을 기존 계획 상단에 기록했다. Git/Production 마감 결과는 실제 확인 후 기록한다.
 

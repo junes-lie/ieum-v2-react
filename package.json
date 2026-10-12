@@ -13,6 +13,8 @@
     "qa:profile-db": "node qa/verify-profile-database.mjs",
     "qa:saves": "node qa/verify-saved-objects.mjs",
     "qa:saves-db": "node qa/verify-saved-objects-database.mjs",
+    "qa:project-track-db": "node qa/verify-project-track-database.mjs",
+    "qa:project-lifecycle-api": "node qa/verify-project-lifecycle-api.mjs",
     "qa:playback": "node qa/verify-player-request-ownership.mjs",
     "qa:mix-errors": "node qa/verify-mix-source.mjs && node qa/verify-mix-save-preservation.mjs",
     "qa:audio-lengths": "node qa/verify-audio-lengths.mjs",

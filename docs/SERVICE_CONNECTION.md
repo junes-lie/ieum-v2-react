@@ -1,5 +1,17 @@
 # 단일 앱 서비스 연결 계약
 
+## 2026-10-13 R3 공유 Project·제출·Mix 저장 경계
+
+`20261013_project_tracks.sql`은 Project·실제 Part·upload intent·확정 Track·Mix job의 준비 스키마/RPC다. 원격에 적용하거나 실제 곡·사용자를 등록하지 않았다. 인증 사용자의 GET Project, POST `projects/:id/parts/:partId/recording-start`, POST `projects/:id/parts/:partId/tracks`를 하나의 project-lifecycle Function과 제한된 rewrite로 연결한다. 기존 Track 제출 transport의 JSON metadata와 Idempotency-Key를 받으며 클라이언트 사용자 ID/검증 완료 주장은 거부한다. 초기 Project 생성/Part Fit 참여·초대/API 업로드 준비·실제 DB/App 연결은 아직 없다.
+
+첫 녹음 시작 요청은 본인 배정 Part를 확인하고 Key·곡/반주 참조·Seed·Part 구성 잠금을 저장한다. 제출은 Project 행 잠금→배정·2–4 실제 Part·잠금 확인→원본 intent 소유자/Part/검증 receipt·실제 검증 duration 확인→Track 확정→필수 전원 제출 시 Mix job 하나를 같은 트랜잭션에서 수행한다. 단순 배정/업로드 준비/그래픽 상태는 Track을 늘리지 않는다. 실패하면 확정되지 않으며 로컬 원본 삭제를 요청하지 않는다. 최초 성공 응답을 저장해 같은 키·원본·metadata 재시도에 그대로 반환한다. 현재 상태는 별도 GET으로 갱신한다.
+
+원본 intent verified_at/verified_duration은 브라우저가 변경할 수 없다. 기존 Storage.verifyOriginal의 파일 존재·크기·hash·MIME 검증에 실제 오디오 duration 검사까지 연결하는 trusted server 경계가 선행돼야 한다. 클라이언트 features는 client_features에 보존하며 서버 검증 분석으로 표시하지 않는다. 현재 receipt 생성/원격 파일 검증 API가 없어 준비 RPC를 실제 제출 성공으로 사용할 수 없다. 시연 음원/임의 hash로 운영 테이블을 채우지 않는다.
+
+마지막 제출은 lifecycle=mixing/queued job으로만 바뀐다. 실패 job은 completed가 아니며, 실제 저장 Mix 원본을 검증한 서버만 complete_verified_mix RPC를 실행할 수 있다. Track snapshot/반주 계보·결과 hash/duration을 확인한 트랜잭션만 completed로 전환하며 동일 결과 재확정은 중복하지 않는다. 원격 Mix worker·실제 결과 파일 검증·결과 조회/공유는 미연결이다. 그래픽 generation/Identity는 이 트랜잭션의 성공 판정이 아니다.
+
+`qa:project-track-db`는 격리 PostgreSQL PGlite의2/3/4 Part·본인 배정·미검증 원본 거부·Key/구성 잠금·최초 결과 재사용·마지막 제출 한 job·실패 Mix 미완료·서버 전용 결과 확정/재시도와 접근 거부를 확인한다. `qa:project-lifecycle-api`는 주입 Auth/RPC·rewrite 경로·metadata/오류/응답 검사를 확인한다. 실제 Google 사용자·Supabase·Storage·다중 connection 경쟁·물리 녹음 증거가 아니다. 앱/capabilities는 기존 로컬·preparation 상태를 유지한다. Vercel의 [Web handler·공유 Function/rewrite 안내](https://vercel.com/docs/functions/runtimes/node-js)를 적용했으며 Production의 실제 rewrite 확인은 push 이후 검사한다.
+
 ## 2026-10-13 R3 개인 저장 목록 DB·API 준비
 
 기존 transport의 `listSavedObjects/saveObject` 계약에 맞춰 GET/PUT `/api/me/saves`를 준비했다. PUT 입력은 `{type:'project'|'vocal'|'song',objectId,saved:boolean}`이며 사용자 ID는 입력받지 않는다. GET은 `{saves:[{type,objectId,savedAt}]}`, PUT은 해당 객체의 `{type,objectId,saved,savedAt}`를 반환한다. private/no-store와 검증된 bearer 기반 RPC를 사용하고 미인증401·미설정503·잘못된 입력400·상류 실패503을 구분한다. 성공 응답의 대상/상태/시간을 확인하기 전 성공으로 표시하지 않는다.
