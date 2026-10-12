@@ -15,7 +15,7 @@
     "qa:stop-retry": "node qa/verify-sample-stop-retry.mjs",
     "qa:delayed-stop": "node qa/verify-delayed-stop-ownership.mjs",
     "qa:setup-return": "node qa/verify-setup-part-return.mjs",
-    "qa:project-song-history": "node qa/verify-project-song-history.mjs",
+    "qa:project-song-history": "node qa/verify-project-profile-gate.mjs && node qa/verify-project-song-history.mjs",
     "qa:submission": "node qa/verify-submission-atomic.mjs",
     "qa:backing-level": "node qa/verify-backing-gain.mjs && node qa/verify-provided-backing-level.mjs",
     "qa:provided": "node qa/verify-sample-recommendations.mjs && node qa/verify-provided-samples.mjs",

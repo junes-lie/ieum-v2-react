@@ -1,4 +1,14 @@
+## 2026-10-12 R2 보컬 성향 선택·개설 준비 연결
+
+사용자 요청으로 첫 Voice Profile 저장(VP06)과 기존10 편집에 선호 역할·좋아하는 장르·음악 취향 복수 선택을 연결했다. 기존 PEOPLE 카탈로그의 항목을 재사용하고 직접 입력 편집도 유지한다. 새 등록은 선택 전 빈 값이며 임의의 개인 취향을 배정하지 않는다. 선택값·측정 음역·대표 Sample을 하나의 IndexedDB transaction으로 저장한다. 재측정/대표 Sample 교체는 기존 취향을 유지한다. 신규 화면·필수 선택 정책·분석 수치·디자인 토큰 변경은 없다.
+
+01C/01D는 Profile 미등록 시 Part/Key 설정과 개설을 차단하고 기존 Setup으로 연결한다. Setup 취소/저장 후 같은 생성 문맥으로 복귀하되 자동 개설/Track 추가는 하지 않는다. 방문별 draft ID로 Song/Part 수/내 Part/Key/단계를 유지하고 완료한 draft 재생성은 차단한다. 등록된 공통 Part 음역과 개인 음역을 비교하지만 실제 곡·Key별 요구 음역은 검증되지 않았다. 이 연결을 가창 가능성 Complete Gate 또는 전체R2 완료로 기록하지 않는다.
+
+검증: 2/3/4 Part 개설·0Track·Owner1/다른OPEN·reload, 서로 다른 곡 Back/Forward, 초기 취향 선택/실패 원본 보존/재시도/reload, 기존 편집 취소/실패/재측정/샘플 교체/재접속, Finder 취향 정렬과 기존 Node 여정 통과. build39modules/519.57KB(기존500KB 경고). 430px 선택 영역 overflow 없음. 합성 마이크/격리 fixture로 물리 마이크·청취·디자인·협업 인수를 대신하지 않는다. 새 개설 이력 방어 최종 QA와 Git Integration/Production 마감 결과는 실제 확인 후 기록한다. 사용자 서버3파일은 보존하고 commit에서 제외한다.
+
 ## 2026-10-12 R2 Home 가용성의 실제 등록 데이터 연결
+
+최종 마감9ca9eae: main/origin0/0,Vercel Git Integration Production7011590491 success,HTTP200/index-6g-DKZ0L.js SHA256 27664F62400ED553FED43EA4DD2E7256366F0F4141F2CC23DB17122E8A6A0D2E local exact,Production Home 가용성 QA 통과. 현재 R2 진행 중이다. 추가 대조에서01C/01D CreateProject가 현재 Profile/선택 Part Fit을 확인하지 않고 생성하는 코드와 화면명세 N01/N04의 Profile준비·가창가능 조건 사이 차이를 확인했다. 다음 묶음은 기존 Setup 복귀/생성 입력 보존·현재Key/요구 음역 출처 및 관련 QA 계약을 확인한 후 최소 연결한다. 이 항목은 이번 세 commit에서 구현하지 않았고 완료로 계산하지 않는다.
 
 29739a2 VP03/Match 묶음은 main/origin 일치,Git Integration Production7011459599 success,HTTP200/index-CYRfz7SF.js SHA256 580AEBA774E5893D2B885D93988E0AEA16411C99823D7AC251C9339187B92D31 exact. Production 추천·Match/Finder·05A Setup 저장/복귀 QA 통과로 마감했다.
 

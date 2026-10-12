@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import {seedCreationProfile} from './project-profile-fixture.mjs'
 import {createRequire} from 'node:module'
 const require=createRequire('C:/Users/LEE/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright/package.json')
 const {chromium}=require('playwright')
@@ -9,6 +10,7 @@ try {
   const context=await browser.newContext(),page=await context.newPage(),errors=[]
   page.on('pageerror',e=>errors.push(e.message))
   await page.goto(process.env.IEUM_QA_URL||'http://127.0.0.1:4193/')
+  await seedCreationProfile(page)
   await page.waitForSelector('[data-action="create-project"]');await page.locator('[data-action="create-project"]').click()
   await page.getByRole('button',{name:'Part 구성하기',exact:true}).click()
   await page.locator('.choice-grid button').filter({hasText:String(count)}).click()

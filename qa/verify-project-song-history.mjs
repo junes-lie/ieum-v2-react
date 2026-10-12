@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import {seedCreationProfile} from './project-profile-fixture.mjs'
 import {createRequire} from 'node:module'
 const require=createRequire('C:/Users/LEE/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright/package.json')
 const {chromium}=require('playwright')
@@ -8,6 +9,7 @@ try{
  page.on('pageerror',error=>errors.push(error.message))
  await context.addInitScript(()=>localStorage.setItem('ieum-v2:user-state:v7',JSON.stringify({songSaves:[{songId:'a-thousand-years'},{songId:'ocean-eyes'}]})))
  await page.goto(process.env.IEUM_QA_URL||'http://127.0.0.1:4207/')
+ await seedCreationProfile(page)
  await page.locator('[data-nav="bookmark"]').click();await page.locator('[data-action="collection-tab-songs"]').click()
  await page.locator('[data-action="open-song-save"]').first().click();await page.locator('[data-action="create-project-for-song"]').click()
  await page.waitForSelector('.owner-part-field')

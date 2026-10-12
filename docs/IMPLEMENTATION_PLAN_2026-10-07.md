@@ -1,3 +1,11 @@
+## 2026-10-12 R2 보컬 성향 선택과 새 개설 준비 묶음
+
+사용자 추가 지시: 선호 역할·장르·음악 취향을 고르게 한다. 기존 VP06 완료/저장과10 편집에 복수 선택을 연결하며 새 화면이나 별도 Setup 과제를 만들지 않는다. 기존 카탈로그 항목/직접 입력을 재사용하고 미선택을 고정 취향으로 대체하지 않는다. 저장은 음역·대표 Sample·선택 취향의 atomic 성공 이후에만 반영한다. 기존 Finder의 등록 취향 비교를 그대로 사용한다.
+
+같은 R2 묶음에서 Profile 준비→01C/01D 복귀, 등록 Part 음역 비교, 방문별 생성 입력/이력 보존·중복 개설 방어를 연결한다. 곡·Key별 실제 요구 음역/곡에 맞는 Part 구성 데이터는 현재 공통 SATB 카탈로그로 해결되지 않으며 R6 음원/Part 자료가 선행해야 한다. 임의 조옮김이나 무조건 가창 가능 판정을 추가하지 않는다. 해당 잔여 때문에 R2 전체 완료를 선언하지 않는다.
+
+마감 gate: 첫 선택/미선택·저장 실패/재시도/reload, 편집 취소/실패·기존 원본 보존, Setup 취소/저장 후 동일 Song/Part/Key 복귀·자동 개설 없음, 등록 범위 이탈 차단,2–4 Part 생성/Track0·이력 문맥·완료 draft 재생성 차단,build/관련 여정→diff 명시stage→main/Git Integration→Production 같은 QA. 외부/실기기·R5/R6 및 디자인 대기는 별도로 유지한다. 이전 완료 단계는 다시 수행하지 않는다.
+
 # 현재 실행 기준 — 2026-10-12 사용자 확정 계획 적용
 
 이 절이 아래 과거 실행 순서·미구현 목록·완료 문구보다 우선한다. 기존 단계 번호와 검증 증거는 보존한다. 새 계획 문서나 별도 앱은 만들지 않는다.
@@ -21,6 +29,8 @@ R2 전체 미완료 목록은 새로 확인한 다음 항목을 포함한다:05 
 완료 gate: 범위 기반 순서/초기 preview·직접 선택·맞는 곡 없음·취소 시 기존 Profile/Track 보존,기존3곡 hash/Guide·지정 구간/가사/오류복원,현재 Project/Key/Part/Team과 후보 일치 및 Sample 없음,build/기존 여정→Git Integration→Production 같은 변경 QA. 실제 후보 Sample/음색·저장곡 기반 취향 매칭,공유 서비스·Identity·음악 청취/물리 인수는 여전히 잔여다. 전체 R2 완료를 선언하지 않는다.
 
 ### R2 Home 가용성의 고정 수치 제거
+
+9ca9eae는 main/Git Integration Production7011590491 success·bundle exact·Production 같은 QA로 마감했다. 다음 R2는01C/01D의 Profile준비·내 Part 가창가능 조건 대조다. 현재 CreateProject 생성 함수가 Profile/Part Fit을 검사하지 않는 차이를 확인했으며 기존 Setup/복귀 문맥·사용자 선택 입력·현재Key의 요구 음역 출처를 확인해야 한다. 조건 추가로 기존2–4Part 생성 QA의 전제가 달라질 경우 최신 원본에 맞게 fixture/검증을 정리한다. 별도 생성 화면/프로토타입·임의 조옮김 음역·Profile 저장만으로 자동 개설은 금지한다. 변경 전에는 이 gate를 완료 처리하지 않는다.
 
 PRD Home Discovery/Data Confidence와 현재 React 대조에서 Profile 등록 뒤에도 Ocean Eyes2/Love Poem1을 음역 확인 없이 참여 가능한 수로 표시하는 누락을 확인했다. 기존 두 Song Row/화면 구조는 유지하고 실제 현재 Project 수·등록 Part 요구 음역/내 측정 음역 비교로 확인된 OPEN Project 수와 미확인 Project 수를 분리한다. 현재 생성 Project와 저장된 제출/배정 정보를 포함하며 음역 없는 곡에 임의 범위를 넣지 않는다. source에 Part 음역이 없는 Project는 추천 적합성 확보 완료가 아니다. 그 데이터/실제 음악 제공·사용자별 전체 Song 추천은 다음 잔여이며 확인된0과 미확인을 구분한다. 완료 gate는 Profile 전/후 실제 수·마감/배정/범위 이탈 제외·미확인 분리·곡 상세 경로/제출수 보존→관련 build/QA→main Git Integration/Production이다.
 

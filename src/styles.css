@@ -256,3 +256,7 @@ dialog.confirm-modal .review-actions button{flex:1 1 120px;min-height:52px}
 .workspace-track-row .track-play::before{content:'';position:absolute;left:6px;top:6px;width:32px;height:32px;box-sizing:border-box;border:1px solid rgba(236,230,220,.68);border-radius:50%;background:linear-gradient(#2c2721,#201c17 38%,#15110e);box-shadow:inset 1px 1px rgba(255,250,242,.18),inset -1px -1px rgba(26,20,15,.38)}
 .workspace-track-row .track-play img{position:relative;z-index:1}
 @media(max-width:389px){.workspace-track-row{grid-template-columns:34px 74px minmax(24px,1fr) 46px 44px;gap:8px}}
+.voice-preference-choices fieldset{min-width:0;margin:16px 0;padding:12px;border:1px solid var(--line-strong);display:flex;flex-wrap:wrap;gap:4px 16px}
+.voice-preference-choices legend{font-size:14px}
+.voice-preference-choices label{display:inline-flex;align-items:center;gap:8px;min-height:44px;margin:0;font-size:14px}
+.voice-preference-choices input[type=checkbox]{display:inline-block;flex:none;width:18px;height:18px;min-height:0;margin:0;padding:0;accent-color:var(--primary)}

@@ -25,6 +25,8 @@ try {
  assert.equal(await page.evaluate(async()=>{try{await window.__IEUM_V2__.prepareIdentityInput('qa-explicit-generator');return false}catch{return true}}),true,'Legacy source preparation must not imply generation readiness')
  const originalRoles=await page.evaluate(()=>window.__IEUM_V2__.state.profile.roles)
  await page.getByRole('button',{name:'선호 역할 · 장르 · 취향 수정'}).click()
+ await page.locator('.voice-preference-choices fieldset').filter({has:page.locator('legend',{hasText:'선호 역할'})}).getByLabel('Main',{exact:true}).check()
+ assert.match(await page.getByLabel('선호 역할',{exact:true}).inputValue(),/Main/)
  await page.getByLabel('선호 역할',{exact:true}).fill('Cancelled role')
  await page.locator('.profile-preferences').getByRole('button',{name:'취소',exact:true}).click()
  assert.deepEqual(await page.evaluate(()=>window.__IEUM_V2__.state.profile.roles),originalRoles)
