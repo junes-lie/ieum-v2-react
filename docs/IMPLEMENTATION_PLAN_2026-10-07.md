@@ -1,3 +1,9 @@
+### R6 실행 실패 전달 / 실제 중단 위치 — 2026-10-12
+
+guard summary의 자식 exit7이 호출자 exit0으로 끝나는 누락을 짧은 모델 없는 시험으로 확인하고 실제 exit 전파를 연결했다. normal/가상 pressure의 소유3대 worker·LASTEXITCODE/summary exact·무관 sentinel 보존 통과. 대형 모델/환경 변경 없음. low-RAM v2는 실제 pipeline 준비 뒤 생성 호출까지 진입했으나 첫 diffusion/condition 완료/PCM이 없는 자원 중단이다. 초기화만 실패한 것으로 좁혔던 이전 기록을 교정하며 어떤 연산의 RAM 원인인지는 미확정 유지. 같은 입력 대형 시험을 반복하지 않고 앱 독립 기능/확정되지 않은 개인 형상·실제 AI Part 및 서비스 gate를 구분한다.
+
+79c7729 자동배포/Production Profile QA·asset exact 확인. 이번 변경은 자원 보호/실패 전달과 증거 기록만이며 전체 R1–R7 완료 상태는 유지한다.
+
 ### R2 Profile 편집 재진입 값 — 2026-10-12
 
 역할 저장 후 이전 입력 문자열이 남는 실제 실패를 재현하고 편집 진입 때 현재 저장 Profile의 역할/장르/취향을 읽도록 수정했다. native 재진입/취소/이력, 기존 전체 Profile 실패·retry/reload·음역/Sample 독립성·최초 복귀·profile store/build 통과. 관련 main 자동배포→Production QA로 마감하며 전체 R2/Identity/실기기 gate를 유지한다. Notion/figma-desktop 도구0개 확인, 새 정책·보류 디자인 판단 없음. 직전809b6cf Production 상태/4 원본 SHA/asset exact 검증 마감.

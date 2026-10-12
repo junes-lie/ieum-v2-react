@@ -37,6 +37,7 @@ try {
   $seconds=if($mode -eq 'normal'){'4'}else{'25'}
   & $guard -PythonPath $PythonPath -GenerationArgs @(('"'+$fixture+'"'),'root',('"'+$folder+'"'),$seconds) -LogPrefix $prefix | Out-Null
   $summary=Get-Content -LiteralPath ($prefix+'.summary.json') | ConvertFrom-Json
+  if($LASTEXITCODE -ne $summary.ExitCode){throw 'Guard did not propagate the actual worker exit code'}
   $samples=Get-Content -LiteralPath ($prefix+'.monitor.jsonl') | ForEach-Object {$_|ConvertFrom-Json}
   $observed=@($samples|ForEach-Object {$_.Owned.Id}|Sort-Object -Unique)
   foreach($role in @('root','child','grandchild')) {

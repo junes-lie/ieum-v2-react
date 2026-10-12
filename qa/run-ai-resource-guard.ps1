@@ -29,3 +29,4 @@ while(-not $guardProcess.HasExited){
 }
 $guardProcess.WaitForExit()
 @{ExitCode=$guardProcess.ExitCode;ResourceStopped=$resourceStopped;WallSeconds=((Get-Date)-$guardStart).TotalSeconds} | ConvertTo-Json | Tee-Object -FilePath ($LogPrefix+'.summary.json')
+exit $guardProcess.ExitCode

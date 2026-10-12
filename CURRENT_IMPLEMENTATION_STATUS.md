@@ -1,3 +1,11 @@
+### R6 guard 실패 exit 전파와 중단 단계 교정 — 2026-10-12
+
+모델을 import하지 않는 Python SystemExit(7)에서 guard summary ExitCode7인데 호출 명령 exit0인 실제 실패 전달 누락을 확인했다. summary 보존 뒤 worker exit를 반환하도록 보완해 같은 짧은 실패의 호출 명령이 nonzero이며, native normal/pressure 자손 QA에서 LASTEXITCODE와 summary exact·무관 sentinel 보존이 통과했다. 기존8GiB 시작/4GiB3회 중단·소유 트리만 종료·CPU 환경/실패 원본은 유지하며 대형 AI는 실행하지 않았다.
+
+Base low-RAM v2 stdout를 재확인해 캐시 검증/실제 CUDA prompt·VAE74 module 정규화 parity·pipeline 준비가 끝나 Generating original song 호출에 진입한 사실을 확인했다. 첫 diffusion step 및 condition one-shot 완료 로그/완성 PCM은 없고 guard wall177.687초/resourceStopped=true로 종료했다. 마지막 worker working set5.565GiB·PC free3.170GiB다. 초기화 도중만 실패했다는 이전 표현은 이 근거로 좁혀 교정한다. source latent/condition 처리 중 어느 연산이 증분 메모리 원인인지는 단계별 실제 측정 없이 확정하지 않는다. 가사/화음·속도·전체 RAM 해결 성공으로 등록하지 않고 미검증 generator 경로는 로컬 보존한다.
+
+직전79c7729 main0·0/Git Integration success·Production Profile 재진입·취소/이력 QA/HTTP200·index-DlRbC8xD.js SHA39509AA129CA1D0F39DED94EB1C660BF021700509F272D748B7278E7715DAB1B exact 마감. 이번 자원도구/현재 기록만 main 자동배포→Production 기존 앱 보존 확인하며 사용자 서버3파일/디자인/음원은 보존한다.
+
 ### R2 저장된 Profile의 편집 재진입 — 2026-10-12
 
 역할 저장에서 빈 항목/공백이 제거된 실제 Profile과 재진입 편집기의 이전 입력 문자열 불일치를 native assertion으로 재현했다. 편집 시작 때 현재 Profile의 역할/장르/취향을 다시 읽는다. 저장 형식/정책·음역/대표 Sample/Track·디자인 변경 없음. 재진입 입력 exact·취소/Back/Forward와 기존 전체 Profile 취향 실패/retry/reload·음역만 변경·Sample 교체/기존 URL·최초 Setup 복귀/자동 참여 없음·중복 저장 QA, profile store 원자성/build39modules/510.63KB 통과(기존500KB 경고 유지). 관련 묶음만 main 자동배포→Production으로 전달하며 최신 정책/형상 결정·실기기/전체 R2 완료는 미검증이다. 현재 Notion/figma-desktop 노출 도구0개 확인, 새 정책/시각 구현은 하지 않는다.
