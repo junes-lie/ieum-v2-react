@@ -14,6 +14,7 @@ let result=structuredClone(project), calls=[]
 const fetchImpl=async(url,init)=>{
   if(url.includes('/storage/v1/')){
     assert.equal(init.headers.apikey,'sb_secret_qa_only');assert.equal(init.headers.Authorization,undefined)
+    if(url.includes('/object/sign/'))return Response.json({signedURL:'/object/sign/private-audio/originals/22222222-2222-4222-8222-222222222222?token=qa-read'})
     return url.includes('/bucket/')?Response.json({id:'private-audio',public:false}):new Response(original,{headers:{'Content-Type':'audio/wav'}})
   }
   assert.equal(init.headers.Authorization,'Bearer qa-token');assert.equal(init.headers.apikey,'qa-public')
@@ -45,6 +46,17 @@ assert.equal((await submitted.json()).submissionStatus,'success')
 assert.equal(submitted.headers.get('cache-control'),'private, no-store')
 assert.deepEqual(calls.at(-1).body,{p_project_id:'p',p_part_id:'lead',p_upload_intent_id:intent,p_request_key:'request-1',p_duration:20,
   p_sync_offset_ms:0,p_features:{version:'client-analysis'},p_project_seed:'stable'})
+const submittedProject=result.project
+const readTrack={id:'p:lead',projectId:'p',partId:'lead',participantId:user,duration:20,syncOffsetMs:0,audioSourceRef:project.audioSourceRef,
+  submittedAt:'2026-10-13T00:00:00Z',objectId:'22222222-2222-4222-8222-222222222222',size:4,sha256:originalSha,contentType:'audio/wav'}
+result={project:submittedProject,tracks:[readTrack]}
+const manifest=await projectLifecycleRequest(req('p/tracks'),options),read=await manifest.json()
+assert.equal(read.tracks.length,1);assert.equal(read.tracks[0].objectId,undefined);assert.equal(read.tracks[0].submitted,true)
+assert.ok(read.tracks[0].audioUrl.includes('/object/sign/'));assert.equal(manifest.headers.get('cache-control'),'private, no-store')
+assert.ok(calls.at(-1).url.endsWith('/ieum_list_project_tracks'))
+result={project:submittedProject,tracks:[{...readTrack,audioSourceRef:{...project.audioSourceRef,key:'wrong'}}]}
+await assert.rejects(projectLifecycleRequest(req('p/tracks'),options),e=>e.code==='INVALID_PROJECT_RESPONSE')
+result={trackId:'p:lead',submissionStatus:'success',project:submittedProject}
 for(const value of [{...take,userId:user},{...take,verified:true},{...take,duration:0},{...take,syncOffsetMs:20000},{...take,features:[]}]) {
   const count=calls.length
   await assert.rejects(projectLifecycleRequest(req('p/parts/lead/tracks',value,{'Idempotency-Key':'request-1'}),options),error=>error.code==='INVALID_PROJECT_REQUEST')

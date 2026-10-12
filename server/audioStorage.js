@@ -66,6 +66,20 @@ export function createSupabaseAudioStorage({ env = process.env, fetchImpl = glob
       } finally { reader.releaseLock() }
   }
   return {
+    async createSignedRead(objectId,expiresIn=600) {
+      const objectPath=path(objectId)
+      if(!Number.isInteger(expiresIn) || expiresIn<=0 || expiresIn>3600)throw new ServiceError('원본 접근 기간을 확인해야 해요.',{code:'INVALID_UPLOAD_FILE'})
+      await assertPrivateBucket()
+      const response=await request(`object/sign/${objectPath}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({expiresIn})})
+      let result,url
+      try{
+        result=await response.json()
+        if(typeof result.signedURL!=='string' || !result.signedURL.startsWith(`/object/sign/${objectPath}?`))throw new Error('invalid path')
+        url=new URL(`${origin.origin}/storage/v1${result.signedURL}`)
+        if(url.pathname!==`/storage/v1/object/sign/${objectPath}` || url.hash || url.searchParams.getAll('token').length!==1 || !url.searchParams.get('token'))throw new Error('invalid token')
+      }catch{throw new ServiceError('파일 저장 응답을 확인할 수 없어요.',{code:'INVALID_STORAGE_RESPONSE'})}
+      return {audioUrl:url.href,expiresIn}
+    },
     async createSignedUpload(objectId) {
       const objectPath = path(objectId)
       await assertPrivateBucket()

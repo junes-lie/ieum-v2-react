@@ -22,6 +22,10 @@ function routeOf(request) {
   try { segments=path.split('/').map(decodeURIComponent) } catch { throw fail('INVALID_PROJECT_REQUEST') }
   if (segments.some(value=>!text(value) || value.includes('/') || ['.','..'].includes(value))) throw fail('INVALID_PROJECT_REQUEST')
   if (segments.length===1 && request.method==='GET') return { projectId:segments[0],operation:'get' }
+  if (segments.length===2 && segments[1]==='tracks') {
+    if(request.method!=='GET')throw fail('METHOD_NOT_ALLOWED')
+    return {projectId:segments[0],operation:'tracks'}
+  }
   if (segments.length===4 && segments[1]==='parts' && ['recording-start','tracks','join','upload-intents'].includes(segments[3])) {
     if (request.method!=='POST') throw fail('METHOD_NOT_ALLOWED')
     return { projectId:segments[0],partId:segments[2],operation:segments[3]==='tracks'?'submit':segments[3]==='join'?'join':segments[3]==='upload-intents'?'upload':'start' }
@@ -79,8 +83,8 @@ export async function projectLifecycleRequest(request,{ env=process.env,fetchImp
   const user=await verifyRequestUser(request,{ env,fetchImpl })
   if (env.IEUM_DB_PROVIDER!=='supabase') throw fail('SERVICE_NOT_CONFIGURED')
   const route=routeOf(request), configuration=readAuthConfiguration(env)
-  let rpc='ieum_get_project', body=route.operation==='create'?{}:{ p_project_id:route.projectId }, requestedOwnerPart, storage
-  if (route.operation!=='get') {
+  let rpc=route.operation==='tracks'?'ieum_list_project_tracks':'ieum_get_project', body=route.operation==='create'?{}:{ p_project_id:route.projectId }, requestedOwnerPart, storage
+  if (!['get','tracks'].includes(route.operation)) {
     const value=await readMetadata(request)
     if (route.operation!=='create') body.p_part_id=route.partId
     if (route.operation==='upload') {
@@ -146,7 +150,27 @@ export async function projectLifecycleRequest(request,{ env=process.env,fetchImp
   }
   let result
   try { result=await response.json() } catch { throw fail('INVALID_PROJECT_RESPONSE') }
-  if (route.operation==='upload') {
+  if(route.operation==='tracks') {
+    const project=projectSnapshot(result?.project,route.projectId),tracks=result?.tracks
+    if(!Array.isArray(tracks) || tracks.length!==project.submittedTrackCount || new Set(tracks.map(track=>track?.partId)).size!==tracks.length ||
+      tracks.some(track=>track?.id!==`${route.projectId}:${track.partId}` || track.projectId!==route.projectId || !uuid(track.participantId) ||
+        !uuid(track.objectId) || !Number.isSafeInteger(track.size) || track.size<=0 || typeof track.sha256!=='string' || !/^[a-f0-9]{64}$/.test(track.sha256) ||
+        typeof track.contentType!=='string' || !track.contentType.startsWith('audio/') || !Number.isFinite(track.duration) || track.duration<=0 ||
+        !Number.isFinite(track.syncOffsetMs) || track.syncOffsetMs<0 || track.syncOffsetMs>=track.duration*1000 ||
+        typeof track.submittedAt!=='string' || !Number.isFinite(Date.parse(track.submittedAt)) ||
+        !track.audioSourceRef || Object.keys(project.audioSourceRef).some(key=>track.audioSourceRef[key]!==project.audioSourceRef[key]) ||
+        !project.parts.some(part=>part.id===track.partId && part.trackId===track.id && part.status==='submitted' && part.participantId===track.participantId)))
+      throw fail('INVALID_PROJECT_RESPONSE')
+    const available=[]
+    if(tracks.length)storage=createSupabaseAudioStorage({env,fetchImpl})
+    for(const track of tracks){
+      await storage.verifyOriginal(track.objectId,{size:track.size,sha256:track.sha256,contentType:track.contentType})
+      const access=await storage.createSignedRead(track.objectId)
+      available.push({...Object.fromEntries(['id','projectId','partId','participantId','duration','syncOffsetMs','submittedAt','size','sha256','contentType'].map(key=>[key,track[key]])),
+        audioSourceRef:project.audioSourceRef,...access,submitted:true,kind:'submitted-track'})
+    }
+    result={project,tracks:available}
+  }else if (route.operation==='upload') {
     if (!uuid(result?.uploadIntentId) || !uuid(result?.objectId) || result.size!==body.p_size || result.sha256!==body.p_sha256 ||
       result.contentType!==body.p_content_type || typeof result.submissionVerified!=='boolean') throw fail('INVALID_PROJECT_RESPONSE')
     const expected={size:body.p_size,sha256:body.p_sha256,contentType:body.p_content_type}

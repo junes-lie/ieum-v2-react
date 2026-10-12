@@ -1,5 +1,11 @@
 # 단일 앱 서비스 연결 계약
 
+## 2026-10-13 Workspace 제출 원본 재조회 준비
+
+GET projects/:id/tracks는 본인 Auth bearer로 ieum_list_project_tracks를 호출한다. private 원본은 확정 Workspace 참여자 범위로 기본 거부/허용하고 아직 초대 후보·공개 방문자에게 원본 URL을 확장하지 않는다.02/초대의 미리듣기와07 공개 공유는 별도 Preview/Result Mix 계약을 유지한다. 실제 제출과 확인된 audio receipt만 목록으로 반환하고 Project 잠금/Source/revision/제출수 일치를 확인한다. server Storage가 원본을 재검증한 뒤600초 operational read URL을 준비하며 secret/user bearer는 URL에 넣지 않는다. expiresIn은 파일 접근 수명이며 Product7일 알림 정책과 무관하다. [공식 signed URL 구현](https://github.com/supabase/storage-js/blob/master/src/packages/StorageFileApi.ts)의 signedURL 응답 형식을 확인했다.
+
+client loadRemoteProjectTracks는 explicit Storage origin과 aggregate maxTotalBytes 예산을 받아 기존 engine의 Blobs로 반환한다. URL/token을 local Track metadata로 남기거나 IndexedDB/시연 자료를 자동 변경하지 않는다. session 변경/원본 불일치/예산 초과는 실패하며 실제 UI 연결/청취 성공으로 처리하지 않는다. 현재 준비 코드이며 원격 환경과 App 바인딩은 미완료다.
+
 ## 확정된 서비스 결정과 접근 대기
 
 2026-10-13 사용자 경계 준비: createServiceSession은 기존 remote transport 위에서 실제 지원 capability→검증된 me/session UUID를 확인한다. token은 저장하지 않으며 stateKey는 기존 local key와 다른 remote 사용자 범위다. disconnect는 세션 revision만 바꾸고 데이터/원본을 지우지 않는다. session.run의 보호된 transport는 요청 전/실제 전송 시/응답 뒤 revision을 확인한다. 이미 전송된 변경의 취소를 보장하지 않으므로 서버 idempotency와 실제 확정 응답이 계속 필요하다. 이전 사용자 응답을 새 사용자 상태로 적용하지 않는다.

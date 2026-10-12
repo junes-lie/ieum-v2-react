@@ -28,11 +28,12 @@ try {
     create table auth.users(id uuid primary key);insert into auth.users values('${users[0]}'),('${users[1]}');
     create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
     grant usage on schema auth to authenticated;grant execute on function auth.uid() to authenticated;`)
-  for(const name of ['project_tracks','track_uploads','verified_audio_receipts','owned_upload_lookup'])
+  for(const name of ['project_tracks','track_uploads','verified_audio_receipts','owned_upload_lookup','project_track_reads'])
     await db.exec(await readFile(new URL(`../server/migrations/20261013_${name}.sql`,import.meta.url),'utf8'))
   await db.exec(`insert into public.ieum_projects(id,seed,song_id,project_key,audio_source_ref,part_count) values('p','seed','qa-song','original','{}',2);
     insert into public.ieum_project_parts values('p','lead','${users[0]}','{}'),('p','harmony','${users[1]}','{}');`)
   await asUser(users[0]);await db.query("select public.ieum_start_project_recording('p','lead')")
+  assert.deepEqual((await db.query("select public.ieum_list_project_tracks('p') as result")).rows[0].result.tracks,[])
   const storage=createSupabaseAudioStorage({env:{IEUM_STORAGE_PROVIDER:'supabase',IEUM_SUPABASE_URL:'https://example.supabase.co',
     IEUM_SUPABASE_SECRET_KEY:'sb_secret_qa_only',IEUM_AUDIO_BUCKET:'private-audio'},fetchImpl:async url=>
     url.endsWith('/bucket/private-audio')?Response.json({id:'private-audio',public:false}):
@@ -72,6 +73,10 @@ try {
       [partId,intent.uploadIntentId,'submit-'+index,result.receipt.duration])).rows[0].result
     assert.equal(submitted.project.submittedTrackCount,index+1)
     assert.equal(submitted.project.lifecycle,index?'mixing':'recruiting')
+    const manifest=(await db.query("select public.ieum_list_project_tracks('p') as result")).rows[0].result
+    assert.equal(manifest.tracks.length,index+1)
+    assert.equal(manifest.tracks.find(track=>track.partId===partId).duration,result.receipt.duration)
+    assert.equal(manifest.tracks.find(track=>track.partId===partId).objectId,context.objectId)
     if(index===0){firstArgs=args;firstResult=result}
   }
   await db.exec('reset role;set role service_role')
@@ -79,7 +84,12 @@ try {
   await db.exec('reset role')
   assert.equal((await db.query('select count(*)::int n from public.ieum_mix_jobs')).rows[0].n,1)
   assert.equal((await db.query("select lifecycle from public.ieum_projects where id='p'")).rows[0].lifecycle,'mixing')
-  await db.exec('set role anon');await assert.rejects(callReceipt(firstArgs),e=>e.code==='42501')
+  const outsider='44444444-4444-4444-8444-444444444444'
+  await db.query('insert into auth.users values($1)',[outsider]);await asUser(outsider)
+  await assert.rejects(db.query("select public.ieum_list_project_tracks('p')"),e=>e.code==='PT403')
+  await asUser('');await assert.rejects(db.query("select public.ieum_list_project_tracks('p')"),e=>e.code==='PT401')
+  await db.exec('reset role;set role anon');await assert.rejects(callReceipt(firstArgs),e=>e.code==='42501')
+  await assert.rejects(db.query("select public.ieum_list_project_tracks('p')"),e=>e.code==='42501')
   let writes=0
   await assert.rejects(verifyOwnedOriginalAudio({context:{projectId:'p',partId:'lead',userId:users[0],uploadIntentId:firstArgs.p_upload_intent_id,
     objectId:firstArgs.p_object_id,size:bytes.length,sha256,contentType:'audio/mp4'},storage:{verifyOriginalAudio:async()=>({...firstResult.receipt,sha256:'0'.repeat(64)})},

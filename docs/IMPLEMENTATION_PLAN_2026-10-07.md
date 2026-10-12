@@ -4,6 +4,8 @@
 
 ## 이미 확정된 서비스·비용 답변
 
+2026-10-13 R3 재접속 데이터 gate: 확정 참여자의 제출 Track 조회·private 원본 hash 재검증/임시 read URL과 session-scoped Blob loader를 구현·검증했다. 임시본/미제출·public Preview를 이 경로에 섞지 않고 explicit 메모리 예산·local 원본 보존을 적용했다. 실제 서비스/App Guide·Multitrack/청취는 다음 잔여이며 R3 완료로 확대하지 않는다. User Flow2C 단계5·PRD15의 제출 Track 재생/Guide 범위를 사용자 승인261012 export와 대조했다. 기존 단계·Source·역할·디자인은 유지한다.
+
 2026-10-13 R3 session gate: 기존 transport와 원본 전송에 사용자/세션 revision 경계를 연결했다. preparation 서비스 활성화·타인/demo 원본 자동 업로드·logout 이후 제출·늦은 응답 적용을 차단하는 주입 QA 및 기존 Track transfer/build를 통과했다. 사용자 미커밋 transport 변경을 제외한 HEAD snapshot에서도 확인했다. 실제 Google/Auth 접근·로그인 복귀 문맥·remote catalog/Profile·App 바인딩은 미완료이며 실제 서비스 연결 완료로 계산하지 않는다. 사용자 파일3개는 계속 별도 보존한다.
 
 2026-10-13 R3 HTTP 후속: 본인 업로드 조회→실제 원본 검증/receipt 확정→서버 길이의 사용자 권한 제출을 기존 tracks API에 연결했다. 새 원본의 decoder 미설정/Storage 불일치/권한/DB 실패는 제출을 차단한다. 실제 AAC+주입 HTTP 및 lookup/receipt 격리 SQL·관련 API/build 통과. hosted 실행 환경/실제 원격 연결·App session boundary는 미완료이고 capability false를 유지한다. 기존 사용자의 서버3파일은 따로 보존하며 R3 전체 완료로 기록하지 않는다.

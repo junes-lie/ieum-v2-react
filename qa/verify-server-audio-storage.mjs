@@ -51,6 +51,16 @@ const missing = createSupabaseAudioStorage({ env, fetchImpl: privateBucket(async
 await assert.rejects(missing.verifyOriginal(objectId, expected), error => error.code === 'UPLOAD_OBJECT_MISSING')
 const unavailable = createSupabaseAudioStorage({ env, fetchImpl: async () => { throw new Error('server-key-secret') } })
 await assert.rejects(unavailable.createSignedUpload(objectId), error => error.code === 'STORAGE_UNAVAILABLE' && !error.message.includes('secret'))
+const readStorage=createSupabaseAudioStorage({env,fetchImpl:privateBucket(async(url,options)=>{
+  assert.ok(url.endsWith(`/object/sign/private-audio/originals/${objectId}`))
+  assert.deepEqual(JSON.parse(options.body),{expiresIn:600})
+  return Response.json({signedURL:`/object/sign/private-audio/originals/${objectId}?token=qa-read`})
+})})
+assert.deepEqual(await readStorage.createSignedRead(objectId),{audioUrl:`https://example.supabase.co/storage/v1/object/sign/private-audio/originals/${objectId}?token=qa-read`,expiresIn:600})
+for(const signedURL of ['https://attacker.invalid/private',`/object/sign/other/originals/${objectId}?token=qa-read`,`/object/sign/private-audio/originals/${objectId}?token=a&token=b`]){
+  const bad=createSupabaseAudioStorage({env,fetchImpl:privateBucket(async()=>Response.json({signedURL}))})
+  await assert.rejects(bad.createSignedRead(objectId),e=>e.code==='INVALID_STORAGE_RESPONSE')
+}
 for (const bucket of [{ id: 'private-audio', public: true }, { id: 'other', public: false }, { id: 'private-audio' }]) {
   const unsafe = createSupabaseAudioStorage({ env, fetchImpl: async () => Response.json(bucket) })
   await assert.rejects(unsafe.createSignedUpload(objectId), error => error.code === 'PRIVATE_STORAGE_REQUIRED')

@@ -1,4 +1,16 @@
+## 2026-10-13 R3 제출 Track 재조회·private 원본 불러오기 준비
+
+GET projects/:id/tracks를 기존 Function에 연결했다. 확정 Workspace 참여자에게 실제 제출 Track만 Project revision/source와 함께 반환하며 private Storage의 원본 hash/size/MIME를 다시 확인한 뒤 opaque 경로의 임시 read URL을 제공한다. DB 조회는 Project 공유 잠금으로 제출 transaction과 같은 경계를 유지한다. 임시 intent·Draft·미제출 원본·client_features는 목록/측정 결과로 노출하지 않는다. 공개/초대 미리듣기의 Mix 경로를 이 private 원본 경로로 대신하지 않는다.
+
+loadRemoteProjectTracks는 session 안에서 이 manifest를 기존 audio/Mix 엔진의 Blob 형태로 읽는다. 제출/Part/사용자·곡/Key/revision·SHA/크기/MIME·허용 Storage origin이 맞아야 하고 bearer/cookie/referrer/redirect 없이 읽는다. signed URL을 Blob metadata에 보존하거나 local IndexedDB 원본에 덮어쓰지 않는다. 호출자는 maxTotalBytes를 명시해야 하며 모든 원본 크기의 합이 이를 넘으면 다운로드 전에 거부한다. 이는 자원 한도이며 새 녹음 길이 정책이 아니다.
+
+격리 PostgreSQL 실제 AAC receipt/제출 QA에0→1→2 Track 조회·참여자/타인/미인증 거부를 연결해 통과했다. 주입 API의 제출 목록/Source 불일치·서명 URL/내부 object ID 비노출, private Storage signer의 URL/path/token 검증, loader의 byte/hash/MIME·session·메모리 예산·변조/외부 URL 거부와 기존 업로드 회귀/build40modules/525.39KB도 통과했다. 실제 remote Storage·두 실제 사용자·App Guide/Multitrack 청취나 기기 인수의 증거는 아니다. 기존 React local 흐름과 사용자 서버3파일은 유지한다.
+
+다음은 실제 원격 설정/migration·catalog/Profile 등록·App session/catalog/Guide 연결이다. R3 전체·public Result/실제 Mix worker·R4 공유/초대/Push는 여전히 미완료다.
+
 ## 2026-10-13 R3 사용자 세션과 원본 전송 경계 준비
+
+Git/Production 확인: 이번7파일만5aa3877b2acf8ff4cf906d7744f3d0343f41a16e로 commit/push,main/origin0/0이다. 기존 사용자 서버3파일은 미커밋 보존했다. Production 앱200/index-Cy9rymZA.js·capabilities200/preparation/모두false를 확인했다. 최신full SHA status pending/statuses0·deployment0이므로 자동배포 성공/READY는 미확인이다. 현재 App의 remote 세션 활성화나 실제 로그인 성공 증거로 사용하지 않는다. 이 문단은 commit 이후 로컬 기록이다.
 
 기존 remote transport를 사용하는 serviceSession을 추가하고 transferAndSubmitTrack의 선택적 session 경로에 연결했다. 실제 capability/authenticated UUID 검증 뒤에만 세션을 활성화하고 token은 메모리에만 둔다. remote 사용자별 private state key를 구분하며 기존 local/demo key나 원본을 이관/삭제하지 않는다. 각 실행은 동일 사용자/세션 revision에 고정되고 logout/계정 변경 시 다음 요청·늦은 결과 적용을 거부한다. 원격 전송은 take.userId가 현재 실제 사용자와 일치해야 하며 로컬 jisun/타인 원본은 거부한다. 전송 중 logout이면 업로드 뒤 제출하지 않는다. 이미 서버에 전달된 요청을 rollback했다고 주장하지 않으며 원본·중복 키를 보존한다.
 
