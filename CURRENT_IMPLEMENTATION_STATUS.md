@@ -1,4 +1,14 @@
+## 2026-10-13 R1/R2 Home 프로젝트 상태 누락 수정
+
+기존 Home 모집/최근/완성 목록이 고정되어 실제 생성 Project 및 완료 Mix가 누락되는 결함을 확인하고 기존 React Home에 현재 createdProjects/확정 Track/createdMixes·openCreatedProject를 연결했다. 실제 빈 Part가 있는 Project만 모집 수/목록에 포함하고 ready/수락한 Part는 OPEN으로 세지 않는다. 최근 목록은 현재 Project ID/생성 순서를 유지하며 저장된 확정 Track 수·Mix 결과로 상태를 표시한다. persisted COMPLETE 라벨이나 임시 Review/초대만으로 제출/완성을 계산하지 않는다. 모든 필수 Track+저장 Mix 성공 뒤에만 완성 목록에 표시하고 같은 Project를 연다.
+
+기존 Node React SSR QA에 실제 생성 Project의 모집/최근/완성·2/3/4 Part·Review/초대 불변·모든 배정 완료·오래된 COMPLETE/불완전 Mix 거부와 실제 버튼 콜백의 Project ID 보존을 추가해 통과했다. 2/4 Part fixture의 첫 ready Part를 OPEN으로 세지 않는 조건으로 QA 기대값을 정정했으며 앱 계산을 잘못된 fixture 기대값에 맞춰 바꾸지 않았다. build40modules/527.36KB 통과, 기존>500KB 경고 유지. CSS/타이포/레이아웃 토큰·화면 수·IA/음역 Gate·원본·제출/Auto Mix 동작은 변경하지 않았다. Node render/콜백 검증이며 실제 시각/모바일 터치/청취나 브라우저 전체 navigation 인수는 아니다.
+
+R3 실제 서버·Home 원격 데이터 연결·승인 제공곡/후보·Identity/음악/협업·실기기 인수는 미완료다. 기존3파일 변경은 별도 보존하며 기존 계획의 새 확인된 R1/R2 결함으로 기록한다. 직전652be30 API Production 재확인은404에서503 SERVICE_NOT_CONFIGURED로 변경됐고 GitHub checks0/status pending/statuses0이며 Vercel CLI/프로젝트 linkage는 현재 workspace에서 찾지 못했다. 신규 API 경로 응답은 확인했으나 commit/READY/원격 서비스 성공으로 확대하지 않는다.
+
 ## 2026-10-13 R3 공개 Project 탐색 연결 준비
+
+Git/Production 확인: 검토한11파일을652be30d5de776505e223e0bdd60a1aefb53e7f0로 commit/push,main/origin0/0이다. index snapshot에서도 관련 catalog/discovery/session·실제 SQL→HTTP→client QA를 통과했다. 사용자 기존3파일 변경은 별도 보존했다. full SHA GitHub status pending/statuses0·deployment0이며 Production page200/index-CR97lKgZ.js·capabilities preparation/모두false이나 새 project-discovery GET/빈songId GET은404 NOT_FOUND다. 신규 API 파일이HEAD에 포함되고 현행vercel rewrites가 이 경로를 덮지 않는 것은 확인했다. 실제 배포 job/READY/commit 일치는 확인하지 못했으므로 Production gate는 미완료이며 직접 deploy/빈 commit/설정 임의 변경으로 우회하지 않는다. 이 문단은 commit 후 로컬 기록이다.
 
 기존 trusted arrangement를 참조하는 실제 Project의 공개 목록을 GET project-discovery와 기존 anonymous transport/session에 연결했다. Song ID 필터·id cursor/최대50개로 조회하며 같은 Project Seed·Key·arrangement·실제2–4 Part/제출 상태·createdAt/revision을 유지한다. assigned participant UUID·owner·Track ID/원본 URL·private metadata는 SQL/HTTP에서 제외한다. 준비된 read 경로에 별도 Project나 demo를 seed하지 않으며 기존 authenticated 상세/참여/음역 Gate는 변경하지 않았다.
 

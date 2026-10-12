@@ -4,6 +4,8 @@
 
 ## 이미 확정된 서비스·비용 답변
 
+2026-10-13 R1/R2 확인 결함 후속: Home의 고정 모집/최근/완성 목록이 실제 생성 Project/저장 Mix를 누락하는 결함을 현재 코드에서 확인해 기존 목록에 연결했다. actual empty Part·확정 Track 수·모든 Track+저장 Mix·같은 Project ID 조건과2/3/4 Part/실제 콜백 Node QA/build 통과. 기존 기획/디자인·단계·완료 증거/원본은 보존했다. 이전 신규 결함0h는 당시 대조 범위의 판정이며 이번 결함까지 없었다는 뜻으로 확대하지 않는다. 실제 기능/시각/모바일 인수·원격 Home 연결은 미완료이고 이번 실효 공수는 미측정이다.
+
 2026-10-13 R3 public Project discovery gate: 기존 catalog/실제 Project의 Song 필터·bounded cursor·2–4 Part/실제 제출 상태를 anonymous SQL/HTTP/client/session에 연결했다. 개인 UUID/원본/추가 metadata는 제외하고 기존 음역·참여 Gate와 Record Seed·처리 상태를 유지한다. failed Mix→mixing·성공 fixture receipt→completed/거짓 completed 비노출·기존 catalog/Part Fit/참여/제출·세션 QA/build 통과. 이는 실제 원격/믹스 파일·참여자 Profile/청취·Home/02 Carousel 바인딩 완료가 아니다. 다음은 기존 App 탐색·복귀 모델과 실제 데이터 연결이며 사용자3파일/미정 정책/기존 예산·단계를 보존한다.
 
 2026-10-13 R3 catalog read gate: 기존 trusted arrangement의 공개 조회·bounded cursor·2–4 Part/source revision/hash 계약과 기존 anonymous client/session을 연결했다. Profile 없는 탐색과 authenticated Part Fit 생성/참여를 구분하며 개인 metadata/private URL은 SQL/HTTP whitelist로 제외한다. 빈 목록/권한/페이지/실패·기존 생성/제출·session QA/build 통과. 실제 승인 음악/카탈로그 ingest·원격 migration·Home/Setup data 바인딩은 미완료다. 기존 public token 미조회 변경 한 줄만 R3 필수 의존성으로 검토해 포함하며 나머지 사용자3파일 수정은 보존한다. 다음은 기존 App 모델·remote Project 탐색 연결이며 이미 완료된 source 등록/측정·AI 시험은 반복하지 않는다.

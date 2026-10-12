@@ -583,15 +583,27 @@ function BottomNav({ current, go }) {
   </nav>
 }
 
-function Home({ openSong, layers, projectTracks, profile, mix, openCreateProject, openComplete, createdProjects = [], createdProjectTracks = {} }) {
+function Home({ openSong, layers, projectTracks, profile, mix, openCreateProject, openComplete, createdProjects = [], createdProjectTracks = {}, createdMixes = {}, openCreatedProject, joined = false, joinedPart = USER_PART_ID, candidateAccepted = false }) {
   const [query,setQuery] = useState('')
   const submitted = submittedProjectTracks(PROJECT,projectTracks).length
   const demoCount = Object.values(projectTracks).filter(track=>track.demo).length
-  const openCount = TOTAL_PARTS - submitted
+  const submittedIds = new Set(submittedProjectTracks(PROJECT,projectTracks).map(track=>track.partId))
+  const openCount = PARTS.filter(part=>!submittedIds.has(part.id) && !part.participantId && !part.participant &&
+    ['open','recruiting'].includes(part.status) && !(joined && part.id===joinedPart) && !(candidateAccepted && part.id==='bass')).length
+  const createdSummaries = createdProjects.map(project=>{
+    const tracks=createdProjectTracks[project.id] || {},submittedTracks=submittedProjectTracks(project,tracks)
+    const submittedParts=new Set(submittedTracks.map(track=>track.partId))
+    const openParts=(project.parts || []).filter(part=>!submittedParts.has(part.id) && !part.participantId && !part.participant && ['open','recruiting'].includes(part.status))
+    return {project,submitted:submittedTracks.length,submittedParts,openCount:openParts.length,mix:submittedTracks.length===project.partCount?createdMixes[project.id]:null}
+  })
+  const createdRecruiting=createdSummaries.filter(item=>!item.mix && item.openCount>0)
+  const createdCompleted=createdSummaries.filter(item=>item.mix)
+  const completedMain=Boolean(mix && submitted===TOTAL_PARTS)
+  const mainRecruiting=!completedMain && openCount>0
   const searchResults = query.trim() ? SONGS.filter(song=>`${song.title} ${song.artist} ${song.genre}`.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase())) : []
   const forYouSongs=['ocean-eyes','love-poem'].map(id=>{
     const song=SONGS.find(item=>item.id===id)
-    const projects=[...song.projects,...createdProjects.filter(project=>project.songId===id).map(project=>({...project,parts:project.parts.map(part=>({...part,...createdProjectTracks[project.id]?.[part.id]}))}))]
+    const projects=[...song.projects,...createdSummaries.filter(item=>item.project.songId===id).map(({project,submittedParts})=>({...project,parts:project.parts.map(part=>submittedParts.has(part.id)?{...part,status:'submitted'}:part)}))]
     return {song,projects,availability:openProjectRangeAvailability(profile?.rangeData,projects)}
   })
   return <div className="screen home-screen">
@@ -616,16 +628,17 @@ function Home({ openSong, layers, projectTracks, profile, mix, openCreateProject
         {forYouSongs.map(({song,projects,availability},index)=><button className="song-row" key={song.id} onClick={()=>openSong(song.id)}><span className="song-index">{String(index+1).padStart(2,'0')}</span><span><strong>{song.title}</strong><small>{profile?`음역 확인된 OPEN Project · ${availability.matchingProjects}${availability.unverifiedProjects?` · 음역 미확인 ${availability.unverifiedProjects}`:''}`:`관련 프로젝트 · ${projects.length}`}</small></span><span>↗</span></button>)}
       </section>
       <section className="content-section" id="recruiting-projects" tabIndex={-1}>
-        <div className="section-head"><h2>파트 모집 중</h2><span>3 projects</span></div>
-        <button className="project-feature" onClick={() => openSong(SONG_ID)}>
+        <div className="section-head"><h2>파트 모집 중</h2><span>{2+Number(mainRecruiting)+createdRecruiting.length} projects</span></div>
+        {mainRecruiting && <button className="project-feature" onClick={() => openSong(SONG_ID)}>
           <ResonanceRecord layers={layers} compact seed={PROJECT_SEED} />
           <span><small>{String(submitted).padStart(2,'0')}/04 · OPEN</small><strong>A Thousand Years</strong><em>{demoCount}개 출처 표시 시연 Track · {openCount} Parts OPEN</em></span>
-        </button>
+        </button>}
         <button className="project-line" onClick={() => openSong('city-of-stars')}><span>City of Stars · Night Duet</span><small>01/02 · Vocal B OPEN</small></button>
         <button className="project-line" onClick={() => openSong('love-poem')}><span>Love Poem · Four Voices</span><small>02/04 · Tenor OPEN</small></button>
+        {createdRecruiting.map(({project,submitted,openCount})=><button className="project-line" key={project.id} data-project-id={project.id} onClick={()=>openCreatedProject(project.id)}><span>{project.title} · {project.name}</span><small>{String(submitted).padStart(2,'0')}/{String(project.partCount).padStart(2,'0')} · {openCount} Parts OPEN</small></button>)}
       </section>
-      <section className="content-section"><div className="section-head"><h2>최근 열린 프로젝트</h2><span>New sessions</span></div><button className="project-line" onClick={()=>openSong('ocean-eyes')}><span>Ocean Eyes · Airy Trio</span><small>Lead Track 도착</small></button><button className="project-line" onClick={()=>openSong('city-of-stars')}><span>City of Stars · Night Duet</span><small>Vocal B 모집 중</small></button></section>
-      <section className="content-section"><div className="section-head"><h2>완성된 곡</h2><span>Listening proof</span></div>{mix?<button className="project-line" onClick={openComplete}><span>A Thousand Years · Original C</span><small>04/04 · COMPLETE · 완성곡 듣기</small></button>:<p className="empty-proof">아직 이 브라우저에서 완성한 곡이 없어요. 마지막 Track이 제출되면 여기에 완성곡이 나타납니다.</p>}</section>
+      <section className="content-section"><div className="section-head"><h2>최근 열린 프로젝트</h2><span>New sessions</span></div>{createdSummaries.map(({project,submitted,mix})=><button className="project-line" key={project.id} data-project-id={project.id} onClick={()=>openCreatedProject(project.id)}><span>{project.title} · {project.name}</span><small>{String(submitted).padStart(2,'0')}/{String(project.partCount).padStart(2,'0')} · {mix?'COMPLETE':submitted===project.partCount?'MIXING':submitted?'RECORDING':'RECRUITING'}</small></button>)}<button className="project-line" onClick={()=>openSong('ocean-eyes')}><span>Ocean Eyes · Airy Trio</span><small>Lead Track 도착</small></button><button className="project-line" onClick={()=>openSong('city-of-stars')}><span>City of Stars · Night Duet</span><small>Vocal B 모집 중</small></button></section>
+      <section className="content-section"><div className="section-head"><h2>완성된 곡</h2><span>Listening proof</span></div>{completedMain&&<button className="project-line" onClick={openComplete}><span>A Thousand Years · Original C</span><small>04/04 · COMPLETE · 완성곡 듣기</small></button>}{createdCompleted.map(({project})=><button className="project-line" key={project.id} data-project-id={project.id} onClick={()=>openCreatedProject(project.id)}><span>{project.title} · {project.name}</span><small>{String(project.partCount).padStart(2,'0')}/{String(project.partCount).padStart(2,'0')} · COMPLETE · 완성곡 듣기</small></button>)}{!completedMain&&!createdCompleted.length&&<p className="empty-proof">아직 이 브라우저에서 완성한 곡이 없어요. 마지막 Track 제출 후 Mix 저장이 성공하면 여기에 완성곡이 나타납니다.</p>}</section>
     </main>
   </div>
 }
@@ -1922,7 +1935,7 @@ export default function App() {
   if (!tracksReady) return <div className="screen"><TopBar meta="TRACKS LOADING"/><main className="loading-state"><p>{tracksLoadError || '실제 Track 분석값을 불러오는 중…'}</p>{tracksLoadError&&<div role="alert"><button className="secondary" data-action="tracks-load-retry" onClick={()=>{if(persisted.storageReadFailed)window.location.reload();else setTracksLoadAttempt(value=>value+1)}}>저장한 데이터 다시 불러오기</button></div>}</main></div>
 
   let content
-  if (screen==='home') content=<Home createdProjects={createdProjects} createdProjectTracks={createdProjectTracks} openSong={openSong} layers={layers} projectTracks={projectTracks} profile={profile} mix={mix} openCreateProject={()=>startCreateProject(null)} openComplete={()=>go('complete')}/>
+  if (screen==='home') content=<Home createdProjects={createdProjects} createdProjectTracks={createdProjectTracks} createdMixes={createdMixes} openCreatedProject={openCreatedProject} joined={joined} joinedPart={joinedPart} candidateAccepted={candidateAccepted} openSong={openSong} layers={layers} projectTracks={projectTracks} profile={profile} mix={mix} openCreateProject={()=>startCreateProject(null)} openComplete={()=>go('complete')}/>
   else if (screen==='detail') content=<Detail go={go} back={()=>back('home')} song={selectedSong} profile={profile} join={join} layers={layers} projectTracks={projectTracks} songSaved={songSaved} toggleSongSave={toggleSongSave} openVocalProfile={openVocalProfile} createdProjects={createdProjects} onCreateProject={startCreateProject} onOpenCreatedProject={openCreatedProject} initialProjectId={selectedProjectId} onSelectProject={setSelectedProjectId} detailContext={detailContext}/>
   else if (screen==='song-browser') content=<SongBrowser back={()=>back('collection')} openSong={openSong} songSaves={songSaves} toggleSongSave={toggleSongSave} createdProjects={createdProjects} onCreateProject={startCreateProject}/>
   else if (screen==='create-project') content=<CreateProject profile={profile} draft={createProjectDrafts.current[createDraftKey]} rememberDraft={rememberCreateProjectDraft} setupVoice={()=>go('voice')} key={createDraftKey} back={()=>back(createProjectSongId?'detail':'home')} complete={createProject} initialSongId={createProjectSongId}/>
@@ -1933,10 +1946,10 @@ export default function App() {
   else if (screen==='record') content=<Recorder go={go} submit={submit} onRecordingStart={()=>{touchProjectActivity(activeProject.id);if(!activeCreatedProject)setMainKeyLocked(true);if(activeCreatedProject)setCreatedProjects(current=>current.map(project=>project.id===activeProject.id?{...project,keyLocked:true}:project))}} partId={recordingPart} projectTracks={activeTracks} layers={activeLayers} project={{...activeProject,songTitle:activeSong.title,recordingDuration:activeProject.audioSource?.duration || activeSong.duration.split(":").reduce((total,value)=>total*60+Number(value),0)}} parts={activeParts} onDraftChange={present=>setDraftKeys(current=>({...current,[`${activeProject.id}:${recordingPart}`]:present}))}/>
   else if (screen==='complete') content=<Complete go={go} project={activeProject} song={activeSong} mix={activeMix} layers={activeLayers} projectTracks={activeTracks} projectLiked={activeProjectLiked} toggleProjectLike={toggleActiveProjectLike} openVocalProfile={openVocalProfile}/>
   else if (['projects','collection','my'].includes(screen)) content=<PersonalArea collectionContext={collectionContext} type={screen} go={target=>target==='create-project'?startCreateProject():go(target)} createdProjectTracks={createdProjectTracks} createdMixes={createdMixes} toggleProjectById={id=>setProjectLikes(current=>current.some(item=>item.projectId===id)?current.filter(item=>item.projectId!==id):[...current,{projectId:id,savedAt:new Date().toISOString()}])} editVoice={mode=>{setVoiceEditMode(mode);go("voice")}} updatePreferences={async preferences=>{await saveTrack({id:PROFILE_PROJECT_ID+":preferences",projectId:PROFILE_PROJECT_ID,kind:"voice-preferences",preferences});setProfile(current=>({...current,...preferences}))}} openMainWorkspace={openMainWorkspace} openSong={openSong} openCreatedProject={openCreatedProject} joined={joined} createdProjects={createdProjects} projectLikes={projectLikes} vocalSaves={vocalSaves} songSaves={songSaves} toggleProjectLike={toggleProjectLike} toggleVocalSave={toggleVocalSave} toggleSongSave={toggleSongSave} openVocalProfile={openVocalProfile} profile={profile} layers={layers} trackCount={Object.keys(projectTracks).length} mix={mix} readyForMix={readyForMix} resetDemo={resetDemo} delayedProjectIds={delayedProjectIds}/>
-  else content=<Home createdProjects={createdProjects} createdProjectTracks={createdProjectTracks} openSong={openSong} layers={layers} projectTracks={projectTracks} profile={profile} mix={mix} openCreateProject={()=>startCreateProject(null)} openComplete={()=>go('complete')}/>
+  else content=<Home createdProjects={createdProjects} createdProjectTracks={createdProjectTracks} createdMixes={createdMixes} openCreatedProject={openCreatedProject} joined={joined} joinedPart={joinedPart} candidateAccepted={candidateAccepted} openSong={openSong} layers={layers} projectTracks={projectTracks} profile={profile} mix={mix} openCreateProject={()=>startCreateProject(null)} openComplete={()=>go('complete')}/>
   const navCurrent = screen==='home'?'home':screen==='collection'?'bookmark':screen==='my'?'user':'folder'
   const showBottomNav = screen!=='record'
   return <>{stateSaveError&&<div className="permission-error" role="alert" data-state="user-state-save-error" style={{position:'fixed',top:0,left:'50%',transform:'translateX(-50%)',width:'min(430px,100%)',zIndex:100}}><span>참여·저장 상태를 저장하지 못했어요. 이 화면의 변경은 유지됩니다. 저장하기 전에는 새로고침하지 마세요.</span><button className="secondary" data-action="user-state-save-retry" onClick={()=>setStateSaveAttempt(value=>value+1)}>저장 다시 시도</button></div>}{content}{showBottomNav && <BottomNav current={navCurrent} go={go}/>}</>
 }
 
-export { Workspace, Recorder, Complete, Detail, PersonalArea }
+export { Workspace, Recorder, Complete, Detail, PersonalArea, Home }
