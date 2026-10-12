@@ -447,7 +447,10 @@ export function updateRecordingGuides(guides) {
   runtime.recordingGuideState.guides = {...guides,parts:[...guides.parts]}
   const timeline = getRecordingTimeline()
   stopGuides()
-  if (timeline.state === 'recording') scheduleRecordingGuides(timeline.elapsedSec)
+  if (timeline.state === 'recording') {
+    try { scheduleRecordingGuides(timeline.elapsedSec) }
+    catch(error) { stopGuides(); throw error }
+  }
 }
 
 export async function stopRecording() {

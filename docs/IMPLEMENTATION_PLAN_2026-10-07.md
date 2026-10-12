@@ -1,3 +1,7 @@
+### R1 녹음 중 Guide 오류 처리 — 2026-10-12
+
+Project Guide 재선택 오류의 React 종료를 실제 재현하고 기존 Project/Sample 오류 표시·재선택 성공, 실패한 Guide 노드 정리를 연결했다. 실제 녹음/활성 구간·기존 Profile 원본/제출 상태를 유지한다. native 두 경로/Review·stop retry/audio foundation/build 회귀 통과, 관련 변경만 main 자동배포→Production 검증한다. 제품/디자인·음원·실제 서버/전체 R1 완료 상태는 변경하지 않는다.
+
 ### R1 재개 Guide 실패의 상태 마감 — 2026-10-12
 
 8285787 main/Vercel success·Production 동일 Guide 실패/복구 QA·HTTP200/build JS SHA exact로 배포 검증 마감. 전체 R1/음악/실기기 인수는 계속 미완료.

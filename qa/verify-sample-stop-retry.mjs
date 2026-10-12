@@ -10,6 +10,8 @@ try{
   const stop=MediaRecorder.prototype.stop
   window.qaRejectStop=false
   MediaRecorder.prototype.stop=function(...args){if(window.qaRejectStop){window.qaRejectStop=false;throw new DOMException('QA stop refused','InvalidStateError')}return stop.apply(this,args)}
+  const gain=AudioContext.prototype.createGain
+  AudioContext.prototype.createGain=function(...args){if(window.qaRejectSampleGuide){window.qaRejectSampleGuide=false;throw new DOMException('QA Sample Guide refused','InvalidStateError')}return gain.apply(this,args)}
  })
  await page.goto(process.env.IEUM_QA_URL||'http://127.0.0.1:4207/')
  await page.waitForFunction(()=>window.__IEUM_V2__?.state)
@@ -23,6 +25,16 @@ try{
  await page.locator('[data-nav="user"]').click();await page.getByRole('button',{name:'다시 등록',exact:true}).click()
  await page.locator('.sample-select-stage > button.primary').click()
  await page.locator('[data-action="sample-start"]').click();await page.waitForSelector('[data-action="sample-stop"]');await page.waitForTimeout(3400)
+ await page.getByRole('checkbox',{name:'Sample Guide 반주',exact:true}).uncheck()
+ await page.evaluate(()=>{window.qaRejectSampleGuide=true;document.querySelector('[aria-label="Sample Guide 반주"]').click()})
+ await page.waitForTimeout(100)
+ assert.deepEqual(errors,[],'Sample Guide failure must retain the existing recording screen')
+ assert.equal(await page.evaluate(()=>window.__IEUM_V2__.audioRuntime.recorder.state),'recording')
+ assert.equal(await page.evaluate(()=>window.__IEUM_V2__.audioRuntime.playback.length),0)
+ assert.equal(await page.locator('.permission-error').count(),1)
+ await page.getByRole('checkbox',{name:'Sample Guide 반주',exact:true}).uncheck()
+ await page.getByRole('checkbox',{name:'Sample Guide 반주',exact:true}).check()
+ assert.equal(await page.locator('.permission-error').count(),0)
  await page.evaluate(()=>{window.qaRejectStop=true})
  await page.locator('[data-action="sample-stop"]').click();await page.waitForTimeout(150)
  assert.deepEqual(errors,[],'Stop failure must be handled in the existing Sample screen')

@@ -1,3 +1,7 @@
+### R1 녹음 중 Guide 전환 오류 복구 — 2026-10-12
+
+기존 Project Guide 재선택의 노드 생성 거부가 React 화면을 종료시키는 pageerror를 재현했다. Project effect와 Sample 체크박스에서 기존 오류 영역으로 처리하고 updateRecordingGuides의 실패 시 부분 생성된 Guide 노드를 정리한다. MediaRecorder·활성 구간·원본은 계속 유지하고 Guide 재선택 성공 후 오류를 지운다. native Project의 오류/재선택/Review와 Sample의 같은 경로·기존 Profile 보존/stop retry, audio foundation/build39modules/510.49KB 통과(기존500KB 경고 유지). 신규 정책/디자인·음원/서버 변경 없음. 관련 묶음만 main Git Integration→Production 두 QA로 마감하며 물리 마이크/음질/전체 R1은 미완료다. 직전2f56846 기록/자원도구 자동배포 success·Production HTTP200/기존 JS SHA exact 확인.
+
 ### R1 재개 Guide 실패의 녹음 상태 보존 — 2026-10-12
 
 8285787 main push/Vercel Git Integration success·Production 동일 Guide 실패/재시도 QA 통과·HTTP200·index-DxyvU9pA.js SHAFEE1DA9AA36D5D43D5924A90D6A82954555DF0EE6B5BB1B2E17AD443C2451C24 exact 확인.
