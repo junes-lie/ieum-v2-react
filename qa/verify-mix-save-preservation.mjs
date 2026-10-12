@@ -11,9 +11,9 @@ try {
       window.qaMixWriteAttempts=0
       const put=IDBObjectStore.prototype.put
       IDBObjectStore.prototype.put=function(value,...args){
-        if(value.kind==='auto-mix' && sessionStorage.getItem('qa-fail-mix-save')==='1') {
+        if(value.kind==='auto-mix') {
           window.qaMixWriteAttempts++
-          throw new Error('QA native mix file save failure')
+          if(sessionStorage.getItem('qa-fail-mix-save')==='1')throw new Error('QA native mix file save failure')
         }
         return put.call(this,value,...args)
       }
@@ -64,11 +64,18 @@ try {
     await savedCard.getByRole('button',{name:'프로젝트 열기',exact:true}).click()
     await page.waitForSelector('.mix-error')
     assert.equal(await page.locator('.complete-screen').count(),0)
+    assert.equal(await page.locator('[data-action="retry-auto-mix"]').count(),1,'Failed Mix must be retryable without reloading')
+    await page.evaluate(()=>{const retry=document.querySelector('[data-action="retry-auto-mix"]');retry.click();retry.click()})
+    await page.waitForFunction(()=>window.qaMixWriteAttempts===2)
+    await page.waitForSelector('[data-action="retry-auto-mix"]')
+    assert.deepEqual(await inspect(),failed,'Failed retry preserves submitted originals and does not save a completion')
     await page.evaluate(()=>sessionStorage.removeItem('qa-fail-mix-save'))
-    await page.reload()
-    await page.waitForFunction(id=>window.__IEUM_V2__?.state.createdMixes[id]?.blob,id)
+    await page.evaluate(()=>{const retry=document.querySelector('[data-action="retry-auto-mix"]');retry.click();retry.click()})
+    await page.waitForSelector('.complete-screen')
+    assert.equal(await page.evaluate(()=>window.qaMixWriteAttempts),3,'Each retry must start one job despite repeated clicks')
     const recovered=await inspect()
     assert.deepEqual(recovered.tracks,failed.tracks);assert.equal(recovered.mixes.length,1);assert.ok(recovered.mixes[0].size>44)
+    await page.reload();await page.waitForSelector('[data-action="open-complete"]')
     await page.locator('[data-nav="folder"]').click()
     await page.getByRole('button',{name:'완성',exact:true}).click()
     assert.equal(await page.locator('.created-project-card').count(),1,'Saved Mix appears complete after reload')
@@ -79,7 +86,7 @@ try {
     await savedCard.getByRole('button',{name:'프로젝트 열기',exact:true}).click()
     await page.waitForSelector('.complete-screen')
     assert.deepEqual(errors,[])
-    console.log(`PASS ${count} Parts: native Mix save failure keeps original hashes/status, no completed result; normal reload saves one real Mix`)
+    console.log(`PASS ${count} Parts: Mix save failure and failed retry preserve hashes/status; repeated retry clicks start one job; successful retry saves one Mix before completion; reload retains completion`)
     await context.close()
   }
 } finally {await browser.close()}

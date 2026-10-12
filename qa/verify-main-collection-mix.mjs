@@ -7,8 +7,9 @@ try {
  const context=await browser.newContext(),page=await context.newPage(),errors=[]
  page.on('pageerror',error=>errors.push(error.message))
  await context.addInitScript(()=>{
+  window.qaMainMixWrites=0
   const put=IDBObjectStore.prototype.put
-  IDBObjectStore.prototype.put=function(value,...args){if(value.kind==='auto-mix'&&sessionStorage.getItem('qa-main-mix-failure'))throw new Error('QA main Mix save refused');return put.call(this,value,...args)}
+  IDBObjectStore.prototype.put=function(value,...args){if(value.kind==='auto-mix'){window.qaMainMixWrites++;if(sessionStorage.getItem('qa-main-mix-failure'))throw new Error('QA main Mix save refused')}return put.call(this,value,...args)}
  })
  await page.goto(process.env.IEUM_QA_URL||'http://127.0.0.1:4187/')
  await page.waitForFunction(()=>Object.keys(window.__IEUM_V2__?.state.projectTracks||{}).length===2)
@@ -26,7 +27,14 @@ try {
  assert.equal(await card.locator('.collection-card-head > span').textContent(),'MIXING · 04/04','Main Collection must reflect all submitted Tracks until Mix persists')
  await card.locator('[data-action="open-project-like"]').click();await page.waitForSelector('.mix-error')
  assert.equal(await page.locator('.complete-screen').count(),0)
- await page.evaluate(()=>sessionStorage.removeItem('qa-main-mix-failure'));await page.reload()
+ assert.equal(await page.locator('[data-action="retry-auto-mix"]').count(),1)
+ await page.evaluate(()=>{const retry=document.querySelector('[data-action="retry-auto-mix"]');retry.click();retry.click()})
+ await page.waitForFunction(()=>window.qaMainMixWrites===2);await page.waitForSelector('[data-action="retry-auto-mix"]')
+ assert.equal(await page.locator('.complete-screen').count(),0)
+ await page.evaluate(()=>{sessionStorage.removeItem('qa-main-mix-failure');const retry=document.querySelector('[data-action="retry-auto-mix"]');retry.click();retry.click()})
+ await page.waitForFunction(()=>window.__IEUM_V2__.state.mix?.blob)
+ assert.equal(await page.evaluate(()=>window.qaMainMixWrites),3,'One main Mix job per explicit retry')
+ await page.reload()
  await page.waitForFunction(()=>window.__IEUM_V2__.state.mix?.blob)
  await page.locator('[data-nav="bookmark"]').click()
  assert.equal(await card.locator('.collection-card-head > span').textContent(),'COMPLETE · 04/04')
@@ -35,6 +43,6 @@ try {
  const restored=await page.evaluate(async()=>Promise.all(Object.values(window.__IEUM_V2__.state.projectTracks).map(async v=>({id:v.id,hash:[...new Uint8Array(await crypto.subtle.digest('SHA-256',await v.blob.arrayBuffer()))].join(',')}))))
  assert.deepEqual(restored.sort((a,b)=>a.id.localeCompare(b.id)),original,'Mix failure and recovery preserve every original Track hash')
  assert.deepEqual(errors,[])
- console.log('PASS main Collection failed Mix→MIXING, successful reload→COMPLETE, same workspace/final navigation and four original Tracks preserved. Isolated audio only.')
+ console.log('PASS main failed Mix/retry→MIXING, one job per double click, successful retry→COMPLETE retained after reload; four original Tracks preserved. Isolated audio only.')
  await context.close()
 }finally{await browser.close()}

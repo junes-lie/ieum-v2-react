@@ -1,3 +1,15 @@
+## 2026-10-12 승인 일정 반영 / R1 Auto Mix 재시도 마감
+
+기존 구현계획의 상위 실행 절에 승인된88–144h/11–18작업일 잠정 예산·10/14 선행 판정·10/30 조건부 목표/10/27–11/5 예상 창, 탐색2h/AI 가설2h·경로 선정4h·관련 검증/배포 묶음·실제 시간/외부 대기 분리 표를 직접 반영했다. 과거 단계/증거/미정 정책과 사용자 서버3파일을 보존한다. 이전15–27일과 범위가 달라 확정 단축량을 주장하지 않는다. 과거 실제 공수/대기 시간은 측정하지 않아 임의 값을 쓰지 않는다.
+
+R1: Mix 저장 실패를 재현하고 workspace의 기존 오류 영역에 explicit retry를 연결했다. 제출이 모두 성공하고 Mix가 없으며 error 상태일 때만 재시도한다. 프로젝트별 동기 요청 guard로 같은 tick2click도1job, 자동 무한 retry 없음. 재실패 시 원본/미완성 보존, 실제 저장 성공 이후만 완성. 기존 jobs/믹서/식별자를 재사용하며 legacy Multitrack wrapper·디자인·사용자 서버 변경은 그대로다.
+
+직전 실행 handle80220의 terminal exit0를 확인했다. native2/3/4 및main에서 최초 실패→실패 retry→성공 retry(각 double click1job)→실제 Mix1개 저장·완성/reload, 원본 SHA/제출수 불변·실패 URL 해제 QA 통과. current build39modules/index-DdMAPXaO.js SHA0D96CED02F06AA6EC9F54B670FBB3710163BB1BF29C9ABFA51DFBB1AD23A0C14, audio foundation/원자적 제출 QA exit0. 기존511.69KB chunk 경고 별도. 합성/fixture 입력이며 물리 입력·청취·실제 협업/전체 R1 완료가 아니다. 관련5파일만 commit/main 자동배포→Production 재시도로 마감한다.
+
+R6는 공식fal/Eleven Music/Runpod 문서에서 외부 후보·비용/제어 한계를 비교해 기존 계획에 기록했다. 실제 요청·계정/지출/업로드·원격 generation 없음. 경로 선정 전체 gate는 접근/비용 한도·권리·실제 짧은 시험 전 미완료. 구간 가사·duration 제어를 정확한 성부/MIDI로 확대하지 않는다. Notion/figma 노출 도구0개이며 정책/시각 원본 확인을 주장하지 않는다. 다음은 R1 Production 마감→R2 제한 대조, 접근 가능한 경우만 R6 실제 시험이다. R3→R4/R5/R7 미완료 유지.
+
+이번 승인 후 첫 관측 구간10/12 17:45:49–17:50:18 KST는269초이며 계획/자료 조사/로컬 확인의 합산 wall time이다. 묶음별 실효 공수로 중복 배분하지 않는다. build/audio foundation/atomic submission 명령5.160초·exit0; 기존 native QA 결과 재사용. 실제 지출/모델 실행0이며 계정/정책/물리 인수 대기 시작 시각은 미측정으로 유지한다.
+
 ## 2026-10-12 R1 Draft 나가기 저장 경쟁 마감
 
 기존 승인 계획의 R1/R2 우선을 적용했다. native IndexedDB completion 지연 후 My로 이동했을 때 이전 Recorder의 save callback이 Workspace로 되돌리는 실제 실패(workspace != my)를 재현했다. 현재 Recorder에서만 나가기 완료를 처리하고, 동기 ref로 중복 저장 및 저장 중 제출을 막는다. 제출 중 Back도 무시하며 저장 실패는 Review 원본을 유지하고 버튼을 다시 활성화한다. 기존 확인 후 종료·직접 제출 계약/화면/디자인은 유지한다.

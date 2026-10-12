@@ -897,7 +897,7 @@ function VoiceSetup({ complete, go, back, existing, editMode }) {
   </div>
 }
 
-function Workspace({ go, project = PROJECT, song, isCreated = false, ownerPartId, findVocal, joined, invited, invitedPerson, candidateAccepted, candidateArrivalStatus, projectTracks, layers, recordPart, projectLiked, toggleProjectLike, openVocalProfile, mix, mixStatus = 'idle', completionDelayed = false, hasDraft = false }) {
+function Workspace({ go, project = PROJECT, song, isCreated = false, ownerPartId, findVocal, joined, invited, invitedPerson, candidateAccepted, candidateArrivalStatus, projectTracks, layers, recordPart, projectLiked, toggleProjectLike, openVocalProfile, mix, mixStatus = 'idle', retryAutoMix, completionDelayed = false, hasDraft = false }) {
   const [mixPlaying,setMixPlaying]=useState(false)
   const baseParts = project.parts || PART_CATALOG.slice(0,project.partCount)
   const projectParts = baseParts.map(part => {
@@ -937,7 +937,7 @@ function Workspace({ go, project = PROJECT, song, isCreated = false, ownerPartId
         {submitted > 0 && <button className={canRecordMyPart?'secondary':'primary'} data-action={mix?'open-complete':'focus-current-mix'} onClick={() => mix ? go('complete') : document.getElementById('current-mix')?.scrollIntoView({behavior:'smooth',block:'start'})}><Icon name="headphones"/> {mix?'완성곡 듣기':mixStatus==='processing'?'Auto Mix 확인':'현재 Mix 듣기'}</button>}
         {canRecordMyPart && <button className="primary" data-action="record-part" onClick={() => recordPart(myPart.id)}><img src={figmaAssets.imgFaFaMicrophone} alt="" aria-hidden="true"/>{hasDraft?'녹음 이어서 확인하기':'내 Part 녹음하기'}</button>}
       </div>
-      <CurrentMixPanel parts={projectParts} projectTracks={projectTracks} project={project} mix={mix} mixStatus={mixStatus} openVocalProfile={openVocalProfile} onPlayingChange={setMixPlaying} partAction={partAction} completionDelayed={completionDelayed}/>
+      <CurrentMixPanel parts={projectParts} projectTracks={projectTracks} project={project} mix={mix} mixStatus={mixStatus} retryAutoMix={retryAutoMix} openVocalProfile={openVocalProfile} onPlayingChange={setMixPlaying} partAction={partAction} completionDelayed={completionDelayed}/>
     </main>
   </div>
 }
@@ -1248,7 +1248,7 @@ function Player({ source, playing, setPlaying, duration: durationProp = 18, dura
   return <div className={`audio-player${figma?' figma-player':''}`}><div className="time-row">{figma?caption?<span className="player-summary"><span className="player-caption">{caption}</span><span className="player-clock">{fmt(time)} / {fmt(duration)}</span></span>:<span className="player-clock">{fmt(time)} / {fmt(duration)}</span>:<span>{fmt(time)}</span>}<input aria-label="재생 위치" type="range" min="0" max={duration} step=".1" disabled={!source} value={Math.min(time,duration)} onChange={e=>seek(Number(e.target.value))}/>{!figma&&<span>{fmt(duration)}</span>}</div><button className="play-btn" disabled={!source} aria-label={playing?'일시정지':'재생'} onClick={()=>setPlaying(!playing)}>{figma&&!playing?<img src={figmaAssets.imgFaFaPlay} alt="" aria-hidden="true"/>:<Icon name={playing?'pause':'play'} size={figma?20:26}/>}</button>{source && <audio ref={audioRef} src={source} onLoadedMetadata={e=>Number.isFinite(e.currentTarget.duration)&&setMediaDuration(e.currentTarget.duration)} onTimeUpdate={e=>setTime(e.currentTarget.currentTime)} onEnded={()=>setPlaying(false)} />}</div>
 }
 
-function CurrentMixPanel({ parts, projectTracks, project, mix, mixStatus, openVocalProfile, onPlayingChange, partAction, completionDelayed }) {
+function CurrentMixPanel({ parts, projectTracks, project, mix, mixStatus, retryAutoMix, openVocalProfile, onPlayingChange, partAction, completionDelayed }) {
   const [included,setIncluded]=useState({backing:true,parts:parts.map(()=>true)})
   const [playing,setPlaying]=useState(false)
   const [selectedTrackId,setSelectedTrackId]=useState(null)
@@ -1285,6 +1285,7 @@ function CurrentMixPanel({ parts, projectTracks, project, mix, mixStatus, openVo
     <div className="track-list part-list"><div className="section-head"><h2>Parts · Tracks</h2><span>상태 · 재생 · Mix</span></div>{false&&<div className="backing-row"><span>Backing Track</span><button className={`include-toggle ${included.backing?'on':''}`} aria-pressed={included.backing} onClick={()=>setIncluded(value=>({...value,backing:!value.backing}))}><span/></button></div>}{rows.map((part,index)=>{const partCta=partAction?.(part)||{};return <PartRow waveform order={index} key={part.id} part={part} action={partCta.action} actionLabel={partCta.label} urgent={completionDelayed&&part.participantId===CURRENT_USER_ID&&part.status==='ready'} included={part.status==='submitted'?included.parts[index]:undefined} onPlay={part.status==='submitted'?()=>chooseTrack(part.id):undefined} onParticipant={part.participantId&&part.participantId!==CURRENT_USER_ID?()=>openVocalProfile(part.participantId):undefined} onToggle={part.status==='submitted'?()=>setIncluded(value=>{const next=[...value.parts];next[index]=!next[index];return {...value,parts:next}}):undefined}/>})}</div>
     {previewError&&<p className="mix-error" role="alert">{previewError}</p>}
     {mixStatus==='error'&&<p className="mix-error" role="alert">Auto Mix를 완료하지 못했어요. 제출된 원본 Track은 그대로 보관되어 있어요.</p>}
+    {mixStatus==='error'&&retryAutoMix&&<button className="secondary" data-action="retry-auto-mix" onClick={retryAutoMix}>Auto Mix 다시 시도</button>}
   </section>
 }
 
@@ -1466,6 +1467,8 @@ export default function App() {
   const [createdMixes,setCreatedMixes] = useState({})
   const [createdMixStates,setCreatedMixStates] = useState({})
   const createdMixJobs = useRef(new Set())
+  const mixRetryPending = useRef(new Set())
+  const [createdMixRetryAttempt,setCreatedMixRetryAttempt] = useState(0)
   const screenRef = useRef(screen)
   const activeProjectRef = useRef(persisted.activeCreatedProjectId || PROJECT_ID)
   const [projectTracks,setProjectTracks] = useState({})
@@ -1490,6 +1493,7 @@ export default function App() {
   const [mix,setMix] = useState(null)
   const [mixStatus,setMixStatus] = useState('idle')
   const [mixProgress,setMixProgress] = useState(0)
+  const [mixRetryAttempt,setMixRetryAttempt] = useState(0)
   const [draftKeys,setDraftKeys] = useState({})
   const previousMixStatus=useRef('idle')
   const [projectActivity,setProjectActivity] = useState(()=>({[PROJECT_ID]:new Date().toISOString(),...persisted.projectActivity}))
@@ -1659,6 +1663,15 @@ export default function App() {
   }
   const readyForMix = allProjectTracksSubmitted(PROJECT,projectTracks)
   const activeReadyForMix = allProjectTracksSubmitted(activeProject,activeTracks)
+  const retryAutoMix = () => {
+    if(!tracksReady||!activeReadyForMix||activeMix||activeMixStatus!=='error'||mixRetryPending.current.has(activeProject.id))return
+    mixRetryPending.current.add(activeProject.id)
+    if(activeCreatedProject){
+      createdMixJobs.current.delete(activeProject.id)
+      setCreatedMixStates(current=>({...current,[activeProject.id]:'processing'}))
+      setCreatedMixRetryAttempt(value=>value+1)
+    } else {setMixStatus('processing');setMixRetryAttempt(value=>value+1)}
+  }
 
   useEffect(() => {
     const onPopState = event => {
@@ -1726,11 +1739,12 @@ export default function App() {
         if (!cancelled) { console.error(error); setMixStatus('error') }
       } finally {
         if (unpublishedUrl) URL.revokeObjectURL(unpublishedUrl)
+        mixRetryPending.current.delete(PROJECT_ID)
       }
     }
     const timer = window.setTimeout(run,500)
     return () => { cancelled=true; window.clearTimeout(timer) }
-  }, [tracksReady,readyForMix,mix,projectTracks])
+  }, [tracksReady,readyForMix,mix,projectTracks,mixRetryAttempt])
 
   // All required submitted Tracks trigger one job, independent of navigation.
   useEffect(() => {
@@ -1757,10 +1771,10 @@ export default function App() {
           setCreatedProjects(current=>current.map(item=>item.id===project.id?{...item,status:'COMPLETE',progress:required.length}:item))
           if(screenRef.current==='workspace'&&activeProjectRef.current===project.id){setScreen('complete');setHistory([])}
         } catch(error){console.error(error);setCreatedMixStates(current=>({...current,[project.id]:'error'}))}
-        finally {if(unpublishedUrl)URL.revokeObjectURL(unpublishedUrl)}
+        finally {if(unpublishedUrl)URL.revokeObjectURL(unpublishedUrl);mixRetryPending.current.delete(project.id)}
       })()
     })
-  },[tracksReady,createdProjects,createdProjectTracks,createdMixes])
+  },[tracksReady,createdProjects,createdProjectTracks,createdMixes,createdMixRetryAttempt])
 
   useEffect(() => {
     const transitioned=previousMixStatus.current==='processing'&&mixStatus==='complete'
@@ -1847,7 +1861,7 @@ export default function App() {
   else if (screen==='song-browser') content=<SongBrowser back={()=>back('collection')} openSong={openSong} songSaves={songSaves} toggleSongSave={toggleSongSave} createdProjects={createdProjects} onCreateProject={startCreateProject}/>
   else if (screen==='create-project') content=<CreateProject key={createProjectSongId || 'song-selection'} back={()=>back(createProjectSongId?'detail':'home')} complete={createProject} initialSongId={createProjectSongId}/>
   else if (screen==='voice') content=<VoiceSetup key={voiceEditMode || "setup"} existing={profile} editMode={voiceEditMode} go={go} back={()=>{setVoiceEditMode(null);back(voiceReturnScreen)}} complete={completeProfile}/>
-  else if (screen==='workspace') content=<Workspace go={go} project={activeProject} song={activeSong} isCreated={Boolean(activeCreatedProject)} ownerPartId={activeCreatedProject?.ownerPartId || joinedPart} findVocal={openFinder} joined={joined} invited={invited} invitedPerson={invitedPerson} candidateAccepted={candidateAccepted} candidateArrivalStatus={candidateArrivalStatus} projectTracks={activeTracks} layers={activeLayers} recordPart={recordPart} projectLiked={activeProjectLiked} toggleProjectLike={toggleActiveProjectLike} openVocalProfile={openVocalProfile} mix={activeMix} mixStatus={activeMixStatus} completionDelayed={delayedProjectIds.includes(activeProject.id)} hasDraft={Boolean(draftKeys[`${activeProject.id}:${activeCreatedProject?.ownerPartId||joinedPart}`])}/>
+  else if (screen==='workspace') content=<Workspace go={go} project={activeProject} song={activeSong} isCreated={Boolean(activeCreatedProject)} ownerPartId={activeCreatedProject?.ownerPartId || joinedPart} findVocal={openFinder} joined={joined} invited={invited} invitedPerson={invitedPerson} candidateAccepted={candidateAccepted} candidateArrivalStatus={candidateArrivalStatus} projectTracks={activeTracks} layers={activeLayers} recordPart={recordPart} projectLiked={activeProjectLiked} toggleProjectLike={toggleActiveProjectLike} openVocalProfile={openVocalProfile} mix={activeMix} mixStatus={activeMixStatus} retryAutoMix={retryAutoMix} completionDelayed={delayedProjectIds.includes(activeProject.id)} hasDraft={Boolean(draftKeys[`${activeProject.id}:${activeCreatedProject?.ownerPartId||joinedPart}`])}/>
   else if (screen==='finder') content=<Finder back={()=>back('workspace')} preferences={finderPreferences[finderContextKey]} updatePreferences={patch=>setFinderPreferences(current=>({...current,[finderContextKey]:{...current[finderContextKey],...patch}}))} invite={activeTracks[finderPartId]||activeFinderPart?.status==='accepted'?null:invite} invitedVocalIds={activeCreatedProject?(activeFinderPart?.invitations||[]).map(item=>item.vocalId):(invited?[invitedVocalId]:[])} part={activeFinderPart} vocalSaves={vocalSaves} toggleVocalSave={toggleVocalSave} openVocalProfile={openVocalProfile} selectedVocalId={selectedMatchVocalId} setSelectedVocalId={setSelectedMatchVocalId}/>
   else if (screen==='vocal-profile') content=<OtherVocalProfile vocal={selectedVocal} back={()=>back('collection')} saved={vocalSaves.some(item=>item.vocalId===selectedVocalId)} toggleSave={toggleVocalSave} sampleUrl={selectedVocal.sampleUrl} sampleDuration={selectedVocal.sampleDuration}/>
   else if (screen==='record') content=<Recorder go={go} submit={submit} onRecordingStart={()=>{touchProjectActivity(activeProject.id);if(!activeCreatedProject)setMainKeyLocked(true);if(activeCreatedProject)setCreatedProjects(current=>current.map(project=>project.id===activeProject.id?{...project,keyLocked:true}:project))}} partId={recordingPart} projectTracks={activeTracks} layers={activeLayers} project={{...activeProject,songTitle:activeSong.title,recordingDuration:activeProject.audioSource?.duration || activeSong.duration.split(":").reduce((total,value)=>total*60+Number(value),0)}} parts={activeParts} onDraftChange={present=>setDraftKeys(current=>({...current,[`${activeProject.id}:${recordingPart}`]:present}))}/>
