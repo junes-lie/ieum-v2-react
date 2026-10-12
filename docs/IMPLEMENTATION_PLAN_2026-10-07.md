@@ -1,3 +1,7 @@
+### R3 로그인 결정 반영 — 2026-10-12
+
+사용자 답변으로 Google 로그인 우선을 확정했다. 기존 Supabase 추천안과 Auth/session 준비를 재사용하며 이메일/Magic Link를 기본으로 구현하지 않는다. 실제 프로젝트 접근·OAuth 설정·로그인 UI·DB/RLS/Storage는 미완료다. R3 다음 순서는 실제 환경 확보 → Google 로그인/콜백/로그아웃/재접속과 서버 사용자 검증 → 두 사용자 권한·동시 제출·파일 복원 검증이다. 탐색/감상 전 로그인 강제, 새 IA 또는 별도 앱은 추가하지 않는다. 이 결정으로 다른 단계의 완료 상태나 capabilities를 변경하지 않는다. 연결 계약의 최신 결정이 과거 로그인 미정 기록을 대체한다.
+
 ### R1 실제 encoded chunk collector 수명 — 2026-10-12
 
 이전 callback이 runtime 포인터 교체 뒤에도 encoded chunk 배열을 보유하는 native 실패를 재현했다. 취소와 Blob 구성 성공 후 collector 자체를 비워 원본 Blob/늦은 callback guard를 보존한다. 실제 cancelled/finalized 배열 해제·새 Take bytes exact와 build/audio 회귀를 통과했다. 추가 종료/오류3조건 복원·single App 회귀도 통과했으며 main 자동배포→production 같은 소유권 QA로 마감하며 PC 전체 RAM 절감량·물리/음악·서비스 완료로 확대하지 않는다. 단계·사용자 데이터와 디자인 보류는 유지하고 상세 증거는 상태 문서에 기록한다.
@@ -218,7 +222,7 @@ R6: 실제 원곡8초에서 Whisper 가사는 exact이나 BPE token이 여러 �
 | --- | --- | --- |
 | 1 / R1 제출 마감 | 기존 Review 직접 제출, 원자적 Track 저장, Draft 정리 결과를 분리. 제출 성공 후 삭제 실패에 원본/제출수/화면을 유지하고 Draft 상태를 허위로 지우지 않음 | 삭제 실패를 주입한 실제 React/격리 IndexedDB 흐름, 기존 정상 2–4 Part 제출·재로드, build 통과 → main 자동배포/production asset 확인. 실기기 마이크·청취는 별도 |
 | 2 / R2 잔여 기능 마감 | 이미 구현된 Finder/Match/Profile/Collection/Setup 복귀·편집 오류·Empty/마감 처리를 코드와 유지 QA에 대조. 확인된 누락/결함만 묶어 수정 | 변경 기능별 정상/실패/복원 QA 및 배포. 검증 완료 경로를 다시 구현하지 않음. 최신 정책 확인이 필요한 분기는 Notion 연결 뒤 진행 |
-| 3 / R3 실제 협업 연결 | 준비된 transport/Auth/Storage를 실제 인증·공유 DB·RLS·제출 transaction에 연결 | 제공자/로그인 정책 확정과 프로젝트 접근 필요. 서로 다른 두 사용자·동시 제출·권한·재접속 증거 없이는 완료 아님. HTTP 보완 미커밋 3파일은 보존하고 현재 앱 묶음에서 제외 |
+| 3 / R3 실제 협업 연결 | 준비된 transport/Auth/Storage를 실제 인증·공유 DB·RLS·제출 transaction에 연결 | Google 로그인 우선 확정. 제공자·프로젝트 접근과 연결 UI 확인 필요. 서로 다른 두 사용자·동시 제출·권한·재접속 증거 없이는 완료 아님. HTTP 보완 미커밋 3파일은 보존하고 현재 앱 묶음에서 제외 |
 | 4 / R4 서비스 기능 | 실제 초대·수락/거절·Part 배정·공유 결과·7일 Push | R3 실제 환경이 선행. 초대/그래픽 상태와 제출수 분리, 앱 종료 중 알림·deep link 검증 |
 | 병행 독립 / R5 | 기존 Identity→Track→Project Record 계약 재사용. 형상·프로필 이미지 디자인은 사용자 보류 유지 | 재현/사용자 구분/Track 특징 유지/2–4 결합/계보·제출 일치 검증. 미정 정책을 확정으로 기록하지 않음 |
 | 병행 연구 / R6 | 현재 모델의 짧은 한 구절로 정확한 한국어 가사·진입·화음 제어 가능성을 먼저 검증 | 통과한 경로만 전체 곡/독립 Part 생성→분리→가사·화음·음역 검사→catalog 연결. 제어 방법의 새 근거 없이 seed/guidance 반복 금지. 실패는 연구 blocker이며 앱 기능 진행을 막지 않음 |

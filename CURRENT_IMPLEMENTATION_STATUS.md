@@ -1,3 +1,7 @@
+### R3 Google 로그인 우선 결정 — 2026-10-12
+
+사용자가 `Google 로그인 우선`으로 답했다. SERVICE_CONNECTION과 기존 구현계획에 반영했다. 확정 범위는 우선 로그인 방식이며 실제 Supabase/Google OAuth 자원·로그인 UI·계정 연결·공유 DB/Storage 성공은 아니다. 기존 서버 session/Auth 준비 코드를 재사용할 계획이고 현재 서비스 미연결/capabilities false를 유지한다. 앱 코드와 보류된 서버3파일은 변경하지 않았다. 과거 로그인 미정 기록은 당시 상태로 보존하며 이 결정이 현재 우선 방식을 대체한다.
+
 ### R1 MediaRecorder callback의 encoded collector 해제 — 2026-10-12
 
 e2036a5f89b9d5f6c59921b634e25565eb057f29 Git Integration7003072099 success/production HTTP200/index-9LEKbVCu.js local/remote SHA8CE231966C9459244639B1D9F34315A6A17745C01ACDE6E1348E62F9C9A651CE exact를 확인했다. production Sample Review 이탈/지연 저장 실패/기존 Profile bytes exact 및 정상 Profile 편집 실패·재시도/성공 handoff/reload/pageerror0 모두 통과했다.

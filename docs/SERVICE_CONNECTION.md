@@ -1,5 +1,25 @@
 # 단일 앱 서비스 연결 계약
 
+## 2026-10-12 로그인 방식 확정 — Google 우선
+
+사용자가 실제 서버 연결 질문에 `Google 로그인 우선`으로 답했다. 준비된 Supabase 구성안의 우선 로그인 방식은 Google로 확정한다. 이메일/Magic Link를 기본 방식으로 추가하지 않는다. 제공자 자원 생성·계정 접근·로그인 UI 배치·실제 OAuth 연결 성공은 이 답변으로 완료 처리하지 않는다.
+
+다음 R3 연결 작업은 실제 Supabase 프로젝트 접근과 Google OAuth 설정 수단을 확보한 뒤 진행한다. Production과 개발 redirect를 구분하고 실제 로그인·콜백·로그아웃·재접속 및 서버 session 검증을 확인한다. 기존 탐색/곡 감상 전에 로그인이나 Voice Profile을 강제하지 않는다. 두 실제 사용자의 권한·공유 DB·Storage 검증 전에는 capabilities를 true로 바꾸지 않는다. 비밀키는 채팅/Git에 기록하지 않는다.
+
+아래 날짜별 기록의 로그인 미정 표현은 당시 상태이며, 현재 우선 방식은 이 결정이 대체한다. 서비스는 아직 미연결이다.
+
+### Google 연결 준비와 검증 순서
+
+2026-10-12 [Supabase Google 공식 문서](https://supabase.com/docs/guides/auth/social-login/auth-google)와 [PKCE 공식 문서](https://supabase.com/docs/guides/auth/sessions/pkce-flow)를 확인했다. 기존 Vite React는 Next.js로 전환하지 않는다. 기존 서버의 `/auth/v1/user` 검증은 유지하고, 브라우저 OAuth는 공식 Supabase SDK를 통한 경로로 준비한다. 임의 JWT 파싱이나 수동 Google token 교환으로 로그인 성공을 만들지 않는다. 아래는 실행 준비안이며 외부 설정 완료 증거가 아니다.
+
+1. 실제 Google Cloud 프로젝트의 OAuth audience/branding과 Web application client를 확인한다. 기본 로그인 scope는 openid/email/profile만 사용하며 Drive·Gmail 접근을 추가하지 않는다. Client Secret은 Supabase Google provider 설정에만 전달하고 앱 bundle/Git/채팅에 넣지 않는다.
+2. Google OAuth의 authorized redirect URI에는 실제 Supabase 프로젝트의 `/auth/v1/callback` URL을 등록한다. 이는 IEUM 앱의 로그인 복귀 주소와 다르다. 실제 project ref 없이 임의 callback을 만들어 등록하지 않는다.
+3. Supabase Site URL은 현재 Production origin `https://ieum-v2-react.vercel.app`을 기준으로 준비하고 앱 복귀 URL을 별도 allow list에 등록한다. 개발/Preview는 실제 사용하는 주소만 구분해 등록한다. 현재 앱은 hash navigation을 사용하므로 code/query 처리와 기존 화면 복귀가 충돌하지 않는지 확인한 뒤 callback 경로를 정한다. Production allow list에 무제한 wildcard를 넣지 않는다.
+4. 공식 SDK의 Google `signInWithOAuth` 및 PKCE code exchange를 기존 앱 session 경계에 연결한다. PKCE verifier가 있는 동일 브라우저에서 교환하며 callback 중복 처리·거절·오류·재접속·로그아웃을 검증한다. 원격 사용자 ID로 전환할 때 기존 시연 Profile/Draft를 자동으로 이관하거나 다른 계정에 노출하지 않는다.
+5. 서로 다른 두 실제 Google 계정으로 서버 `/api/me/session`의 사용자 분리, 만료/잘못된 token 거부, RLS/Storage 권한을 검증한다. mock SDK 성공·OAuth 설정 저장만으로 실제 로그인 완료를 판정하지 않는다. Google provider token은 일반 협업 API에 보내지 않으며 필요한 Supabase session token과 구분한다.
+
+현재 확보되지 않은 실행 수단: Supabase 프로젝트 접근, Google Cloud OAuth client 설정 권한, 실제 provider 설정. 로그인 UI의 최신 제품 명세는 Notion 전용 도구로 확인해야 하며 현재 해당 도구가 노출되지 않아 읽었다고 주장하지 않는다. 기존 React 사용자/session 연결은 위 외부 수단과 명세 확보 후 수행한다.
+
 ## 2026-10-11 R3 실제 서비스 구성안 — 준비 완료, 제공자 미확정
 
 사용자는 기존 서비스가 없으며 구성안을 준비하라고 답했다. 아래는 검토 가능한 추천안이며 계정/서비스 생성·연결 성공·사용자 확정으로 기록하지 않는다. 기존 Vite React와 Vercel Git Integration을 유지한다. 새 앱, 로컬 DB/Docker 상주, 로컬 대형 모델을 추가하지 않는다.
@@ -16,7 +36,7 @@
 | 7일 안내 | DB due 상태 + 인증된 scheduled 함수 + Web Push | 활동/revision·기간별 dedupe, 기존08 badge/03 banner |
 | AI 생성 | 별도 기술 검증 경로 | Auth/DB 서비스를 음악 생성 GPU로 간주하지 않음 |
 
-추천 이유: 인증·Postgres·파일 저장을 한 제공자에 묶어 세 서비스를 따로 구현/연결하는 작업을 줄이고 PC에 서버를 상주시키지 않는다. 비교안은 Neon DB + 별도 Auth + Blob이지만 계정/권한/파일 연계가 늘어난다. 로그인 방식(소셜/이메일)과 연결 UI는 제품 판단이므로 아직 확정하지 않는다. 이메일 Magic Link를 선택하면 기본 메일 발송을 일반 사용자용 SMTP 준비 완료로 간주하지 않는다. [Supabase React/Auth](https://supabase.com/docs/guides/getting-started/tutorials/with-react), [메일 제공 조건](https://supabase.com/docs/guides/auth/auth-smtp).
+추천 이유: 인증·Postgres·파일 저장을 한 제공자에 묶어 세 서비스를 따로 구현/연결하는 작업을 줄이고 PC에 서버를 상주시키지 않는다. 비교안은 Neon DB + 별도 Auth + Blob이지만 계정/권한/파일 연계가 늘어난다. 2026-10-12 사용자 답변으로 Google 로그인 우선은 확정했고 연결 UI는 아직 미정이다. 이메일 Magic Link는 우선 방식으로 선택되지 않았다. 추후 선택할 경우 기본 메일 발송을 일반 사용자용 SMTP 준비 완료로 간주하지 않는다. [Supabase React/Auth](https://supabase.com/docs/guides/getting-started/tutorials/with-react), [메일 제공 조건](https://supabase.com/docs/guides/auth/auth-smtp).
 
 ### 비용·배포 제약
 
@@ -41,7 +61,7 @@ RLS는 모든 사용자 데이터에서 기본 거부하고 본인/Project 권�
 
 ### 실제 연결 실행 순서와 완료 조건
 
-1. 제공자·로그인 방식·계정 접근·무료 quota/운영 범위 확인. 원격 자원 생성은 이 구성안 기준의 승인/실제 접근 수단 확보 후 실행.
+1. Google 로그인 우선 결정을 적용하고 제공자·계정 접근·무료 quota/운영 범위를 확인한다. 원격 자원 생성은 이 구성안 기준의 승인/실제 접근 수단 확보 후 실행.
 2. 기존 repo에 DB migration/RLS·Storage 권한·API를 작성하고 두 실제 사용자 allow/deny/동시성 테스트. 로컬 Docker/PyTorch를 QA 전제로 추가하지 않음.
 3. App 사용자/session 경계와 기존 transport 연결. 시연 로컬 자료를 사용자 원격 Track으로 자동 업로드하지 않음. 기존 Draft·음원·디자인 worktree 보존.
 4. upload/submit/join/invitation transaction→마지막 제출/Mix job→실제 result file 검증을 순차 연결. invalid JWT/다른 사용자/중복 제출/동시 수락/업로드 성공 후 DB 실패에도 원본 보존 확인.
