@@ -430,10 +430,15 @@ export function pauseRecording() {
 
 export function resumeRecording() {
   if (runtime.recorder?.state === 'paused') {
-    runtime.recorder.resume()
+    try {
+      scheduleRecordingGuides(runtime.activeElapsedSec)
+      runtime.recorder.resume()
+    } catch(error) {
+      stopGuides()
+      throw error
+    }
     runtime.activeStartedAt = context().currentTime
     runtime.recordingSegmentActive = true
-    scheduleRecordingGuides(runtime.activeElapsedSec)
   }
 }
 

@@ -11,6 +11,8 @@ try {
    const original=MediaRecorder.prototype[name]
    MediaRecorder.prototype[name]=function(...args){if(window.qaRejectControl===name){window.qaRejectControl=null;throw new DOMException(`QA ${name} refused`,'InvalidStateError')}return original.apply(this,args)}
   }
+  const createGain=AudioContext.prototype.createGain
+  AudioContext.prototype.createGain=function(...args){if(window.qaRejectGuide){window.qaRejectGuide=false;throw new DOMException('QA resumed Guide refused','InvalidStateError')}return createGain.apply(this,args)}
  })
  const page=await context.newPage(),errors=[];page.on('pageerror',error=>errors.push(error.message))
  const url=new URL(process.env.IEUM_QA_URL||'http://127.0.0.1:4187/');url.searchParams.set('design','figma')
@@ -31,6 +33,15 @@ try {
   await page.waitForSelector(`[data-action="record-${name==='pause'?'resume':'pause'}"]`)
   assert.equal(await page.locator('.permission-error').count(),0)
  }
+ await page.locator('[data-action="record-pause"]').click();await page.waitForSelector('[data-action="record-resume"]')
+ await page.evaluate(()=>{window.qaRejectGuide=true})
+ await page.locator('[data-action="record-resume"]').click();await page.waitForTimeout(100)
+ assert.equal(await page.evaluate(()=>window.__IEUM_V2__.audioRuntime.recorder.state),'paused','Guide failure must leave the actual recorder paused')
+ assert.equal(await page.evaluate(()=>window.__IEUM_V2__.audioRuntime.recordingSegmentActive),false)
+ assert.equal(await page.evaluate(()=>window.__IEUM_V2__.audioRuntime.playback.length),0)
+ assert.equal(await page.locator('[data-action="record-resume"]').count(),1)
+ assert.deepEqual(errors,[])
+ await page.locator('[data-action="record-resume"]').click();await page.waitForSelector('[data-action="record-pause"]')
  await page.waitForTimeout(500);await page.locator('[data-action="record-stop"]').click();await page.waitForSelector('[data-action="record-submit"]')
  assert.ok(await page.locator('.record-review audio').getAttribute('src'));assert.deepEqual(errors,[])
  console.log('PASS rejected pause/resume preserve Take, segment and Guide state; same-button retry and playable Review. Synthetic microphone only.')
