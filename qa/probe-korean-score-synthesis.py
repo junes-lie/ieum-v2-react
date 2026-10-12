@@ -4,7 +4,8 @@ The caller must apply live RAM monitoring; this script does not manage other pro
 """
 import argparse,hashlib,json,math,sys,time
 from pathlib import Path
-p=argparse.ArgumentParser();p.add_argument('--runtime-dir',type=Path,required=True);p.add_argument('--preflight',action='store_true');p.add_argument('--output-dir',type=Path);p.add_argument('--score-spec',type=Path);p.add_argument('--generation-stage',choices=['diffusion','linear'],default='diffusion');a=p.parse_args()
+p=argparse.ArgumentParser();p.add_argument('--runtime-dir',type=Path,required=True);p.add_argument('--preflight',action='store_true');p.add_argument('--output-dir',type=Path);p.add_argument('--score-spec',type=Path);p.add_argument('--generation-stage',choices=['diffusion','linear'],default='diffusion');p.add_argument('--sampler',choices=['native','reference-ddim-diagnostic'],default='native');a=p.parse_args()
+assert a.sampler=='native' or a.generation_stage=='diffusion','Reference diagnostic requires diffusion stage'
 root=a.runtime_dir.resolve()
 syllables=['<X>','오','늘','도','함','께','해','요','<X>']
 notes=[0,72,74,76,79,77,76,72,0]
@@ -97,6 +98,10 @@ start=time.perf_counter()
 with torch.inference_mode():
  if a.generation_stage=='linear':
   _,mel=model.encoder(**{key:value for key,value in inputs.items() if key!='ddim_steps'})
+ elif a.sampler=='reference-ddim-diagnostic':
+  from ddim_reference_diagnostic import sample_reference_ddim
+  encodings,linear_prediction=model.encoder(**{key:value for key,value in inputs.items() if key!='ddim_steps'})
+  mel=sample_reference_ddim(model.diffusion,torch.cat([encodings,linear_prediction],dim=1),50)
  else:
   _,mel,_,_=model(**inputs)
  ranges=yaml.safe_load((root/'YAML/Mel_Range_Info.yaml').read_text(encoding='utf-8'))['CSD']
@@ -116,5 +121,7 @@ report.update(lyrics=''.join(s for s in syllables if s!='<X>'),scoreSpecSha256=f
 report['score'].update(noteCurves=note_curves,expandedNoteEvents=expanded_note_events,noteCurveScope='Diagnostic frame-level note embedding input; no output pitch shift or original-song score approval')
 report['score'].update(purpose='Explicit diagnostic score synthesis; no original melody or harmony approval',inputPurpose=input_purpose)
 report.update(generationStage=a.generation_stage,steps=50 if a.generation_stage=='diffusion' else None,diffusionExecuted=a.generation_stage=='diffusion')
+report.update(sampler=a.sampler,samplerDiagnosticSha256=file_hash(Path(__file__).with_name('ddim_reference_diagnostic.py')) if a.sampler!='native' else None)
+if a.sampler!='native':report['limitations'].append('Reference DDIM diagnostic differs from pinned model native sampler; no quality or compatibility approval')
 if a.generation_stage=='linear':report['limitations'].append('Intermediate native linear prediction diagnostic; not approved as a quality replacement for diffusion')
 (a.output_dir/'song-generation-report.json').write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding='utf-8');print(json.dumps(report,ensure_ascii=False),flush=True)
