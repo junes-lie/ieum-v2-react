@@ -1,3 +1,10 @@
+### R6 reference DDIM 실제 가창 대조 — 2026-10-12
+
+선택 sampler4d63697의 실제 휴지 대조 뒤 원래 upper 가사/음표/길이 입력을 exact 대조해 같은7음절 score의 reference DDIM을1회 실행했다. 기본 native·seed·checkpoint·vocoder·출력 shift/gain·gate는 유지한다. 신규 PCM SHAcd56b33cbb42e498302363e4c0335c43bc13a6d0ca68eade793970e55320847e,5.456708333초/peak.82087505/RMS.17424379/inference1.2275초. pYIN 같은.75/80ms 조건의7음절 median58.8/61.8/65.9/62.1/62/58.7/59.1·유효23/14/53/31/26/17/30frames, 최대.3반음이었다. native의 최대.1반음보다 개선됐다고 표시하지 않는다. rest RMS.02090355/.01359291·유효0frames는 기존 native .035009/.034862보다 낮으나 휴지 무음/품질 통과가 아니다.
+
+고정 Whisper-small 가사는 천천히걸어가요 exact/similarity1로 관측했다. ASR만으로 진입/지속음/화음/권리·청취와 Part 등록을 승인하지 않는다. 생성/측정/ASR 순차 wall7.291/7.318/19.529초, 모두exit0/resourceStopped=false. free RAM최소7.475/8.541/7.179GiB·owned최대1.262/.238/1.683GiB로 guard조건을 유지했다. 실제 입력·원본/측정/ASR/자원 기록은 기존 runtime의 별도 경로에 보존한다. 앱/디자인/기존 음원은 변경하지 않는다.
+
+다음은 이 계산 차이가 기존 저음 실패와 음절/휴지 길이에 미치는 영향을 고정 원래 입력으로 대조하는 기술 검증이며, 단계 R6 전체 gate를 축소하거나 이 후보를 catalog에 넣지 않는다. 동일 입력/버전 재현·Part별 전체 음악/2–4결합·실기기/서비스/Identity gate도 남는다. 직전4d63697은 Git Integration success/main기록/Production bundle18500D0C0A3FEB68E35D27E60D0BB871BB105E26DBA2E075582D70305A5CBAE4 exact로 마감했다. 이번 실제 연구 기록만 기존 문서에 남겨 main 자동배포하고 Production 앱 보존을 확인한다. 사용자 서버3파일 제외.
 ### R6 선택적 reference DDIM 진단 — 2026-10-12
 
 고정 DiffSingerKR DDIM은 denoiser에 실제 schedule timestep 대신0–49 index를 넘기고 방향 항 sqrt가 없으며 alpha_prev도 이전 선택 schedule이 아닌 인접 training step을 사용한다. [CompVis 원본 DDIM](https://github.com/CompVis/latent-diffusion/blob/main/ldm/models/diffusion/ddim.py)의 실제 timestep/방향 sqrt/선택 schedule 이전 alpha를 보존하는 선택적 eta0 진단을 유지 QA에 추가했다. 기본 native와 runtime의 고정 모델 파일은 수정하지 않으며 default/linear 경로를 그대로 둔다. 독립 scalar equation/실제 timestep 순서/previous alpha 수치 QA 통과. 실제 단독 rest input/seed/checkpoint/vocoder를 유지한 신규 경로1회로 비교했다.
