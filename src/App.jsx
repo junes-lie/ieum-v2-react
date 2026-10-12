@@ -913,7 +913,7 @@ function Workspace({ go, project = PROJECT, song, isCreated = false, ownerPartId
     const track = projectTracks[part.id]
     if (track) return {...part, participantId:track.participantId || personFromName(track.participant)?.id, participant:track.participant, status:'submitted', duration:fmt(track.duration), demo:track.demo, disclosure:track.disclosure}
     const pendingInvites = (part.invitations||[]).filter(invitation=>invitation.status==='sent')
-    if (pendingInvites.length && !part.participantId) return {...part,participant:`${pendingInvites.length}명 초대`,status:'invited',invitationStatus:'sent'}
+    if (pendingInvites.length && !part.participantId) return {...part,participant:null,status:'open',invitationStatus:'sent'}
     if (isCreated && part.id === ownerPartId) return {...part,participantId:CURRENT_USER_ID,participant:'JISUN',status:'ready'}
     if (!isCreated && part.id === ownerPartId && joined) return {...part,participantId:CURRENT_USER_ID,participant:'JISUN',status:'ready'}
     if (part.id === 'bass' && candidateAccepted) return {...part,participantId:invitedPerson.id,participant:invitedPerson.name,status:'accepted'}
@@ -967,7 +967,7 @@ function MatchDetail({ vocal, back, openProfile, invite, invitedVocalIds, part, 
       <section className="reason-block"><h2>현재 프로젝트에 맞는 이유</h2><p>{reason}</p><div className="reason-row"><span>Range</span><b>{fit.eligible?"요구 음역 충족":"요구 음역 확인 필요"} · {partName} 기준</b></div><div className="reason-row"><span>Timbre</span><b>실제 음색 비교 데이터 대기</b></div><div className="reason-row"><span>Role</span><b>{(vocal.roles||[]).join(" · ")}</b></div><div className="reason-row"><span>Taste</span><b>{(vocal.genres||[]).join(' · ')}</b></div><small>후보 프로필은 시연용 샘플 데이터입니다. 실제 사용자 측정 결과나 실력 평가가 아닙니다.</small></section>
       <section className="compatibility compact"><h2>사람 간 궁합은 프로필에서 확인</h2><p>프로젝트 적합성과 `나 ↔ {vocal.name}`의 궁합은 서로 다른 입력과 화면을 사용합니다.</p><button className="secondary" onClick={()=>openProfile(vocal.id)}>나와의 보컬 궁합 보기</button></section>
       <section className="reason-block" data-match-team><h2>현재 참여자와의 조합</h2>{team.map(member=>{const person=member.participantId===CURRENT_USER_ID?profile:PERSON_BY_ID[member.participantId];return <div className="reason-row" key={member.id}><span>{member.name} · {member.participant || PERSON_BY_ID[member.participantId]?.name || '참여자'}</span><b>{person?.range || '음역 미등록'} · {(person?.roles || []).join(' · ') || '역할 미등록'}</b></div>})}<p>후보 {vocal.name} · {vocal.range} · {(vocal.roles || []).join(' · ')}</p><small>등록된 음역·역할을 함께 확인합니다. 실제 Team 음색 비교 데이터는 아직 준비되지 않았어요.</small></section>
-      {invite && <button className="primary sticky-cta" data-action="invite" disabled={invited} onClick={() => invite(vocal)}>{invited?`${partName} 초대 보냄 · 수락 대기`:`${partName} Part 초대`}</button>}
+      {invite && <button className="primary sticky-cta" data-action="invite" disabled={invited || !fit.eligible} onClick={() => invite(vocal)}>{invited?`${partName} 초대 보냄 · 수락 대기`:`${partName} Part 초대`}</button>}
     </main>
   </div>
 }
@@ -1490,7 +1490,9 @@ export default function App() {
   const [vocalSaves,setVocalSaves] = useState(persisted.vocalSaves)
   const [songSaves,setSongSaves] = useState(persisted.songSaves)
   const [createdProjects,setCreatedProjects] = useState(()=>persisted.createdProjects.map(project=>{
-    if (project.ownerPartId) return project
+    if (project.ownerPartId) return {...project,parts:project.parts?.map(part=>
+      part.status==='invited'&&!part.participantId&&!part.participant&&(part.invitations || []).some(item=>item.status==='sent')
+        ? {...part,status:'open'} : part)}
     const parts = project.parts || PART_CATALOG.slice(0,project.partCount).map(part=>({...part,participantId:null,participant:null,status:'open',duration:null}))
     const owner = parts.find(part=>part.id===USER_PART_ID) || parts[0]
     return {...project,ownerPartId:owner.id,parts:parts.map(part=>part.id===owner.id?{...part,participantId:CURRENT_USER_ID,participant:'JISUN',status:'ready'}:part)}
@@ -1555,6 +1557,10 @@ export default function App() {
   const activeMixStatus=activeCreatedProject?(createdMixStates[activeProject.id] || 'idle'):mixStatus
   const activeProjectLiked = projectLikes.some(entry=>entry.projectId===activeProject.id)
   const activeFinderPart = activeParts.find(part=>part.id===finderPartId) || activeParts.find(part=>!part.participantId) || activeParts[0]
+  const canSendInvite=Boolean(activeCreatedProject?activeParts.some(part=>part.participantId===CURRENT_USER_ID):joined) &&
+    Boolean(activeFinderPart) && !activeFinderPart.participantId && !activeTracks[activeFinderPart.id] &&
+    ['open','recruiting','invited'].includes(activeFinderPart.status) &&
+    Boolean(activeCreatedProject || (activeFinderPart.id!==joinedPart && !candidateAccepted))
   const finderContextKey=JSON.stringify([activeProject.id,activeFinderPart?.id])
   const touchProjectActivity = projectId => {
     setProjectActivity(current=>({...current,[projectId]:new Date().toISOString()}))
@@ -1619,15 +1625,18 @@ export default function App() {
   const join = partId => { const part=PARTS.find(item=>item.id===partId);if(!part || projectTracks[partId] || part.participantId || !evaluatePartFit({rangeData:profile?.rangeData,part}).eligible)return; setJoinedPart(partId);setActiveCreatedProjectId(null); setJoined(true); touchProjectActivity(PROJECT_ID); setScreen('workspace'); setHistory([]) }
   const openFinder = partId => { if (!partId) return; setFinderPartId(partId); setSelectedMatchVocalId(null); go('finder') }
   const invite = vocal => {
+    const candidate=PERSON_BY_ID[vocal?.id]
+    if(!canSendInvite || !candidate || candidate.isSelf || !evaluatePartFit({rangeData:candidate,part:activeFinderPart}).eligible)return
+    if(activeCreatedProject?(activeFinderPart.invitations || []).some(item=>item.vocalId===candidate.id&&item.status==='sent'):(invited&&invitedVocalId===candidate.id))return
     touchProjectActivity(activeCreatedProject?.id || PROJECT_ID)
     if (activeCreatedProject) {
       const projectId=activeCreatedProject.id
       const partId=finderPartId
       setCreatedProjects(current=>current.map(project=>project.id===projectId?{...project,parts:(project.parts||[]).map(part=>{
-        if(part.id!==partId) return part
+        if(part.id!==partId || part.participantId || !['open','recruiting','invited'].includes(part.status)) return part
         const invitations=part.invitations||[]
         if(invitations.some(item=>item.vocalId===vocal.id)) return part
-        return {...part,status:'invited',invitationStatus:'sent',invitations:[...invitations,{vocalId:vocal.id,vocalName:vocal.name,status:'sent',sentAt:new Date().toISOString()}]}
+        return {...part,status:'open',invitationStatus:'sent',invitations:[...invitations,{vocalId:vocal.id,vocalName:vocal.name,status:'sent',sentAt:new Date().toISOString()}]}
       })}:project))
     } else {
       setInvitedVocalId(vocal?.id || 'luna'); setInvited(true)
@@ -1902,7 +1911,7 @@ export default function App() {
   else if (screen==='create-project') content=<CreateProject profile={profile} draft={createProjectDrafts.current[createDraftKey]} rememberDraft={rememberCreateProjectDraft} setupVoice={()=>go('voice')} key={createDraftKey} back={()=>back(createProjectSongId?'detail':'home')} complete={createProject} initialSongId={createProjectSongId}/>
   else if (screen==='voice') content=<VoiceSetup key={voiceEditMode || "setup"} existing={profile} editMode={voiceEditMode} go={go} back={()=>{setVoiceEditMode(null);back(voiceReturnScreen)}} complete={completeProfile}/>
   else if (screen==='workspace') content=<Workspace go={go} project={activeProject} song={activeSong} isCreated={Boolean(activeCreatedProject)} ownerPartId={activeCreatedProject?.ownerPartId || joinedPart} findVocal={openFinder} joined={joined} invited={invited} invitedPerson={invitedPerson} candidateAccepted={candidateAccepted} candidateArrivalStatus={candidateArrivalStatus} projectTracks={activeTracks} layers={activeLayers} recordPart={recordPart} projectLiked={activeProjectLiked} toggleProjectLike={toggleActiveProjectLike} openVocalProfile={openVocalProfile} mix={activeMix} mixStatus={activeMixStatus} retryAutoMix={retryAutoMix} completionDelayed={delayedProjectIds.includes(activeProject.id)} hasDraft={Boolean(draftKeys[`${activeProject.id}:${activeCreatedProject?.ownerPartId||joinedPart}`])}/>
-  else if (screen==='finder') content=<Finder project={activeProject} song={activeSong} tracks={activeTracks} profile={profile} back={()=>back('workspace')} preferences={finderPreferences[finderContextKey]} updatePreferences={patch=>setFinderPreferences(current=>({...current,[finderContextKey]:{...current[finderContextKey],...patch}}))} invite={activeTracks[finderPartId]||activeFinderPart?.status==='accepted'?null:invite} invitedVocalIds={activeCreatedProject?(activeFinderPart?.invitations||[]).map(item=>item.vocalId):(invited?[invitedVocalId]:[])} part={activeFinderPart} vocalSaves={vocalSaves} toggleVocalSave={toggleVocalSave} openVocalProfile={openVocalProfile} selectedVocalId={selectedMatchVocalId} setSelectedVocalId={setSelectedMatchVocalId}/>
+  else if (screen==='finder') content=<Finder project={activeProject} song={activeSong} tracks={activeTracks} profile={profile} back={()=>back('workspace')} preferences={finderPreferences[finderContextKey]} updatePreferences={patch=>setFinderPreferences(current=>({...current,[finderContextKey]:{...current[finderContextKey],...patch}}))} invite={canSendInvite?invite:null} invitedVocalIds={activeCreatedProject?(activeFinderPart?.invitations||[]).map(item=>item.vocalId):(invited?[invitedVocalId]:[])} part={activeFinderPart} vocalSaves={vocalSaves} toggleVocalSave={toggleVocalSave} openVocalProfile={openVocalProfile} selectedVocalId={selectedMatchVocalId} setSelectedVocalId={setSelectedMatchVocalId}/>
   else if (screen==='vocal-profile') content=<OtherVocalProfile profile={profile} setupVoice={()=>go('voice')} vocal={selectedVocal} back={()=>back('collection')} saved={vocalSaves.some(item=>item.vocalId===selectedVocalId)} toggleSave={toggleVocalSave} sampleUrl={selectedVocal.sampleUrl} sampleDuration={selectedVocal.sampleDuration}/>
   else if (screen==='record') content=<Recorder go={go} submit={submit} onRecordingStart={()=>{touchProjectActivity(activeProject.id);if(!activeCreatedProject)setMainKeyLocked(true);if(activeCreatedProject)setCreatedProjects(current=>current.map(project=>project.id===activeProject.id?{...project,keyLocked:true}:project))}} partId={recordingPart} projectTracks={activeTracks} layers={activeLayers} project={{...activeProject,songTitle:activeSong.title,recordingDuration:activeProject.audioSource?.duration || activeSong.duration.split(":").reduce((total,value)=>total*60+Number(value),0)}} parts={activeParts} onDraftChange={present=>setDraftKeys(current=>({...current,[`${activeProject.id}:${recordingPart}`]:present}))}/>
   else if (screen==='complete') content=<Complete go={go} project={activeProject} song={activeSong} mix={activeMix} layers={activeLayers} projectTracks={activeTracks} projectLiked={activeProjectLiked} toggleProjectLike={toggleActiveProjectLike} openVocalProfile={openVocalProfile}/>

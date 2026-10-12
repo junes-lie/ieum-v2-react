@@ -1,4 +1,14 @@
+## 2026-10-12 R2 초대 대기와 OPEN 자리 분리
+
+관련 최신 로컬 Source: PRD20(후보는 수락 전 Participant가 아님·수락 전 OPEN/모집 유지), 화면명세05 M03(참여 확정·Part OPEN·후보 Gate), 유저플로우2D. 사용자 승인 최신261009 export를 사용했으며 Notion 온라인/figma-desktop 노출0개다. 디자인 변경 없음. 직전 eecd2db는 Production/선택·편집·개설 QA 완료로 재수행하지 않았다.
+
+새 개설 Project의 초대 전송은 Part를 invited로 닫지 않고 OPEN과 invitationStatus=sent를 분리한다. Workspace에서 초대 인원을 Participant로 표시하지 않는다. 이전 invited/미배정/sent 기록은 초대 목록·Seed·자리 ID를 유지하며 OPEN으로 복원한다. 참여 확정된 사용자만 전송 가능, 현재 Part의 배정/제출·후보 Gate·중복 여부를 다시 확인한다. Owner 전용 제한을 추가하지 않는다.
+
+build39modules/520.04KB 통과(기존500KB 경고). native 초대 QA: 동일시점2click→초대1,다른후보→2개·자리OPEN/미배정,Home적합OPEN수 불변·reload,legacy 초대 보존,stale 후보 Gate 이탈 disabled,accepted 자리 전송 불가·상태 보존,미참여자 CTA없음. 기존 Finder 정렬/이력과 Node 여정 통과. UI runtime 오류 없음. 실제 서버 인증/초대수신·수락경쟁/Push·자동실사용 제출은 미완료이며 로컬 시연을 그 증거로 사용하지 않는다. Production/Git Integration 마감은 실제 결과 후 기록한다. 사용자 서버3파일 보존/제외.
+
 ## 2026-10-12 R2 보컬 성향 선택과 새 개설 준비 묶음
+
+마감 증거: eecd2dba2d5f6c6d51265483fced8b9812a0f40b main/origin0/0. Vercel Git Integration Production7011965350 success,HTTP200/index-D3BZwd-V.js SHA256 FF1D5F69D5233089C5260FF832BF26A66064A8661526D9D21AE73C19C36E0D8C local exact. Production 첫 선택/실패/재시도/reload·개설 Profile/Setup/등록범위/이력·2/3/4 Part·곡별 Back/Forward 통과. 합성 마이크·격리 fixture이며 물리/청취/실제 곡-Key Complete Gate 미완료. 사용자 서버3파일 보존.
 
 사용자 추가 지시: 선호 역할·장르·음악 취향을 고르게 한다. 기존 VP06 완료/저장과10 편집에 복수 선택을 연결하며 새 화면이나 별도 Setup 과제를 만들지 않는다. 기존 카탈로그 항목/직접 입력을 재사용하고 미선택을 고정 취향으로 대체하지 않는다. 저장은 음역·대표 Sample·선택 취향의 atomic 성공 이후에만 반영한다. 기존 Finder의 등록 취향 비교를 그대로 사용한다.
 
