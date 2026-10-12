@@ -1,3 +1,11 @@
+## 2026-10-12 R2 Profile의 미등록·미분석 값 정리
+
+직전 acc20b816afa84f4abf38fd818c3abcd573d3f15는 main/origin0/0·Vercel Git Integration Production7012193314 success,HTTP200/index-C6HVSKUB.js SHA256 AD1FBC74CDBF18F500A9C096FE8F9FB7325E4A64B231EC7B65EA14106C7A6138 exact·Production 초대 QA 통과로 마감했다. 실제 사용자 수락/협업 성공은 아니다.
+
+현재 R2 Data Confidence(PRD9/개인 프로필) 잔여: 저장된 preferences record가 없는 기존 Profile을 불러올 때 고정 역할/Indie/Ballad/Acoustic을 개인 선택값처럼 넣던 fallback을 제거한다. 실제 저장된 사용자의 값은 그대로 복원한다. 음색 분석이 없는 신규·복원 Profile에 Warm middle을 배정하지 않고 null/음색 분석 대기로 표시한다. 미선택3필드는 미선택으로 표시하며 실제 장르/음악 취향이 없으면 곡 취향 정렬을 비활성하고 기존 프로필 편집을 안내한다. 측정 음역/대표 Sample·원본·revision/참여/제출·Identity 정책은 변경하지 않는다.
+
+native QA는 legacy값 없음·허위음색 없음·미선택/정렬disabled,명시선택/재접속·동일 Sample SHA/기존 음역·미참여/기존 Track2 보존을 확인했다. 기존 Finder/첫 Setup QA와 build/Node bootstrap는 관련 영향 범위로 검증 후 같은 Git Integration 마감한다. 음색 분석·실제 곡/Key 자료·R3/R4 실서비스·R5 승인 형상·R6 실제 음악·실기기/디자인 인수는 미완료다.19:45:20KST total15.95/free2.48GiB·Python 없음,대형 AI는 실행하지 않았다.
+
 ## 2026-10-12 R2 초대 대기와 OPEN 자리 분리
 
 관련 최신 로컬 Source: PRD20(후보는 수락 전 Participant가 아님·수락 전 OPEN/모집 유지), 화면명세05 M03(참여 확정·Part OPEN·후보 Gate), 유저플로우2D. 사용자 승인 최신261009 export를 사용했으며 Notion 온라인/figma-desktop 노출0개다. 디자인 변경 없음. 직전 eecd2db는 Production/선택·편집·개설 QA 완료로 재수행하지 않았다.
