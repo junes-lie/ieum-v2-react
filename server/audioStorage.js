@@ -1,5 +1,9 @@
 import { createHash } from 'node:crypto'
+import { mkdtemp,open,rm } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import { join,resolve,sep } from 'node:path'
 import { ServiceError } from '../src/projectService.js'
+import { decodeOriginalAudio } from './audioDecoder.js'
 
 // Optional proposal adapter. Never imported by the browser or exposed as an
 // unrestricted signing endpoint. The caller must verify user/Part/intent first.
@@ -29,24 +33,9 @@ export function createSupabaseAudioStorage({ env = process.env, fetchImpl = glob
     try { result = await response.json() } catch { throw new ServiceError('파일 저장 응답을 확인할 수 없어요.', { code: 'INVALID_STORAGE_RESPONSE' }) }
     if (result.id !== bucket || result.public !== false) throw new ServiceError('원본 파일용 비공개 저장소를 확인해야 해요.', { status: 503, code: 'PRIVATE_STORAGE_REQUIRED' })
   }
-  return {
-    async createSignedUpload(objectId) {
+  const verifyOriginal = async (objectId, expected, writeChunk) => {
       const objectPath = path(objectId)
-      await assertPrivateBucket()
-      const response = await request(`object/upload/sign/${objectPath}`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-upsert': 'false' }, body: '{}' })
-      let result
-      try { result = await response.json() } catch { throw new ServiceError('파일 저장 응답을 확인할 수 없어요.', { code: 'INVALID_STORAGE_RESPONSE' }) }
-      let url
-      try {
-        if (typeof result.url !== 'string' || !result.url.startsWith(`/object/upload/sign/${objectPath}?`)) throw new Error('invalid path')
-        url = new URL(`${origin.origin}/storage/v1${result.url}`)
-        if (url.pathname !== `/storage/v1/object/upload/sign/${objectPath}` || url.hash || url.searchParams.getAll('token').length !== 1 || !url.searchParams.get('token')) throw new Error('invalid token')
-      } catch { throw new ServiceError('파일 저장 응답을 확인할 수 없어요.', { code: 'INVALID_STORAGE_RESPONSE' }) }
-      return { signedUploadUrl: url.href }
-    },
-    async verifyOriginal(objectId, expected) {
-      const objectPath = path(objectId)
-      if (!expected || !Number.isSafeInteger(expected.size) || expected.size <= 0 || typeof expected.contentType !== 'string' || !expected.contentType.startsWith('audio/') || !/^[a-f0-9]{64}$/i.test(expected.sha256 || '')) throw new ServiceError('원본 파일 검증 정보를 확인해야 해요.', { code: 'INVALID_UPLOAD_FILE' })
+      if (!expected || !Number.isSafeInteger(expected.size) || expected.size <= 0 || typeof expected.contentType !== 'string' || !expected.contentType.startsWith('audio/') || typeof expected.sha256!=='string' || !/^[a-f0-9]{64}$/i.test(expected.sha256)) throw new ServiceError('원본 파일 검증 정보를 확인해야 해요.', { code: 'INVALID_UPLOAD_FILE' })
       await assertPrivateBucket()
       const response = await request(`object/${objectPath}`, { method: 'GET' })
       const contentType = response.headers.get('content-type')?.split(';')[0].trim().toLowerCase()
@@ -65,6 +54,7 @@ export function createSupabaseAudioStorage({ env = process.env, fetchImpl = glob
           size += value.byteLength
           if (size > expected.size) throw new ServiceError('업로드한 원본 파일이 일치하지 않아요.', { status: 409, code: 'UPLOAD_OBJECT_MISMATCH' })
           hash.update(value)
+          if(writeChunk)await writeChunk(value)
         }
         const sha256 = hash.digest('hex')
         if (size !== expected.size || sha256 !== expected.sha256.toLowerCase()) throw new ServiceError('업로드한 원본 파일이 일치하지 않아요.', { status: 409, code: 'UPLOAD_OBJECT_MISMATCH' })
@@ -74,6 +64,41 @@ export function createSupabaseAudioStorage({ env = process.env, fetchImpl = glob
         if (error?.code === 'UPLOAD_OBJECT_MISMATCH') throw error
         throw new ServiceError('원본 파일 검증을 완료하지 못했어요.', { status: 503, code: 'STORAGE_UNAVAILABLE' })
       } finally { reader.releaseLock() }
+  }
+  return {
+    async createSignedUpload(objectId) {
+      const objectPath = path(objectId)
+      await assertPrivateBucket()
+      const response = await request(`object/upload/sign/${objectPath}`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-upsert': 'false' }, body: '{}' })
+      let result
+      try { result = await response.json() } catch { throw new ServiceError('파일 저장 응답을 확인할 수 없어요.', { code: 'INVALID_STORAGE_RESPONSE' }) }
+      let url
+      try {
+        if (typeof result.url !== 'string' || !result.url.startsWith(`/object/upload/sign/${objectPath}?`)) throw new Error('invalid path')
+        url = new URL(`${origin.origin}/storage/v1${result.url}`)
+        if (url.pathname !== `/storage/v1/object/upload/sign/${objectPath}` || url.hash || url.searchParams.getAll('token').length !== 1 || !url.searchParams.get('token')) throw new Error('invalid token')
+      } catch { throw new ServiceError('파일 저장 응답을 확인할 수 없어요.', { code: 'INVALID_STORAGE_RESPONSE' }) }
+      return { signedUploadUrl: url.href }
+    },
+    verifyOriginal: (objectId,expected) => verifyOriginal(objectId,expected),
+    async verifyOriginalAudio(objectId,expected,decoderOptions) {
+      // A private staging copy allows seeking MP4 without retaining an entire
+      // recording in RAM. Only hash-matched bytes are passed to the decoder.
+      const directory=await mkdtemp(join(tmpdir(),'ieum-original-verification-'))
+      const filePath=join(directory,'original'),parent=resolve(tmpdir())+sep
+      let file
+      try {
+        file=await open(filePath,'wx',0o600)
+        const verified=await verifyOriginal(objectId,expected,chunk=>file.writeFile(chunk))
+        await file.close();file=null
+        const media=await decodeOriginalAudio(filePath,{...decoderOptions,contentType:verified.contentType})
+        return {...verified,...media}
+      } finally {
+        await file?.close()
+        const target=resolve(directory)
+        if(target.startsWith(parent) && target.split(sep).at(-1).startsWith('ieum-original-verification-'))
+          await rm(target,{recursive:true,force:true}) // Only the staging copy created by this invocation.
+      }
     }
   }
 }

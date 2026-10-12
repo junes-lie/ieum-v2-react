@@ -1,5 +1,15 @@
 # 단일 앱 서비스 연결 계약
 
+## 확정된 서비스 결정과 접근 대기
+
+사용자 답변은 기존 서비스 없음→구성안 준비, Google 로그인 우선이다. 같은 계정·프로젝트 존재 여부나 접근 요청을 반복하지 않는다. 실제 Supabase/Google OAuth 연결 수단은 외부 의존성으로 대기하며 새 정보가 제공되었을 때만 확인한다. 접근 없이 가능한 기존 DB/API 준비를 진행하고 실제 계정 생성·서비스 연결 완료와 구분한다. 비용0원 및 완료 보장 없는 무료 크레딧 시험 금지도 유지한다.
+
+## 원본 오디오 해독 경계
+
+verifyOriginalAudio는 기존 private Storage 원본의 byte/hash 검증을 재사용하고 서버 TEMP 사본을 실제 decoder로 해독한다. decodeOriginalAudio의 executable/filePath는 신뢰된 서버 설정/사본 경로이며 브라우저 입력 URL이나 실행 명령을 허용하지 않는다. WebM DocType/MP4 ftyp/WAV header와 실제 오디오 해독을 확인한다. PCM frame을 세며 RAM에 누적하지 않고 decoder stdout/stderr를 사용자에게 노출하지 않는다. [FFmpeg의 stream 선택·해독 문서](https://ffmpeg.org/ffmpeg.html)를 참고했다.
+
+현재는 로컬 FFmpeg7.1로 기술 검증한 worker helper이며 Vercel용 binary/runtime은 준비되지 않았다. Windows 로컬 executable을 배포 설정이나 repository 자산으로 옮기지 않는다. maxDurationSeconds는 호출자가 확정 원본/서비스 한도에 맞춰 제공해야 하는 기술 제한으로 신규 녹음 길이 정책을 의미하지 않는다. 반환 analysisVersion=decoded-pcm-v1은 길이 계산 규칙 버전이며 실제 decoder binary/version·hash를 보존하는 receipt와 별개다. 제출 verified_at/duration을 쓰거나 capability를 true로 만들지 않는다. 실제 서버 runtime과 trusted receipt 연결 후 원본 재검증·권한·실제 제출을 검증해야 한다.
+
 ## 2026-10-13 R3 권한 확인 후 원본 업로드 준비
 
 기존 project-lifecycle Function의 POST `projects/:id/parts/:partId/upload-intents`에 `{size,sha256,contentType}`와 Idempotency-Key를 연결했다. 인증·DB/Storage 설정 확인→배정된 본인 Part/첫 녹음 잠금의 SQL 확인→opaque 원본 ID 할당→비공개 Storage 원본 검사→없으면 no-upsert 서명 URL을 준비한다. API bearer는 Auth/본인 RPC에만 전달하고 Storage는 server-only secret을 사용한다. 준비 성공은 Track·Mix·Layer 생성이 아니다. 기존 transferAndSubmitTrack/signed uploader 계약을 재사용하며 App에 아직 연결하지 않는다.

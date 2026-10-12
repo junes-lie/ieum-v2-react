@@ -1,4 +1,16 @@
+## 2026-10-13 R3 원본 오디오 해독·길이 검증 준비
+
+server/audioDecoder.js와 기존 private Storage의 verifyOriginalAudio를 연결했다. 원본 stream의 size/hash/MIME 검사→이번 호출만의 private TEMP 사본→실제 FFmpeg 해독→PCM frame 수 기반 duration 순서이며 hash 불일치 시 해독하지 않는다. PCM을 메모리에 모으지 않고 한 thread로 처리하며 시간/해독 길이 한도를 넘으면 실패 처리한다. 생성한 TEMP 사본만 정리하고 Storage 원본은 변경하지 않는다. HTTP 제출/API 활성화·DB verified_at/verified_duration 쓰기는 아직 연결하지 않았다.
+
+기존 로컬 imageio_ffmpeg의 FFmpeg7.1 실행 파일로 실제 WebM/Opus·AAC MP4·fragmented MP4·PCM WAV를 검증했다. 합성0.5초 원본의 해독 길이는 각각0.5/0.512/0.533333/0.5초로 확인했다. 원본 hash 보존·형식 불일치·잘못된 오디오·실행 파일 없음·과도한 해독 길이 거부 및 injected Storage stream→실제 해독 결과 연결을 통과했다. 기존 Storage/업로드 API QA와 production build40modules/525.39KB도 통과했다. 물리 마이크·브라우저별 codec 지연 인수나 실제 원격 Storage 검증은 아니다. 시작 전 RAM total15.95/free7.85GiB이며 대형 AI는 실행하지 않았다.
+
+다음 gate는 실제 서버에서 사용할 decoder runtime의 호환/배포 확인, trusted receipt의 source/hash/decoder version·확정 길이 보존, 인증/본인 intent 확인 후 검증과 제출 연결이다. AAC padding·브라우저 stop fallback의 차이를 무시한 strict equality 통과나 임의 길이 보정 정책은 확정하지 않았다. 기존 사용자 서버3파일은 보존·이번 묶음 제외한다.
+
 ## 2026-10-13 R3 독립 구현 — 원본 업로드 준비 연결
+
+Git/Production 확인: 준비8파일만789ee07b654ebb4081a6eaa02d0f4d773bebab50으로 commit/push, main/origin0/0이다. Production upload-intents의 미인증401 AUTH_REQUIRED·비실제 QA bearer503 SERVICE_NOT_CONFIGURED와 capabilities200/preparation/모두false를 확인했다. full SHA commit status는pending/statuses0이며 최신5개 deployment 목록에도 해당 SHA가 없다. 이 거부 응답은 최신 commit 배포 성공이나 실제 업로드 성공의 증거가 아니다. 배포 READY는 미확인으로 유지한다. 기존 사용자 서버3파일은 미커밋 보존한다.
+
+다음 원본 검증 경로 확인: 실제 Recorder는 audio/webm;codecs=opus, audio/webm, audio/mp4를 지원 순서로 선택한다. 브라우저 decodeAudioData 길이를 우선 사용하고 실패 시 녹음 시간 fallback이 있다. 서버 Storage는 현재 바이트/hash/MIME만 검증하므로 실제 오디오 해독·길이 확정을 대신하지 못한다. 현재 PATH에 ffmpeg/ffprobe 실행 파일이 발견되지 않았다. 이는 PC 전체 또는 배포 환경의 설치 여부를 뜻하지 않는다. 검증되지 않은 client duration으로 trusted receipt를 확정하지 않는다.
 
 기존 project-lifecycle Function에 upload-intents metadata 요청과 본인 Part/녹음 잠금·중복 키/opaque object SQL allocation→기존 private Storage 검증/no-upsert signing을 연결했다. 바이트 검증 receipt와 duration 포함 제출 검증을 분리하고 Track/Mix 수를 준비만으로 바꾸지 않는다. 격리 PostgreSQL QA와 주입 HTTP/Auth/Storage QA로 재시도 ID 보존·파일 변경/권한 거부·0Track/0Mix·클라이언트 검증 위조 거부·원본 유실/불일치·Storage bearer 분리 및 기존 Project API 회귀를 통과했다. 실제 원격 설정/원본 쓰기·오디오 format/duration 분석·trusted receipt 확정·App 연결은 미완료다. 기존 사용자 서버3파일과 로컬 앱/원본을 보존한다. Git/Production 마감은 실제 결과로 기록한다.
 
