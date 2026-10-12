@@ -1209,3 +1209,9 @@ Node 테스트 성공은 모듈 계약과 수치 처리의 근거다. HTTP 테�
 실제 프로세스 확인에서 음악 생성/변환 검증 Python 작업은 없었다. 시스템 RAM은 15.95GiB, 여유는 1.08GiB로 확인됐다. 다른 앱 종료나 Windows/pagefile 설정 변경은 수행하지 않았다. 모델·결과 파일과 미커밋 SFT 지원 QA 수정은 보존하며, SFT의 실제 GPU 생성·품질 및 Base 회귀 검증 완료를 주장하지 않는다.
 
 자원/일정 운영 변경은 기존 구현계획의 2026-10-11 항목을 따른다. 단계4/5 착수 gate는 변경하지 않았다. 외부 추론 기술 검토와 독립적인 잔여 기능 조사는 가능하지만, 유료 환경 생성이나 현재 단계 완료 처리는 하지 않는다.
+
+### R1/R2 My Projects 제출·Mix 상태 연결 — 2026-10-12
+
+새로 만든 Project의 My 목록은 저장된 project.status/progress만 읽어 실제 마지막 제출 뒤에도 RECORDING 또는 오래된 개수를 표시했다. 기존 allProjectTracksSubmitted/submittedProjectTracks와 실제 저장 Mix를 목록에 연결했다. 모든 필수 제출은 기존 main 목록과 같은 MIXING 분류, 저장된 Mix가 있을 때 COMPLETE 분류를 사용한다. 모집/녹음 정책·실패 재시도·데이터 저장·디자인은 변경하지 않는다.
+
+유지 native Mix 저장 실패 QA에 2/3/4 Part의 실제 제출 개수·믹싱 필터·실패 시 완성 목록 제외·성공/reload 후 완성 이동을 추가해 모두 통과했다. 기존 사용자 여정/2–4 제출·원본 복원 및 single App Node 렌더, build38modules/505.09KB 통과(기존500KB 경고 유지). 물리 청취/실기기·실제 협업·R5 생성·R6 음악 gate는 미완료다. 사용자 서버3파일은 보존한다. 기능 묶음만 main Git Integration→Production 동일 QA로 마감한다.

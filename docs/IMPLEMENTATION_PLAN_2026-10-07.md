@@ -916,3 +916,9 @@ Figma Desktop MCP에서 실제 읽은 프레임은 `IEUM · 3화면 · 편집용
 - 반복 seed/프롬프트 실험 대신 실제 가사·화음·진입 제어를 지원하는 외부 음악 추론 경로를 기술 검토한다. 기존 입력 조건을 충족하는 실제 짧은 결과를 확인하기 전 공급자를 확정하지 않는다. 유료 인스턴스·계정·API 비용 발생은 별도 승인 없이 실행하지 않는다. 외부 실행을 앱 서버 연결 완료로 간주하지 않는다.
 - 이전의 조건부 2–4주 추정은 확정 납기가 아니다. AI 연구 시간과 기능 개발 시간을 분리하여 관리한다. 다음 작업 묶음은 기존 단계3 잔여 기능/검증, 단계4 기존 부분 구현의 잔여 통합, 단계5 실제 서비스 연결, 단계6 종합 인수다. 실제 서비스 환경과 AI 품질 경로가 미확정인 상태에서 전체 완료일을 새 숫자로 약속하지 않는다.
 - 의미 있는 기능 묶음의 검증→commit/push→Git Integration→Production QA를 유지하고, 사용자 실기기 확인 항목은 배포 후 한 번에 전달한다. 디자인 별도 worktree와 보류된 Profile 이미지를 기능 수정에 섞지 않는다.
+
+### R1/R2 My Projects 제출·Mix 상태 연결 — 2026-10-12
+
+새로 만든 Project의 My 목록은 저장된 project.status/progress만 읽어 실제 마지막 제출 뒤에도 RECORDING 또는 오래된 개수를 표시했다. 기존 allProjectTracksSubmitted/submittedProjectTracks와 실제 저장 Mix를 목록에 연결했다. 모든 필수 제출은 기존 main 목록과 같은 MIXING 분류, 저장된 Mix가 있을 때 COMPLETE 분류를 사용한다. 모집/녹음 정책·실패 재시도·데이터 저장·디자인은 변경하지 않는다.
+
+유지 native Mix 저장 실패 QA에 2/3/4 Part의 실제 제출 개수·믹싱 필터·실패 시 완성 목록 제외·성공/reload 후 완성 이동을 추가해 모두 통과했다. 기존 사용자 여정/2–4 제출·원본 복원 및 single App Node 렌더, build38modules/505.09KB 통과(기존500KB 경고 유지). 물리 청취/실기기·실제 협업·R5 생성·R6 음악 gate는 미완료다. 사용자 서버3파일은 보존한다. 기능 묶음만 main Git Integration→Production 동일 QA로 마감한다.
