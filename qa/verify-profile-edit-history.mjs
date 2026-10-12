@@ -1,0 +1,37 @@
+import assert from 'node:assert/strict'
+import {createRequire} from 'node:module'
+const require=createRequire('C:/Users/LEE/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright/package.json')
+const {chromium}=require('playwright')
+const browser=await chromium.launch({headless:true,executablePath:'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe'})
+try{
+ const context=await browser.newContext(),page=await context.newPage(),errors=[]
+ page.on('pageerror',e=>errors.push(e.message))
+ await page.goto(process.env.IEUM_QA_URL||'http://127.0.0.1:4207/')
+ await page.waitForFunction(()=>window.__IEUM_V2__?.state)
+ await page.evaluate(async()=>{
+  const id='ieum-v2:voice-profile:v7',blob=await(await fetch('/demo-stems/soprano.wav')).blob()
+  const db=await new Promise(resolve=>{const r=indexedDB.open('ieum-v2-records',1);r.onsuccess=()=>resolve(r.result)})
+  await new Promise((resolve,reject)=>{const tx=db.transaction('tracks','readwrite'),store=tx.objectStore('tracks');store.put({id:id+':range',projectId:id,kind:'voice-range',range:'C3–G4',rangeData:{lowMidi:48,highMidi:67}});store.put({id:id+':sample',projectId:id,kind:'voice-sample',blob,duration:7,songLabel:'Preserved Sample'});tx.oncomplete=resolve;tx.onabort=()=>reject(tx.error)})
+  db.close()
+ })
+ await page.reload();await page.waitForFunction(()=>window.__IEUM_V2__?.state?.profile?.sampleSong==='Preserved Sample')
+ await page.locator('[data-nav="user"]').click()
+ await page.getByRole('button',{name:'다시 측정',exact:true}).click()
+ await page.waitForSelector('[data-action="range-start"]')
+ await page.locator('[data-nav="user"]').click()
+ await page.getByRole('button',{name:'다시 등록',exact:true}).click()
+ await page.waitForSelector('.sample-select-stage')
+ await page.goBack();await page.goBack()
+ await page.waitForSelector('.voice-screen')
+ assert.equal(await page.locator('[data-action="range-start"]').count(),1,'Back to range edit must not restore the later Sample edit mode')
+ await page.goForward();await page.goForward()
+ await page.waitForSelector('.voice-screen')
+ assert.equal(await page.locator('.sample-select-stage').count()>0,true,'Forward must restore Sample-only edit')
+ await page.locator('.voice-screen [data-action="back"]').click()
+ await page.waitForFunction(()=>window.__IEUM_V2__.state.screen==='my')
+ assert.equal(await page.evaluate(()=>window.__IEUM_V2__.state.profile.sampleSong),'Preserved Sample')
+ assert.equal(await page.evaluate(()=>window.__IEUM_V2__.state.profile.range),'C3–G4')
+ assert.deepEqual(errors,[])
+ console.log('PASS range/Sample edit history and profile cancel; existing Profile preserved, no measurement or physical device claim')
+ await context.close()
+}finally{await browser.close()}

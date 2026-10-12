@@ -1477,7 +1477,7 @@ export default function App() {
     setHistory(h => [...h,screen])
     const scrollTop=document.querySelector('.screen')?.scrollTop || window.scrollY
     if(screen==='collection')collectionContext.current.scrollByTab[collectionContext.current.tab]=scrollTop
-    window.history.replaceState({ieumScreen:screen,selectedSongId,selectedProjectId,activeCreatedProjectId,finderPartId,selectedVocalId,selectedMatchVocalId,scrollTop},'',`#${screen}`)
+    window.history.replaceState({ieumScreen:screen,selectedSongId,selectedProjectId,activeCreatedProjectId,finderPartId,selectedVocalId,selectedMatchVocalId,voiceEditMode,voiceReturnScreen,scrollTop},'',`#${screen}`)
     window.history.pushState({ieumScreen:next},'',`#${next}`)
     setScreen(next); scrollToTop()
   }
@@ -1611,6 +1611,8 @@ export default function App() {
       if(event.state?.finderPartId)setFinderPartId(event.state.finderPartId)
       if(PERSON_BY_ID[event.state?.selectedVocalId])setSelectedVocalId(event.state.selectedVocalId)
       if(event.state?.selectedMatchVocalId===null || PERSON_BY_ID[event.state?.selectedMatchVocalId])setSelectedMatchVocalId(event.state.selectedMatchVocalId)
+      if([null,'range','sample'].includes(event.state?.voiceEditMode))setVoiceEditMode(event.state.voiceEditMode)
+      if(['my','detail'].includes(event.state?.voiceReturnScreen))setVoiceReturnScreen(event.state.voiceReturnScreen)
       setScreen(next)
       requestAnimationFrame(()=>{window.scrollTo(0,event.state?.scrollTop || 0);const surface=document.querySelector('.screen');if(surface)surface.scrollTop=event.state?.scrollTop || 0})
     }
@@ -1620,8 +1622,8 @@ export default function App() {
   }, [])
 
   useEffect(() => {
-    window.history.replaceState({...window.history.state,ieumScreen:screen,selectedVocalId,selectedMatchVocalId,finderPartId,activeCreatedProjectId,selectedSongId,selectedProjectId},'',`#${screen}`)
-  }, [screen,selectedVocalId,selectedMatchVocalId,finderPartId,activeCreatedProjectId,selectedSongId,selectedProjectId])
+    window.history.replaceState({...window.history.state,ieumScreen:screen,selectedVocalId,selectedMatchVocalId,finderPartId,activeCreatedProjectId,selectedSongId,selectedProjectId,voiceEditMode,voiceReturnScreen},'',`#${screen}`)
+  }, [screen,selectedVocalId,selectedMatchVocalId,finderPartId,activeCreatedProjectId,selectedSongId,selectedProjectId,voiceEditMode,voiceReturnScreen])
 
   useEffect(() => {
     if(persisted.storageReadFailed)return

@@ -1,3 +1,10 @@
+### R2 Profile 편집 목적/복귀 이력 — 2026-10-12
+
+native 기존 Profile의 음역 재측정→My→Sample 재등록→Back에서 이전 음역 화면에 Sample 모드가 남는 결함을 재현했다. 첫 QA는 잘못된 selector로 timeout이었고 실제 .sample-select-stage로 교정한 뒤 assertion 실패를 확인했다. history effect만 보완한 첫 수정도 실패가 남아, go의 떠나는 entry 저장에 voiceEditMode/voiceReturnScreen을 함께 포함했다. 유효한 null/range/sample 및 기존 my/detail 복귀만 popstate 복원한다. 미저장 Take/측정 결과의 영구 복원을 새로 만들지 않는다.
+
+최종 native 편집 모드 Back/Forward/취소 My 복귀 및 기존 Profile range/Sample exact 보존 통과. 기존 Profile 편집·실패/중복 저장/retry/reload·원본 URL/Project Track 보존 QA도 통과, build38modules/기존500KB 경고 유지. 관련 묶음만 main 자동배포→Production 같은 편집 이력과 정상 저장 QA로 마감한다. 실제 발성/청취·서비스·Identity 생성 정책/전체 R2 인수는 미완료다. 사용자 서버3파일 보존/제외.
+
+직전7a3857c 곡 상세는 Git Integration success/main 일치/Production 곡·비교 Project QA 및 bundle1B5F0AF115C76C82D7690539A3538A3D30B589AE670D00220B11CC296304B471 exact로 마감했다.
 ### R2 곡 상세의 곡/비교 Project 이력 복원 — 2026-10-12
 
 native 두 곡 방문 QA에서 최신 Ocean Eyes 상세에 Forward했는데 이전 A Thousand Years가 남는 assertion 실패를 재현했다. 기존 history 동기화 effect에 selectedSongId/selectedProjectId를 보존한다. A Thousand Years/Warm Duet↔Ocean Eyes/Low-key Duet의 실제 Back/Forward 곡과 비교 Project exact, 저장곡2/미참여 유지·기존 Finder Part/Project 및 Collection 복귀 회귀/build38modules를 통과했다. 기존500KB chunk 경고 유지. 새 IA/시작화면 정책/서버·디자인 변경 없음. 관련 묶음만 main 자동배포→Production 같은 곡 QA로 마감하며 전체 R2/실기기·실제 협업 인수로 확대하지 않는다.
