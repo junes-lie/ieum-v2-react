@@ -1,4 +1,12 @@
+## 2026-10-13 R3 인증 만료·자동 갱신 준비
+
+기존 serviceSession에 명시적 token deadline과 renew를 연결했다. 만료 시 기존 scope/늦은 결과를 차단하고 같은 실제 UUID의 유효 토큰 갱신은 유효기간 내 진행 중 요청을 불필요하게 취소하지 않는다. 이후 요청은 새 token을 사용한다. 만료 후 갱신은 새 scope만 열고 이전 scope는 거부한다. 명시적 logout은 만료 신원 context도 제거해 갱신으로 재활성화되지 않는다. 겹친 갱신의 오래된 응답도 차단한다.
+
+기존 Google helper는 로그인당 단일 timer로 만료30초 전(짧은 TTL은 절반 시점)에 갱신한다. 재로그인 준비 실패에서도 기존 timer를 보존하고 background 지연·갱신 실패/사용자 변경·logout에는 canonical 상태/세션 및 timer를 확인한다. secret은 메모리만 사용하고 실패 통지는 code만 제공하며 local Profile/Track/Mix를 삭제·이관하지 않는다. 실제 시계/네트워크 대신 제어 시계·기존 실제 Crypto·주입 Auth의 관련 QA, 문법/build 통과다. 실제 Google·App/모바일 lifecycle·refresh/reload 인수는 미완료이고 현재 preparation/false는 유지한다. 사용자3파일은 보존하며 신규 계정/runtime/중복 UI·계획은 없다.
+
 ## 2026-10-13 R3 녹음 전 Key 조정 준비
+
+Google Auth 준비 마감:e9f709e6c8e10a49bcad05fdc4b46b1fa95e1865 main push/main-origin0/0·사용자3파일 보존 및 Vercel full SHA success/Production deployment7023830462 SHA 일치를 확인했다. https://vercel.com/junes-lie/ieum-v2-react/CwfV4y8Am7jYRs9pA8qQ3i3wz7se. Production page/JS200·local JS exact/SHA256 0dadee8ac7863e856e39ddc8de990b42230306dfeff5dfaa86029b5fd00971c8, capabilities200/preparation·모든 서비스 기능false다. helper는 아직 App에서 import하지 않으므로 현재 화면/로그인 가능 상태는 바뀌지 않았다. qa:service-auth 및 build/문법 검증 통과·기존500KB 경고 유지, 실제 OAuth/App/두 사용자 인수 미완료다. 이 문단은 commit 후 로컬 증거 기록이다.
 
 Google Auth 후속: 기존 session에 연결할 PKCE begin/finish/refresh/logout helper를 준비했다. 실제 random/SHA256 challenge·임시 same-tab context·callback URL 정리·입력 secret 거부·기존 server 본인 검증과 취소/재생/로그아웃 경쟁·refresh rotation/다른 UUID 거부·서버 logout 실패의 local 차단 주입 QA 통과다. 신규 계정/SDK/runtime/env 변경이나 별도 UI는 없다. 현재 서비스가 preparation이면 로그인 시작을 거부하고 local Profile/Track/Mix는 보존한다. 실제 Google/App 진입·복귀·운영 allowlist·자동 갱신/만료/reload 세션·두 사용자 인수는 미완료다. 다음 Auth 마감은 실제 연결/앱 바인딩과 세션 수명 주기이며 준비 helper를 실제 로그인 성공으로 계산하지 않는다.
 

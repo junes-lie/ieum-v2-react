@@ -1,5 +1,11 @@
 # 단일 앱 서비스 연결 계약
 
+## 2026-10-13 기존 인증의 만료·갱신 연결 준비
+
+serviceSession.connect(token,{expiresAt})는 명시적 Unix millisecond deadline을 받고, Google 교환/갱신의 expires_in으로 같은 deadline을 전달한다. snapshot/run/응답 적용에서 만료를 확인한다. 날짜 없는 기존 준비 call의 호환성은 유지하지만 실제 Google 연결은 항상 deadline을 공급한다. renew는 server-verified 같은 UUID만 보존하고 유효기간 내 요청 epoch를 바꾸지 않는다. scope의 다음 메서드는 현재 token transport를 참조한다. 만료 후 보존되는 context는 메모리 UUID뿐이며 토큰/접근 권한이 아니다. 새 token을 server에서 재검증한 뒤 새 scope만 열고 명시적 logout에서는 해당 context도 제거한다. 늦은 경쟁 갱신/다른 사용자·logout 이후 응답은 차단한다.
+
+Google helper는 단일 timer를 만료30초 전(30초보다 짧은 여유는 남은 시간 절반)에 예약한다. 새 로그인/갱신/로그아웃에 이전 timer를 정리하고 갱신 실패는 세션을 종료한 뒤 code-only 오류를 caller에게 전달한다. silent 반복 재시도/secret 저장/유실 원본 재생성은 없다. background에서 timer가 늦게 실행되면 만료된 예전 scope를 복원하지 않고 신규 신원 검증 scope만 허용한다. 실제 앱 clock/visibility·모바일 복귀·운영 refresh token과 새로고침 복원은 아직 검증하지 않았다. qa:service-auth/service-session의 제어 시계·주입 HTTP 결과만 완료이며 preparation capability는 계속 false다.
+
 ## 2026-10-13 Google 로그인 PKCE 연결 준비
 
 사용자의 Google 우선 결정을 기존 serviceSession에 연결하는 createGoogleLogin helper를 추가했다. [Supabase Auth OpenAPI](https://github.com/supabase/auth/blob/master/openapi.yaml)의 authorize provider=google·code_challenge_method=s256와 token?grant_type=pkce의 auth_code/code_verifier를 따른다. 신규 SDK/runtime·계정 생성·env 활성화·별도 화면은 없다. 운영에서 승인된 Auth origin/public key/App origin과 기존 session/storage를 명시적으로 공급해야 하며 실제 공급·App 버튼/복귀 바인딩은 미완료다.

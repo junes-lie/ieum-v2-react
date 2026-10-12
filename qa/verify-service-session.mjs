@@ -82,6 +82,69 @@ assert.equal(createHash('sha256').update(Buffer.from(await blob.arrayBuffer())).
 session.disconnect();assert.equal(session.snapshot().userId,null)
 console.log('PASS session boundary: verified capability/user, no preparation activation, in-memory token, isolated user keys, stale/escaped response denial, logout-during-upload blocks submit, original/key preservation and canonical result. Injected Auth/HTTP; no actual login/App activation.')
 
+let sessionClock=0,renewedCalls=[],deferredProfile=null,otherIdentity=false,deferredIdentity=null
+const expiring=createServiceSession({baseUrl:'https://ieum.example/api',now:()=>sessionClock,fetchImpl:async(url,options)=>{
+  renewedCalls.push({url,token:options.headers.Authorization})
+  if(url.endsWith('/capabilities'))return Response.json({contractVersion:'ieum-service-v1',mode:'remote',authenticated:true,sharedProjects:true})
+  if(url.endsWith('/me/session')){
+    if(deferredIdentity && (!deferredIdentity.onlyToken || options.headers.Authorization===deferredIdentity.onlyToken))await deferredIdentity.promise
+    return Response.json({authenticated:true,user:{id:otherIdentity?b:a}})
+  }
+  if(url.endsWith('/me/profile')){if(deferredProfile)await deferredProfile.promise;return Response.json({roles:[]})}
+  throw Error('Unexpected expiry fixture route')
+}})
+await expiring.connect('old-token',{expiresAt:1000})
+let renewableScope
+await expiring.run(scope=>{renewableScope=scope.service})
+let releaseProfileRead;deferredProfile={promise:new Promise(resolve=>{releaseProfileRead=resolve})}
+const beforeRefresh=expiring.run(({service})=>service.getProfile())
+await new Promise(resolve=>setTimeout(resolve,0))
+await expiring.renew('rotated-token',{expiresAt:2000})
+releaseProfileRead();await beforeRefresh;deferredProfile=null
+await renewableScope.getProfile()
+assert.equal(renewedCalls.at(-1).token,'Bearer rotated-token','An existing same-user scope must use the renewed token for its next request')
+sessionClock=1500;assert.equal(expiring.snapshot().authenticated,true)
+sessionClock=2000;assert.equal(expiring.snapshot().authenticated,false)
+const noExpiredRequests=renewedCalls.length
+await assert.rejects(renewableScope.getProfile(),e=>e.code==='SESSION_CHANGED')
+await assert.rejects(expiring.run(({service})=>service.getProfile()),e=>e.code==='AUTH_REQUIRED')
+assert.equal(renewedCalls.length,noExpiredRequests)
+await expiring.renew('verified-after-expiry',{expiresAt:3000})
+assert.equal(expiring.snapshot().authenticated,true)
+await assert.rejects(renewableScope.getProfile(),e=>e.code==='SESSION_CHANGED','Renewal after expiry must not revive old scopes')
+expiring.disconnect()
+await assert.rejects(expiring.renew('must-not-revive-logout',{expiresAt:3000}),e=>e.code==='AUTH_REQUIRED')
+await assert.rejects(expiring.connect('expired',{expiresAt:2000}),e=>e.code==='AUTH_TOKEN_EXPIRED')
+await expiring.connect('valid',{expiresAt:3000});otherIdentity=true
+await assert.rejects(expiring.renew('different-user',{expiresAt:4000}),e=>e.code==='SESSION_CHANGED')
+assert.equal(expiring.snapshot().authenticated,false);otherIdentity=false
+await expiring.connect('valid',{expiresAt:3000})
+let releaseIdentity;deferredIdentity={promise:new Promise(resolve=>{releaseIdentity=resolve})}
+const lateRenewal=expiring.renew('late-token',{expiresAt:4000})
+await new Promise(resolve=>setTimeout(resolve,0));expiring.disconnect();releaseIdentity()
+await assert.rejects(lateRenewal,e=>e.code==='SESSION_CHANGED');deferredIdentity=null
+await expiring.connect('valid',{expiresAt:3000})
+deferredProfile={promise:new Promise(resolve=>{releaseProfileRead=resolve})}
+const expiresDuringRead=expiring.run(({service})=>service.getProfile())
+await new Promise(resolve=>setTimeout(resolve,0));sessionClock=3000;releaseProfileRead()
+await assert.rejects(expiresDuringRead,e=>e.code==='SESSION_CHANGED');deferredProfile=null
+assert.equal(expiring.snapshot().authenticated,false)
+await expiring.connect('valid',{expiresAt:5000})
+deferredIdentity={onlyToken:'Bearer slow-renew',promise:new Promise(resolve=>{releaseIdentity=resolve})}
+const olderRenewal=expiring.renew('slow-renew',{expiresAt:6000})
+await new Promise(resolve=>setTimeout(resolve,0));await expiring.renew('latest-renew',{expiresAt:7000});releaseIdentity()
+await assert.rejects(olderRenewal,error=>error.code==='SESSION_CHANGED');deferredIdentity=null
+await expiring.run(({service})=>service.getProfile())
+assert.equal(renewedCalls.at(-1).token,'Bearer latest-renew')
+let beforeExpiryScope;await expiring.run(scope=>{beforeExpiryScope=scope.service})
+deferredIdentity={promise:new Promise(resolve=>{releaseIdentity=resolve})}
+const renewalSpanningExpiry=expiring.renew('verified-during-expiry',{expiresAt:9000})
+await new Promise(resolve=>setTimeout(resolve,0));sessionClock=7000;releaseIdentity()
+await renewalSpanningExpiry;deferredIdentity=null
+await assert.rejects(beforeExpiryScope.getProfile(),error=>error.code==='SESSION_CHANGED')
+assert.equal(expiring.snapshot().authenticated,true);expiring.disconnect()
+console.log('PASS session expiry/renewal: explicit deadline blocks expired requests/late results, same verified user preserves pending reads/operation epoch and rotates the next token, different user/logout/expiry cannot revive scopes. Injected clock/Auth, not actual OAuth/App idle refresh.')
+
 const rangeRecord=await prepareVoiceRangeRecord({id:'range',projectId:'profile',userId:a,kind:'voice-range',rangeData:{lowMidi:48,highMidi:67,analysisVersion:'normalized-difference-v1',sampleCount:10,confidence:0.9}})
 const sampleRecord=await prepareVoiceSampleRecord({id:'sample',projectId:'profile',userId:a,kind:'voice-sample',blob,features:{version:'ieum-basic-voice-v5'}})
 const sourceRevision=await voiceSourceRevision(rangeRecord.sourceProvenance,sampleRecord.sourceProvenance)

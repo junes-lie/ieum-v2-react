@@ -49,7 +49,7 @@ assert.equal(serviceErrorResponse({ code: 'AUTH_UNAVAILABLE', message: 'token-se
 console.log('Server Auth: configured provider only, verified upstream identity, missing/invalid token denial, no secret echo/cache, unconfigured 503 and false capabilities passed. Injected Auth responses; no real account login claim.')
 
 const memory=new Map(),storage={getItem:key=>memory.get(key) ?? null,setItem:(key,value)=>memory.set(key,value),removeItem:key=>memory.delete(key)}
-let ready=false,oauthCalls=[],clock=1000000,cleaned=null,tokenResult={access_token:'qa-token',refresh_token:'never-store',token_type:'bearer',expires_in:3600,user:{id:'forged-id'}},gate=null,refreshInputs=[],changedUser=false,logoutFails=false
+let ready=false,oauthCalls=[],clock=1000000,cleaned=null,tokenResult={access_token:'qa-token',refresh_token:'never-store',token_type:'bearer',expires_in:3600,user:{id:'forged-id'}},gate=null,refreshInputs=[],changedUser=false,logoutFails=false,refreshFails=false
 const oauthFetch=async(url,init)=>{
   oauthCalls.push(url)
   assert.equal(init.credentials,'omit');assert.equal(init.redirect,'error');assert.equal(init.referrerPolicy,'no-referrer')
@@ -66,6 +66,7 @@ const oauthFetch=async(url,init)=>{
   if(url.endsWith('/auth/v1/token?grant_type=refresh_token')){
     assert.equal(init.headers.apikey,'sb_publishable_qa');assert.equal(init.headers.Authorization,undefined)
     refreshInputs.push(JSON.parse(init.body));assert.equal(memory.size,0)
+    if(refreshFails)throw Error('private refresh token diagnostic')
     return Response.json({access_token:'qa-token',refresh_token:'rotated-'+refreshInputs.length,token_type:'bearer',expires_in:3600})
   }
   if(url.endsWith('/auth/v1/logout?scope=local')){
@@ -79,7 +80,7 @@ const oauthFetch=async(url,init)=>{
   }
   throw Error('Unexpected OAuth route')
 }
-const oauthSession=createServiceSession({baseUrl:'https://ieum.example/api',fetchImpl:oauthFetch})
+const oauthSession=createServiceSession({baseUrl:'https://ieum.example/api',fetchImpl:oauthFetch,now:()=>clock})
 const settings={session:oauthSession,authUrl:env.IEUM_SUPABASE_URL,publishableKey:'sb_publishable_qa',appUrl:'https://ieum.example/',storage,fetchImpl:oauthFetch,now:()=>clock}
 const login=createGoogleLogin(settings)
 await assert.rejects(login.begin(),error=>error.code==='SERVICE_NOT_READY');assert.equal(memory.size,0)
@@ -137,6 +138,28 @@ await assert.rejects(login.begin(),error=>error.code==='AUTH_IN_PROGRESS')
 login.disconnect();releaseToken()
 await assert.rejects(inFlight,error=>error.code==='SESSION_CHANGED');gate=null
 assert.equal(oauthSession.snapshot().authenticated,false);assert.equal(memory.size,0)
+logoutFails=false
+const scheduled=new Map(),errors=[],setTimer=(fn,delay)=>{const id=Symbol('timer');scheduled.set(id,{fn,delay});return id},clearTimer=id=>scheduled.delete(id)
+const automatic=createGoogleLogin({...settings,setTimer,clearTimer,onError:error=>errors.push(error)})
+url=await callback();await automatic.finish(url.href,value=>{cleaned=value})
+assert.equal(scheduled.size,1);assert.equal([...scheduled.values()][0].delay,3570000)
+let timerEntry=[...scheduled.entries()][0];scheduled.delete(timerEntry[0]);clock+=timerEntry[1].delay;await timerEntry[1].fn()
+assert.equal(oauthSession.snapshot().authenticated,true);assert.equal(scheduled.size,1);assert.equal(errors.length,0)
+ready=false
+await assert.rejects(automatic.begin(),error=>error.code==='SERVICE_NOT_READY')
+assert.equal(scheduled.size,1);assert.equal(oauthSession.snapshot().authenticated,true);ready=true
+let oldScope;await oauthSession.run(scope=>{oldScope=scope.service})
+// A suspended tab wakes after access expiry. New verified identity gets a fresh
+// epoch; the old scope must remain invalid after renewal.
+timerEntry=[...scheduled.entries()][0];scheduled.delete(timerEntry[0]);clock+=3601000;await timerEntry[1].fn()
+assert.equal(oauthSession.snapshot().authenticated,true);assert.equal(scheduled.size,1)
+await assert.rejects(oldScope.getProfile(),error=>error.code==='SESSION_CHANGED')
+refreshFails=true;timerEntry=[...scheduled.entries()][0];scheduled.delete(timerEntry[0]);clock+=timerEntry[1].delay;await timerEntry[1].fn()
+assert.equal(oauthSession.snapshot().authenticated,false);assert.equal(scheduled.size,0)
+assert.deepEqual(errors,[{code:'AUTH_UNAVAILABLE'}]);refreshFails=false
+url=await callback();await automatic.finish(url.href,value=>{cleaned=value})
+assert.equal(scheduled.size,1);automatic.disconnect();assert.equal(scheduled.size,0)
+assert.equal(oauthSession.snapshot().authenticated,false);assert.equal(memory.size,0)
 url=await callback();await login.finish(url.href,value=>{cleaned=value})
 await login.logout();assert.equal(oauthSession.snapshot().authenticated,false);assert.equal(memory.size,0)
 url=await callback();await login.finish(url.href,value=>{cleaned=value});logoutFails=true
@@ -145,4 +168,4 @@ assert.equal(oauthSession.snapshot().authenticated,false);assert.equal(memory.si
 for(const configuration of [{...settings,publishableKey:'sb_secret_do_not_expose'},{...settings,authUrl:'http://unsafe.invalid'},
   {...settings,appUrl:'https://ieum.example/?redirect=https://external.invalid'},
   {...settings,publishableKey:`a.${Buffer.from(JSON.stringify({role:'service_role'})).toString('base64url')}.c`}])assert.throws(()=>createGoogleLogin(configuration),error=>error.code==='INVALID_AUTH_CONFIGURATION')
-console.log('PASS Google PKCE bridge: real SHA256/random challenge, same-tab verifier/context only, readiness gate, one-time callback/state/origin/expiry and URL cleanup, existing server-verified user/session, refresh rotation/user-change denial, local logout on server failure, cancellation/replay/secret config/logout concurrency denial. Injected OAuth, not actual Google/project/App activation or automatic refresh/reload persistence.')
+console.log('PASS Google PKCE bridge: real SHA256/random challenge, same-tab verifier/context only, readiness gate, callback/state/origin/expiry/URL cleanup, server-verified user/session, refresh rotation and one idle timer, suspended-tab expiry opens fresh scopes only, renewal failure/logouts cancel timer, callback concurrency/privacy. Injected clock/OAuth, not actual Google/App activation or reload persistence.')

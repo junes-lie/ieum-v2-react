@@ -1,5 +1,7 @@
 # 현재 실행 기준 — 2026-10-13 변경분 및 잔여 구현계획 개정
 
+2026-10-13 R3 session 수명 gate: 기존 Google helper/serviceSession에 deadline·same-user renew·단일 자동 갱신 timer를 연결했다. 유효기간 내 pending 요청/원본을 유지하고 다음 요청은 새 token을 쓰며 만료 후에는 이전 scope를 무효화한 채 새 검증 scope만 연다. 명시적 logout/갱신 실패·신원 변경·오래된 갱신 응답은 재활성화하지 않는다. background 지연/실패·timer 취소·관련 source 등록 세션 회귀를 제어 시계/주입 Auth로 검증했다. 이 준비 코드를 실제 App/Google/모바일 완료로 확대하지 않는다. 실제 운영 연결·App 버튼/복귀 및 lifecycle 인수·새로고침 세션은 잔여이며 기존 단계/예산/정책·사용자3파일을 보존한다. 공수는 미측정이고 접근 질문을 반복하지 않는다.
+
 2026-10-13 R3 Google PKCE gate: Google 우선 결정을 기존 serviceSession/server identity 검증에 연결하는 로그인 URL/복귀 helper를 준비했다. 실제 Crypto와 주입 OAuth→기존 인증의 준비 상태/URL 정리·임시 verifier/state·서버 본인 검증·취소/재생/로그아웃 경쟁·refresh rotation/신원 재검증·현재 로그인 logout 실패 검사를 통과했다. SDK/계정/runtime 추가나 별도 UI는 없으며 실제 앱 로그인/복귀·운영 origin/public key/allowlist·자동 갱신/만료·새로고침 세션 복원·실제 두 사용자 인수는 잔여다. 현재 preparation capability를 유지한다. 기존 단계·예산·완료 증거/사용자3파일을 보존하고 같은 계정 접근 질문은 반복하지 않는다. 이번 실효 공수는 미측정이다.
 
 2026-10-13 R3 Key client gate: 기존 transport에 setProjectKey를 연결했고 serviceSession의 authenticated scope를 재사용한다. arrangementId/expectedRevision 및 재시도 키만 보내며 개인 ID/임의 key/source 추가 값은 제외한다.2–4 Part client→API→격리 SQL 검증, 미지정 키의 네트워크 차단·탈출 scope/사용자 변경 중 늦은 응답 거부를 확인했다. 최초 mutation receipt는 현재 상태 조회와 구분한다. 실제 App W07/canonical 재조회·운영 서비스/candidate 음악 데이터는 다음 잔여이며 capability는 preparation/false다. 이미 완료된 DB/API gate·예산·정책은 유지하고 사용자 기존3파일의 관련 없는 수정은 stage하지 않는다.
