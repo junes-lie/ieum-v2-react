@@ -1,3 +1,11 @@
+### R2 참여 Setup의 실제 Part 복귀 — 2026-10-12
+
+기존 Detail은 빈 recruiting Part에 선택 action을 전달하지만 label을 누락해 Bass 선택 버튼이 없었다. 기존 open/recruiting 선택 분기를 같은 버튼에 연결했다. 이후 sessionStorage read/write 차단 상태에서 Bass 선택→Setup 취소→Tenor로 잘못 복귀하는 actual assertion을 재현했다. Project별 앱 메모리 문맥에 선택 Part를 보존하고 비교 Project의 빈 Part 값이 기존 live Project 선택을 덮어쓰지 않도록 했다. 새 화면/배정/자동 참여/추천 정책·디자인 변경 없음.
+
+qa:setup-return은 취소와 실제 synthetic 측정/Sample 저장 완료 모두 같은 Bass fit 재검사 화면 복귀, Profile 저장만으로 참여하지 않음/제출2개 불변을 검증한다. 기존 Song/Project Back/Forward, cache read/write/invalid 회귀, Node 사용자 흐름·2–4 Project 제출/복원 통과. build38modules/504.82KB 기존500KB 경고 유지. 수정 묶음만 main 자동배포→Production 확인하고 사용자 서버3파일은 제외한다. 실제 다중 사용자 초대/수락·물리 마이크와 전체 R2 gate는 미완료다.
+
+직전bfdfddf Git Integration success/main0·0, Production index-B4GZDrbS.js SHA3893B480D632E49B2DA611393A98609C630CFA4A030DAE2D20702CA678378DBE exact와 Production Profile 저장 실패/재시도·최초 Setup·Sample 교체/재로드 QA 통과를 확인했다.
+
 ### R5 개인 입력 선행 — 음역 측정 출처 보존 — 2026-10-12
 
 기존 대표 Sample의 원본 SHA/revision과 구분해 음역 측정 데이터의 canonical measurementSha256·분석 version·개별 source revision을 기존 range record에 저장한다. 최초 Profile 저장과 음역만 재측정하는 동일 경로에 연결하고 메모리 Profile/재로드에 rangeProvenance를 복원한다. 저장 성공 전 새 revision을 게시하지 않으며 Sample 교체는 range revision을 변경하지 않는다. 음역을 오디오 파일로 가장하지 않아 audioSha256은 사용하지 않고 기존 legacy record에는 null을 유지한다. 개인 형상 갱신/사진/버전/fallback 정책이나 그래픽 생성 완료를 확정하지 않는다.

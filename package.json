@@ -13,6 +13,7 @@
     "qa:mix-errors": "node qa/verify-mix-source.mjs && node qa/verify-mix-save-preservation.mjs",
     "qa:audio-lengths": "node qa/verify-audio-lengths.mjs",
     "qa:stop-retry": "node qa/verify-sample-stop-retry.mjs",
+    "qa:setup-return": "node qa/verify-setup-part-return.mjs",
     "qa:submission": "node qa/verify-submission-atomic.mjs",
     "qa:backing-level": "node qa/verify-backing-gain.mjs && node qa/verify-provided-backing-level.mjs",
     "qa:provided": "node qa/verify-provided-samples.mjs",

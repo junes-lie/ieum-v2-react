@@ -1,3 +1,7 @@
+### R2 참여 준비의 선택 Part 복귀 — 2026-10-12
+
+기존 빈 recruiting Part의 선택 버튼 연결 누락을 고치고, session cache unavailable 상태에서도 Project별 앱 문맥으로 실제 선택 Part를 보존한다. Setup 취소/측정·Sample 저장 완료→같은 Bass fit 재검사·자동 참여 없음/Track 수 불변을 native 검증했고 곡/Project 이력·cache 오류·기존 Node Flow 회귀를 통과했다. 기존 IA/화면/참여 확정·Part Fit 조건 유지. 관련 build→명시 stage/main push→Git Integration→Production qa:setup-return으로 마감하며 서버 수락/실기기/전체 R2 완료로 확대하지 않는다.
+
 ### R5 개인 입력 선행 — 실제 음역 source revision — 2026-10-12
 
 기존 Setup/음역 재측정 저장에 measurement data digest·analysis version·source revision을 추가하고 Sample의 오디오 원본 hash와 구분한다. 최초 저장/실패 재시도·Profile 재로드·Sample 교체의 독립성 QA를 통과했다. legacy 입력의 출처를 소급 생성하지 않는다. Source revision 보존은 개인 형상 생성/자동 갱신 정책과 별개이며 보류된 디자인·기존 G1–G5/전체 단계 완료 조건을 유지한다. 관련 build/QA→명시 stage→main 자동배포→Production Profile QA 순서로 마감한다.
