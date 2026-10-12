@@ -44,6 +44,10 @@ R1/R2 앱 마감을 음악 연구 종료까지 미루지 않는다. R4는 실제
 
 수정한 기능의 정상·실패·복원 및 관련 build/QA를 확인한다. 입력/버전/계약이 바뀌지 않은 검증은 재사용하고 변경 없는 전체 모델·전수 QA를 반복하지 않는다. 의미 있는 묶음마다 diff 검토→필요 파일만 stage→commit→origin/main push→Git Integration commit/성공 확인→Production QA로 마감한다. 사용자 실기기 확인 항목은 배포 후 묶어 전달한다.
 
+### R6 실제 원본 APG/Euler 수학 대조 — 2026-10-12
+
+원본 ca1e85fe의 APG/Momentum/project 선언·Euler AST와 설치된 함수/scheduler를 모델 없이 CPU FP32 controlled tensor로 비교했다.32/50/64steps×shift1/2/3의9조건에서 schedule·momentum exact/APG와 매 step latent 최대차이0이다. 전체 actual DiT·VAE/decoder/곡·음절/화음 성공이 아니다. partial CFG interval 기준과 native DCW 기본 후처리 차이는 별도 관측하며 현재 기본0–1 CFG 후보 실패 원인으로 단정하지 않는다. 다음은 actual DiT/조건 mask·native 후처리 적용 범위의 근거 확보이며 RAM 기준과 음악 gate를 유지한다. 같은 후보 반복 생성 없음. source/hash/결과·한계는 상태 문서에 기록하고 기존 private runtime에 보존한다.
+
 ### R6 저메모리 실행 및 가사 실패 분리 — 2026-10-12
 
 기존13개 exact Base disk cache/meta DiT/eval과 native prompt 일회 인코딩·text 반환,142tensor bounded FP32 CUDA condition 로딩을 opt-in으로 마감한다. 기존 CPU/기본 shift·원본/cache는 유지하고2GiB GPU headroom·live RAM guard를 축소하지 않는다. 보존된 실제8초/50step 실행은 finite latents/WAV 저장·worker최대4.330GiB/free최소4.372GiB로 완료했으나 마지막 cp949 stdout 오류 exit1을 별도 기록했다. 로그만 ASCII JSON으로 보완하고 실제 저장 report roundtrip을 모델 없이 검증했다. 속도·음악 품질·전체 native parity 완료가 아니다.

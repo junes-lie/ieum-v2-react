@@ -1,3 +1,13 @@
+## 2026-10-12 R6 고정 원본 APG/Euler 계산 대조
+
+직전604ee21과 기존 사용자 서버3파일만 남은 Git 상태를 확인했다. 모델·새 음원 없이 원본 ca1e85fe9430179831e6bc6be790c332190a3866의 APG/Momentum/project 선언 및 Euler branch AST를 설치된 Diffusers APG/FlowMatchEulerDiscreteScheduler와 비교했다. Base apg_guidance.py는 common 경로의 re-export이므로 공식 고정 common/apg_guidance.py 작은 파일만 기존 private source 폴더에 보존했다. source SHA89ecdc4686e174225d6e6d304939d75892297dc3c19fbb11e04345dc3d4685db/native SHAf3edaa0f86ce174c0c6703a8d80442673783ba96515a0fa84126a9b605b0919d을 검사한다. 원본 전체 module/main 또는 모델은 실행하지 않는다.
+
+CPU FP32의2×200×64 controlled prediction으로32/50/64steps×shift1/2/3의9조건을 대조했다. schedule/terminal sigma exact, momentum exact, APG velocity와 매 step Euler latent의 최대 absolute 차이0이었다. 기존 실제 실패 candidate의50steps/shift1 APG/Euler 핵심 수학 차이를 이 controlled 시험에서 관측하지 못했다. actual DiT forward·음향 조건·VAE/decoder·전체 sampler parity나 음악 품질을 통과한 것이 아니다. 결과는 기존 private runtime의 sampler-math-86199ed98f9747849dddb0985c87c39a.json에 보존했다.
+
+같은 고정 source AST로 partial CFG interval의 원본 t_curr 기준 vs현재1-t_curr 기준 차이를 확인했다(.2–.7 구간에서 timestep.2는 native true/현재false). 기본 전체0–1 구간은 양쪽 일치하므로 현재 기본 후보 실패의 원인으로 단정하지 않는다. 원본 generate_audio는 DCW default enabled/scaler.05/high.02지만 현재 pipeline의 APG/Euler 범위에는 해당 후처리가 없고 이번 시험에서도 제외했다. 원본 cover switching/repaint injection/기타 sampler 옵션도 제외한다. 이 차이를 이유로 기본 실행 환경/새 정책을 임의 수정하거나 동일 후보를 재생성하지 않았다.
+
+다음 원인 대조는 actual DiT의 projection/attention·조건 mask 및 native 후처리의 적용 범위다. 코드에서 current Transformer가 cross-attention mask를 받지 않는 것을 확인했으나 actual1사용자 packed condition의 영향은 측정 전이라 원인/수정 완료로 기록하지 않는다. 정책/형상/기술 환경 변경·모델 설치·대형 AI 실행 없음. source/기존 결과·CPU 환경·사용자 서버3파일을 보존하며 유지 대조 도구와 현재 문서만 main 자동배포→Production 동일 앱 보존으로 마감한다. 전체 R1–R7 미완료 gate 유지.
+
 ## 2026-10-12 R6 저메모리 실행 경로 마감 / 음악 품질 미통과
 
 직전c46c548/4caf550의 R1 마감 코드와 사용자/AI 미커밋 상태를 확인했다. 기존 단계·Goal·앱은 보존하고 아직 미커밋이던 실제 실행 검증 경로를 검토했다. opt-in low-ram-base-cache는 기존13개 FP32 disk group을 변환 원본476tensor의 exact F32/BF16 bytes와 bounded 비교한 뒤 meta DiT/eval·native2block offload로 재사용한다. cache/원본을 새로 만들거나 바꾸지 않는다. native prompt 출력은 유지하고 text 모델과 bound-method 순환 참조를 반환한다. bounded-condition-cuda는 실제142개 FP32 checkpoint를 tensor별로 CUDA에 직접 로드하고 원본/전송 bytes·shape/finite를 검사한다. 완전한 CPU condition 모델을 먼저 만들지 않으며 각각의 CPU staging tensor 상한64MiB와 CUDA2GiB headroom을 유지한다. 전체 staging 메모리가64MiB라는 뜻은 아니다. 기본 CPU 환경/기존 생성 경로는 유지한다.
