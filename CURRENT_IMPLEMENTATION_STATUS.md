@@ -1,3 +1,11 @@
+### R5 선행 — 대표 Sample 원본 출처와 revision 저장 — 2026-10-12
+
+기존 Profile 최초 등록/대표 Sample 교체의 저장 경로에 private sourceProvenance를 연결했다. 새 실제 Sample Blob의 SHA256·byteLength, 저장된 분석 version(없으면null), purpose voice-sample, opaque source revision을 같은 record에 보존하고 Profile reload에서도 같은 값을 읽는다. hash 계산 전 분석/record snapshot을 복제한다. 기존 Sample은 재분석·가짜 hash/revision backfill 없이 null로 읽는다. 사용자의 공개 ID/그래픽 URL은 추가하지 않는다. Range 측정 원본 오디오를 보관했다고 주장하거나 이 Sample revision을 전체 Profile/Identity revision으로 혼동하지 않는다.
+
+Node 실제 Blob hash/immutable 분석 snapshot·purpose 검증·미분석null·별도 DB read 및 기존 Profile atomic 실패/재시도 통과. native Profile 최초 Setup/교체/실패/중복 저장/retry/reload에서 실제 재생 Blob의 hash/bytes와 저장 revision exact를 검증했고 기존 Sample URL/음역/취향/Project Track 보존도 통과했다. Review 이탈/늦은 저장 실패 원본 보존 회귀도 확인한다. build35modules·single App/기존 사용자 여정 통과, 기존500KB chunk 경고는 유지한다. 앱 UI/형상/재측정 시 Identity 갱신/기존 Track 재생성 정책은 변경하지 않는다. 이 선행 묶음만 자동배포→Production 같은 Profile QA로 마감하며 R5 전체 생성·개인 구분/Track 특징 유지·2–4 AI 결합은 미완료다.
+
+직전 Mix 보존 QA35ad7c5는 Vercel commit success/Production2–4Part 실제 Mix 저장 실패·원본 SHA·기존reload 저장 검증 통과. 앱 동작 변경 없이 해당 실패 gate의 증거만 보완했다.
+
 ### R1 확정 Mix 저장 실패의 실제 원본 보존 — 2026-10-12
 
 유지 QA qa:mix-errors에 2/3/4 제출 Part의 native OfflineAudioContext 생성→IndexedDB auto-mix put 실패를 추가했다. 실제 오류 문구와 완성 화면 미이동, DB에 Mix 미저장, 모든 제출 Blob SHA exact/Project RECORDING 유지, 실패한 job의 자동 반복 없음, 저장 가능해진 뒤 기존 reload 경로에서 하나의 실제 Mix 저장/원본 SHA 유지까지 통과했다. 격리된 시연 오디오 입력이며 실제 협업·물리 청취·원곡 Part 품질 증거는 아니다. 앱의 새 retry UI/정책은 추가하지 않았다.
