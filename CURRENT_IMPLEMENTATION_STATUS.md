@@ -1,3 +1,10 @@
+### R6 지속음 F0 지지 프레임과 음소 경계 분리 — 2026-10-12
+
+기존 고정 pYIN 측정의 fullInterval에 첫/마지막 유효 frame timestamp·최장 연속 유효 frame 수·hop/window를 추가했다. 기존.75/80ms 조건·median/min/max/frames/RMS와 PCM·gate는 변경하지 않는다. 같은 새 reference base/upper PCM의 별도 측정 경로에서 모든 기존 관측 exact를 확인하고 empty null/disjoint run을 실제 함수에 대조했다. 측정2회 wall7.310/7.240초·exit0/resourceStopped=false이며 신규 모델 생성 없음.
+
+마지막 요 요청end4.468182초에서 base F0 first3.959002/last4.400181초·34/44frames·최장31연속, upper first3.970612/last4.458231초·38/44frames·최장35연속을 관측했다. median54.7/59.1. 앞선 MMS phonetic end4.112624/4.072501 이후에도 유효 F0가 남으므로 그 end를 지속음 길이로 쓰지 않는다. hop11.610ms/window92.880ms·centered frame/confidence filtering/공백은 실제 음표 경계 오차와 다르다. 첫/마지막 frame 사이가 모두 지속음이라는 의미도 아니며 예상 음표와 다른 F0도 따로 판단해야 한다. 정확한 지속음·휴지·진입/원곡 score/harmony·청취/2–4Part/catalog gate는 계속 미완료다.
+
+유지 측정 코드/기존 계획 기록만 main 자동배포→Production 앱 bundle 보존으로 마감한다. 앱/새 정책·디자인·원본/사용자 서버3파일 변경 없음. ea0d1e2 Git Integration success/main 일치/Production18500D0C0A3FEB68E35D27E60D0BB871BB105E26DBA2E075582D70305A5CBAE4 exact를 확인했다. 다음은 측정 frame 지지와 실제 입력 구간의 차이를 유지한 채 원곡 음표/화성 근거에 대조하고, 승인되지 않은 입력을 성공 Part로 등록하지 않는 것이다.
 ### R6 reference DDIM 저음/음절 대조 — 2026-10-12
 
 기존 original-opening의7음절/음표/길이 exact를 확인한 같은 seed/checkpoint/vocoder 입력의 reference DDIM1회를 actual 실행했다. SHA2efa01ddbb8b17dc63b037601a6cbd6a27a5bc9b4b5e20ba8f445b6e1118a0ca,5.456708333초/peak.53586352/RMS.11087490/inference1.1006초. pYIN 같은.75/80ms의7음절 median54.9/59.2/62.1/57/56.8/54.85/54.7, 유효13/14/53/29/28/16/29frames/최대.3반음. native의 가0frames/요53MIDI(요청55) 사례와 비교해 이 입력의 저음 제어 개선을 관측했으나 다른 입력/voice/style·전체 음악/청취 품질 승인으로 확대하지 않는다. Whisper-small 가사 exact/similarity1. 생성/측정/ASR wall7.295/7.256/19.500초·모두exit0/resourceStopped=false·free최소7.450/8.537/7.089GiB·owned최대1.155/.230/1.681GiB.

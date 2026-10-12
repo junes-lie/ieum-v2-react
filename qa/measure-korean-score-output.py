@@ -27,10 +27,16 @@ def full_interval_observation(start,end):
  interval=(times>=start)&(times<end)
  selected=interval&valid
  values=midi[selected]
+ frames=np.flatnonzero(selected)
+ runs=np.split(frames,np.flatnonzero(np.diff(frames)>1)+1) if len(frames) else []
  return {'totalFrames':int(interval.sum()),'confidentFrames':int(selected.sum()),
          'observedMedianMidi':float(np.median(values)) if len(values) else None,
          'observedMinMidi':float(np.min(values)) if len(values) else None,
-         'observedMaxMidi':float(np.max(values)) if len(values) else None}
+         'observedMaxMidi':float(np.max(values)) if len(values) else None,
+         'firstConfidentFrameSeconds':float(times[frames[0]]) if len(frames) else None,
+         'lastConfidentFrameSeconds':float(times[frames[-1]]) if len(frames) else None,
+         'longestConsecutiveConfidentFrames':max((len(run) for run in runs),default=0),
+         'frameHopSeconds':256/22050,'analysisWindowSeconds':2048/22050}
 
 position=0;observations=[]
 for index,(syllable,note,expected_note,duration) in enumerate(zip(score['syllables'],indices,expected,score['durationsSeconds'])):
@@ -53,5 +59,6 @@ for event in score.get('expandedNoteEvents',[]):
 result={'sourceSha256':report['outputSha256'],'inputDuration':position,'actualDuration':len(audio)/sr,'durationDifference':len(audio)/sr-position,'observations':observations,'noteEventObservations':event_observations,'inputEncoding':'pinned model index offset +12' if encoded else 'legacy uncalibrated MIDI label','legacyReinterpretation':a.legacy_model_index,'measurementScriptSha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),'analysis':'pYIN probability >= .75, excluding 80ms segment edges; measured output, not inferred input','musicalHarmonyApproved':False,'sourceSongConnected':False,'catalogRegistrationApproved':False,'limitations':['Explicit diagnostic score; no original-song chord or syllable alignment validation','F0 estimates can contain octave/separation errors','No listening or voice identity acceptance']}
 result['inputPurpose']=score.get('inputPurpose',(report.get('scoreCalibration') or {}).get('purpose'))
 result['fullIntervalScope']='Untrimmed interval distribution alongside unchanged interior estimate; not a substitute pass criterion. Short windows/glides and confidence filtering can bias either estimate.'
+result['frameTimingScope']='Centered analysis-frame timestamps and consecutive voiced-confidence support only; not phonetic/note boundaries, exact sustained duration or validation of the expected pitch. Gaps and the 2048-sample analysis window limit timing interpretation.'
 target.parent.mkdir(parents=True,exist_ok=True)
 target.write_text(json.dumps(result,ensure_ascii=False,indent=2),encoding='utf-8');print(json.dumps(result,ensure_ascii=False))
