@@ -5,6 +5,18 @@ import {canonicalIdentityInput,assessVoiceCandidates} from '../src/voiceIdentity
 import {exactDecodedAudioReceipt} from './originalAudioVerification.js'
 const fail=code=>new ServiceError('대표 Sample 분석을 완료하지 못했어요. 저장 원본은 유지됩니다.',{code,status:409})
 
+export function checkedStoredSampleAnalysis(context) {
+  const analysis=context.analysis
+  exactDecodedAudioReceipt(context.receipt,{size:context.size,sha256:context.sha256,contentType:context.contentType})
+  if(Object.keys(context.receipt).length!==9 || analysis?.version!=='ieum-sample-analysis-v1' || Object.keys(analysis).length!==7 ||
+    analysis.sourceSha256!==context.sha256 || analysis.byteLength!==context.size ||
+    canonicalIdentityInput(analysis.audioReceipt)!==canonicalIdentityInput(context.receipt) ||
+    analysis.features?.version!=='ieum-basic-voice-v5' || analysis.features.pitchAnalysisVersion!=='normalized-difference-v1' || analysis.features.pitchFrameLength!==4096 ||
+    createHash('sha256').update(canonicalIdentityInput(analysis.features)).digest('hex')!==analysis.featuresSha256 ||
+    canonicalIdentityInput(assessVoiceCandidates(analysis.features,'voice-sample'))!==canonicalIdentityInput(analysis.assessment))throw fail('INVALID_SAMPLE_ANALYSIS')
+  return structuredClone(analysis)
+}
+
 // Analyze only an owned, already decoded Sample. No client feature JSON is an
 // input. A caller-supplied RAM budget bounds the actual mono Float32 allocation.
 export async function analyzeVerifiedSample({context,storage,decoderOptions,maxPcmBytes}) {

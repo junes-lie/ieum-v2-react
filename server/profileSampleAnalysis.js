@@ -1,11 +1,10 @@
 import {isAbsolute} from 'node:path'
-import {createHash} from 'node:crypto'
 import {ServiceError} from '../src/projectService.js'
-import {canonicalIdentityInput,assessVoiceCandidates} from '../src/voiceIdentityContract.js'
+import {canonicalIdentityInput} from '../src/voiceIdentityContract.js'
 import {readAuthConfiguration,verifyRequestUser} from './auth.js'
 import {createSupabaseAudioStorage} from './audioStorage.js'
 import {readSampleMetadata} from './profileSampleUpload.js'
-import {analyzeVerifiedSample} from './sampleVoiceAnalysis.js'
+import {analyzeVerifiedSample,checkedStoredSampleAnalysis} from './sampleVoiceAnalysis.js'
 import {exactDecodedAudioReceipt} from './originalAudioVerification.js'
 const fail=code=>new ServiceError('대표 Sample 분석을 완료하지 못했어요. 기존 Profile은 유지됩니다.',{code})
 const uuid=value=>typeof value==='string' && /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(value)
@@ -33,11 +32,7 @@ export async function profileSampleAnalysisRequest(request,{env=process.env,fetc
   if(Object.keys(context.receipt).length!==9)throw fail('INVALID_AUDIO_RECEIPT')
   let analysis=context.analysis
   if(analysis!==null){
-    if(analysis?.version!=='ieum-sample-analysis-v1' || Object.keys(analysis).length!==7 || analysis.sourceSha256!==context.sha256 || analysis.byteLength!==context.size ||
-      canonicalIdentityInput(analysis.audioReceipt)!==canonicalIdentityInput(context.receipt) ||
-      analysis.features?.version!=='ieum-basic-voice-v5' || analysis.features.pitchAnalysisVersion!=='normalized-difference-v1' || analysis.features.pitchFrameLength!==4096 ||
-      createHash('sha256').update(canonicalIdentityInput(analysis.features)).digest('hex')!==analysis.featuresSha256 ||
-      canonicalIdentityInput(assessVoiceCandidates(analysis.features,'voice-sample'))!==canonicalIdentityInput(analysis.assessment))throw fail('INVALID_SAMPLE_ANALYSIS')
+    analysis=checkedStoredSampleAnalysis(context)
     await storage.verifyOriginal(context.objectId,{size:context.size,sha256:context.sha256,contentType:context.contentType})
   }else{
     const executable=env.IEUM_AUDIO_DECODER_PATH,maxDurationSeconds=Number(env.IEUM_AUDIO_MAX_DECODE_SECONDS),maxPcmBytes=Number(env.IEUM_SAMPLE_ANALYSIS_MAX_PCM_BYTES)

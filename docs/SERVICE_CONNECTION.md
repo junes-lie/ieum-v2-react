@@ -1,5 +1,15 @@
 # 단일 앱 서비스 연결 계약
 
+## 2026-10-13 개인 Voice Profile 원본 등록 준비
+
+GET/POST /api/me/voice-source를 추가했다. GET은 auth.uid()의 현재 source와 저장 출처를 반환하고 미등록은source:null, 기존 출처 없는 source는provenanceStatus:unavailable로 유지한다. POST는 {expectedSourceRevision,rangeData,rangeProvenance,sampleUploadIntentId,sampleProvenance}와 Idempotency-Key를 받는다. 사용자 ID/선언 features/등록 성공 값은 받지 않는다. 현재 브라우저 측정 range의 버전·정수 음역·기존6표본 조건/검출 confidence·canonical SHA256와 provenance를 검사하고 본인 서버 Sample 분석/receipt/hash·실제 Storage byte를 재검증한다.
+
+음역은 기존 브라우저 pitch 측정의 선언 데이터다. hash 검사는 무변경을 확인하며 서버 음성 재측정이나 물리 입력 인증이 아니다. rangeOrigin=browser-pitch-analysis와 sampleOrigin=server-decoded-private-original을 구분한다. 실제 Sample의 sampled F0를 편한 음역으로 대체하지 않는다. 기존 voiceSourceRevision 계약을 재사용하며 Sample 분석은 DB에 확정된 결과만 참조한다.
+
+profile_source_history/profile_sample_analysis 다음 profile_source_registration migration을 적용한다. service-only 등록 RPC는 사용자 source 잠금→최초 요청 결과/입력 hash→expected revision CAS→본인 Sample 분석 확인→기존 current source/history·immutable metadata·최초 응답을 같은 transaction에서 저장한다. 기존 ieum_profiles 성향/Identity 및 Project/Track/Mix를 변경하지 않는다. metadata는 source 이력의 참조이며 별도 앱/화면/성향 저장 구조가 아니다. 조회는 본인 RPC로 제한하고 private object ID를 결과에 그대로 노출하지 않는다.
+
+동일 요청은 최초 성공 응답을 유지하며 나중에 source가 바뀌어도 재시도 응답을 새 값으로 바꾸지 않는다. 현재 상태는 GET으로 읽는다. stale revision/다른 파일·원본 유실/DB 실패는 기존 source를 유지한다. 이전 revision 재참조는 저장된 이력의 검증 시각을 보존하고 새로운 그래픽 재생성 정책을 적용하지 않는다. 실제 원격 migration·App Setup/재측정/교체 바인딩·Sample 청취·R5 생성은 미완료다.
+
 ## 2026-10-13 실제 대표 Sample 특징 분석 준비
 
 POST /api/me/voice-sample-analyze는 {uploadIntentId}만 받는다. Auth/본인 Sample lookup과 기존 audio receipt 확인 후, private 원본 byte/hash 재검증 및 같은 decoder의 실제 PCM을 기존 analyzeAudioBuffer(v5)에 전달한다. PCM은 기존 count/discard 경로의 선택적 synchronous consumer로 읽으며 전체 Track 저장/submit에 버퍼 할당을 추가하지 않는다. 확정 decodedFrames에 해당하는 mono Float32만 할당하고 IEUM_SAMPLE_ANALYSIS_MAX_PCM_BYTES 예산을 초과하면 다운로드 전에 거부한다. 이는 PCM 버퍼 예산이며 전체 Node process RAM 보장은 아니다. 새 server-only 설정은 비어 있고 실제 환경을 변경하지 않았다.

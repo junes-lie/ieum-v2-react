@@ -1,4 +1,16 @@
+## 2026-10-13 R3 Voice Profile 원본 등록 transaction 준비
+
+기존 range provenance/voiceSourceRevision과 서버 확정 개인 Sample 분석을 GET/POST voice-source에 연결했다. 본인 Auth·명시적 source revision·원본 metadata/hash를 확인하고 private Storage를 재검사한 뒤 service-only SQL로 current source·이력/immutable metadata·최초 응답을 atomically 저장한다. 재측정/교체에 사용할 source CAS를 제공하며 stale revision/변경 입력/원본·DB 실패는 기존 source를 보존한다. 이후 source 수정 뒤에도 같은 최초 요청의 재시도 응답은 원래 결과이며 현재 상태는 GET으로 구분한다.
+
+range는 기존 브라우저 pitch 측정 선언값으로 provenance/hash를 보존하며 서버 재측정·물리 음성 인증으로 표시하지 않는다. 실제 Sample 분석/해독 출처와 구분하고 Sample의 F0로 range를 대체하지 않는다. 성향/Identity/Project/Track/Mix는 수정하지 않고 그래픽 갱신·기존 Record 재생성 정책을 확정하지 않는다. 별도 앱/화면/측정 과제·자동 local/demo 원본 이관은 추가하지 않았다.
+
+실제 AAC 분석/격리 SQL+주입 HTTP QA에 초기 등록/미등록·source 조회·revision 갱신·최초 응답 유지·stale/변조/타인 거부·Storage/DB 실패 보존·이전2 source 이력·현재 Part Fit·등록 source로2/3/4 Part 생성 및0Track/0Mix를 연결해 통과했다. Range는 별도 합성 metadata fixture이며 실제 마이크/서버 음역 측정의 증거가 아니다. 기존 참여/Profile API 회귀와 build40modules/525.39KB 통과, 기존>500KB 경고는 유지한다.
+
+실제 원격 migration/Auth/Storage·App session/Setup/재측정/교체 바인딩·실제 Sample 청취·R5 생성은 아직 미완료다. 다음은 기존 클라이언트 session의 원격 source 조회/등록 및 catalog 연결이다. 사용자 미커밋3파일과 기존 구현/계획 이력을 보존한다.
+
 ## 2026-10-13 R3 대표 Sample 실제 특징 분석 준비
+
+Git/Production 확인: 검토한13파일만af8374b31374661517899b715dcebd3e9f2e91da로 commit/push,main/origin0/0이다. 사용자 변경3파일은 미커밋 보존했다. full SHA status pending/statuses0·deployment0으로 Git Integration READY/commit 일치는 미확인이다. Production analyze route의 비실제 bearer/빈 입력 POST503 SERVICE_NOT_CONFIGURED·capabilities200/preparation/모두false를 확인했다. 이 응답을 실제 feature 분석 실행·원격 migration·Profile 등록이나 최신 SHA 일치 증거로 쓰지 않는다. 이 문단은 commit 이후 로컬 기록이다.
 
 voice-sample-analyze API와 service-only sample_analysis 확정을 추가했다. 클라이언트 분석/features를 받지 않고 본인 원본 lookup·기존 실제 audio receipt→private Storage 원본 재검사→같은 decoder의 실제 PCM→기존 v5 분석기→features SHA256/assessment 저장으로 연결했다. source hash·byteLength·decoder receipt·분석 version을 보존하고 다른 분석으로 덮지 않는다. 기존 결과 재시도는 원본 byte를 재확인하며 새 decoder가 없어도 보존한 결과를 사용한다.
 
