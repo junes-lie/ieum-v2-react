@@ -1,3 +1,7 @@
+### R1/R2 늦은 종료 응답의 새 녹음 보호 — 2026-10-12
+
+취소된 Sample의 stop 응답이 새 Sample 시작 뒤 도착해 현재 collector를 지우는 actual 실패를 재현했다. 공통 종료 처리를 캡처한 recorder/collector 소유권으로 제한하고 offset을 해당 녹음에 묶는다. 새 Take timeline/Guide와 실제 Review bytes SHA exact·기존 Profile 보존, 정상/오류 재시도·늦은 chunk·collector release·종료 길이 회귀를 통과했다. 기존 이탈/직접 제출/성공 후 Mix 조건은 유지하며 관련 build→main 자동배포→Production qa:delayed-stop으로 마감한다. 실기기/음질·전체 단계 완료로 확대하지 않는다.
+
 ### R2 곡 기반 생성 입력 복귀 / R6 권한 근거 — 2026-10-12
 
 서로 다른 곡에서 생성 화면에 진입한 뒤 이전 방문에 Back하면 잘못된 곡을 만드는 경로를 actual 재현했다. 기존 history에 생성 진입 songId를 보존하고 곡별 초기화 입력을 맞춰 Back/Forward·최종 확인 전0개/확인 후1개·0 Track, 기존2–4 구성/Key/중복 방지/재로드 회귀를 통과했다. 기존 확인 후 생성 계약과 화면 수를 유지하며 main 자동배포→Production qa:project-song-history로 마감한다.

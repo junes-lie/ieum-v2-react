@@ -1,3 +1,11 @@
+### R1/R2 이전 종료 응답과 새 Take 소유권 — 2026-10-12
+
+실제 Sample 종료의 stop callback을 보류→My로 이탈→새 Sample 녹음→이전 callback 해제 시 새 Take chunks 배열이 지워지는 actual assertion 실패를 재현했다. stopRecording은 시작 시 recorder/chunks/sync offset을 캡처하고 stop 완료 시 같은 recorder와 collector를 소유하는지 확인한다. 취소/교체된 종료 응답은 새 timeline/Guide/RAF/collector·분석/URL을 변경하지 않고 null로 반환한다. 반환 offset도 이전 녹음의 snapshot을 유지한다. 기존 UI의 이탈/저장 정책이나 데이터 원본을 변경하지 않는다.
+
+새 native QA는 실제 새 recorder/chunks/활성 segment/Guide 보존, Review의 encoded bytes SHA exact·기존 Profile 유지·pageerror0을 확인한다. 기존 늦은 dataavailable·collector release/실제 bytes, stop 거부 재시도, 중복 stop/pause/resume, 정상·decode failure·paused 종료의 hash/길이/복원, audio foundation 회귀 통과. build38modules/505.06KB 기존500KB 경고 유지. synthetic microphone의 callback 지연 시험이며 물리 마이크·음질/실기기 완료로 표시하지 않는다. qa:delayed-stop과 기능 변경 묶음만 main Git Integration→Production으로 마감하며 사용자 서버3파일/디자인/모델 원본은 보존한다.
+
+직전7c3998a main0·0/Vercel success/Production index-fPouIHL3.js SHAA9D15EDD906B5B18C26171DE143980AB773924814C12B08A4A0B5C2354648CA5 exact, Production 곡 기반 생성 history→최종 확인1개/0Track QA를 확인했다. 전체 R1/R2·서버·Identity·음악/시각·실기기 gate는 미완료 유지한다.
+
 ### R2 곡 기반 Project 생성의 실제 이력 — 2026-10-12
 
 Collection의 A Thousand Years→곡 기반 생성 방문, 이후 Ocean Eyes→생성 방문 뒤 Back에서 이전 생성 Review가 Ocean Eyes4 Parts를 표시하는 실제 오류를 재현했다. 생성 진입 songId(null의 Home 곡 선택 포함)를 현재 history/go/popstate에 보존하고 곡 기반 CreateProject를 해당 입력별로 분리해 기존 local state가 다른 곡의 초기 입력을 유지하지 않도록 했다. Back/Forward의 서로 다른 곡·확인 전0개/최종 확인1개·실제 ocean-eyes ID·0 Track과 기존2–4 Part/Key/검토 Back/중복 confirm/재로드·Song Detail 이력·단일 App Node 렌더 통과. 새 생성/임시본 보존 정책·화면·디자인 변경 없음. build38modules/505.01KB 기존500KB 경고 유지. 관련 QA/build→main Git Integration→Production QA로 마감하며 서버 사용자3파일은 제외한다.

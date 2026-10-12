@@ -448,18 +448,22 @@ export function updateRecordingGuides(guides) {
 export async function stopRecording() {
   if (!runtime.recorder || (runtime.recorder.state === 'inactive' && !runtime.chunks.length)) return null
   const recorder = runtime.recorder
+  const chunks = runtime.chunks
+  const syncOffsetSec = runtime.syncOffsetSec
   const elapsedAtStop = runtime.activeElapsedSec + (runtime.recordingSegmentActive ? Math.max(0, context().currentTime - runtime.activeStartedAt) : 0)
   if (recorder.state !== 'inactive') await new Promise(resolve => {
     recorder.addEventListener('stop', resolve, { once: true })
     try { recorder.stop() }
     catch(error) { recorder.removeEventListener('stop',resolve);throw error }
   })
+  // Navigation may cancel this Take and start another while stop is pending.
+  if(runtime.recorder!==recorder || runtime.chunks!==chunks)return null
   runtime.activeElapsedSec = elapsedAtStop
   runtime.recordingSegmentActive = false
   cancelAnimationFrame(runtime.raf)
   stopGuides()
   runtime.recordingGuideState = null
-  const blob = new Blob(runtime.chunks, { type: recorder.mimeType || 'audio/webm' })
+  const blob = new Blob(chunks, { type: recorder.mimeType || 'audio/webm' })
   // The recorder callback also closes over this collector; replacing only the
   // runtime pointer leaves the encoded chunks retained by that callback.
   runtime.chunks.length = 0
@@ -487,7 +491,7 @@ export async function stopRecording() {
     features,
     bytes: blob.size,
     mimeType: blob.type,
-    syncOffsetMs: Math.round(runtime.syncOffsetSec * 1000)
+    syncOffsetMs: Math.round(syncOffsetSec * 1000)
   }
 }
 

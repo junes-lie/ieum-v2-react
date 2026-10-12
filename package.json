@@ -13,6 +13,7 @@
     "qa:mix-errors": "node qa/verify-mix-source.mjs && node qa/verify-mix-save-preservation.mjs",
     "qa:audio-lengths": "node qa/verify-audio-lengths.mjs",
     "qa:stop-retry": "node qa/verify-sample-stop-retry.mjs",
+    "qa:delayed-stop": "node qa/verify-delayed-stop-ownership.mjs",
     "qa:setup-return": "node qa/verify-setup-part-return.mjs",
     "qa:project-song-history": "node qa/verify-project-song-history.mjs",
     "qa:submission": "node qa/verify-submission-atomic.mjs",
