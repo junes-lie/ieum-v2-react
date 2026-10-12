@@ -1,4 +1,14 @@
+## 2026-10-13 R3 사용자 세션과 원본 전송 경계 준비
+
+기존 remote transport를 사용하는 serviceSession을 추가하고 transferAndSubmitTrack의 선택적 session 경로에 연결했다. 실제 capability/authenticated UUID 검증 뒤에만 세션을 활성화하고 token은 메모리에만 둔다. remote 사용자별 private state key를 구분하며 기존 local/demo key나 원본을 이관/삭제하지 않는다. 각 실행은 동일 사용자/세션 revision에 고정되고 logout/계정 변경 시 다음 요청·늦은 결과 적용을 거부한다. 원격 전송은 take.userId가 현재 실제 사용자와 일치해야 하며 로컬 jisun/타인 원본은 거부한다. 전송 중 logout이면 업로드 뒤 제출하지 않는다. 이미 서버에 전달된 요청을 rollback했다고 주장하지 않으며 원본·중복 키를 보존한다.
+
+qa:service-session의 preparation 비활성·실제 형태 UUID 확인·사용자 key 분리·보관 token 비노출·이전 session 참조/늦은 응답 거부·타인/demo 원본 전송 차단·upload 중 logout·같은 사용자 전송/확정 길이 응답·원본 hash 보존을 통과했다. 기존 Track transfer QA와 build40modules/525.39KB도 통과했다. 별도 이번 호출의 TEMP snapshot에서 HEAD의 미수정 projectService.js와도 동일 QA를 통과해 기존 사용자 transport3파일의 미커밋 변경에 의존하지 않음을 확인했다. TEMP만 정리했고 원본/사용자 파일은 유지한다.
+
+App.jsx는 여전히 기존 local 사용자/데이터/녹음 흐름이다. 실제 Auth 제공 환경·Google OAuth/로그인 복귀 문맥·원격 catalog/전체 Profile·로컬/원격 화면 바인딩은 아직 연결하지 않았다. 새 로그인 UX나 사용자 데이터 자동 업로드를 추가하지 않았고 capability false를 유지한다. 이번 내부 세션 경계를 실제 로그인/협업 완료로 표시하지 않는다.
+
 ## 2026-10-13 R3 본인 원본 검증과 HTTP 제출 연결 준비
+
+Git/Production 확인: 이번11파일만f9460937eb4b114ad6872857b930f9a275f4326b로 commit/push,main/origin0/0이다. 기존 사용자 서버3파일만 미커밋 보존한다. Production tracks 미인증401 AUTH_REQUIRED·비실제 QA bearer503 SERVICE_NOT_CONFIGURED와 앱200/index-Cy9rymZA.js·capabilities200/preparation/모두false를 실제 HTTP로 확인했다. 해당full SHA status pending/statuses0·deployment0으로 최신자동배포/READY는 미확인이다. 거부 응답은 최신해독/제출 로직이나 실제 서버 연결 성공의 증거가 아니다. 이 문단은 commit 이후 로컬 기록이다.
 
 기존 tracks 제출 API에 인증 사용자별 ieum_get_owned_upload 조회→private Storage의 실제 원본 해독→service-only receipt 확정→기존 사용자 권한의 직접 제출 RPC를 연결했다. 브라우저가 보낸 duration은 입력 형식 검증용이며 DB 확정 제출에는 서버 PCM frame 기반 길이를 사용한다. 응답 duration도 확정 길이다. 이미 확인된 원본의 재시도는 저장한 decoder/analysis version·길이를 유지하고 현재 Storage의 byte/hash/MIME를 다시 검사한다. 클라이언트에게 secret/object path/receipt를 공개하지 않는다. decoder 설정이 없는 새 원본은503이며 준비만으로 Track를 확정하지 않는다.
 

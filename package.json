@@ -21,6 +21,7 @@
     "qa:audio-decoder": "node qa/verify-audio-decoder.mjs",
     "qa:audio-receipt": "node qa/verify-original-audio-receipt.mjs",
     "qa:submission-audio-api": "node qa/verify-submission-audio-api.mjs",
+    "qa:service-session": "node qa/verify-service-session.mjs",
     "qa:playback": "node qa/verify-player-request-ownership.mjs",
     "qa:mix-errors": "node qa/verify-mix-source.mjs && node qa/verify-mix-save-preservation.mjs",
     "qa:audio-lengths": "node qa/verify-audio-lengths.mjs",

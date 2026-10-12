@@ -2,6 +2,10 @@
 
 ## 확정된 서비스 결정과 접근 대기
 
+2026-10-13 사용자 경계 준비: createServiceSession은 기존 remote transport 위에서 실제 지원 capability→검증된 me/session UUID를 확인한다. token은 저장하지 않으며 stateKey는 기존 local key와 다른 remote 사용자 범위다. disconnect는 세션 revision만 바꾸고 데이터/원본을 지우지 않는다. session.run의 보호된 transport는 요청 전/실제 전송 시/응답 뒤 revision을 확인한다. 이미 전송된 변경의 취소를 보장하지 않으므로 서버 idempotency와 실제 확정 응답이 계속 필요하다. 이전 사용자 응답을 새 사용자 상태로 적용하지 않는다.
+
+transferAndSubmitTrack({session,...})은 같은 검증 사용자에게 속한 take.userId만 전송한다. upload 중 session 변경이면 submit을 막고 원본·uploadKey/submissionKey를 유지한다. 실제 서버 capability가 preparation이면 연결을 활성화하지 않고 local로 조용히 우회하지 않는다. 현재 App은 기존 local 모드이며 Google OAuth/기존 진입 복귀와 전체 remote source 바인딩을 아직 활성화하지 않았다. 이번 모듈은 별도 앱/로그인 화면을 만들거나 local 데이터 자동 이관 정책을 확정하지 않는다.
+
 사용자 답변은 기존 서비스 없음→구성안 준비, Google 로그인 우선이다. 같은 계정·프로젝트 존재 여부나 접근 요청을 반복하지 않는다. 실제 Supabase/Google OAuth 연결 수단은 외부 의존성으로 대기하며 새 정보가 제공되었을 때만 확인한다. 접근 없이 가능한 기존 DB/API 준비를 진행하고 실제 계정 생성·서비스 연결 완료와 구분한다. 비용0원 및 완료 보장 없는 무료 크레딧 시험 금지도 유지한다.
 
 ## 원본 오디오 해독 경계

@@ -2,7 +2,16 @@ import { ServiceError } from './projectService.js'
 
 // The provider adapter uploads the Blob. This module never deletes a Draft or
 // treats an uploaded object as a submitted Track, generated Layer or final Mix.
-export async function transferAndSubmitTrack({ service, projectId, partId, take, uploadKey, submissionKey, uploadOriginal }) {
+export async function transferAndSubmitTrack({ service, session, projectId, partId, take, uploadKey, submissionKey, uploadOriginal }) {
+  if(session){
+    if(typeof session.run!=='function')throw new ServiceError('사용자 세션을 확인해야 해요.',{code:'AUTH_REQUIRED'})
+    if(typeof uploadOriginal!=='function')throw new ServiceError('업로드 서비스가 설정되지 않았어요.',{code:'SERVICE_NOT_CONFIGURED'})
+    return session.run(({userId,service:scoped,assertCurrent})=>{
+      if(take?.userId!==userId)throw new ServiceError('현재 사용자의 녹음 원본을 확인해 주세요.',{code:'TAKE_OWNER_MISMATCH'})
+      return transferAndSubmitTrack({service:scoped,projectId,partId,take,uploadKey,submissionKey,
+        uploadOriginal:async(intent,original)=>{assertCurrent();const result=await uploadOriginal(intent,original);assertCurrent();return result}})
+    })
+  }
   if (!(take?.blob instanceof Blob) || !take.blob.size || !take.blob.type.startsWith('audio/')) throw new ServiceError('원본 녹음이 필요해요.', { code: 'TAKE_REQUIRED' })
   if (!Number.isFinite(take.duration) || take.duration <= 0 || !Number.isFinite(take.syncOffsetMs ?? 0) || (take.syncOffsetMs ?? 0) < 0 || (take.syncOffsetMs ?? 0) >= take.duration * 1000) throw new ServiceError('녹음 길이와 정렬 정보를 확인해 주세요.', { code: 'INVALID_TAKE_METADATA' })
   if (![projectId, partId].every(value => typeof value === 'string' && value.trim() && !['.', '..'].includes(value))) throw new ServiceError('대상 ID를 확인해 주세요.', { code: 'INVALID_ID' })
