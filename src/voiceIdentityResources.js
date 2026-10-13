@@ -1,6 +1,7 @@
 // Explicit result consumption only. Object URLs are temporary and never carry
 // private owner IDs. No result selection, inference or submission side effect.
 import {loadPersonalIdentityResult,loadStoredProjectRecordInput,loadStoredTrackVoiceLayer} from './voiceIdentityStore.js'
+import {loadRemoteOwnedVoiceImage} from './ownedVoiceImages.js'
 
 async function decoded(blob){
   const url=URL.createObjectURL(blob)
@@ -19,6 +20,24 @@ export async function loadStoredPersonalGraphic(selector){
   return {image:resource.url,model:result.artifact.model,
     ref:{id:result.ref.id,revision:result.ref.revision,outputSha256:result.ref.outputSha256},
     get disposed(){return resource.disposed},dispose:resource.dispose}
+}
+
+// Reuse the same native decoder/URL lifetime for an explicit owned remote
+// result. No Profile write, selection, inference or model attribution.
+export async function loadRemotePersonalGraphic({session,ref,maxBytes}){
+  const reference=structuredClone(ref)
+  if(typeof session?.run!=='function')throw new Error('Connected Identity owner is required')
+  return session.run(async({assertCurrent})=>{
+    let resource
+    try{
+      const result=await loadRemoteOwnedVoiceImage({session,kind:'personal-image',ref:reference,maxBytes})
+      assertCurrent()
+      resource=await decoded(result.blob)
+      assertCurrent()
+      return {image:resource.url,ref:{id:reference.id,revision:reference.revision,outputSha256:reference.outputSha256},
+        get disposed(){return resource.disposed},dispose:resource.dispose}
+    }catch(error){resource?.dispose();throw error}
+  })
 }
 export async function loadStoredProjectRenderResources(ref){
   const graph=await loadStoredProjectRecordInput(ref)

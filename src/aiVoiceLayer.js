@@ -1,4 +1,5 @@
 // This validates received model output; it does not run or impersonate inference.
+import {submittedProjectTracks} from './projectModel.js'
 const SHA256 = /^[a-f0-9]{64}$/
 
 async function digest(blob) {
@@ -36,12 +37,15 @@ export async function validateAiVoiceLayer(track, projectSeed) {
 }
 
 export async function loadAiVoiceFields(tracks, projectSeed, partIds, projectId) {
-  const candidates = Object.values(tracks || {}).filter(track => track.aiVoiceLayer)
+  const snapshot=structuredClone(tracks || {}),parts=[...partIds]
+  const submitted=new Set(submittedProjectTracks({id:projectId,partIds:parts},snapshot))
+  const candidates = Object.values(snapshot).filter(track => track.aiVoiceLayer)
   const fields = []
   for (const track of candidates) {
-    if (track.projectId !== projectId || !partIds.includes(track.partId) || fields.some(field => field.partId === track.partId)) {
+    if (track.projectId !== projectId || !parts.includes(track.partId) || fields.some(field => field.partId === track.partId)) {
       throw new Error('AI Voice Layer가 현재 프로젝트의 고유 Part와 일치하지 않습니다.')
     }
+    if(!submitted.has(track))continue
     const artifact = await validateAiVoiceLayer(track, projectSeed)
     const url = URL.createObjectURL(artifact.blob)
     try {
@@ -51,7 +55,7 @@ export async function loadAiVoiceFields(tracks, projectSeed, partIds, projectId)
       if (image.naturalWidth !== 512 || image.naturalHeight !== 512) {
         throw new Error('AI Voice Layer의 생성 크기는 512×512여야 합니다.')
       }
-      fields.push({projectId,projectSeed:String(projectSeed),partId:track.partId, image, outputSha256:artifact.outputSha256})
+      fields.push({projectId,projectSeed:String(projectSeed),partId:track.partId, image,sourceSha256:artifact.sourceSha256,outputSha256:artifact.outputSha256})
     } finally { URL.revokeObjectURL(url) }
   }
   return fields

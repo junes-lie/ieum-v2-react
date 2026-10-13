@@ -15,6 +15,7 @@
     "qa:remote-voice-lineage": "node --max-old-space-size=384 qa/verify-remote-voice-lineage.mjs",
     "qa:remote-record-consumer": "node --max-old-space-size=192 qa/verify-remote-record-consumer.mjs",
     "qa:owned-voice-images": "node --max-old-space-size=192 qa/verify-owned-voice-images.mjs",
+    "qa:remote-identity-image": "node --max-old-space-size=192 qa/verify-remote-identity-image-browser.mjs",
     "qa:generated-image": "node qa/verify-generated-image.mjs",
     "qa:profile-sample-upload-db": "node qa/verify-profile-sample-upload-database.mjs",
     "qa:profile-sample-upload-api": "node qa/verify-profile-sample-upload-api.mjs",

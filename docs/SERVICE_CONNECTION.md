@@ -1,5 +1,11 @@
 # 단일 앱 서비스 연결 계약
 
+## 본인 원격 Identity의 기존 화면 리소스
+
+loadRemotePersonalGraphic({session,ref,maxBytes})은 본인 이미지 bytes를 기존 native Image.decode로 검증한 뒤 {image,ref,disposed,dispose}를 반환한다. image는 임시 opaque Blob URL이고 React VoiceIdentity의 기존 image prop으로 읽을 수 있다. caller는 unmount/선택 변경 시 dispose해야 하며 결과는 localStorage/Profile에 URL로 저장하지 않는다. decode 중 session 변경은 거부하고 발급된 URL도 회수한다. 모델명/실제 생성·승인/자동 최신 선택을 선언하지 않는다. 운영 사용자/서비스 모드는 자동 활성화하지 않는다. qa:remote-identity-image는 실제 native 해독/React prop과 URL 정리만 검증하는 격리 로컬 QA다.
+
+기존 local/legacy loadAiVoiceFields도 submittedProjectTracks에 해당하는 final만 소비한다. 입력 snapshot을 고정하고 반환 field에 sourceSha256를 보존하며 React는 현재 final·원본/출력 hash를 대조해 GPU에 전달한다. 기존 미표기 legacy final 계약은 유지하고 temporary Review/Processing/Failed에 aiVoiceLayer가 있더라도 confirmed field를 활성화하지 않는다. 이 경계는 서비스 capability나 AI/Track/Mix 성공을 만들지 않는다.
+
 ## 원격 Project 입력의 client 소비
 
 owned_voice_image_chunks는 개인/Track 결과 저장 migration 뒤 추가하며 운영에는 적용하지 않았다. 기존 /api/me/voice-identity에 kind=personal-image&id&revision&offset&length 또는 kind=track-image&projectId&partId&id&revision&offset&length를 명시한다. 본인 결과만 읽고1–262144byte 조각/전체8MiB·offset을 검증한다.206 application/octet-stream/Content-Range/X-Content-SHA256/private no-store 응답은 저장 receipt/hash와 연결되며 공개 URL/원문 user ID/manifest는 없다. metadata 조회 계약은 유지하고 기존 배포 함수12개를 유지한다.

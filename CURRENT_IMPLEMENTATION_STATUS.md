@@ -1,4 +1,16 @@
+## 2026-10-13 R5 본인 원격 이미지의 기존 React 리소스 연결
+
+기존 loadAiVoiceFields는 aiVoiceLayer 유무만 검사했으며 저장 제출 상태를 판정하지 않았다. 기존 submittedProjectTracks를 재사용해 실제 final Track만 읽고 caller 입력은 첫 await 전에 clone한다. legacy final(기존 kind/status 없음) 규칙은 유지한다. 기존 React 바이닐도 현재 제출 상태/원본·출력 hash와 맞는 필드만 GPU에 전달하고 fieldSignature로 갱신해 async 재조회 전의 오래된 AI texture 재사용을 막는다. Review 임시 envelope/기존 motion·제출수/Mix/원본/형상 규칙은 변경하지 않는다. 같은 native QA의 실제 React/WebGL에서 성공 제출 uFieldEnabled1, Review/Draft/Processing/Failed0, 오류0 및 조회중 caller 변경 차단이 통과했다. 테스트 texture는 AI 생성/승인 증거가 아니다.
+
+관련 기존 native DB/reload/React Identity·Project·Home·Collection 커버/wrong-Project 거부·URL 정리 QA도 통과했고 build45modules/index-CGQnGpQB.js553.17KB·기존500KB 경고 유지. Git/자동배포/Production 결과는 실제 확인 후 기록한다. 사용자 서버3파일/연구·원본과 단계 상태를 보존한다.
+
+loadRemotePersonalGraphic은 기존 session/본인 exact ref·byte 예산/원격 조각 수신을 사용하고 기존 decoded의 native Image.decode/512 크기/opaque Blob URL·dispose를 재사용한다. 해독 중 logout은 같은 outer scope에서 거부하며 발급 URL도 정리한다. 모델명/선택/생성/승인을 만들어내거나 Profile/Track/Mix를 쓰지 않는다. 운영 계정·remote 모드·승인 결과를 자동 활성화하지 않는다.
+
+qa:remote-identity-image는 별도 로컬 Vite/headless Edge에서 실제 PNG 해독→기존 React VoiceIdentity image prop 렌더·unmount 이후 dispose, 깨진 PNG 거부/URL0, 해독 도중 logout/URL0을 확인했다. canvas test PNG/Auth/HTTP fixture이며 실제 AI/Figma/시각 승인·원격 사용자 인수는 아니다. 사용자 탭/앱·모델/OS/runtime는 변경하지 않았다. 첫 sandbox는 EPERM rename 및 Edge Target page, context or browser has been closed/site list error=-5였고 같은 QA의 승인된 host 실행은 통과했다.2GiB free 시작 guard·단일 브라우저 및 finally close를 유지한다. 이미 완료된 전체 DB/Flow/마이크 QA를 반복하지 않았다.
+
 ## 2026-10-13 R5 원격 Project 입력 소비 검증
+
+배포 확인:08ef312e13969ea0341d6e75d923d3fc05038f51 main push/origin 동일, exact SHA Production7038633867 및 Vercel Deployment has completed 확인. Production personal-image/track-image/project-record 익명401 AUTH_REQUIRED/private no-store, JS200 SHA256eb99e97a4f966d80a155deea3c9008934a6b6e087dae224341634b7c3b44dda0 로컬 일치. literal READY/운영 인증 사용자·migration·이미지/실제 AI·UI 활성화 완료 증거는 아니다. 이 문단은 배포 후 로컬 기록이며 다음 의미 있는 묶음과 구분한다.
 
 개인/Track 저장 PNG의 본인 exact revision 전달도 기존 인증 API에 연결했다. 새 owned_voice_image_chunks migration은 본인 조회 RPC를 먼저 적용하고 최대262144byte 조각/전체8MiB 제한의 bytes와 저장 decode receipt만 내부로 반환한다. API는 receipt/ref/범위·크기를 확인해206 private no-store binary로 전달하며 manifest/원문 user ID/URL은 노출하지 않는다. client는 session scope에서 순차 수신·명시 byte 예산·최종 전체 SHA/PNG512 크기 대조 후 Blob만 반환한다. 캐시/URL 생성/자동 선택/운영 UI 활성화/생성은 없다. Project 참여자의 다른 사람 이미지 접근 정책은 추가하지 않는다.
 

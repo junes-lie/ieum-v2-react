@@ -484,7 +484,10 @@ function ResonanceRecord({ active = [true, false, true, false], layers = [], par
   const candidateRender=recordKey && storedRender?.key===recordKey && !storedRender.result?.disposed?storedRender.result:null
   const selectedRender=candidateRender?.input.projectId===projectId && candidateRender.input.projectSeed===String(seed) &&
     candidateRender.input.partIds.join(':')===partIds?candidateRender:null
-  const renderFields=recordKey?(selectedRender?.fields || []):aiFields
+  const submittedAiTracks=submittedProjectTracks({id:projectId,partIds:parts.map(part=>part.id)},tracks)
+  const renderFields=recordKey?(selectedRender?.fields || []):aiFields.filter(field=>submittedAiTracks.some(track=>track.partId===field.partId &&
+    track.aiVoiceLayer?.outputSha256===field.outputSha256 && track.aiVoiceLayer?.sourceSha256===field.sourceSha256))
+  const fieldSignature=JSON.stringify(renderFields.map(field=>[field.projectId,field.projectSeed,field.partId,field.sourceSha256 || '',field.outputSha256]))
   useEffect(() => { levelRef.current = level }, [level])
 
   const numericSeed = typeof seed === 'number' ? seed : [...String(seed)].reduce((sum,char,index)=>sum+char.charCodeAt(0)*(index+17),0)
@@ -547,7 +550,7 @@ function ResonanceRecord({ active = [true, false, true, false], layers = [], par
       setRendererError('WEBGL UNAVAILABLE')
     }
     return () => renderer?.dispose()
-  }, [slotSignature, recordingSlot, state, seed, projectId, partIds, aiFields, selectedRender])
+  }, [slotSignature, recordingSlot, state, seed, projectId, partIds, fieldSignature, selectedRender])
 
   const layerCount = layers.length ? layers.filter(Boolean).length : active.filter(Boolean).length
   return <figure className={`record ${compact ? 'record-compact' : ''}`} data-state={state} data-record-signature={projectRecordSignature(String(seed),layers)} data-resonance-engine="webgl-particles" aria-label={label || `공명 레코드, ${layerCount}개 Track 활성`}>

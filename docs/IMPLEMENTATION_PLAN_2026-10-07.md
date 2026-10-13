@@ -22,6 +22,10 @@
 
 ### 실제 진행과 다음 gate
 
+2026-10-13 본인 원격 이미지 소비: loadRemotePersonalGraphic으로 기존 exact ref/받은 bytes를 기존 native decoder/URL lifetime에 연결했다. 실제 로컬 브라우저의 PNG 해독/기존 React VoiceIdentity prop 렌더·실패 및 logout URL 정리 검증 통과. 새 화면/형상/모델 선택/자동 Profile 쓰기·운영 활성화는 없다. 실제 결과 승인·운영 연결·Project의 다른 참여자 결과 공급은 계속 별도 gate이며 전체 R5 완료와 구분한다. 기존 단계·예산·과거 완료 근거를 보존한다.
+
+같은 묶음의 확인된 소비 결함: legacy AI field loader/React GPU 전달이 Draft·Review 등 비제출 상태를 별도로 검사하지 않았다. 기존 submittedProjectTracks/clone/원본·출력 hash와 GPU field signature를 적용해 성공한 실제 final만 표시한다. 실제 native React/WebGL QA의 성공1/Review·Draft·Processing·Failed0·오류0 확인. 이미 완료된 제출/Mix 엔진을 재구현하지 않고 그래픽 소비 경계만 수정한다.
+
 2026-10-13 R5 RAM 독립 received image 검증: 기존 trusted FFmpeg/decoder identity로512 PNG 첫 프레임 RGBA를 실제 해독·count/discard하고 private 저장 결과에 decode receipt를 보존한다. 개인/Track 저장 앞에 연결해 header/hash만으로 깨진 이미지가 저장되는 누락을 닫았다. 실제 decoded test raster/손상·잘림·크기/timeout/프로세스 정리 및 실제 격리 SQL 개인→Track→2–4 Part 입력 pipeline 통과. 모델/새 runtime/OS/시각 정책을 변경하지 않는다. APNG 전체 프레임·실제 AI 생성/승인 형상·실서비스/App 활성화/실기기 gate는 계속 남고 전체 R5 완료로 처리하지 않는다. 이전 미해독 기록은 과거 증거로 보존한다. 실효 공수 미측정·기존 예산 유지.
 
 9c48159ef8b2ad4f8f6a5ff32ded68e0316fdf04 계보 배포: exact SHA Production7038118968/Vercel success, 두 신규 kind 조회 API 익명401/private no-store·Production JS200/hash 로컬 일치. DB migration/실제 사용자/AI 인수는 별도다.
