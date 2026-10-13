@@ -97,6 +97,13 @@ export function createSupabaseAudioStorage({ env = process.env, fetchImpl = glob
       return { signedUploadUrl: url.href }
     },
     verifyOriginal: (objectId,expected) => verifyOriginal(objectId,expected),
+    async loadVerifiedOriginal(objectId,expected,maxBytes) {
+      if(!Number.isSafeInteger(maxBytes) || maxBytes<=0 || !Number.isSafeInteger(expected?.size) || expected.size>maxBytes)
+        throw new ServiceError('원본 파일의 실행 예산을 초과했어요.',{code:'MIX_MEMORY_BUDGET_EXCEEDED'})
+      const chunks=[]
+      const verified=await verifyOriginal(objectId,expected,chunk=>{chunks.push(chunk.slice())})
+      return new Blob(chunks,{type:verified.contentType})
+    },
     async verifyOriginalAudio(objectId,expected,decoderOptions) {
       // A private staging copy allows seeking MP4 without retaining an entire
       // recording in RAM. Only hash-matched bytes are passed to the decoder.

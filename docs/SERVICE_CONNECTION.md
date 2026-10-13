@@ -1,5 +1,12 @@
 # 단일 앱 서비스 연결 계약
 
+## 2026-10-13 R3 제출 원본→native Mix→저장 완료 연결
+
+서버 내부 executeProjectMix(jobId)를 기존 renderProjectMix/persistProjectMix에 연결했다. service-only ieum_get_mix_render_context가 현재 job snapshot·실제 제출 Track/검증 receipt·같은 Project Source·Part 목록을 제공하고, 기존 private Storage 스트림 검증을 재사용한 bounded loadVerifiedOriginal로 원본을 취득한다. 클라이언트 원본/특징/완료 주장은 받지 않으며 반주는 서버의 trusted loadBacking resolver가 실제 Source SHA와 맞는 Blob/receipt를 제공해야 한다. 승인 TEMP runtime에서 기존 DSP만 실행하고 immutable 업로드·실제 해독·최종 제출 snapshot 재검증 성공 뒤에만 완료한다. 기존 qa:native-mix를 확장해 실제 격리 PostgreSQL 제출/권한·FFmpeg receipt·native2/3/4 Part 출력→Storage 응답 주입→결과 decode→완료 transaction 및 원본 변조 차단·완료 DB 실패 시 mixing 유지·동일 출력 재시도/업로드 재사용·원본 불변을 검증했다. 기존 server Storage QA/build 통과·기존500KB 경고 유지. Storage/Auth 네트워크는 주입이며 실제 원격 서비스 완료로 계산하지 않는다. 자동 scheduler/운영 runtime 설치·capability 활성화는 없다. 실제 catalog backing 저장 위치/resolver 및 host 자원 제한·job trigger/스케줄러·Google/DB/Storage·App binding과 실기기/음악/디자인 인수는 미완료다. 기존 단계/예산/미정 정책·사용자 서버3파일은 보존하며 실효 공수는 미측정이다.
+
+Migration 순서: project_tracks → verified_audio_receipts → mix_completion_context → mix_output_intents → mix_render_context. RPC는 service_role만 실행하며 새 endpoint는 열지 않는다. qa:native-mix는 기존 IEUM_PGLITE_ROOT도 필수이며 SQL 시험 heap384MiB·native child heap128MiB를 사용한다. loadBacking은 브라우저 입력이 아니라 서버 catalog adapter이며 아직 운영 구현/음원 ingest는 없다.
+
+
 ## 2026-10-13 R3 native Mix 실행 경계 검증
 
 승인된 TEMP node-web-audio-api2.2.0을 명시한 서버 내부 renderProjectMix를 추가했다. 제출 성공한 실제2–4 Part·같은 Project Source·기존 decoded receipt·원본 SHA와 backing SHA를 검사한 뒤 기존 src/audio.js createAutoMix만 실행한다. 입력/PCM/출력/길이 예산 및 timeout은 필수 설정이다. 처음 worker_threads 시험은 Windows 종료코드 -1073741819(접근 위반)로 부모 Node까지 종료됐으므로 native 실행을 별도 Node process로 격리했다. 새 runtime/앱 dependency 설치나 별도 DSP는 없다. 실제 FFmpeg receipt와 승인 TEMP runtime을 쓰는 qa:native-mix에서2/3/4 Part+backing 주파수·비무음·-3dBFS peak·동일 입력 hash 재현·원본 불변, Review/타 Project/변조/잘못된 receipt 거부·입력/PCM/출력 예산·timeout을 확인했다. 출력은 각각0.65초 stereo44100Hz WAV114704bytes이며 단독 TEMP 시험과 SHA가 같다. 부모 RSS59MiB는 종료 시점 값이며 native child peak/OS RAM 상한 증거가 아니다. V8 heap128MiB와 PCM admission은 native RSS hard limit이 아니므로 운영 host 자원 제한이 별도로 필요하다. HTTP endpoint/운영 capability/DB 성공 상태를 활성화하지 않았다. 실제 job context·private Storage 원본 취득→renderer→기존 persistProjectMix 연결, Linux 운영 runtime 승인/설정·scheduler·원격 서비스·실제 음악/청취는 미완료다. 사용자 서버3파일·기존 단계/예산/미정 정책을 보존하며 실효 공수는 미측정이다.
