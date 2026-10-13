@@ -7,7 +7,7 @@ import { ServiceError } from '../src/projectService.js'
 
 const error = (code,status=409) => new ServiceError('녹음 파일의 실제 오디오를 확인하지 못했어요. 원본은 유지됩니다.',{code,status})
 
-async function decoderIdentity(executable) {
+export async function decoderIdentity(executable) {
   const hash=createHash('sha256')
   try {for await(const chunk of createReadStream(executable))hash.update(chunk)}
   catch {throw error('AUDIO_DECODER_UNAVAILABLE',503)}

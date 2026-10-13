@@ -1,3 +1,11 @@
+## 2026-10-13 R5 received PNG 실제 해독과 저장 receipt
+
+verifyGeneratedPng는 기존 configured FFmpeg를 재사용해512×512 PNG의 첫 프레임을 실제 RGBA로 해독하고 출력1048576bytes를 세어 폐기한다. resize/픽셀 buffer 축적/AI 추론/URL 입력/새 runtime 설치는 없다. 입력8MiB·trusted executable·timeout/단일 thread/file,pipe 제한을 사용하며 child close 뒤 반환하고 새로 만든 staging file/directory만 비재귀 정리한다. 기존 decoderIdentity를 재사용해 decoder version/SHA 및 이미지 SHA/크기/첫 프레임 해독 receipt를 받는다. APNG 전체 애니메이션 검증이나 시각 승인·OS RSS hard limit 증거는 아니다.
+
+개인 결과/Track 레이어 trusted 저장 함수 앞에 실제 해독을 연결하고 PNG bytes와 imageReceipt를 함께 불변 result_data에 보존한다. IEUM_IMAGE_DECODER_PATH 또는 기존 IEUM_AUDIO_DECODER_PATH를 명시해야 하며 미설정이면 저장을 거부한다. 실제 env/운영 서버/runtime는 활성화하지 않았다. 최소24byte header fixture를 실제 해독 가능한 test PNG로 바꾸었으며 임의 fixture를 AI로 승격하지 않는다. 실제 decoder 테스트의 replay/hash/잘림·손상·잘못된 크기·timeout/live child0 통과. 기존 SQL 개인 registry 및2/3/4 Part 계보 pipeline도 실제 PNG 해독까지 연결돼 통과했고 private 저장 receipt·원본/queued Mix 유지 확인했다. 이전 “PNG decode 미완료” 기록은 당시의 상태로 보존하며 서버 received result 첫 프레임 검증 범위만 닫는다. 실제 AI/승인 형상/모바일·운영 서비스 인수는 미완료다.
+
+직전 계보 저장 9c48159ef8b2ad4f8f6a5ff32ded68e0316fdf04 main push/exact SHA Production7038118968/Vercel Deployment has completed 확인. Production kind=track-layer/project-record 익명401 AUTH_REQUIRED/private no-store, JS200 SHA256eb99e97a4f966d80a155deea3c9008934a6b6e087dae224341634b7c3b44dda0 로컬 일치. 실제 서버 migration/계정/AI 활성화와 구분한다.
+
 ## 2026-10-13 R5 원격 Track 레이어·Project 입력의 불변 계보
 
 storeReceivedTrackVoiceLayer는 trusted worker가 전달한 생성 결과를 실제 submitted Track/본인 개인 결과의 exact revision·저장 traits·서버 분석에 연결한다. private Storage 원본의 hash/MIME/길이와 기존 AI layer 계약을 검사하고 input/controls/개인 ref/모델·버전/출력 hash/PNG bytes를 불변 레이어 revision으로 보존한다. 입력 예산과512×512 PNG header를 확인한 뒤 원본을 다운로드하며 서명/header fixture를 실제 이미지 decode/AI 실행 증거로 간주하지 않는다. service-only context/등록 RPC와 본인 exact ref 조회 API를 분리한다. 생성·stored와 시각 승인·Track 제출·Mix 성공은 별개다.

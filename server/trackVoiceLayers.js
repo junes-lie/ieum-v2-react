@@ -6,6 +6,7 @@ import {validateAiVoiceLayer} from '../src/aiVoiceLayer.js'
 import {checkedStoredTrackAnalysis} from './sampleVoiceAnalysis.js'
 import {createSupabaseAudioStorage} from './audioStorage.js'
 import {readAuthConfiguration,verifyRequestUser} from './auth.js'
+import {verifyGeneratedPng} from './generatedImageVerification.js'
 const fail=code=>new ServiceError('Voice Layer를 확인하지 못했어요. 제출 원본과 Mix는 유지됩니다.',{code})
 const text=value=>typeof value==='string' && value.trim() && value.length<=128 && !/[\x00-\x1f]/.test(value)
 const sha=value=>typeof value==='string' && /^[a-f0-9]{64}$/.test(value)
@@ -59,13 +60,14 @@ export async function storeReceivedTrackVoiceLayer({projectId,partId,userId,pers
   const header=Buffer.from(await image.slice(0,24).arrayBuffer())
   if(header.subarray(0,8).toString('hex')!=='89504e470d0a1a0a' || header.readUInt32BE(16)!==512 || header.readUInt32BE(20)!==512)throw fail('INVALID_VOICE_LAYER')
   if(context.size>maxOriginalBytes)throw fail('VOICE_LAYER_MEMORY_BUDGET_EXCEEDED')
+  const imageReceipt=await verifyGeneratedPng(image,{executable:env.IEUM_IMAGE_DECODER_PATH || env.IEUM_AUDIO_DECODER_PATH})
   const original=await createSupabaseAudioStorage({env,fetchImpl}).loadVerifiedOriginal(context.objectId,
     {size:context.size,sha256:context.sha256,contentType:context.contentType},maxOriginalBytes)
   const artifact=await validateAiVoiceLayer({projectId,partId,participantId:userId,blob:original,aiVoiceLayer:received.artifact},context.projectSeed)
   if(!artifact)throw fail('INVALID_VOICE_LAYER')
   const {blob,...metadata}=artifact,ref={id:received.id,revision:received.revision,generatorVersion,inputDigest:trackInput.inputDigest,outputSha256:artifact.outputSha256}
   const stored=checkedTrackLayerReference(await rpc('ieum_store_track_voice_layer',{p_project_id:projectId,p_part_id:partId,p_user_id:userId,
-    p_result:{personalRef:personal,trackInput,controls,ref,artifact:metadata},p_png:Buffer.from(await blob.arrayBuffer()).toString('base64')},
+    p_result:{personalRef:personal,trackInput,controls,ref,artifact:metadata,imageReceipt},p_png:Buffer.from(await blob.arrayBuffer()).toString('base64')},
     {env,fetchImpl}),{projectId,partId,id:ref.id,revision:ref.revision})
   if(canonicalIdentityInput(stored.ref)!==canonicalIdentityInput(ref) || canonicalIdentityInput(stored.personalRef)!==canonicalIdentityInput(personal) ||
     stored.projectSeed!==context.projectSeed)throw fail('INVALID_VOICE_LAYER_RESPONSE')

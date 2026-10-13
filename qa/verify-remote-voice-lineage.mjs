@@ -14,6 +14,7 @@ import {createServiceSession} from '../src/serviceSession.js'
 import {loadRemoteMeasuredProfileIdentityInput,loadRemoteSubmittedVoiceControls} from '../src/voiceIdentitySources.js'
 import {canonicalIdentityInput,assessVoiceCandidates} from '../src/voiceIdentityContract.js'
 import {voiceSourceRevision} from '../src/profileSource.js'
+import {fixturePng} from './png-fixture.mjs'
 assert.ok(process.env.IEUM_PGLITE_ROOT && process.env.IEUM_QA_FFMPEG_PATH,'Existing isolated SQL/decoder required; no runtime install/model')
 const require=createRequire(join(process.env.IEUM_PGLITE_ROOT,'package.json')),{PGlite}=require('@electric-sql/pglite'),db=new PGlite()
 const users=[1,2,3,4,5].map(n=>`${String(n).repeat(8)}-${String(n).repeat(4)}-4${String(n).repeat(3)}-8${String(n).repeat(3)}-${String(n).repeat(12)}`)
@@ -24,7 +25,7 @@ wav.writeUInt16LE(1,20);wav.writeUInt16LE(1,22);wav.writeUInt32LE(48000,24);wav.
 wav.writeUInt16LE(2,32);wav.writeUInt16LE(16,34);wav.write('data',36);wav.writeUInt32LE(wav.length-44,40)
 for(let i=0;i<24000;i++)wav.writeInt16LE(Math.round(3000*Math.sin(2*Math.PI*220*i/48000)),44+i*2)
 const sha=hash(wav),env={IEUM_AUTH_PROVIDER:'supabase',IEUM_DB_PROVIDER:'supabase',IEUM_STORAGE_PROVIDER:'supabase',
-  IEUM_SUPABASE_URL:'https://example.supabase.co',IEUM_SUPABASE_PUBLISHABLE_KEY:'qa-public',IEUM_SUPABASE_SECRET_KEY:'sb_secret_qa',IEUM_AUDIO_BUCKET:'private-audio'}
+  IEUM_SUPABASE_URL:'https://example.supabase.co',IEUM_SUPABASE_PUBLISHABLE_KEY:'qa-public',IEUM_SUPABASE_SECRET_KEY:'sb_secret_qa',IEUM_AUDIO_BUCKET:'private-audio',IEUM_IMAGE_DECODER_PATH:process.env.IEUM_QA_FFMPEG_PATH}
 let caller=users[0],storageMode='normal',storageCalls=0,staleWrite=false,disconnectOnRead=false,activeSession
 const role=async(name,user)=>{await db.exec('reset role');await db.query("select set_config('request.jwt.claim.sub',$1,false)",[user || '']);await db.exec(`set role ${name}`)}
 const calls={
@@ -83,8 +84,8 @@ const snapshot=async project=>{
     (select jsonb_agg(to_jsonb(t) order by part_id) from public.ieum_submitted_tracks t where project_id=$1) as tracks,
     (select to_jsonb(j) from public.ieum_mix_jobs j where project_id=$1) as mix`,[project])).rows[0]
 }
-// Only signature/header contract fixtures: not decoded/generated/approved art.
-const png=Buffer.alloc(24);Buffer.from('89504e470d0a1a0a','hex').copy(png);png.writeUInt32BE(512,16);png.writeUInt32BE(512,20)
+// Decoded test raster only: not actual generated/approved Identity/Flow art.
+const png=fixturePng()
 const image=new Blob([png],{type:'image/png'}),personalRefs=[]
 try{
   await db.exec(`create role anon;create role authenticated;create role service_role;create schema auth;create table auth.users(id uuid primary key);
@@ -190,10 +191,10 @@ try{
     await db.exec('reset role');await assert.rejects(db.exec(`delete from public.${table}`),e=>e.code==='PT409')
   }
   await db.exec('reset role')
-  const stored=(await db.query('select png from public.ieum_track_voice_layers')).rows
-  assert.equal(stored.length,9);for(const row of stored)assert.equal(hash(row.png),hash(png))
+  const stored=(await db.query("select png,result_data->'imageReceipt' as receipt from public.ieum_track_voice_layers")).rows
+  assert.equal(stored.length,9);for(const row of stored){assert.equal(hash(row.png),hash(png));assert.equal(row.receipt.sha256,hash(png));assert.equal(row.receipt.decodedBytes,1048576)}
   await assert.rejects(trackVoiceLayerRequest(new Request('https://ieum.example/api/me/voice-layer'),options),e=>e.code==='AUTH_REQUIRED')
   assert.equal((await trackVoiceLayerErrorResponse(new Error('private token')).text()).includes('private token'),false)
-  console.log('PASS real existing decoder→Profile/Track analyses→isolated SQL registration/submission→stored personal traits→received layer→2/3/4 Part historical Record inputs→authenticated session reads; explicit revisions, conflict/CAS/owner/tamper/logout, original and queued Mix preservation. PNG fixtures, not actual AI/decode/art approval, remote users or natural visual blending.')
+  console.log('PASS real existing audio/PNG decoder→Profile/Track analyses→isolated SQL registration/submission→stored personal traits→received layer→2/3/4 Part historical Record inputs→authenticated session reads; explicit revisions, conflict/CAS/owner/tamper/logout, original and queued Mix preservation. Decoded test PNG, not actual AI/art approval, remote users or natural visual blending.')
 }catch(error){console.error(JSON.stringify({code:error.code,message:error.message,position:error.position,stack:error.stack?.split('\n').slice(0,4)}));process.exitCode=1}
 finally{activeSession?.disconnect();await db.close()}

@@ -10,10 +10,11 @@ import {createServiceSession} from '../src/serviceSession.js'
 import {loadRemoteSubmittedTrackIdentityInput,loadRemoteMeasuredProfileIdentityInput,loadRemoteSubmittedVoiceControls} from '../src/voiceIdentitySources.js'
 import {voiceSourceRevision} from '../src/profileSource.js'
 import {voiceSourceRegistrationRequest} from '../server/voiceSourceRegistration.js'
-assert.ok(process.env.IEUM_PGLITE_ROOT,'Existing isolated SQL runtime required; no remote migration/install/model')
+import {fixturePng} from './png-fixture.mjs'
+assert.ok(process.env.IEUM_PGLITE_ROOT && process.env.IEUM_QA_FFMPEG_PATH,'Existing isolated SQL/decoder required; no remote migration/install/model')
 const require=createRequire(join(process.env.IEUM_PGLITE_ROOT,'package.json')),{PGlite}=require('@electric-sql/pglite'),db=new PGlite()
 const users=['11111111-1111-4111-8111-111111111111','22222222-2222-4222-8222-222222222222']
-const env={IEUM_AUTH_PROVIDER:'supabase',IEUM_DB_PROVIDER:'supabase',IEUM_SUPABASE_URL:'https://example.supabase.co',IEUM_SUPABASE_PUBLISHABLE_KEY:'qa-public',IEUM_SUPABASE_SECRET_KEY:'sb_secret_qa'}
+const env={IEUM_AUTH_PROVIDER:'supabase',IEUM_DB_PROVIDER:'supabase',IEUM_SUPABASE_URL:'https://example.supabase.co',IEUM_SUPABASE_PUBLISHABLE_KEY:'qa-public',IEUM_SUPABASE_SECRET_KEY:'sb_secret_qa',IEUM_IMAGE_DECODER_PATH:process.env.IEUM_QA_FFMPEG_PATH}
 const hash=value=>createHash('sha256').update(value).digest('hex')
 let caller=users[0],lookupCalls=0,analysisCalls=0,tamper=null,disconnectOnLookup=false,session
 const role=async(name,user)=>{await db.exec('reset role');await db.query("select set_config('request.jwt.claim.sub',$1,false)",[user||'']);await db.exec(`set role ${name}`)}
@@ -70,8 +71,8 @@ try{
   const manifest=await loadRemoteMeasuredProfileIdentityInput({session:profileSession,generatorVersion:'fixture-generator'})
   assert.deepEqual(await loadRemoteMeasuredProfileIdentityInput({session:profileSession,generatorVersion:'fixture-generator'}),manifest)
   assert.equal(manifest.profileRevision,revision)
-  // Minimal contract fixture, not a decoded PNG or actual generated graphic.
-  const bytes=Buffer.alloc(24);Buffer.from('89504e470d0a1a0a','hex').copy(bytes);bytes.writeUInt32BE(512,16);bytes.writeUInt32BE(512,20)
+  // Actual decoded fixture PNG; not an AI-generated or approved graphic.
+  const bytes=fixturePng()
   const artifact={id:'opaque-result',revision:'r1',inputDigest:manifest.inputDigest,generatorVersion:manifest.generatorVersion,
     model:'fixture',modelRevision:'c'.repeat(40),inferenceSeed:'1',outputSha256:hash(bytes),blob:new Blob([bytes],{type:'image/png'})}
   const options={env,fetchImpl},input={manifest,artifact}
@@ -121,6 +122,8 @@ try{
   await assert.rejects(db.exec("delete from public.ieum_personal_identity_results"),e=>e.code==='PT409')
   const storedBytes=(await db.query('select png from public.ieum_personal_identity_results')).rows[0].png
   assert.equal(hash(storedBytes),artifact.outputSha256)
+  const imageReceipt=(await db.query("select result_data->'imageReceipt' as receipt from public.ieum_personal_identity_results")).rows[0].receipt
+  assert.equal(imageReceipt.sha256,artifact.outputSha256);assert.equal(imageReceipt.decodedBytes,1048576)
   for(const table of ['ieum_projects','ieum_submitted_tracks','ieum_mix_jobs'])assert.equal((await db.query(`select count(*)::int as n from public.${table}`)).rows[0].n,0)
   // Actual existing client/session and owner RPC, with controlled Track analysis.
   const analysis={version:'ieum-track-analysis-v1',sourceSha256:'e'.repeat(64),byteLength:100,
@@ -166,5 +169,5 @@ try{
   await assert.rejects(loadRemoteSubmittedTrackIdentityInput(trackInput),e=>e.code==='SESSION_CHANGED')
   assert.ok(lookupCalls>=4)
   const error=personalIdentityErrorResponse(new Error('private token')).clone();assert.equal((await error.text()).includes('private token'),false)
-  console.log('PASS real isolated SQL Profile registration→authenticated source→personal manifest→immutable received result→owned ref→Track input; exact stored Sample features/id binding, ownership, source history and state preservation. Controlled upstream audio/Auth/HTTP/PNG fixtures, not AI generation, PNG decode, remote service or visual acceptance.')
+  console.log('PASS real isolated SQL Profile registration→authenticated source→personal manifest→actual PNG decode→immutable received result/receipt→owned ref→Track input; exact Sample binding and ownership/state preservation. Controlled audio/Auth/HTTP and decoded test PNG, not AI generation, remote service or visual acceptance.')
 }finally{await db.close()}

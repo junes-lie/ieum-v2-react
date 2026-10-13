@@ -3,6 +3,7 @@ import {validatePersonalIdentityResult,buildVoiceTraitSnapshot,buildVoiceReprese
 import {readAuthConfiguration,verifyRequestUser} from './auth.js'
 import {trackVoiceLayerRequest,trackVoiceLayerErrorResponse} from './trackVoiceLayers.js'
 import {projectVoiceRecordInputRequest,projectVoiceRecordInputErrorResponse} from './projectVoiceRecordInputs.js'
+import {verifyGeneratedPng} from './generatedImageVerification.js'
 const fail=code=>new ServiceError('Voice Identity 결과를 확인하지 못했어요. 기존 원본은 유지됩니다.',{code})
 const text=value=>typeof value==='string' && value.trim() && value.length<=128 && !/[\x00-\x1f]/.test(value)
 const sha=value=>typeof value==='string' && /^[a-f0-9]{64}$/.test(value)
@@ -35,8 +36,9 @@ export async function storeReceivedPersonalIdentity({manifest,artifact},{env=pro
     !text(input?.generatorVersion) || !/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/.test(input?.userId || '') || received.id.includes(input.userId))throw fail('INVALID_IDENTITY_RESULT')
   const checked=await validatePersonalIdentityResult(input,received),traits=await buildVoiceTraitSnapshot(input)
   const {blob,...metadata}=checked
+  const imageReceipt=await verifyGeneratedPng(blob,{executable:env.IEUM_IMAGE_DECODER_PATH || env.IEUM_AUDIO_DECODER_PATH})
   const result=await rpc('ieum_store_personal_identity_result',{p_user_id:input.userId,p_profile_revision:input.profileRevision,
-    p_result:{manifest:input,artifact:metadata,traits},p_png:Buffer.from(await blob.arrayBuffer()).toString('base64')},
+    p_result:{manifest:input,artifact:metadata,traits,imageReceipt},p_png:Buffer.from(await blob.arrayBuffer()).toString('base64')},
     {env,fetchImpl,privileged:true})
   const saved=checkedIdentityReference(result,metadata)
   if(saved.profileRevision!==input.profileRevision || ['inputDigest','generatorVersion','outputSha256'].some(key=>saved.ref[key]!==metadata[key]))throw fail('INVALID_IDENTITY_RESPONSE')

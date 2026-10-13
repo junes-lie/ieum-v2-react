@@ -13,6 +13,7 @@
     "qa:profile-db": "node qa/verify-profile-database.mjs",
     "qa:profile-source-history": "node qa/verify-profile-source-history.mjs",
     "qa:remote-voice-lineage": "node --max-old-space-size=384 qa/verify-remote-voice-lineage.mjs",
+    "qa:generated-image": "node qa/verify-generated-image.mjs",
     "qa:profile-sample-upload-db": "node qa/verify-profile-sample-upload-database.mjs",
     "qa:profile-sample-upload-api": "node qa/verify-profile-sample-upload-api.mjs",
     "qa:profile-sample-verification": "node qa/verify-profile-sample-verification.mjs",

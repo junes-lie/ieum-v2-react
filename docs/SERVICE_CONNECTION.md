@@ -1,5 +1,11 @@
 # 단일 앱 서비스 연결 계약
 
+## 2026-10-13 generated PNG 첫 프레임 실제 검증
+
+trusted worker의 개인/Track received result 저장은 verifyGeneratedPng를 먼저 성공해야 한다. IEUM_IMAGE_DECODER_PATH 또는 기존 IEUM_AUDIO_DECODER_PATH의 설치된 FFmpeg를 명시하며 설치/자동 활성화하지 않는다.512 PNG/8MiB 입력·단일 thread·file,pipe protocol·5초 decode timeout을 사용하고 출력RGBA1048576bytes를 세어 폐기한다. 첫 프레임의 size/SHA/decoder version/SHA receipt를 불변 result_data.imageReceipt에 함께 저장한다. bytes는 바꾸지 않으며 missing decoder/실패 시 기존 결과/원본/제출/Mix는 보존한다. APNG 전체 프레임/실제 모델 실행/시각 승인·OS RSS hard limit을 뜻하지 않는다. 기존 API의 metadata 조회에는 receipt/PNG bytes를 추가하지 않는다.
+
+qa:generated-image와 기존 personal registry/qa:remote-voice-lineage는 기존 IEUM_QA_FFMPEG_PATH를 사용한다. 실제 decoded test PNG·replay/잘림/손상/크기/timeout/child release·SQL에 저장된 imageReceipt/hash 및2–4 Part 입력 계보/상태 독립을 확인한다. 테스트용 raster는 실제 AI 결과/승인 그림이 아니다. 최소 header만 받던 이전 준비 저장 증거는 당시 기록이며 실제 배포 DB migration/계정/model/runtime 승인을 대신하지 않는다.
+
 ## 2026-10-13 원격 received Track layer·Project record 입력
 
 Migration 순서: profile_source_registration + personal_identity_results/source_binding/traits + verified_audio_receipts + submitted_track_analysis → track_voice_layers → project_voice_record_inputs. 운영에 적용하지 않았다. 레이어 테이블은 실제 submitted Track/본인 개인 결과 FK 및 immutable PNG/result revision이며 일반 사용자/service_role 직접 접근을 차단하고 trusted context/store RPC만 service_role에 제공한다. storeReceivedTrackVoiceLayer는 저장 분석·개인 traits로 기존 Track input/controls를 재구성하고 private 원본 bytes를 명시 maxOriginalBytes 안에서 취득·검증한다. received output은 저장 계약일 뿐 모델 실행/시각 승인 증명은 아니다.
