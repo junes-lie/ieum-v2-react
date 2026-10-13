@@ -1,5 +1,11 @@
 # 단일 앱 서비스 연결 계약
 
+## 2026-10-13 개인 공통 특징의 원격 Track/바이닐 입력 연결
+
+GET /api/me/voice-identity?id=…&revision=…&include=traits는 본인 저장 결과의4필드 metadata/ref/traits를 private no-store로 반환한다. 기본2개 query의3필드 응답은 유지하며 다른 include/추가 query는 거부한다. 새로운 authenticated-only ieum_get_owned_personal_identity_traits RPC는 기존 exact owner ref를 먼저 확인한다. 서버가 traits digest/Profile revision/personal input/generator version을 검증하고 원문 사용자 ID/manifest/PNG bytes는 응답하지 않는다. migration은 personal_identity_results 뒤이며 원격에 적용하지 않았다.
+
+기존 getPersonalIdentity에 명시 includeTraits 옵션을 추가했다. loadRemoteSubmittedVoiceControls는 같은 session에서 저장 traits를 검증하고 기존 본인 result/Track 입력을 연결해 기존 provisional mapping의 두 representation을 만든다. 실제 Track은 vinyl 입력에만 있고 개인 측정 특징은 양쪽 공통이다. model/artwork/selection/Track/Mix 쓰기가 아니다. 실제 격리 SQL/API/session QA의 exact lineage/replay/owner/privacy/tamper/async snapshot 및 build 통과. Auth/HTTP/PCM/PNG fixture·실제 AI/원격/시각 인수는 구분한다.
+
 ## 2026-10-13 native renderer 작업 종료 경계
 
 renderProjectMix는 own child의 결과/오류/timeout 뒤 SIGKILL 및 close를 기다린 후 반환한다. fork 생성 실패도 error→close 경로에서 실패를 반환한다. 이전 renderer 프로세스가 살아 있는 동안 다음 upload/retry/job을 시작하는 시간 겹침을 방지하며 native 메모리 peak hard limit은 host 책임으로 유지한다. 실제 승인 runtime2–4 Part/timeout/decode 실패 및 격리 SQL pipeline QA에서 반환 시 live child0·기존 output SHA·원본/완료 상태를 검증했다. 사용자 앱/CPU 작업 종료·runtime 설치·운영 host 활성화는 없다.

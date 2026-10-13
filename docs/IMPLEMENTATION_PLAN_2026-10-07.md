@@ -18,6 +18,10 @@
 
 ### 실제 진행과 다음 gate
 
+2026-10-13 R5 개인→바이닐 공통 특징의 원격 연결: 본인 immutable received result traits 조회와 loadRemoteSubmittedVoiceControls를 기존 Profile/Track/source 계약에 연결했다. 같은 traitDigest·특징을 개인 형상/바이닐 흐름의 서로 다른 표현에 전달하고 실제 Track 입력은 vinyl 쪽에만 연결한다. 기존 provisional mapping 재사용이며 silhouette/AI 결과 복사·형상 승인·갱신 정책 확정이 아니다. 실제 격리 SQL/API/session의 owner/digest/version·변조/await snapshot·재현 QA/build 통과. runtime/OS/대형 AI 변경 없이 독립 데이터 연결을 진행했고 실제 AI/운영/자연 혼합/시각 인수 gate는 남는다. personal_identity_traits migration은 personal_identity_results 이후 적용하며 원격 미적용이다. 실제 공수 미측정·기존 예산 유지.
+
+de2e73ee5d8fb02cc636df81b0ca7b872d81fd2e Mix 종료 변경의 exact SHA Production7037486968 및 Vercel Deployment has completed 확인. 실제 운영 서비스/음악 인수와 구분한다.
+
 2026-10-13 독립 R3 운영 준비 보완: 기존 native Mix renderer가 결과 수신 뒤 own child close까지 기다려 다음 처리와 살아 있는 이전 native 프로세스가 겹치지 않도록 했다. 실제 짧은2–4 Part 결과/실패 및 SQL pipeline QA에서 live child0·기존 출력 SHA/원본 유지 확인. OS RSS hard limit·운영 host/Auth/DB/Storage·물리 마이크/실제 음악 인수는 기존 별도 gate다. 사용자 프로세스 종료/새 runtime 설치는 없으며 전체 R3 완료로 계산하지 않는다.
 
 R5 원본 연결98b4fb3269f5afb5960d9f6aeb0b0ef310f39e82 배포 증거: 같은 SHA Production7037405005 및 Vercel success/Deployment has completed, Production API 익명401·기존 JS200/hash 일치. 실제 서비스/AI/디자인 인수는 유지한다.

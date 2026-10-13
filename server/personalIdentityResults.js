@@ -1,5 +1,5 @@
 import {ServiceError} from '../src/projectService.js'
-import {validatePersonalIdentityResult,buildVoiceTraitSnapshot} from '../src/voiceIdentityContract.js'
+import {validatePersonalIdentityResult,buildVoiceTraitSnapshot,buildVoiceRepresentationInputs} from '../src/voiceIdentityContract.js'
 import {readAuthConfiguration,verifyRequestUser} from './auth.js'
 const fail=code=>new ServiceError('Voice Identity 결과를 확인하지 못했어요. 기존 원본은 유지됩니다.',{code})
 const text=value=>typeof value==='string' && value.trim() && value.length<=128 && !/[\x00-\x1f]/.test(value)
@@ -44,9 +44,17 @@ export async function personalIdentityRequest(request,{env=process.env,fetchImpl
   await verifyRequestUser(request,{env,fetchImpl})
   if(request.method!=='GET')throw fail('METHOD_NOT_ALLOWED')
   const query=new URL(request.url).searchParams,id=query.get('id'),revision=query.get('revision')
-  if(query.size!==2 || !text(id) || !text(revision))throw fail('INVALID_IDENTITY_RESULT')
-  const result=checkedIdentityReference(await rpc('ieum_get_owned_personal_identity_result',{p_id:id,p_revision:revision},
-    {env,fetchImpl,authorization:request.headers.get('authorization')}),{id,revision})
+  const includeTraits=query.get('include')==='traits'
+  if(query.size!==(includeTraits?3:2) || (!includeTraits && query.has('include')) || !text(id) || !text(revision))throw fail('INVALID_IDENTITY_RESULT')
+  const response=await rpc(includeTraits?'ieum_get_owned_personal_identity_traits':'ieum_get_owned_personal_identity_result',{p_id:id,p_revision:revision},
+    {env,fetchImpl,authorization:request.headers.get('authorization')})
+  const {traits,...metadata}=response || {},result=checkedIdentityReference(includeTraits?metadata:response,{id,revision})
+  if(includeTraits){
+    if(Object.keys(response).length!==4 || traits?.profileRevision!==result.profileRevision ||
+      traits.personalInputDigest!==result.ref.inputDigest || traits.generatorVersion!==result.ref.generatorVersion)throw fail('INVALID_IDENTITY_RESPONSE')
+    try{await buildVoiceRepresentationInputs(traits)}catch{throw fail('INVALID_IDENTITY_RESPONSE')}
+    result.traits=structuredClone(traits)
+  }
   return Response.json(result,{headers})
 }
 export function personalIdentityErrorResponse(error){

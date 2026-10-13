@@ -7,7 +7,7 @@ import {storeReceivedPersonalIdentity,personalIdentityRequest,personalIdentityEr
 import {buildIdentityInputManifest,canonicalIdentityInput,assessVoiceCandidates} from '../src/voiceIdentityContract.js'
 import {analyzeAudioBuffer} from '../src/voiceAnalysis.js'
 import {createServiceSession} from '../src/serviceSession.js'
-import {loadRemoteSubmittedTrackIdentityInput,loadRemoteMeasuredProfileIdentityInput} from '../src/voiceIdentitySources.js'
+import {loadRemoteSubmittedTrackIdentityInput,loadRemoteMeasuredProfileIdentityInput,loadRemoteSubmittedVoiceControls} from '../src/voiceIdentitySources.js'
 import {voiceSourceRevision} from '../src/profileSource.js'
 import {voiceSourceRegistrationRequest} from '../server/voiceSourceRegistration.js'
 assert.ok(process.env.IEUM_PGLITE_ROOT,'Existing isolated SQL runtime required; no remote migration/install/model')
@@ -27,11 +27,12 @@ const fetchImpl=async(url,init)=>{
       return Response.json((await db.query('select public.ieum_store_personal_identity_result($1,$2,$3,$4) as result',
         [body.p_user_id,body.p_profile_revision,JSON.stringify(body.p_result),body.p_png])).rows[0].result)
     }
-    assert.ok(url.endsWith('/ieum_get_owned_personal_identity_result') || url.endsWith('/ieum_get_voice_source'))
+    assert.ok(url.endsWith('/ieum_get_owned_personal_identity_result') || url.endsWith('/ieum_get_owned_personal_identity_traits') || url.endsWith('/ieum_get_voice_source'))
     assert.equal(init.headers.apikey,'qa-public');assert.equal(init.headers.Authorization,'Bearer qa-token')
     await role('authenticated',caller)
     if(url.endsWith('/ieum_get_voice_source'))return Response.json((await db.query('select public.ieum_get_voice_source() as result')).rows[0].result)
-    return Response.json((await db.query('select public.ieum_get_owned_personal_identity_result($1,$2) as result',[body.p_id,body.p_revision])).rows[0].result)
+    const functionName=url.endsWith('/ieum_get_owned_personal_identity_traits')?'ieum_get_owned_personal_identity_traits':'ieum_get_owned_personal_identity_result'
+    return Response.json((await db.query(`select public.${functionName}($1,$2) as result`,[body.p_id,body.p_revision])).rows[0].result)
   }catch(error){return Response.json({message:'private DB diagnostic'},{status:Number(error.code?.slice(2))||500})}
 }
 try{
@@ -39,7 +40,7 @@ try{
     create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
     grant usage on schema auth to authenticated;grant execute on function auth.uid() to authenticated;`)
   for(const user of users)await db.query('insert into auth.users values($1)',[user])
-  for(const name of ['voice_profiles','project_tracks','project_participation','profile_source_history','profile_sample_uploads','profile_sample_receipts','profile_sample_analysis','profile_source_registration','personal_identity_results','personal_identity_source_binding'])
+  for(const name of ['voice_profiles','project_tracks','project_participation','profile_source_history','profile_sample_uploads','profile_sample_receipts','profile_sample_analysis','profile_source_registration','personal_identity_results','personal_identity_source_binding','personal_identity_traits'])
     await db.exec(await readFile(new URL(`../server/migrations/20261013_${name}.sql`,import.meta.url),'utf8'))
   const pcm=Float32Array.from({length:48000},(_,i)=>.1*Math.sin(2*Math.PI*220*i/48000))
   const features=analyzeAudioBuffer({sampleRate:48000,duration:1,getChannelData:()=>pcm})
@@ -82,6 +83,12 @@ try{
   assert.deepEqual(await response.json(),saved)
   assert.equal(JSON.stringify(saved).includes(caller),false)
   assert.deepEqual(Object.keys(saved.ref).sort(),['generatorVersion','id','inputDigest','outputSha256','revision'])
+  const traitsRequest=()=>new Request(request().url+'&include=traits',{headers:{Authorization:'Bearer qa-token'}})
+  const traitResult=await personalIdentityRequest(traitsRequest(),options).then(r=>r.json())
+  assert.equal(traitResult.traits.personalInputDigest,manifest.inputDigest)
+  assert.equal(JSON.stringify(traitResult).includes(caller),false)
+  caller=users[1];await assert.rejects(personalIdentityRequest(traitsRequest(),options),e=>e.code==='IDENTITY_RESULT_NOT_FOUND');caller=users[0]
+  await assert.rejects(personalIdentityRequest(new Request(request().url+'&include=manifest',{headers:{Authorization:'Bearer qa-token'}}),options),e=>e.code==='INVALID_IDENTITY_RESULT')
   caller=users[1];await assert.rejects(personalIdentityRequest(request(),options),e=>e.code==='IDENTITY_RESULT_NOT_FOUND');caller=users[0]
   await assert.rejects(personalIdentityRequest(request('missing'),options),e=>e.code==='IDENTITY_RESULT_NOT_FOUND')
   await assert.rejects(personalIdentityRequest(new Request('https://ieum.example/api/me/voice-identity'),options),e=>e.code==='AUTH_REQUIRED')
@@ -133,6 +140,23 @@ try{
   const trackInput={session,projectId:'project',partId:'part',identityOwnerId:caller,identityRef:saved.ref,generatorVersion:'fixture-flow'}
   const first=await loadRemoteSubmittedTrackIdentityInput(trackInput)
   assert.deepEqual(await loadRemoteSubmittedTrackIdentityInput(trackInput),first)
+  const linked=await loadRemoteSubmittedVoiceControls(trackInput)
+  assert.deepEqual(await loadRemoteSubmittedVoiceControls(trackInput),linked)
+  const boundOptions={...trackInput,identityRef:structuredClone(trackInput.identityRef)}
+  const pendingControls=loadRemoteSubmittedVoiceControls(boundOptions)
+  boundOptions.partId='other-part';boundOptions.generatorVersion='changed-version';boundOptions.identityRef.outputSha256='0'.repeat(64)
+  assert.deepEqual(await pendingControls,linked,'Async lookup preserves the original Project/Part/version/result reference')
+  assert.equal(linked.controls.inputs.identity.traitDigest,linked.controls.inputs.resonance.traitDigest)
+  assert.equal(linked.controls.inputs.identity.representation,'personal-form-input')
+  assert.equal(linked.controls.inputs.resonance.representation,'vinyl-flow-input')
+  assert.equal(linked.controls.inputs.identity.track,undefined)
+  assert.equal(linked.controls.inputs.resonance.track.trackId,first.trackId)
+  assert.deepEqual(linked.controls.inputs.resonance.track.assessment,analysis.assessment)
+  assert.equal(JSON.stringify(linked.controls).includes(caller),false)
+  const beforeTraitCalls=analysisCalls
+  tamper=data=>{if(data.traits)data.traits.assessment.candidates.brightness.value=.99}
+  await assert.rejects(loadRemoteSubmittedVoiceControls(trackInput));assert.equal(analysisCalls,beforeTraitCalls,'Tampered personal traits are refused before Track analysis')
+  tamper=null
   const beforeCalls=analysisCalls
   await assert.rejects(loadRemoteSubmittedTrackIdentityInput({...trackInput,identityRef:{...saved.ref,id:'missing'}}))
   assert.equal(analysisCalls,beforeCalls,'Missing/foreign result is refused before Track analysis')

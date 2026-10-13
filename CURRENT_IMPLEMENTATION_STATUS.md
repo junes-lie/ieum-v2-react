@@ -1,3 +1,13 @@
+## 2026-10-13 R5 원격 개인 특징 → 서로 다른 Identity/바이닐 입력
+
+본인 exact received result의 저장된 shared traits를 기존 인증 API에서 include=traits로 명시적으로 조회할 수 있다. 기본 ref 조회 응답은 유지하며 manifest/Blob/원문 user ID는 반환하지 않는다. 서버는 immutable traits의 digest·개인 입력·Profile revision·generator version을 다시 대조한다. 추가 personal_identity_traits migration은 본인 authenticated RPC만 허용하며 운영 적용은 하지 않았다.
+
+loadRemoteSubmittedVoiceControls는 저장 개인 특징을 먼저 검증한 뒤 기존 본인 결과/제출 Track 분석을 연결하고 기존 prepareVoiceVisualControls를 사용한다. personal-form-input과 vinyl-flow-input은 같은 traitDigest/특징을 사용하지만 서로 다른 representation이며 실제 Track은 vinyl 입력에만 들어간다. await 사이 Project/Part/version/ref 변경과 traits 변조는 차단하고 사용자 ID는 controls에 노출하지 않는다. 기존 provisional mapping을 그대로 재사용하며 최종 형상/매핑 승인·모델 실행·Track/Mix 성공을 선언하지 않는다.
+
+실제 격리 SQL/RPC/API/session에서 등록 Profile→개인 입력→불변 결과→저장 특징→Track→두 표현 연결·재현성·owner/변조/immutable snapshot 검증 통과. 관련 session/local Track QA 및 build43modules 통과(index-gUG8GOMY.js552.79KB, 기존500KB 경고). 실제 AI/PNG decode·원격 서비스·2–4인 최종 그래픽/지각 인수는 미완료다. 기존 사용자3파일/연구 보존, runtime/OS/대형 AI 변경 없다.
+
+직전 Mix 종료 수정 de2e73ee5d8fb02cc636df81b0ca7b872d81fd2e main push 및 exact SHA의 Production7037486968/Vercel success(Deployment has completed) 확인. 새 렌더러는 운영 서비스 활성화 없이 준비 코드이며 실제 운영 Mix 인수 완료로 계산하지 않는다.
+
 ## 2026-10-13 R3 Mix 반환 전 native 작업 종료
 
 renderProjectMix는 native 결과/오류 수신 즉시 반환하던 경계를 수정해 본인이 생성한 child를 종료하고 close까지 확인한 뒤 성공/실패를 반환한다. 다음 job/재시도·업로드와 이전 native 메모리의 생존 기간이 겹치는 누락을 닫았다. 사용자 앱/기존 CPU 생성 프로세스는 건드리지 않는다. 기존 승인 TEMP runtime·실제 FFmpeg·격리 SQL의 짧은2/3/4 Part native Mix와 제출→업로드→decode→완료 pipeline 통과. 성공/replay·timeout·decode 실패 뒤 live child0을 확인했고 출력3개 SHA/원본 보존/실패 복원은 동일하다. 새 runtime 설치나 대형 AI 실행 없음. 이는 프로세스 수명 종료 확인이며 OS/native peak RSS hard limit이나 물리 마이크·청취/운영 서비스 인수는 아니다.

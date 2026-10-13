@@ -5,6 +5,7 @@ import {voiceSourceRevision} from './profileSource.js'
 import {canonicalIdentityInput,buildIdentityInputManifest,buildTrackIdentityInput,assessVoiceCandidates} from './voiceIdentityContract.js'
 import {isSupportedVoiceAnalysis} from './voiceAnalysis.js'
 import {PITCH_ANALYSIS_VERSION} from './pitch.js'
+import {prepareVoiceVisualControls} from './voiceVisualMapping.js'
 
 const hex=bytes=>[...new Uint8Array(bytes)].map(value=>value.toString(16).padStart(2,'0')).join('')
 const digest=async bytes=>hex(await crypto.subtle.digest('SHA-256',bytes))
@@ -149,5 +150,28 @@ export async function loadRemoteSubmittedTrackIdentityInput({session,projectId,p
           analysis:features,assessment:analysis.assessment}}})
     assertCurrent()
     return manifest
+  })
+}
+
+// The same saved personal traits feed two representations; actual Track
+// features affect only the vinyl input. No inference/approval/selection write.
+export async function loadRemoteSubmittedVoiceControls(options){
+  const {session,identityOwnerId,projectId,partId,generatorVersion}=options,ref=structuredClone(options.identityRef)
+  if(typeof session?.run!=='function')throw new Error('Connected identity owner is required')
+  return session.run(async({userId,service,assertCurrent})=>{
+    if(userId!==identityOwnerId)throw new Error('Personal result owner must match the connected user')
+    const received=await service.getPersonalIdentity({id:ref?.id,revision:ref?.revision,includeTraits:true})
+    const {traits,...metadata}=received || {}
+    if(!received || Object.keys(received).length!==4 || metadata.resultStatus!=='stored' ||
+      ['id','revision','outputSha256'].some(key=>metadata.ref?.[key]!==ref?.[key]) ||
+      traits?.profileRevision!==metadata.profileRevision || traits.personalInputDigest!==metadata.ref?.inputDigest ||
+      traits.generatorVersion!==metadata.ref?.generatorVersion)throw new Error('Stored personal traits and result must match')
+    await prepareVoiceVisualControls(traits)
+    assertCurrent()
+    const trackInput=await loadRemoteSubmittedTrackIdentityInput({session,identityOwnerId,projectId,partId,generatorVersion,identityRef:metadata.ref})
+    assertCurrent()
+    const controls=await prepareVoiceVisualControls(traits,{trackInput,personalResultRef:metadata.ref})
+    assertCurrent()
+    return {personalRef:structuredClone(metadata.ref),trackInput,controls}
   })
 }
