@@ -1,5 +1,11 @@
 # 단일 앱 서비스 연결 계약
 
+## 2026-10-13 R5 등록 원본과 개인 결과의 정확한 분석 연결
+
+loadRemoteMeasuredProfileIdentityInput은 기존 getVoiceSource/인증 session을 사용하고 등록된9필드 metadata의 출처·revision·음역 hash·Sample 분석 hash/version/ID/길이를 확인한다. 개인 manifest의 Sample recordId는 등록 uploadIntentId이며 range recordId는 voice-range:측정 revision이다. 원본 Blob/공개 URL을 반환하거나 사용자별 선택·갱신을 자동 결정하지 않는다. source_metadata가 없는 legacy 원본은 거부한다.
+
+personal_identity_source_binding은 profile_source_registration 및 personal_identity_results 이후 적용하는 추가 migration이다. service-only 등록 RPC의 insert에서 정확히2개 purpose의 registered range/Sample ID·hash·version·분석 data를 검사한다. 결과 received/stored와 생성 실행·시각 승인·Profile 선택·Track 제출·Mix 성공은 계속 별개다. 실제 격리 SQL 등록→인증 GET→manifest→결과 저장→Track 입력과 분석값/ID 변조 거부 QA/build 통과. 운영 migration/서비스 활성화/새 dependency는 실행하지 않았다.
+
 ## 2026-10-13 R5 개인 received result 소유권·불변 서버 저장
 
 personal_identity_results migration은 profile_source_history 이후 적용한다. trusted worker의 storeReceivedPersonalIdentity는 기존 입력/결과 계약과 shared traits를 검증하고 Profile history의 owner/revision/range hash·version·data/Sample hash에 연결한다. private manifest·artifact provenance·traits 및 PNG bytes(기존8MiB 계약 상한)를 DB bytea로 함께 보존한다. DB 직접 읽기·쓰기는 service_role도 금지하며 등록 RPC만 service_role에, exact ref 읽기 RPC만 authenticated에 허용한다. 기록된 status stored는 생성 실행 증명·시각 승인·Profile 선택·Track/Mix 성공이 아니다. 실제 PNG decode/실제 AI·운영 저장량/latency·Storage 이동 정책은 별도 기술/인수 항목이며 아직 실제 서버에 적용하지 않았다.

@@ -1,3 +1,11 @@
+## 2026-10-13 R5 등록 Profile → 개인 생성 입력 → 소유 결과 → Track 연결
+
+loadRemoteMeasuredProfileIdentityInput은 기존 인증 session/getVoiceSource에서 등록된 본인 음역·대표 Sample을 받아 private 개인 생성 입력을 만든다. 원본 revision·음역/특징 hash·분석 버전·용도·Sample ID·길이를 확인하며 미등록/legacy/변조/logout은 거부한다. 로컬 원본을 임의 이관하거나 개인 형상/갱신 정책을 선택하지 않는다. personal_identity_source_binding migration은 결과 저장 시 등록 metadata의 정확한 Sample ID·분석값까지 비교한다. 같은 원본 hash로 분석값만 바꾼 결과의 저장 가능성을 닫았다. 기존 source history 및 result 불변성은 유지하며 운영 migration은 적용하지 않았다.
+
+기존 qa/verify-personal-identity-registry.mjs에서 실제 격리 SQL Profile 등록→기존 인증 GET→개인 manifest→received result→본인 ref→Track 입력을 연결했다. 원본/분석값/ID 불일치·재시도/과거 ref·권한/로그아웃·Project/Track/Mix 불변 통과. upstream PCM/receipt/Auth/HTTP/PNG는 통제 fixture이며 실제 AI·PNG decode·원격 계정/서버 인수가 아니다. 측정 입력 QA/build43modules 통과, 기존 JS/CSS 및500KB 경고 유지. 새 모델/runtime/OS 변경 없이 진행했다. 사용자3파일과 미커밋 연구는 보존한다.
+
+직전 owner registry 배포: 17173a1b9f3d441027ce99a1d3548184c9aa1615 main/origin 일치, exact SHA의 GitHub Production7037143939/Vercel success(Deployment has completed), deployment ArY9Fm5AXWFmfMbD8RKAyuD8sHb1. Production 신규 API 미인증401 AUTH_REQUIRED/private no-store, JS200 SHA25618803bdcf388b2e7d86443a509008d1051bd0a7c7dc724309d9620c7cfc0c0a4 로컬 일치. Vercel API literal READY는 조회하지 않았고 실제 인증 사용자/DB/AI/시각 인수 완료로 계산하지 않는다.
+
 ## 2026-10-13 RAM 독립 작업 재개 — 개인 결과 서버 소유권 연결
 
 사용자 지시에 따라 독립 잔여를 재검토했다. 이전 audit의 “새 독립 핵심 코드 결함 없음”은 전수 확인이 아니었으며 원격 Track 입력이 caller 제공 개인 ref를 서버 owner registry와 대조하지 않는 누락을 발견했다. 이를 전체 작업 중단 근거로 사용한 판단을 정정한다.

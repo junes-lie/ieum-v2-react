@@ -42,6 +42,41 @@ export async function loadMeasuredProfileIdentityInput({userId,profileProjectId,
   return measuredProfileIdentityInput({userId,generatorVersion,rangeRecord:rangeRecords[0],sampleRecord:sampleRecords[0]})
 }
 
+// Consume only the connected user's already registered remote Profile source.
+// No local migration, new measurement, artwork selection or model invocation.
+export async function loadRemoteMeasuredProfileIdentityInput({session,generatorVersion}){
+  if(typeof session?.run!=='function' || typeof generatorVersion!=='string' || !generatorVersion.trim())throw new Error('Connected Profile and explicit generator version are required')
+  return session.run(async({userId,service,assertCurrent})=>{
+    const result=await service.getVoiceSource(),source=structuredClone(result?.source)
+    const range=source?.rangeData,rangeSource=source?.rangeProvenance,sampleSource=source?.sampleProvenance,
+      features=source?.sampleFeatures,analysisRef=source?.sampleAnalysisRef
+    if(!result || Object.keys(result).length!==1 || !source || Object.keys(source).length!==9 ||
+      !/^ieum-voice-source-set-v1:[a-f0-9]{64}$/.test(source.sourceRevision || '') ||
+      source.rangeOrigin!=='browser-pitch-analysis' || source.sampleOrigin!=='server-decoded-private-original' ||
+      range?.analysisVersion!==PITCH_ANALYSIS_VERSION || rangeSource?.analysisVersion!==PITCH_ANALYSIS_VERSION ||
+      !Number.isFinite(range.lowMidi) || !Number.isFinite(range.highMidi) || range.lowMidi>range.highMidi ||
+      !isSupportedVoiceAnalysis(features) || features.sampleRate!==48000 || sampleSource?.analysisVersion!==features.version ||
+      features.pitchAnalysisVersion!==PITCH_ANALYSIS_VERSION || features.pitchFrameLength!==4096 || !Number.isFinite(features.durationSec) ||
+      !Number.isSafeInteger(sampleSource.byteLength) || sampleSource.byteLength<=0 ||
+      !Number.isFinite(source.sampleDuration) || source.sampleDuration<=0 ||
+      Math.abs(features.durationSec-source.sampleDuration)>.000501 ||
+      !analysisRef || Object.keys(analysisRef).length!==3 || analysisRef.version!=='ieum-sample-analysis-v1' ||
+      !/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(analysisRef.uploadIntentId || '') ||
+      await voiceSourceRevision(rangeSource,sampleSource)!==source.sourceRevision ||
+      await digest(new TextEncoder().encode(canonicalIdentityInput(range)))!==rangeSource.measurementSha256 ||
+      await digest(new TextEncoder().encode(canonicalIdentityInput(features)))!==analysisRef.featuresSha256){
+      throw new Error('Registered Profile source provenance is unavailable or inconsistent')
+    }
+    assertCurrent()
+    const manifest=await buildIdentityInputManifest({userId,profileRevision:source.sourceRevision,generatorVersion,sources:[
+      {recordId:`voice-range:${rangeSource.revision}`,purpose:'voice-range',sha256:rangeSource.measurementSha256,analysisVersion:range.analysisVersion,data:range},
+      {recordId:analysisRef.uploadIntentId,purpose:'voice-sample',sha256:sampleSource.audioSha256,analysisVersion:features.version,data:features}
+    ]})
+    assertCurrent()
+    return manifest
+  })
+}
+
 // Prepare a private input from an already persisted submission, never Review.
 // The caller must supply an existing personal result reference and its owner;
 // this bridge does not create or approve a personal shape or generated layer.

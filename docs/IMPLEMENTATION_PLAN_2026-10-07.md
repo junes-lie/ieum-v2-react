@@ -18,6 +18,10 @@
 
 ### 실제 진행과 다음 gate
 
+2026-10-13 R5 독립 데이터 연결 마감: 서버 등록 Profile의 실제 source metadata→private 개인 manifest→불변 received result→본인 exact ref→기존 Track 입력이 하나의 경로로 연결됐다. 결과 저장의 추가 source_binding migration은 Sample 원본 hash뿐 아니라 등록 Sample ID·실제 분석값/버전까지 대조한다. 기존 실제 격리 SQL 등록/조회/저장/session 연결과 변조/복원/상태 독립 검증 및 build 통과. 미등록/legacy 원본을 생성 가능한 실제 분석으로 승격하지 않는다. 실제 AI/승인 형상·원격 연결·자동 선택/갱신 정책 gate는 유지하고 입력 연결 완료와 구분한다. 운영 migration 순서는 profile_source_registration + personal_identity_results → personal_identity_source_binding. 실제 작업 공수는 미측정이며 예산을 새로 초기화하지 않는다.
+
+owner registry 17173a1b9f3d441027ce99a1d3548184c9aa1615 배포 증거: 같은 SHA의 GitHub Production7037143939 및 Vercel Deployment has completed, 신규 Production API 익명401/private no-store, 기존 JS200/hash 로컬 일치. Vercel API READY 원문·인증 사용자/실서비스·AI/시각 인수는 별도 미확인이다.
+
 2026-10-13 사용자 재개 지시 후 RAM 독립 server owner registry를 구현했다. 기존 Profile source history에 연결된 개인 received result의 private manifest/traits/모델·입력·생성 버전/PNG bytes를 exact immutable revision으로 저장하며 service-only 등록과 본인 ref 조회를 분리한다. 기존 원격 Track 준비는 getPersonalIdentity owner RPC가 먼저 성공해야 분석을 호출한다. caller 제공 hash/ID만으로 owner 증거를 대신하던 누락을 닫았다. 실제 격리 SQL/API/session·다른 사용자/익명/변조/충돌/원본 변경·과거 ref/원본/Track/Mix 보존 및 기존 real decoder2–4 Part QA/build 통과. 이미지 decode/AI 생성/승인/운영 DB migration/App 선택 정책은 미완료다. 기존 blocked 판정의 독립 작업 전수 완료 추정은 정정하며 실제 서비스·형상 정책 대기와 데이터 경계 작업을 분리한다. user server 변경은 transport 한 줄의 이번 추가와 기존 변경을 나눠 보존한다.
 
 Home/목록 보완 배포 증거: `086dff344b26839242bd572da6c1861fdbdffed2` main/origin 일치, 같은 commit의 Production7036621289/Vercel success. Production HTML/JS200 및 index-XhoOtjSF.js SHA25618803bdcf388b2e7d86443a509008d1051bd0a7c7dc724309d9620c7cfc0c0a4 로컬 build와 일치. 배포 응답 검증이며 실제 승인 결과 공급/지각/실기기 인수는 남는다. 배포 후 증거만 로컬 문서에 추가했고 사용자 서버3파일 및 미커밋 연구는 보존한다.

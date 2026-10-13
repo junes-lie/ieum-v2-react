@@ -7,7 +7,9 @@ import {storeReceivedPersonalIdentity,personalIdentityRequest,personalIdentityEr
 import {buildIdentityInputManifest,canonicalIdentityInput,assessVoiceCandidates} from '../src/voiceIdentityContract.js'
 import {analyzeAudioBuffer} from '../src/voiceAnalysis.js'
 import {createServiceSession} from '../src/serviceSession.js'
-import {loadRemoteSubmittedTrackIdentityInput} from '../src/voiceIdentitySources.js'
+import {loadRemoteSubmittedTrackIdentityInput,loadRemoteMeasuredProfileIdentityInput} from '../src/voiceIdentitySources.js'
+import {voiceSourceRevision} from '../src/profileSource.js'
+import {voiceSourceRegistrationRequest} from '../server/voiceSourceRegistration.js'
 assert.ok(process.env.IEUM_PGLITE_ROOT,'Existing isolated SQL runtime required; no remote migration/install/model')
 const require=createRequire(join(process.env.IEUM_PGLITE_ROOT,'package.json')),{PGlite}=require('@electric-sql/pglite'),db=new PGlite()
 const users=['11111111-1111-4111-8111-111111111111','22222222-2222-4222-8222-222222222222']
@@ -25,9 +27,10 @@ const fetchImpl=async(url,init)=>{
       return Response.json((await db.query('select public.ieum_store_personal_identity_result($1,$2,$3,$4) as result',
         [body.p_user_id,body.p_profile_revision,JSON.stringify(body.p_result),body.p_png])).rows[0].result)
     }
-    assert.ok(url.endsWith('/ieum_get_owned_personal_identity_result'))
+    assert.ok(url.endsWith('/ieum_get_owned_personal_identity_result') || url.endsWith('/ieum_get_voice_source'))
     assert.equal(init.headers.apikey,'qa-public');assert.equal(init.headers.Authorization,'Bearer qa-token')
     await role('authenticated',caller)
+    if(url.endsWith('/ieum_get_voice_source'))return Response.json((await db.query('select public.ieum_get_voice_source() as result')).rows[0].result)
     return Response.json((await db.query('select public.ieum_get_owned_personal_identity_result($1,$2) as result',[body.p_id,body.p_revision])).rows[0].result)
   }catch(error){return Response.json({message:'private DB diagnostic'},{status:Number(error.code?.slice(2))||500})}
 }
@@ -36,15 +39,36 @@ try{
     create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
     grant usage on schema auth to authenticated;grant execute on function auth.uid() to authenticated;`)
   for(const user of users)await db.query('insert into auth.users values($1)',[user])
-  for(const name of ['voice_profiles','project_tracks','project_participation','profile_source_history','personal_identity_results'])
+  for(const name of ['voice_profiles','project_tracks','project_participation','profile_source_history','profile_sample_uploads','profile_sample_receipts','profile_sample_analysis','profile_source_registration','personal_identity_results','personal_identity_source_binding'])
     await db.exec(await readFile(new URL(`../server/migrations/20261013_${name}.sql`,import.meta.url),'utf8'))
-  await db.query(`insert into public.ieum_profile_voice_sources values($1,'source-r1',$2,$3,'normalized-difference-v1',$4,$5,1,now())`,
-    [caller,JSON.stringify({lowMidi:48,highMidi:67}),'a'.repeat(64),'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa','b'.repeat(64)])
   const pcm=Float32Array.from({length:48000},(_,i)=>.1*Math.sin(2*Math.PI*220*i/48000))
   const features=analyzeAudioBuffer({sampleRate:48000,duration:1,getChannelData:()=>pcm})
-  const manifest=await buildIdentityInputManifest({userId:caller,profileRevision:'source-r1',generatorVersion:'fixture-generator',sources:[
-    {recordId:'range',purpose:'voice-range',sha256:'a'.repeat(64),analysisVersion:'normalized-difference-v1',data:{lowMidi:48,highMidi:67}},
-    {recordId:'sample',purpose:'voice-sample',sha256:'b'.repeat(64),analysisVersion:features.version,data:features}]})
+  const range={analysisVersion:'normalized-difference-v1',lowMidi:48,highMidi:67,sampleCount:10,confidence:.8}
+  const rangeProvenance={version:'ieum-profile-source-v1',purpose:'voice-range',revision:'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+    analysisVersion:range.analysisVersion,measurementSha256:hash(canonicalIdentityInput(range))}
+  const sampleProvenance={version:'ieum-profile-source-v1',purpose:'voice-sample',revision:'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
+    analysisVersion:features.version,audioSha256:'b'.repeat(64),byteLength:100}
+  const revision=await voiceSourceRevision(rangeProvenance,sampleProvenance)
+  await role('authenticated',caller)
+  const upload=(await db.query('select public.ieum_prepare_profile_sample_upload($1,$2,$3,$4) as result',['sample-fixture',100,sampleProvenance.audioSha256,'audio/wav'])).rows[0].result
+  await db.exec('reset role')
+  // Controlled upstream decoded/analysis fixture; registration and subsequent
+  // source consumption use the real SQL RPCs, not a fabricated GET response.
+  await db.query('update public.ieum_profile_sample_upload_intents set audio_receipt=$1,verified_at=now(),voice_analysis=$2 where id=$3',
+    [JSON.stringify({duration:1}),JSON.stringify({version:'ieum-sample-analysis-v1',features,featuresSha256:hash(canonicalIdentityInput(features))}),upload.uploadIntentId])
+  await role('service_role')
+  await db.query('select public.ieum_register_profile_source($1,$2,$3,$4,$5,$6,$7,$8,$9)',
+    [caller,upload.uploadIntentId,JSON.stringify(range),JSON.stringify(rangeProvenance),JSON.stringify(sampleProvenance),revision,null,'register-fixture','c'.repeat(64)])
+  const profileSession=createServiceSession({baseUrl:'https://ieum.example/api',fetchImpl:async(url,init)=>{
+    if(url.endsWith('/capabilities'))return Response.json({contractVersion:'ieum-service-v1',mode:'remote',authenticated:true,sharedProjects:true})
+    if(url.endsWith('/me/session'))return Response.json({authenticated:true,user:{id:caller}})
+    assert.ok(url.endsWith('/me/voice-source'))
+    return voiceSourceRegistrationRequest(new Request(url,init),{env,fetchImpl})
+  }})
+  await profileSession.connect('qa-token')
+  const manifest=await loadRemoteMeasuredProfileIdentityInput({session:profileSession,generatorVersion:'fixture-generator'})
+  assert.deepEqual(await loadRemoteMeasuredProfileIdentityInput({session:profileSession,generatorVersion:'fixture-generator'}),manifest)
+  assert.equal(manifest.profileRevision,revision)
   // Minimal contract fixture, not a decoded PNG or actual generated graphic.
   const bytes=Buffer.alloc(24);Buffer.from('89504e470d0a1a0a','hex').copy(bytes);bytes.writeUInt32BE(512,16);bytes.writeUInt32BE(512,20)
   const artifact={id:'opaque-result',revision:'r1',inputDigest:manifest.inputDigest,generatorVersion:manifest.generatorVersion,
@@ -71,6 +95,10 @@ try{
   await assert.rejects(storeReceivedPersonalIdentity({manifest:wrong,artifact:{...artifact,revision:'wrong',inputDigest:wrong.inputDigest}},options),e=>e.code==='IDENTITY_REVISION_CONFLICT')
   const differentRange=await buildIdentityInputManifest({...manifest,sources:manifest.sources.map(source=>source.purpose==='voice-range'?{...source,data:{lowMidi:40,highMidi:75}}:source)})
   await assert.rejects(storeReceivedPersonalIdentity({manifest:differentRange,artifact:{...artifact,revision:'changed-range',inputDigest:differentRange.inputDigest}},options),e=>e.code==='IDENTITY_REVISION_CONFLICT')
+  const fabricatedFeatures=await buildIdentityInputManifest({...manifest,sources:manifest.sources.map(source=>source.purpose==='voice-sample'?{...source,data:{...source.data,brightness:.99}}:source)})
+  await assert.rejects(storeReceivedPersonalIdentity({manifest:fabricatedFeatures,artifact:{...artifact,revision:'fabricated-features',inputDigest:fabricatedFeatures.inputDigest}},options),e=>e.code==='IDENTITY_REVISION_CONFLICT')
+  const wrongSample=await buildIdentityInputManifest({...manifest,sources:manifest.sources.map(source=>source.purpose==='voice-sample'?{...source,recordId:'other-sample'}:source)})
+  await assert.rejects(storeReceivedPersonalIdentity({manifest:wrongSample,artifact:{...artifact,revision:'wrong-sample',inputDigest:wrongSample.inputDigest}},options),e=>e.code==='IDENTITY_REVISION_CONFLICT')
   await role('service_role')
   await assert.rejects(db.exec('select * from public.ieum_personal_identity_results'),e=>e.code==='42501')
   for(const name of ['authenticated','anon']){
@@ -114,5 +142,5 @@ try{
   await assert.rejects(loadRemoteSubmittedTrackIdentityInput(trackInput),e=>e.code==='SESSION_CHANGED')
   assert.ok(lookupCalls>=4)
   const error=personalIdentityErrorResponse(new Error('private token')).clone();assert.equal((await error.text()).includes('private token'),false)
-  console.log('PASS actual isolated SQL immutable binary/ref/source registry, owner-only HTTP/RPC, source history, no Profile selection/Track/Mix effect; existing session→owned ref→Track input and logout/tamper refusal. Contract/controlled audio fixtures, not AI generation, PNG decode, remote service or visual acceptance.')
+  console.log('PASS real isolated SQL Profile registration→authenticated source→personal manifest→immutable received result→owned ref→Track input; exact stored Sample features/id binding, ownership, source history and state preservation. Controlled upstream audio/Auth/HTTP/PNG fixtures, not AI generation, PNG decode, remote service or visual acceptance.')
 }finally{await db.close()}
