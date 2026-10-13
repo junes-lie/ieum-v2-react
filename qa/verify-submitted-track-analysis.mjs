@@ -119,6 +119,10 @@ try{
     const session=createServiceSession({baseUrl:'https://ieum.example/api',fetchImpl:async(url,init)=>{
       if(url.endsWith('/capabilities'))return Response.json({contractVersion:'ieum-service-v1',mode:'remote',authenticated:true,sharedProjects:true})
       if(url.endsWith('/me/session'))return Response.json({authenticated:true,user:{id:caller}})
+      // Registry SQL/owner isolation is covered by verify-personal-identity-registry.
+      // This fixture keeps the existing real decoder/Track analysis scope.
+      if(url.includes('/me/voice-identity?'))return Response.json({resultStatus:'stored',profileRevision:'fixture-profile-r1',
+        ref:{id:'opaque-fixture-personal-result',revision:'fixture-r1',outputSha256:'a'.repeat(64),inputDigest:'b'.repeat(64),generatorVersion:'fixture-personal-v1'}})
       try{
         mutateRef?.();mutateRef=null
         const response=await projectLifecycleRequest(new Request(url,init),{env,fetchImpl})

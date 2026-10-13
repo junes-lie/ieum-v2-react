@@ -1,4 +1,30 @@
+## 2026-10-13 RAM 독립 작업 재개 — 개인 결과 서버 소유권 연결
+
+사용자 지시에 따라 독립 잔여를 재검토했다. 이전 audit의 “새 독립 핵심 코드 결함 없음”은 전수 확인이 아니었으며 원격 Track 입력이 caller 제공 개인 ref를 서버 owner registry와 대조하지 않는 누락을 발견했다. 이를 전체 작업 중단 근거로 사용한 판단을 정정한다.
+
+personal_identity_results migration과 trusted worker storeReceivedPersonalIdentity가 기존 Profile 원본 history의 owner/revision·range hash/version/data·Sample hash를 대조하고 개인 manifest/traits/모델·생성 버전/출력 hash/PNG bytes를 불변 result revision으로 보존한다. DB 직접 읽기·쓰기는 일반 사용자와 service_role 모두 금지하고 service-only 등록 RPC 및 본인 exact ID/revision 조회 RPC만 제공한다. 같은 결과의 재시도는 동일 ref이고 충돌은 거부한다. 원본 변경 후에도 기존 명시적 참조가 유지되며 Profile 선택/재생성 정책·Track 제출·Mix를 바꾸지 않는다. 현재 bounded8MiB PNG bytea 보존은 준비 구현이며 실제 운영 용량/비용 목표나 승인 형상을 확정한 것이 아니다. 원격 migration은 적용하지 않았다.
+
+GET /api/me/voice-identity는 기존 Auth·본인 RPC를 사용하고 private/no-store 응답에 opaque ref와 Profile revision만 반환한다. Blob/manifest/user ID/임의 URL은 응답하지 않으며 클라이언트 등록 API는 없다. 기존 session/transport에 getPersonalIdentity를 연결하고 loadRemoteSubmittedTrackIdentityInput은 owner 결과 확인 후에만 Track 분석을 호출한다. 결과 불일치/미존재/logout은 분석 전에 거부한다. 사용자 src/projectService.js 변경에는 getPersonalIdentity 한 줄만 추가했으며 기존 사용자3파일의 다른 변경은 별도 보존하고 stage하지 않는다.
+
+기존 격리 PGlite의 실제 migration/RPC·원본 history·immutable binary SHA·idempotence/충돌·다른 사용자·익명/직접 접근 거부·source hash/range mismatch·성향/원본 변경 후 과거 ref 보존·Project/Track/Mix0 검사 통과. 실제 SQL owner 조회와 기존 session→Track 입력의 통제 fixture도 tamper/missing/logout 거부 통과했다. 기존 실제 짧은 WAV/FFmpeg→v5→SQL2/3/4 Part 분석 QA, session/local Track 입력 QA 및 build43modules 통과. PNG는 기존 계약의 최소 header fixture이며 전체 decode/AI 생성/승인 디자인/실제 Supabase/App 사용자 인수는 아니다. 브라우저 UI/기존 Production JS는 바뀌지 않으며 같은 index-XhoOtjSF.js552.79KB, 기존500KB 경고다. 새 runtime/AI/OS 설정 없이 진행했다. Git/자동배포/Production API 결과는 확인 후 기록한다.
+
+## 2026-10-13 다음 핵심 gate 선행 조건 audit 3 — 이후 독립 작업 재개로 정정
+
+직전 turn은 no progress였으며 이번 세 번째 연속 audit에서도 동일 조건이 남았다. HEAD086dff344b26839242bd572da6c1861fdbdffed2/main-origin0/0·사용자 서버3파일/연구/기존 문서 변경 보존, 실제free4.27GiB/total15.95GiB·AI 시작8GiB 미달, 전용 Notion/figma-desktop/Supabase/Vercel 도구0, .env.example만 존재/관련 운영 환경 변수 이름 없음이다. 확인된 live 생성 job handle도 없으므로 verified wait로 취급하지 않는다. 실제 개인 생성·두 표현의 특징 일관성/구분·승인 결과 공급, 실제 서비스 접근,0원 음악 품질/권리, 실기기/승인 디자인 조건을 임의 대체할 수 없다. 새 독립 핵심 코드 결함이나 실행 가능한 경로가 확인되지 않아 전체 goal을 blocked로 기록한다. 전체 요구·기존 계획과 작업물을 보존하며 완료/pause로 처리하지 않는다. QA·실패AI 반복/추가 commit·push·사용자 앱 종료 없이 재개 가능한 선행 조건 변경을 기다린다.
+
+## 2026-10-13 다음 핵심 gate 선행 조건 audit 2
+
+직전 turn은 상태/선행 조건 확인만으로 no progress였다. 두 번째 연속 확인에서 HEAD086dff3·기존 변경 보존, free4.35GiB/total15.95GiB·8GiB AI admission 미달, 전용 Notion/figma-desktop/Supabase 도구0 및 .env.example만 존재한다. 현재 계획의 R1/R2 잔여 표와 R3 Google 연결 선행 조건을 직접 읽었다. 기록된 독립 핵심 코드 결함은 없고 실제 후보/곡/Identity·서비스 접근·미정 정책·실기기/디자인 조건은 여전히 미충족이다. 저장/소비 연결을 실제 생성 결과나 운영 연결로 대체하지 않는다. 같은 genuine blocker의 두 번째 audit이며 전체 goal은 active·미완료로 유지한다. 코드 변경/완료 QA 반복/추가 commit·push·사용자 앱 종료 없이 작업물을 보존한다.
+
+## 2026-10-13 다음 핵심 gate 선행 조건 audit 1
+
+직전 turn은086dff3의 목록 소비 누락 수정·관련 검증·push·자동배포로 progress였다. 이번 turn은 재개 상태 확인뿐이며 새 기능 진척 없음(no progress). HEAD086dff344b26839242bd572da6c1861fdbdffed2/main-origin0/0, 기존 사용자 서버3파일·연구·배포 후 문서 기록을 보존한다. 현재 free4.36GiB/total15.95GiB는 shared-trait 실제 AI 시작8GiB 조건 미달이고 host Python process 없음을 read-only 확인했다. 따라서 살아 있는 생성 job을 기다리는 verified wait가 아니다. 전용 Notion/figma-desktop/Supabase/Vercel 노출 도구0, .env.example만 있고 관련 운영 환경 변수 이름도 없다.
+
+다음 R5 gate는 실제 생성·개인 구분/두 표현의 특징 일관성 검증 및 승인 결과의 운영 참조 공급이다. 임의 기존 연구 그림·procedural fixture·자동 최신 선택/갱신으로 대체하지 않는다. R3는 실제 서비스 접근, R6는0원 조건의 미통과 음악 품질/권리 경로, R7은 실기기/승인 디자인이 각각 남아 RAM 하나의 문제로 합치지 않는다. 기존 계획/전체 goal은 active·미완료로 유지한다. 이미 완료된 QA/실패 생성 반복·유료 경로·사용자 앱 종료·임의 정책 확정 없이 현재 선행 조건으로 의미 있는 다음 구현을 진행할 수 없다는 첫 연속 audit다.
+
 ## 2026-10-13 R5 Home·목록 공명 참조 전달 보완
+
+배포 후 확인: `086dff344b26839242bd572da6c1861fdbdffed2` main push/origin SHA 일치. Production deployment7036621289는 같은 commit이며 Vercel status/deployment success(`Deployment has completed`), https://vercel.com/junes-lie/ieum-v2-react/FgXg4cm66YMjuaV7E6d7YGBc9BBm . Production HTML/JS200, index-XhoOtjSF.js SHA25618803bdcf388b2e7d86443a509008d1051bd0a7c7dc724309d9620c7cfc0c0a4는 로컬 build와 byte exact. 첫 hash 조회의 string→byte 변환 오류를 HTTP 원본 byte 방식으로 수정해 일치를 확인했다. literal READY/API·Production 실제 Identity/청취/실기기 인수는 미확인이다. 이 문단은 배포 후 로컬 증거 기록이다.
 
 실제 코드에서 Collection 생성 Project 커버와 Home/내 프로젝트의 기존 기본 Project 커버는 저장 Record ref를 전달하지 않았다. 기존 App mainProject 모델을 Home/PersonalArea/CollectionArea에 전달하고 해당 커버의 Project/Seed/Part/voiceRecordRef를 기존 ResonanceRecord로 연결했다. 새 커버·화면·형상/선택 정책은 추가하지 않았고 생성 Project의 텍스트 전용 목록도 유지한다. 저장 결과가 없는 현재 운영 데이터는 기존 표시를 유지한다.
 

@@ -18,6 +18,10 @@
 
 ### 실제 진행과 다음 gate
 
+2026-10-13 사용자 재개 지시 후 RAM 독립 server owner registry를 구현했다. 기존 Profile source history에 연결된 개인 received result의 private manifest/traits/모델·입력·생성 버전/PNG bytes를 exact immutable revision으로 저장하며 service-only 등록과 본인 ref 조회를 분리한다. 기존 원격 Track 준비는 getPersonalIdentity owner RPC가 먼저 성공해야 분석을 호출한다. caller 제공 hash/ID만으로 owner 증거를 대신하던 누락을 닫았다. 실제 격리 SQL/API/session·다른 사용자/익명/변조/충돌/원본 변경·과거 ref/원본/Track/Mix 보존 및 기존 real decoder2–4 Part QA/build 통과. 이미지 decode/AI 생성/승인/운영 DB migration/App 선택 정책은 미완료다. 기존 blocked 판정의 독립 작업 전수 완료 추정은 정정하며 실제 서비스·형상 정책 대기와 데이터 경계 작업을 분리한다. user server 변경은 transport 한 줄의 이번 추가와 기존 변경을 나눠 보존한다.
+
+Home/목록 보완 배포 증거: `086dff344b26839242bd572da6c1861fdbdffed2` main/origin 일치, 같은 commit의 Production7036621289/Vercel success. Production HTML/JS200 및 index-XhoOtjSF.js SHA25618803bdcf388b2e7d86443a509008d1051bd0a7c7dc724309d9620c7cfc0c0a4 로컬 build와 일치. 배포 응답 검증이며 실제 승인 결과 공급/지각/실기기 인수는 남는다. 배포 후 증거만 로컬 문서에 추가했고 사용자 서버3파일 및 미커밋 연구는 보존한다.
+
 2026-10-13 Home/목록 소비 누락 보완: 기존 Home·내 프로젝트·Collection의 기본 Project 커버와 생성 Project Collection 커버에도 정확한 Project/Seed/Part/voiceRecordRef를 전달했다. 생성 Project의 텍스트 전용 목록에 새 그래픽을 추가하지 않는다. 실제 React/WebGL의4개 경로·동일 snapshot style2개·URL 해제 및 관련 Home/Collection navigation QA/build 통과. 새 승인 결과/운영 참조를 자동 선택·생성하지 않으며 실제 AI·지각/운영 데이터·실기기 인수는 미완료다. 현재free4.53GiB로 대형AI8GiB admission 미달, 모델 실행 없음. 이전 소비 gate의 목록 참조 누락만 닫으며 R5 전체 완료로 처리하지 않는다.
 
 2026-10-13 저장·소비 연결 묶음 Git 마감: `e6ce336c1b0d99d2ba1847a2f4daf739cb560d61` main push/origin SHA 일치. 같은 commit의 Production deployment7036388236 및 Vercel status success(`Deployment has completed`)를 확인했다. Production HTML/JS200, index-wv4k27Rs.js SHA256608e7ba8b08b0c96445517d018af72adcf765b0671fae2853b0705784df28a49는 로컬 build와 byte exact다. literal Vercel READY·Production 사용자 흐름/실기기·실제 AI 형상 인수는 확인하지 않았다. 아래 저장/소비 하위 gate는 구현·관련 QA·배포 응답 검증까지 진행했지만 R5 전체는 미완료이며 기존 단계/미정 정책을 유지한다. 사용자 서버3파일 및 별도 AI 실행 연구는 이 commit에 포함하지 않았다. 배포 후 증거 기록은 다음 의미 있는 묶음과 구분해 로컬 보존한다.

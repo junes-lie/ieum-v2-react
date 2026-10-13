@@ -77,6 +77,16 @@ export async function loadRemoteSubmittedTrackIdentityInput({session,projectId,p
     !/^[a-f0-9]{64}$/.test(personalRef.outputSha256 || ''))throw new Error('Existing personal result and submitted Track are required')
   return session.run(async({userId,service,assertCurrent})=>{
     if(userId!==identityOwnerId)throw new Error('Personal result owner and connected Track owner must match')
+    // Owner lookup must precede Track analysis; a caller-supplied opaque ID or
+    // matching hash is not evidence that this connected user owns the result.
+    const stored=await service.getPersonalIdentity({id:personalRef.id,revision:personalRef.revision})
+    const owned=structuredClone(stored?.ref)
+    if(stored?.resultStatus!=='stored' || Object.keys(stored).length!==3 || typeof stored.profileRevision!=='string' || !stored.profileRevision.trim() ||
+      !owned || Object.keys(owned).length!==5 || owned.id!==personalRef.id || owned.revision!==personalRef.revision ||
+      owned.outputSha256!==personalRef.outputSha256 || !/^[a-f0-9]{64}$/.test(owned.inputDigest || '') ||
+      typeof owned.generatorVersion!=='string' || !owned.generatorVersion.trim() ||
+      ['inputDigest','generatorVersion'].some(key=>personalRef[key]!==undefined && personalRef[key]!==owned[key]))throw new Error('Stored personal result ownership or provenance is invalid')
+    assertCurrent()
     const result=await service.analyzeSubmittedTrack(projectId,partId)
     const analysis=structuredClone(result?.analysis),receipt=analysis?.audioReceipt,features=analysis?.features
     if(result?.trackId!==`${projectId}:${partId}` || result.analysisStatus!=='verified' || Object.keys(result).length!==3 ||
@@ -98,7 +108,7 @@ export async function loadRemoteSubmittedTrackIdentityInput({session,projectId,p
       version:analysis.version,sourceSha256:analysis.sourceSha256,byteLength:analysis.byteLength,
       audioReceipt:receipt,featuresSha256:analysis.featuresSha256})))
     assertCurrent()
-    const manifest=await buildTrackIdentityInput({trackId:result.trackId,identityRef:personalRef,generatorVersion,
+    const manifest=await buildTrackIdentityInput({trackId:result.trackId,identityRef:owned,generatorVersion,
       source:{recordId:result.trackId,purpose:'project-track',sha256:analysis.sourceSha256,analysisVersion:features.version,
         data:{projectId,partId,sourceRevision,verificationVersion:analysis.version,audioReceipt:receipt,
           analysis:features,assessment:analysis.assessment}}})

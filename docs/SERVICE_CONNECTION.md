@@ -1,5 +1,13 @@
 # 단일 앱 서비스 연결 계약
 
+## 2026-10-13 R5 개인 received result 소유권·불변 서버 저장
+
+personal_identity_results migration은 profile_source_history 이후 적용한다. trusted worker의 storeReceivedPersonalIdentity는 기존 입력/결과 계약과 shared traits를 검증하고 Profile history의 owner/revision/range hash·version·data/Sample hash에 연결한다. private manifest·artifact provenance·traits 및 PNG bytes(기존8MiB 계약 상한)를 DB bytea로 함께 보존한다. DB 직접 읽기·쓰기는 service_role도 금지하며 등록 RPC만 service_role에, exact ref 읽기 RPC만 authenticated에 허용한다. 기록된 status stored는 생성 실행 증명·시각 승인·Profile 선택·Track/Mix 성공이 아니다. 실제 PNG decode/실제 AI·운영 저장량/latency·Storage 이동 정책은 별도 기술/인수 항목이며 아직 실제 서버에 적용하지 않았다.
+
+GET /api/me/voice-identity?id=opaque-id&revision=exact-revision은 기존 bearer 검증→본인 RPC를 사용한다. 응답은 resultStatus/profileRevision/ref만 private/no-store로 제공하고 user ID/manifest/Blob URL은 노출하지 않는다. 공개/다른 사용자 결과 읽기와 클라이언트 생성 결과 등록은 제공하지 않는다. remote transport의 getPersonalIdentity와 기존 session.run scope를 사용해 Track 입력을 준비하기 전에 개인 ref owner·digest/version/hash를 대조한다. 실서비스가 미설정이면503이며 가짜 provider/AI 결과를 만들지 않는다. source 변경/다른 revision이 과거 결과를 덮거나 자동 재선택하지 않는다.
+
+검증: qa/verify-personal-identity-registry.mjs는 기존 IEUM_PGLITE_ROOT의 실제 격리 PostgreSQL/RPC와 주입 Auth/HTTP·통제 Track 분석을 사용한다. immutable bytes/hash·owner/source 연결·재시도/충돌·다른 사용자/익명/직접 접근 거부·원본 변경 후 old ref·logout/변조 시 분석 차단·Track/Mix 불변을 확인했다. PNG는 최소 계약 fixture이며 실제 decode/AI/운영 Supabase·사용자 인수가 아니다. 기존 제출 Track real decoder/SQL2–4 Part QA도 통과했고 원격 migration/계정 생성/서비스 설정/운영 활성화는 수행하지 않았다.
+
 ## 2026-10-13 R3 자동 Mix job 취득·lease 연결
 
 마지막 실제 제출이 생성하는 기존 queued job을 host iteration runNextProjectMix가 service-only SQL로 취득하고 기존 원본→반주→native DSP→업로드/해독→완료 연결을 실행한다. claim은 FOR UPDATE SKIP LOCKED와 만료 lease/token으로 중복 취득을 차단하며 갱신·중단 worker 재취득 및 오래된 token의 완료/실패 덮어쓰기 방지를 제공한다. 완료 transaction은 Project→job 순서와 기존 제출 snapshot/Source·저장 원본 검증을 유지한다. 실패는 제출 Track/Mix 업로드 원본을 보존하고, failed job의 무제한 자동 재시도 정책/새 UX는 만들지 않고 서버 명시 retry ID만 받는다. import 시 cron/process는 시작하지 않으며 운영 scheduler/runtime/서비스는 활성화하지 않았다. 설정·승인 runtime 확인 후에만 claim한다. 기존 실제 native/SQL2/3/4 Part pipeline에서 마지막 제출 queued→자동 취득→완료 실패 보존→명시 재시도/업로드 재사용→성공을 검증하고 권한·active lease 중복 차단·갱신·만료 재취득·stale 완료/실패 거부·idle을 확인했다. 초기 transaction QA는 의도한 PT409 뒤 savepoint 복구 누락으로25P02(current transaction is aborted)가 발생했고 QA savepoint를 보완한 뒤 통과했다. 기존 결과 저장 QA/build도 통과·기존500KB 경고 유지. SQL/native/decoder는 실제 실행, Auth/Storage 네트워크는 주입이며 다중 원격 DB session/실서비스 검증이 아니다. 실제 host cadence/RSS limit·운영 runtime 승인·migration/곡 ingest·Google/DB/Storage/App·실기기/음악/디자인은 잔여다. 기존 단계/예산/미정 정책·사용자3파일 보존, 실효 공수 미측정.
