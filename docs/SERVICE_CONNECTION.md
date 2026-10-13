@@ -1,5 +1,13 @@
 # 단일 앱 서비스 연결 계약
 
+## 원격 Project 입력의 client 소비
+
+owned_voice_image_chunks는 개인/Track 결과 저장 migration 뒤 추가하며 운영에는 적용하지 않았다. 기존 /api/me/voice-identity에 kind=personal-image&id&revision&offset&length 또는 kind=track-image&projectId&partId&id&revision&offset&length를 명시한다. 본인 결과만 읽고1–262144byte 조각/전체8MiB·offset을 검증한다.206 application/octet-stream/Content-Range/X-Content-SHA256/private no-store 응답은 저장 receipt/hash와 연결되며 공개 URL/원문 user ID/manifest는 없다. metadata 조회 계약은 유지하고 기존 배포 함수12개를 유지한다.
+
+loadRemoteOwnedVoiceImage({session,kind,ref,projectId,partId,maxBytes})은 명시 byte 예산 안에서 기존 session의 getVoiceImageChunk를 순차 호출한다. 범위/본문 길이·hash·512 PNG 검증을 마친 {ref,blob}만 반환한다. 새 Blob URL/캐시·자동 최신 선택·생성·Profile/Track/Mix 쓰기는 없고 운영 App에는 자동 활성화하지 않는다. 다른 참여자의 이미지 공개/접근 정책은 이번 본인 전달 경계에서 확정하지 않는다. server decoded receipt가 없는 과거 결과는 전달을 거부하며 자동 재생성하지 않는다.
+
+loadRemoteProjectRecordInput({session,ref:{projectId,inputDigest},projectSeed,partIds,generatorVersion})은 기존 getProjectVoiceRecord만 호출한다. session 시작부터 반환까지 동일 사용자를 확인하고 명시 ref/Parts를 clone해 await 뒤 caller 변경을 반영하지 않는다. 기존 buildProjectRecordInput으로 전체 canonical 입력·flags를 대조해 변조/다른 Seed·Part 순서·version·logout을 거부한다. {ref,input} 반환은 historical generation input이며 완성 artwork/이미지 URL/Mix 성공이 아니다. 새 캐시/자동 최신 선택/운영 UI 활성화는 없다.
+
 ## 2026-10-13 generated PNG 첫 프레임 실제 검증
 
 trusted worker의 개인/Track received result 저장은 verifyGeneratedPng를 먼저 성공해야 한다. IEUM_IMAGE_DECODER_PATH 또는 기존 IEUM_AUDIO_DECODER_PATH의 설치된 FFmpeg를 명시하며 설치/자동 활성화하지 않는다.512 PNG/8MiB 입력·단일 thread·file,pipe protocol·5초 decode timeout을 사용하고 출력RGBA1048576bytes를 세어 폐기한다. 첫 프레임의 size/SHA/decoder version/SHA receipt를 불변 result_data.imageReceipt에 함께 저장한다. bytes는 바꾸지 않으며 missing decoder/실패 시 기존 결과/원본/제출/Mix는 보존한다. APNG 전체 프레임/실제 모델 실행/시각 승인·OS RSS hard limit을 뜻하지 않는다. 기존 API의 metadata 조회에는 receipt/PNG bytes를 추가하지 않는다.

@@ -82,6 +82,7 @@ export function createRemoteProjectService({ baseUrl, getAccessToken, fetchImpl 
     getPersonalIdentity: ({id:resultId,revision,includeTraits=false}) => request(`me/voice-identity?id=${id(resultId)}&revision=${id(revision)}${includeTraits?'&include=traits':''}`),
     getTrackVoiceLayer: (projectId,partId,{id:layerId,revision}) => request(`me/voice-identity?kind=track-layer&projectId=${id(projectId)}&partId=${id(partId)}&id=${id(layerId)}&revision=${id(revision)}`),
     getProjectVoiceRecord: ({projectId,inputDigest}) => request(`me/voice-identity?kind=project-record&projectId=${id(projectId)}&inputDigest=${id(inputDigest)}`),
+    getVoiceImageChunk: async(selector,offset,length) => (await import('./ownedVoiceImages.js')).requestOwnedVoiceImageChunk({baseUrl:endpoint.href,getAccessToken,fetchImpl,selector,offset,length}),
     discoverProjects: ({songId,after,limit}={}) => {
       const query=new URLSearchParams()
       if(songId!==undefined && songId!==null)query.set('songId',songId)

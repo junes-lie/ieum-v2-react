@@ -4,6 +4,7 @@ import {readAuthConfiguration,verifyRequestUser} from './auth.js'
 import {trackVoiceLayerRequest,trackVoiceLayerErrorResponse} from './trackVoiceLayers.js'
 import {projectVoiceRecordInputRequest,projectVoiceRecordInputErrorResponse} from './projectVoiceRecordInputs.js'
 import {verifyGeneratedPng} from './generatedImageVerification.js'
+import {ownedVoiceImageChunkRequest} from './ownedVoiceImages.js'
 const fail=code=>new ServiceError('Voice Identity 결과를 확인하지 못했어요. 기존 원본은 유지됩니다.',{code})
 const text=value=>typeof value==='string' && value.trim() && value.length<=128 && !/[\x00-\x1f]/.test(value)
 const sha=value=>typeof value==='string' && /^[a-f0-9]{64}$/.test(value)
@@ -71,9 +72,13 @@ export function personalIdentityErrorResponse(error){
 // The original personal-result request/response contract remains the default.
 export async function voiceIdentityRouteRequest(request,options={}){
   const url=new URL(request.url),kinds=url.searchParams.getAll('kind'),kind=kinds[0]
-  if(kinds.length===1 && ['track-layer','project-record'].includes(kind)){
+  if(kinds.length===1 && ['track-layer','project-record','personal-image','track-image'].includes(kind)){
     url.searchParams.delete('kind')
     const scoped=new Request(url,request)
+    if(kind==='personal-image' || kind==='track-image'){
+      try{return await ownedVoiceImageChunkRequest(scoped,{...options,kind})}
+      catch(error){return trackVoiceLayerErrorResponse(error)}
+    }
     try{return kind==='track-layer'?await trackVoiceLayerRequest(scoped,options):await projectVoiceRecordInputRequest(scoped,options)}
     catch(error){return kind==='track-layer'?trackVoiceLayerErrorResponse(error):projectVoiceRecordInputErrorResponse(error)}
   }

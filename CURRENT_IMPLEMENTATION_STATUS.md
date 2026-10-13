@@ -1,3 +1,13 @@
+## 2026-10-13 R5 원격 Project 입력 소비 검증
+
+개인/Track 저장 PNG의 본인 exact revision 전달도 기존 인증 API에 연결했다. 새 owned_voice_image_chunks migration은 본인 조회 RPC를 먼저 적용하고 최대262144byte 조각/전체8MiB 제한의 bytes와 저장 decode receipt만 내부로 반환한다. API는 receipt/ref/범위·크기를 확인해206 private no-store binary로 전달하며 manifest/원문 user ID/URL은 노출하지 않는다. client는 session scope에서 순차 수신·명시 byte 예산·최종 전체 SHA/PNG512 크기 대조 후 Blob만 반환한다. 캐시/URL 생성/자동 선택/운영 UI 활성화/생성은 없다. Project 참여자의 다른 사람 이미지 접근 정책은 추가하지 않는다.
+
+qa:owned-voice-images의 실제346456byte test PNG 두 조각 재결합/hash·잘못된 범위/크기/본문·변조/예산·caller 변경/logout 통과. 기존 격리 SQL lineage QA는 실제 저장 PNG의 개인/Track 본인 재조회와 타인404까지 통과했다. remote-record-consumer는2–4 Part 명시 입력의 상태·변조·복원/session 검증을 통과했다. build45modules 통과/index-gUG8GOMY.js552.79KB·기존500KB 경고 유지. UI는 remote 활성화하지 않아 기존 bundle과 동일하다. 실제 모델/운영 서비스/이미지 승인이나 자연 혼합의 증거가 아니다. 배포는 실제 결과 확인 후 기록한다.
+
+loadRemoteProjectRecordInput은 기존 authenticated session에서 명시한 Project/inputDigest를 읽고 Seed·2–4 Part 순서·generator version·전체 canonical 입력과 제출/레이어 flags를 기존 builder로 재검증한다. await 동안 caller ref/Part 변경은 고정 snapshot으로 차단하고 logout은 session scope에서 거부한다. 과거 partial 입력을 후속 full 입력으로 교체하거나 입력을 완성 artwork/Mix로 승격하지 않는다. 운영 App의 remote 활성화·이미지 공급·AI 생성·승인 형상은 별도 미완료다.
+
+직전 a24952bd342bdf4f99c31ebd3a6a65053a605539 main/origin 일치, exact SHA Production7038325199 및 Vercel Deployment has completed 확인. Production project-record 조회 익명401 AUTH_REQUIRED/private no-store 확인. 실제 서비스 migration/모델 활성화와 구분한다.
+
 ## 2026-10-13 R5 received PNG 실제 해독과 저장 receipt
 
 verifyGeneratedPng는 기존 configured FFmpeg를 재사용해512×512 PNG의 첫 프레임을 실제 RGBA로 해독하고 출력1048576bytes를 세어 폐기한다. resize/픽셀 buffer 축적/AI 추론/URL 입력/새 runtime 설치는 없다. 입력8MiB·trusted executable·timeout/단일 thread/file,pipe 제한을 사용하며 child close 뒤 반환하고 새로 만든 staging file/directory만 비재귀 정리한다. 기존 decoderIdentity를 재사용해 decoder version/SHA 및 이미지 SHA/크기/첫 프레임 해독 receipt를 받는다. APNG 전체 애니메이션 검증이나 시각 승인·OS RSS hard limit 증거는 아니다.

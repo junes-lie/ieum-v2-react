@@ -11,10 +11,11 @@ import {persistRemoteProjectVoiceRecordInput,projectVoiceRecordInputRequest,proj
 import {voiceSourceRegistrationRequest} from '../server/voiceSourceRegistration.js'
 import {projectLifecycleRequest,projectLifecycleErrorResponse} from '../server/projectLifecycle.js'
 import {createServiceSession} from '../src/serviceSession.js'
-import {loadRemoteMeasuredProfileIdentityInput,loadRemoteSubmittedVoiceControls} from '../src/voiceIdentitySources.js'
+import {loadRemoteMeasuredProfileIdentityInput,loadRemoteSubmittedVoiceControls,loadRemoteProjectRecordInput} from '../src/voiceIdentitySources.js'
 import {canonicalIdentityInput,assessVoiceCandidates} from '../src/voiceIdentityContract.js'
 import {voiceSourceRevision} from '../src/profileSource.js'
 import {fixturePng} from './png-fixture.mjs'
+import {loadRemoteOwnedVoiceImage} from '../src/ownedVoiceImages.js'
 assert.ok(process.env.IEUM_PGLITE_ROOT && process.env.IEUM_QA_FFMPEG_PATH,'Existing isolated SQL/decoder required; no runtime install/model')
 const require=createRequire(join(process.env.IEUM_PGLITE_ROOT,'package.json')),{PGlite}=require('@electric-sql/pglite'),db=new PGlite()
 const users=[1,2,3,4,5].map(n=>`${String(n).repeat(8)}-${String(n).repeat(4)}-4${String(n).repeat(3)}-8${String(n).repeat(3)}-${String(n).repeat(12)}`)
@@ -31,6 +32,8 @@ const role=async(name,user)=>{await db.exec('reset role');await db.query("select
 const calls={
   ieum_store_personal_identity_result:b=>[b.p_user_id,b.p_profile_revision,JSON.stringify(b.p_result),b.p_png],
   ieum_get_owned_personal_identity_result:b=>[b.p_id,b.p_revision],ieum_get_owned_personal_identity_traits:b=>[b.p_id,b.p_revision],ieum_get_voice_source:()=>[],
+  ieum_get_owned_personal_identity_image_chunk:b=>[b.p_id,b.p_revision,b.p_offset,b.p_length],
+  ieum_get_owned_track_voice_image_chunk:b=>[b.p_project_id,b.p_part_id,b.p_id,b.p_revision,b.p_offset,b.p_length],
   ieum_get_owned_submitted_track_analysis:b=>[b.p_project_id,b.p_part_id],
   ieum_get_track_voice_layer_context:b=>[b.p_project_id,b.p_part_id,b.p_user_id,b.p_personal_id,b.p_personal_revision],
   ieum_store_track_voice_layer:b=>[b.p_project_id,b.p_part_id,b.p_user_id,JSON.stringify(b.p_result),b.p_png],
@@ -93,7 +96,7 @@ try{
     grant usage on schema auth to authenticated;grant execute on function auth.uid() to authenticated;`)
   for(const user of users)await db.query('insert into auth.users values($1)',[user])
   for(const name of ['voice_profiles','project_tracks','project_participation','profile_source_history','profile_sample_uploads','profile_sample_receipts','profile_sample_analysis',
-    'profile_source_registration','personal_identity_results','personal_identity_source_binding','personal_identity_traits','verified_audio_receipts','submitted_track_analysis','track_voice_layers','project_voice_record_inputs'])
+    'profile_source_registration','personal_identity_results','personal_identity_source_binding','personal_identity_traits','verified_audio_receipts','submitted_track_analysis','track_voice_layers','project_voice_record_inputs','owned_voice_image_chunks'])
     await db.exec(await readFile(new URL(`../server/migrations/20261013_${name}.sql`,import.meta.url),'utf8'))
   const storage=createSupabaseAudioStorage(options),decoderOptions={executable:process.env.IEUM_QA_FFMPEG_PATH,maxDurationSeconds:1}
   const receipt=await storage.verifyOriginalAudio('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',{size:wav.length,sha256:sha,contentType:'audio/wav'},decoderOptions)
@@ -156,6 +159,12 @@ try{
       const saved=await storeReceivedTrackVoiceLayer(input,options);inputs.push(input);refs[partId]=saved.ref
       assert.deepEqual(await storeReceivedTrackVoiceLayer(input,options),saved)
       assert.deepEqual(await session.run(({service})=>service.getTrackVoiceLayer(project,partId,saved.ref)),saved)
+      for(const [kind,ref] of [['personal-image',personalRefs[n]],['track-image',saved.ref]]){
+        const retrieved=await loadRemoteOwnedVoiceImage({session,kind,ref,projectId:project,partId,maxBytes:8388608})
+        assert.equal(hash(Buffer.from(await retrieved.blob.arrayBuffer())),hash(png))
+        await assert.rejects(loadRemoteOwnedVoiceImage({session,kind,ref,projectId:project,partId,maxBytes:33}))
+        await assert.rejects(loadRemoteOwnedVoiceImage({session,kind,ref:{...ref,outputSha256:'f'.repeat(64)},projectId:project,partId,maxBytes:8388608}))
+      }
       assert.equal(json(saved).includes(caller),false)
       await assert.rejects(storeReceivedTrackVoiceLayer({...input,userId:users[4]},options),e=>e.code==='VOICE_LAYER_FORBIDDEN')
       await assert.rejects(storeReceivedTrackVoiceLayer({...input,personalRef:personalRefs[(n+1)%4]},options))
@@ -173,6 +182,9 @@ try{
     caller=users[0];const session=await connect()
     assert.deepEqual(await session.run(({service})=>service.getProjectVoiceRecord(full)),full)
     assert.deepEqual(await session.run(({service})=>service.getProjectVoiceRecord(partial)),partial,'New submissions/layers never overwrite a historical snapshot')
+    for(const record of [full,partial])assert.deepEqual(await loadRemoteProjectRecordInput({session,
+      ref:{projectId:project,inputDigest:record.inputDigest},projectSeed:seed,partIds:record.input.partIds,generatorVersion:'record-v1'}),
+      {ref:{projectId:project,inputDigest:record.inputDigest},input:record.input})
     caller=users[4]
     const recordRequest=new Request(`https://ieum.example/api/me/voice-record?projectId=${project}&inputDigest=${full.inputDigest}`,{headers:{Authorization:'Bearer qa-token'}})
     await assert.rejects(projectVoiceRecordInputRequest(recordRequest,options),e=>e.code==='VOICE_LAYER_NOT_FOUND')
@@ -180,6 +192,11 @@ try{
     await assert.rejects(trackVoiceLayerRequest(layerRequest,options),e=>e.code==='VOICE_LAYER_NOT_FOUND')
     const protectedApi=new Request(`https://ieum.example/api/me/voice-identity?kind=project-record&projectId=${project}&inputDigest=${full.inputDigest}`,{headers:{Authorization:'Bearer qa-token'}})
     assert.equal((await voiceIdentityRouteRequest(protectedApi,options)).status,404)
+    for(const kind of ['personal-image','track-image']){
+      const query=new URLSearchParams({kind,id:kind==='personal-image'?personalRefs[0].id:'layer-0',revision:'r1',offset:'0',length:'262144',
+        ...(kind==='track-image'?{projectId:project,partId:'part-0'}:{})})
+      assert.equal((await voiceIdentityRouteRequest(new Request(`https://ieum.example/api/me/voice-identity?${query}`,{headers:{Authorization:'Bearer qa-token'}}),options)).status,404)
+    }
     caller=users[0];storageMode='tamper'
     await assert.rejects(storeReceivedTrackVoiceLayer(inputs[0],options),e=>e.code==='UPLOAD_OBJECT_MISMATCH');storageMode='normal'
     disconnectOnRead=true;await assert.rejects(session.run(({service})=>service.getProjectVoiceRecord(full)),e=>e.code==='SESSION_CHANGED');disconnectOnRead=false

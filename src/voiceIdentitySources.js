@@ -2,7 +2,7 @@
 // No model invocation, graphic update policy, URL, or submission side effect.
 import {loadProjectTracks,loadTrack} from './trackStore.js'
 import {voiceSourceRevision} from './profileSource.js'
-import {canonicalIdentityInput,buildIdentityInputManifest,buildTrackIdentityInput,assessVoiceCandidates} from './voiceIdentityContract.js'
+import {canonicalIdentityInput,buildIdentityInputManifest,buildTrackIdentityInput,buildProjectRecordInput,assessVoiceCandidates} from './voiceIdentityContract.js'
 import {isSupportedVoiceAnalysis} from './voiceAnalysis.js'
 import {PITCH_ANALYSIS_VERSION} from './pitch.js'
 import {prepareVoiceVisualControls} from './voiceVisualMapping.js'
@@ -173,5 +173,32 @@ export async function loadRemoteSubmittedVoiceControls(options){
     const controls=await prepareVoiceVisualControls(traits,{trackInput,personalResultRef:metadata.ref})
     assertCurrent()
     return {personalRef:structuredClone(metadata.ref),trackInput,controls}
+  })
+}
+
+// Read an explicit historical Project input, never select the latest artwork.
+// This is a generation input, not a completed image or successful Auto Mix.
+export async function loadRemoteProjectRecordInput({session,ref,projectSeed,partIds,generatorVersion}){
+  const selector=structuredClone(ref),parts=structuredClone(partIds)
+  if(typeof session?.run!=='function' || !selector || Object.keys(selector).length!==2 ||
+    typeof selector.projectId!=='string' || !selector.projectId.trim() ||
+    !/^[a-f0-9]{64}$/.test(selector.inputDigest || ''))throw new Error('Explicit stored Project input reference is required')
+  // Validate caller context before fetching; keep it fixed across await/session changes.
+  return session.run(async({service,assertCurrent})=>{
+    await buildProjectRecordInput({projectId:selector.projectId,projectSeed,partIds:parts,tracks:[],generatorVersion})
+    assertCurrent()
+    const received=structuredClone(await service.getProjectVoiceRecord(selector)),input=received?.input
+    assertCurrent()
+    if(!received || Object.keys(received).length!==3 || received.projectId!==selector.projectId ||
+      received.inputDigest!==selector.inputDigest || input?.projectId!==selector.projectId ||
+      input.inputDigest!==selector.inputDigest || input.projectSeed!==projectSeed ||
+      input.generatorVersion!==generatorVersion || canonicalIdentityInput(input.partIds)!==canonicalIdentityInput(parts) ||
+      !Array.isArray(input.layers))throw new Error('Stored Project input does not match its explicit context')
+    const rebuilt=await buildProjectRecordInput({projectId:selector.projectId,projectSeed,partIds:parts,generatorVersion,
+      tracks:input.layers.map(layer=>({id:layer.trackId,revision:layer.trackRevision,projectId:selector.projectId,
+        partId:layer.partId,submissionStatus:'success',layerStatus:layer.layerRef?'success':'pending',layerRef:layer.layerRef}))})
+    assertCurrent()
+    if(canonicalIdentityInput(rebuilt)!==canonicalIdentityInput(input))throw new Error('Stored Project input provenance or state was changed')
+    return {ref:selector,input:rebuilt}
   })
 }

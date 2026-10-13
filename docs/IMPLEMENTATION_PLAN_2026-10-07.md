@@ -4,6 +4,10 @@
 
 ### 조사 및 적용
 
+2026-10-13 독립 연결 잔여: 원격의 명시적 Project 입력은 client session 소비 시 기존 builder로 digest/Seed/Part/version/상태 flags를 다시 대조한다. 저장/조회 준비를 실제 AI·운영 UI·완성 Mix 인수로 계산하지 않는다. 최신 결과 자동 선택/미정 갱신 정책은 추가하지 않는다. 기존 R5 단계·예산·시각 gate를 유지한다.
+
+본인의 저장 개인/Track PNG 전달은 기존 인증 API의 bounded chunk→전체 hash/512 크기 검증→Blob 소비로 연결한다. 실제 저장 결과를 읽는 준비이며 임의 연구 이미지 공급/공개 URL/다른 참여자 접근 정책·최신 선택·기존 App remote 활성화를 추가하지 않는다. 운영 DB/실제 모델/승인 결과·Project 참가자 공급 정책은 남은 별도 gate다. RAM 대기를 독립 저장·소비 코드 중단 이유로 확대하지 않는다.
+
 [Meyda 공식 feature 문서](https://meyda.js.org/audio-features)는 spectral centroid를 밝기 관련 지표, flatness를 잡음성, flux를 스펙트럼 변화로 설명한다. 이것이 특정 그래픽 형태를 결정하거나 개인 음색의 과학적 판정을 보장하지는 않는다. 현재 IEUM은 자체 분석기를 사용하며 Meyda를 설치/대체하지 않는다. 기존 밝기/거칠기/성량 변화는 추정 proxy·confidence null로 유지한다. 미지원 호흡량/비브라토/BPM/리듬 복잡도는 null이다. 아래 시각 연결은 기술/지각 시험 대상이며 확정된 디자인 토큰이 아니다.
 
 | 공통 개인 특징 | Voice Identity의 연구 방향 | 바이닐 표현 연결 |
