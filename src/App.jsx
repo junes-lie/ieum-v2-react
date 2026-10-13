@@ -1343,12 +1343,13 @@ function CurrentMixPanel({ parts, projectTracks, project, mix, mixStatus, retryA
     let active=true
     let generatedUrl
     setPlaying(false);setPreview(null);setPreviewError('')
-    if(selectedTracks.length===1&&!project?.audioSource)setPreview(selectedTracks[0])
-    else if(selectedTracks.length>0){
+    if(selectedTracks.length>0){
       loadProjectBacking(project).then(backingBlob=>{
         if(!active)return null
         assertProjectTrackAudio(project,selectedTracks)
-        return createPreviewMix({tracks:selectedTracks,backing:Boolean(backingBlob),backingBlob,duration:Math.max(project?.audioSource?.duration||0,project?.recordingDuration||0,...selectedTracks.map(track=>track.duration||0))})
+        // A one-Track combination still needs its encoded recording lead-in
+        // trimmed. The original URL remains available for individual listening.
+        return createPreviewMix({tracks:selectedTracks,backing:Boolean(backingBlob),backingBlob,duration:Math.max(project?.audioSource?.duration||0,project?.recordingDuration||0)})
       }).then(value=>{
         if(!value)return
         generatedUrl=value.url

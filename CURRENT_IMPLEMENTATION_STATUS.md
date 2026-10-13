@@ -1,3 +1,23 @@
+## 2026-10-13 현재 Mix 선택 청취 마감
+
+기존02/03의 개인 Current Mix에서 한 Track만 선택할 때 원본 URL로 우회해 syncOffsetMs를 무시하던 경로를 제거했다.1–4 Track 모두 기존 preview renderer로 정렬하며, 단독 Track의 잘못된 duration metadata로 preview가 늘어나지 않는다. 개별 원본 재생·0개 선택 차단·조합 복귀는 유지하고 원본/제출/최종 Mix를 변경하지 않는다. 기존 사용자 승인 TEMP runtime의 실제0.6초 PCM 렌더에서1–4개 시작 위치/offset 제거 후 길이/원본 불변을 확인했다. Node React 제어에서2→1→0 선택·재생 정지/disabled·개별 원본/복귀·Final Mix 불변을 확인했다. 물리 청취/기기·시각 인수는 별도이며 build/Git 배포는 마감 후 기록한다. 사용자 서버3파일은 보존한다.
+
+## 2026-10-13 운영 연결 선행 조건 audit 3 — blocked 판정
+
+직전 goal turn은 동일 blocker 재확인/기록뿐으로no progress였다. 세 번째 연속 audit에서 실제HEAD eb4a868/main-origin0/0·기존 사용자3파일 보존, .env.example만 존재/운영 process env 이름 없음·관련 관리 전용 도구0개, 실제Production capabilities200/preparation/allfalse를 재확인했다. 현재 운영 OAuth/DB/Storage·Mix host/runtime 및 migration/곡 ingest 접근을 취득하거나 실제 두 사용자/App 성공을 검증할 수 없다. R4는R3 실제 연결 뒤이고, 독립R5는 승인 형상/미정 정책, R6는 비용0원 조건의 미통과 음악 품질 경로, R7은 실기기/승인 디자인 인수가 남아 있다. 완료된 QA 재실행·동일 실패AI 반복·임의 형상/정책/가짜 연결은 진행하지 않는다. 현재 확인 가능한독립 코드 결함은 추가되지 않았고 외부상태/사용자 결정 없이는 의미 있는 다음 작업이 없어 goal을blocked로 기록한다. 전체범위/기존계획/작업물은 보존하며 완료나사용자 요청pause로 표시하지 않는다. 이번은문서기록만이며commit/push를추가하지않는다.
+
+## 2026-10-13 운영 연결 선행 조건 audit 2
+
+직전 goal turn은 선행 조건 read-only 확인/상태 기록으로 새 기능 진척이 없었다(no progress). 이번에도 실제HEAD eb4a868/main-origin0/0·사용자3파일/마감 기록 보존, .env.example만 존재/운영 process env 이름 없음·Supabase/Notion/figma-desktop/Vercel 관리 전용 도구0개를 재확인했다. 디자인 worktree codex/ieum-design5c107b8은 별도 보존하며 승인된 디자인 인계를 받은 것으로 처리하지 않는다. 상위R1/R2 잔여 표는 확인 범위의 코드 결함0h이며 실제 후보/곡/Identity/물리 입력은 데이터·정책·외부 연결/인수 의존성을 명시한다. 직전 완료된 시험/배포를 재실행하거나 실패 음악/임의 형상·가짜 인증으로 의존성을 대체하지 않았다. 같은 genuine blocker는 운영 서비스/host 접근, R5 승인 형상·미정 정책, R6 비용0원 조건의 미통과 품질 경로, R7 실기기/디자인이다. 첫 확인 후 두 번째 연속 blocker audit이며 전체goal은active/미완료로 유지한다. 완료 조건을 충족하지 않은R3를 완료로 바꾸거나R4를 시작하지 않는다.
+
+## 2026-10-13 운영 연결 선행 조건 audit 1
+
+직전eb4a868 및main/origin0/0, 사용자 서버3파일/마감 증거 보존. 이번에는 완료된 native/SQL 시험·build를 반복하거나 앱/서버 capability를 변경하지 않았다. 로컬 .env 파일은 .env.example만 있으며 IEUM/VITE_IEUM/SUPABASE/VERCEL process env 이름과 vercel CLI는 발견되지 않았다. 현재 노출 도구에 Supabase/Notion/figma-desktop/Vercel 운영 관리 전용 도구가 없으며 메모리 검색을 운영 연결로 간주하지 않았다. 실제 Production /api/capabilities200/no-store/preparation/allfalse, 무인증 /api/me/session401 AUTH_REQUIRED/private,no-store 확인. 401은 정상 인증 경계이며 Google 계정 인증 실패를 의미하지 않는다. App은 현재 readLocalUserState/writeLocalUserState만 사용하고 serviceSession.connect는 실제 remote/authenticated/sharedProjects capability를 요구한다. 현재 수단으로 운영 OAuth/DB/Storage/host runtime/migration·실제 두 사용자 완료를 검증할 수 없다. 이 확인을 기능 완료/새 구현 진척으로 계산하지 않는다. 직전 goal turn은 검증·commit·배포를 수행한 progress이며 이번은 그 뒤 첫 운영 선행 조건 blocker audit다. R4는 R3 뒤, R5는 승인 형상/미정 정책, R6는 비용0원·실제 음악 품질/권리, R7은 실기기/디자인 인수가 잔여다. 이미 답한 기존 서비스 없음·Google 우선·비용0원을 다시 질문하지 않으며 TEMP 시험 승인을 운영 설치 승인으로 확대하지 않는다. 전체 goal은 active이고 완료/blocked로 조기 표시하지 않는다.
+
+## 2026-10-13 자동 Mix job 연결 마감
+
+eb4a868ebb4c48becbf4a9fa46f877c342b9d87c 관련9파일 commit/main push·origin0/0, 사용자 서버3파일 보존. native/SQL2/3/4 Part 마지막 제출 queued→자동 claim→실제 DSP/저장/완료·lease 권한/중복/갱신/재취득/stale fencing·실패 보존/재시도·기존 결과 저장 QA/build 통과. Vercel Git Integration fullSHA success/Production deployment7032280290 SHA 일치(https://vercel.com/junes-lie/ieum-v2-react/aYPZqQsi2Gt6zzZB7rhrKuysa3bu). Production page/JS200·index-CGUJcQ6M.js local exact/SHA256 89fec9b4f9f26bc0875024d72c9188dc86a698c43f76132fa78972e64af64821·capabilities preparation/allfalse 확인. 운영 host scheduler/승인 runtime/원격 migration/곡 ingest·Google/DB/Storage/App/실기기·음악·Identity/디자인 인수는 잔여이며 전체 완료가 아니다. 이 문단은 commit 후 로컬 증거 기록이다.
+
 ## 2026-10-13 R3 자동 Mix job 취득·lease 연결
 
 마지막 실제 제출이 생성하는 기존 queued job을 host iteration runNextProjectMix가 service-only SQL로 취득하고 기존 원본→반주→native DSP→업로드/해독→완료 연결을 실행한다. claim은 FOR UPDATE SKIP LOCKED와 만료 lease/token으로 중복 취득을 차단하며 갱신·중단 worker 재취득 및 오래된 token의 완료/실패 덮어쓰기 방지를 제공한다. 완료 transaction은 Project→job 순서와 기존 제출 snapshot/Source·저장 원본 검증을 유지한다. 실패는 제출 Track/Mix 업로드 원본을 보존하고, failed job의 무제한 자동 재시도 정책/새 UX는 만들지 않고 서버 명시 retry ID만 받는다. import 시 cron/process는 시작하지 않으며 운영 scheduler/runtime/서비스는 활성화하지 않았다. 설정·승인 runtime 확인 후에만 claim한다. 기존 실제 native/SQL2/3/4 Part pipeline에서 마지막 제출 queued→자동 취득→완료 실패 보존→명시 재시도/업로드 재사용→성공을 검증하고 권한·active lease 중복 차단·갱신·만료 재취득·stale 완료/실패 거부·idle을 확인했다. 초기 transaction QA는 의도한 PT409 뒤 savepoint 복구 누락으로25P02(current transaction is aborted)가 발생했고 QA savepoint를 보완한 뒤 통과했다. 기존 결과 저장 QA/build도 통과·기존500KB 경고 유지. SQL/native/decoder는 실제 실행, Auth/Storage 네트워크는 주입이며 다중 원격 DB session/실서비스 검증이 아니다. 실제 host cadence/RSS limit·운영 runtime 승인·migration/곡 ingest·Google/DB/Storage/App·실기기/음악/디자인은 잔여다. 기존 단계/예산/미정 정책·사용자3파일 보존, 실효 공수 미측정.

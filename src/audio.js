@@ -636,7 +636,7 @@ async function renderTrackMix({tracks,duration,onProgress,backing,backingBlob,mi
   }
     if (backing && backingBlob) decodedBacking = await decodeBlob(decodeContext,backingBlob)
   } finally { await decodeContext.close() }
-  const actualDuration = Math.max(duration, minTracks>0 ? decodedBacking?.duration || 0 : 0, ...decodedTracks.map(({buffer}) => buffer.duration + .2))
+  const actualDuration = Math.max(duration, minTracks>0 ? decodedBacking?.duration || 0 : 0, ...decodedTracks.map(({buffer,sourceOffset}) => buffer.duration - (minTracks===0 ? sourceOffset : 0) + .2))
   const offline = new OfflineAudioContextClass(2, Math.ceil(actualDuration * rate), rate)
   const master = offline.createDynamicsCompressor()
   master.threshold.value = -3; master.knee.value = 0; master.ratio.value = 20
