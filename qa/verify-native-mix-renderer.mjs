@@ -7,6 +7,7 @@ import {renderProjectMix} from '../server/mixRenderer.js'
 import {decodeOriginalAudio} from '../server/audioDecoder.js'
 import {createRequire} from 'node:module'
 import {executeProjectMix} from '../server/mixExecution.js'
+import {runNextProjectMix} from '../server/mixJobRunner.js'
 
 // Explicit approved TEMP runtime; this QA never installs a dependency.
 const options={runtimeRoot:process.env.IEUM_WEB_AUDIO_ROOT,maxInputBytes:1048576,maxPcmBytes:4194304,maxOutputBytes:1048576,maxDurationSeconds:2,timeoutMs:15000}
@@ -89,10 +90,13 @@ const fetchImpl=async(url,request)=>{
   if(url.includes('/rest/v1/rpc/')){
     assert.equal(request.headers.apikey,'sb_secret_qa_only');assert.equal(request.headers.Authorization,undefined)
     const name=url.split('/').at(-1),body=JSON.parse(request.body)
-    if(mode==='completion-failure' && name==='ieum_complete_verified_mix')throw Error('Simulated DB outage')
+    if(mode==='completion-failure' && ['ieum_complete_verified_mix','ieum_complete_claimed_mix'].includes(name))throw Error('Simulated DB outage')
     await db.exec('reset role;set role service_role')
     const params={ieum_get_mix_render_context:[body.p_job_id],ieum_get_mix_completion_context:[body.p_job_id],ieum_get_mix_backing:[body.p_job_id],
-      ieum_prepare_mix_output:[body.p_job_id,body.p_sha256,body.p_size],ieum_complete_verified_mix:[body.p_job_id,body.p_object_id,body.p_sha256,body.p_duration]}[name]
+      ieum_prepare_mix_output:[body.p_job_id,body.p_sha256,body.p_size],ieum_complete_verified_mix:[body.p_job_id,body.p_object_id,body.p_sha256,body.p_duration],
+      ieum_complete_claimed_mix:[body.p_job_id,body.p_lease_token,body.p_object_id,body.p_sha256,body.p_duration],
+      ieum_claim_mix_job:[body.p_lease_seconds,body.p_job_id],ieum_renew_mix_job:[body.p_job_id,body.p_lease_token,body.p_lease_seconds],
+      ieum_fail_mix_job:[body.p_job_id,body.p_lease_token]}[name]
     assert.ok(params)
     try{return Response.json((await db.query(`select public.${name}(${params.map((_,i)=>`$${i+1}`).join(',')}) as result`,params)).rows[0].result)}
     catch(error){if(error.code==='PT409')return new Response(null,{status:409});throw error}
@@ -115,7 +119,7 @@ try{
     create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
     grant usage on schema auth to authenticated;grant execute on function auth.uid() to authenticated;`)
   for(const user of users)await db.query('insert into auth.users values($1)',[user])
-  for(const name of ['project_tracks','project_participation','verified_audio_receipts','mix_completion_context','mix_output_intents','mix_render_context','arrangement_audio'])
+  for(const name of ['project_tracks','project_participation','verified_audio_receipts','mix_completion_context','mix_output_intents','mix_render_context','arrangement_audio','mix_job_leases'])
     await db.exec(await readFile(new URL(`../server/migrations/20261013_${name}.sql`,import.meta.url),'utf8'))
   for(const count of [2,3,4]){
     await db.exec('reset role')
@@ -157,12 +161,30 @@ try{
     await assert.rejects(db.query('update public.ieum_arrangement_audio set object_id=gen_random_uuid() where arrangement_id=$1',[arrangementId]),e=>e.code==='PT409')
     mode='source-mismatch';const before=uploads
     await assert.rejects(executeProjectMix({jobId:job.id},pipelineOptions),e=>e.code==='UPLOAD_OBJECT_MISMATCH');assert.equal(uploads,before)
-    mode='completion-failure';await assert.rejects(executeProjectMix({jobId:job.id},pipelineOptions),e=>e.code==='PROJECT_UNAVAILABLE')
+    await db.exec('reset role;set role authenticated')
+    await assert.rejects(db.query('select public.ieum_claim_mix_job(30,null)'),e=>e.code==='42501')
+    await db.exec('reset role;begin;set role service_role')
+    const claim=(await db.query('select public.ieum_claim_mix_job(30,null) as result')).rows[0].result
+    assert.equal(claim.jobId,job.id)
+    assert.equal((await db.query('select public.ieum_claim_mix_job(30,null) as result')).rows[0].result,null,'Active lease is not claimable twice')
+    assert.equal((await db.query('select public.ieum_renew_mix_job($1,$2,30) as result',[job.id,claim.leaseToken])).rows[0].result,true)
+    await db.exec('reset role');await db.query("update public.ieum_mix_jobs set lease_until=clock_timestamp()-interval '1 second' where id=$1",[job.id])
+    await db.exec('set role service_role')
+    const replacement=(await db.query('select public.ieum_claim_mix_job(30,null) as result')).rows[0].result
+    assert.notEqual(replacement.leaseToken,claim.leaseToken)
+    await db.exec('savepoint old_worker')
+    await assert.rejects(db.query('select public.ieum_complete_claimed_mix($1,$2,$3,$4,.65)',[job.id,claim.leaseToken,backingObject,'e'.repeat(64)]),e=>e.code==='PT409')
+    await db.exec('rollback to savepoint old_worker;release savepoint old_worker')
+    assert.equal((await db.query('select public.ieum_fail_mix_job($1,$2) as result',[job.id,claim.leaseToken])).rows[0].result,false,'Old worker cannot fail the replacement')
+    assert.equal((await db.query('select public.ieum_fail_mix_job($1,$2) as result',[job.id,replacement.leaseToken])).rows[0].result,true)
+    await db.exec('rollback;reset role') // Restore the actual last-submission queued job after isolated lease checks.
+    mode='completion-failure';await assert.rejects(runNextProjectMix({...pipelineOptions,leaseSeconds:30}),e=>e.code==='PROJECT_UNAVAILABLE')
     await db.exec('reset role');assert.equal((await db.query('select lifecycle from public.ieum_projects where id=$1',[projectId])).rows[0].lifecycle,'mixing')
-    mode='normal';const uploaded=uploads,result=await executeProjectMix({jobId:job.id},pipelineOptions)
+    mode='normal';const uploaded=uploads,result=await runNextProjectMix({...pipelineOptions,leaseSeconds:30,retryJobId:job.id})
     assert.equal(result.lifecycle,'completed');assert.equal(result.uploadStatus,'verified');assert.equal(uploads,uploaded,'Reuse the uploaded output after completion failure')
     await db.exec('reset role');const finished=(await db.query('select * from public.ieum_mix_jobs where id=$1',[job.id])).rows[0]
     assert.equal(finished.status,'succeeded');assert.equal(finished.result_sha256,results.find(r=>r.parts===count).sha256)
+    assert.deepEqual(await runNextProjectMix({...pipelineOptions,leaseSeconds:30}),{status:'idle'})
     for(let i=0;i<count;i++)assert.equal(sha(files.get(intents[i].object_id)),voices[i].receipt.sha256)
   }
   console.log('Native job pipeline: real isolated SQL + private byte verification + existing DSP + upload + decode + successful-only completion passed for 2/3/4 Parts')

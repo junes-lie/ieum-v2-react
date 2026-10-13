@@ -29,7 +29,8 @@ function mixEnvironment(env,fetchImpl) {
 
 // Server-only post-render boundary. This does not render/upload a Mix, accept
 // browser completion claims, or activate an unconfigured background worker.
-export async function completeStoredProjectMix(input,{env=process.env,fetchImpl=globalThis.fetch}={}) {
+export async function completeStoredProjectMix(input,{env=process.env,fetchImpl=globalThis.fetch,leaseToken}={}) {
+  if(leaseToken!==undefined && !uuid(leaseToken))throw fail('INVALID_MIX_RESULT',400)
   if(!input || Array.isArray(input) || Object.keys(input).length!==3 ||
     Object.keys(input).some(key=>!['jobId','objectId','sha256'].includes(key)) || !uuid(input.jobId) || !uuid(input.objectId) || !hash(input.sha256))
     throw fail('INVALID_MIX_RESULT',400)
@@ -49,14 +50,16 @@ export async function completeStoredProjectMix(input,{env=process.env,fetchImpl=
   const receipt=await storage.verifyOriginalAudio(input.objectId,{sha256:input.sha256,maxBytes},{executable,maxDurationSeconds})
   if(context.status==='succeeded' && Math.abs(context.result.duration-receipt.duration)>1/receipt.sampleRate)throw fail('MIX_RESULT_CONFLICT')
   const duration=context.status==='succeeded'?context.result.duration:receipt.duration
-  const completed=await rpc('ieum_complete_verified_mix',{p_job_id:input.jobId,p_object_id:input.objectId,p_sha256:receipt.sha256,p_duration:duration})
+  const completed=await rpc(leaseToken?'ieum_complete_claimed_mix':'ieum_complete_verified_mix',
+    {p_job_id:input.jobId,...(leaseToken?{p_lease_token:leaseToken}:{}),p_object_id:input.objectId,p_sha256:receipt.sha256,p_duration:duration})
   if(completed?.jobId!==input.jobId || completed.projectId!==context.projectId || completed.lifecycle!=='completed')throw fail('INVALID_MIX_RESPONSE',503)
   return {projectId:context.projectId,jobId:input.jobId,lifecycle:'completed',receipt}
 }
 
 // The existing renderer owns the Blob; this worker boundary owns only stable
 // output allocation, immutable upload, byte revalidation and actual completion.
-export async function persistProjectMix(input,{env=process.env,fetchImpl=globalThis.fetch}={}) {
+export async function persistProjectMix(input,{env=process.env,fetchImpl=globalThis.fetch,leaseToken}={}) {
+  if(leaseToken!==undefined && !uuid(leaseToken))throw fail('INVALID_MIX_RESULT',400)
   if(!input || Array.isArray(input) || Object.keys(input).length!==2 || Object.keys(input).some(key=>!['jobId','blob'].includes(key)) ||
     !uuid(input.jobId) || !(input.blob instanceof Blob) || input.blob.size<=0 || input.blob.type!=='audio/wav')throw fail('INVALID_MIX_RESULT',400)
   const {configuration,storage,maxBytes,rpc}=mixEnvironment(env,fetchImpl)
@@ -85,7 +88,7 @@ export async function persistProjectMix(input,{env=process.env,fetchImpl=globalT
       }
     }
   }
-  const completed=await completeStoredProjectMix({jobId:input.jobId,objectId:output.objectId,sha256},{env,fetchImpl})
+  const completed=await completeStoredProjectMix({jobId:input.jobId,objectId:output.objectId,sha256},{env,fetchImpl,leaseToken})
   if(completed.projectId!==output.projectId)throw fail('INVALID_MIX_RESPONSE',503)
   return {...completed,uploadStatus:'verified'}
 }

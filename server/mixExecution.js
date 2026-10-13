@@ -13,7 +13,7 @@ const referenceKeys=['songId','key','revision','duration','sourceSha256','backin
 // Internal job entry, not an HTTP handler. loadBacking is a trusted server
 // catalog adapter, never a URL/Blob/receipt supplied by a browser. No runtime
 // installation, scheduler activation or synthetic backing fallback here.
-export async function executeProjectMix(input,{env=process.env,fetchImpl=globalThis.fetch,rendererOptions,loadBacking}={}) {
+export async function executeProjectMix(input,{env=process.env,fetchImpl=globalThis.fetch,rendererOptions,loadBacking,leaseToken}={}) {
   if(!input || Object.keys(input).length!==1 || !uuid(input.jobId))throw fail('INVALID_MIX_INPUT')
   if(env.IEUM_DB_PROVIDER!=='supabase' || (loadBacking!==undefined && typeof loadBacking!=='function') ||
     !Number.isSafeInteger(rendererOptions?.maxInputBytes) || rendererOptions.maxInputBytes<=0)throw fail('MIX_RUNTIME_NOT_CONFIGURED')
@@ -54,5 +54,5 @@ export async function executeProjectMix(input,{env=process.env,fetchImpl=globalT
   const rendered=await renderProjectMix({project:{id:context.projectId,seed:context.projectSeed,partIds,audioSourceRef:source},tracks:originals,backing},rendererOptions)
   // Upload/decode/current job snapshot revalidation must succeed before SQL
   // changes Project lifecycle to completed. A generated Blob alone is not success.
-  return persistProjectMix({jobId,blob:rendered.blob},{env,fetchImpl})
+  return persistProjectMix({jobId,blob:rendered.blob},{env,fetchImpl,leaseToken})
 }

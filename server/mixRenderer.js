@@ -16,7 +16,7 @@ const equalReference=(left,right)=>left && referenceKeys.every(key=>left[key]===
 // boundary. This does not authenticate, submit, persist or mark a job successful.
 // Native allocations are not capped by V8: PCM limits are admission checks, not
 // an OS RSS guarantee. The host still needs its own resource limit.
-export async function renderProjectMix(input,options={}) {
+export async function validateMixRuntime(options={}) {
   const {runtimeRoot,maxInputBytes,maxPcmBytes,maxOutputBytes,maxDurationSeconds,timeoutMs}=options
   if(!isAbsolute(runtimeRoot || '') || [maxInputBytes,maxPcmBytes,maxOutputBytes,timeoutMs].some(n=>!Number.isSafeInteger(n)||n<=0) ||
     !Number.isFinite(maxDurationSeconds) || maxDurationSeconds<=0 || timeoutMs>600000)throw fail('MIX_RUNTIME_NOT_CONFIGURED')
@@ -24,6 +24,10 @@ export async function renderProjectMix(input,options={}) {
   try{metadata=JSON.parse(await readFile(join(runtimeRoot,'node_modules/node-web-audio-api/package.json'),'utf8'))}
   catch{throw fail('MIX_RUNTIME_UNAVAILABLE')}
   if(metadata.name!=='node-web-audio-api' || metadata.version!=='2.2.0')throw fail('MIX_RUNTIME_VERSION_MISMATCH')
+}
+export async function renderProjectMix(input,options={}) {
+  await validateMixRuntime(options)
+  const {runtimeRoot,maxInputBytes,maxPcmBytes,maxOutputBytes,maxDurationSeconds,timeoutMs}=options
   const project=structuredClone(input?.project),tracks=input?.tracks,backing=input?.backing
   const source=project?.audioSourceRef,partIds=project?.partIds
   if(typeof project?.id!=='string' || !project.id || typeof project.seed!=='string' || !project.seed ||
