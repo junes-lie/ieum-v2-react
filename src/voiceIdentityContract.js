@@ -75,6 +75,66 @@ export async function buildIdentityInputManifest({userId, profileRevision, gener
   return {...input, inputDigest:await hash(input)}
 }
 
+// Private shared traits, NOT a shared silhouette or a generated graphic.
+// Both representations consume this source snapshot independently. Its digest
+// and variation seed must not be published as graphic URLs or visual metadata.
+export const VOICE_TRAIT_VERSION = 'ieum-shared-voice-traits-v1'
+export async function buildVoiceTraitSnapshot(manifest) {
+  const {inputDigest,...input} = manifest || {}
+  if (input.contractVersion!==IDENTITY_CONTRACT_VERSION || !SHA256.test(inputDigest || '') || await hash(input)!==inputDigest) {
+    throw new Error('Personal input manifest was changed')
+  }
+  const rebuilt=await buildIdentityInputManifest(input)
+  if(rebuilt.inputDigest!==inputDigest)throw new Error('Personal input manifest is not canonical')
+  const sample=input.sources.find(source=>source.purpose==='voice-sample')
+  if(!sample || sample.analysisVersion!==sample.data?.version)throw new Error('Representative Sample analysis is required')
+  const assessment=assessVoiceCandidates(sample.data,'voice-sample')
+  const snapshot={version:VOICE_TRAIT_VERSION,profileRevision:input.profileRevision,
+    generatorVersion:input.generatorVersion,personalInputDigest:inputDigest,
+    source:{recordId:sample.recordId,purpose:sample.purpose,sha256:sample.sha256,analysisVersion:sample.analysisVersion},
+    // Different users can have similar measured traits. Variation supplements
+    // those traits; it is not a claimed measurement or a scientific judgement.
+    variationSeed:await hash({userId:input.userId,profileRevision:input.profileRevision,generatorVersion:input.generatorVersion}),
+    assessment}
+  return {...snapshot,snapshotDigest:await hash(snapshot)}
+}
+
+// Input separation only: no chosen visual mapping, fallback, model execution,
+// successful submission, or completed Record is created by this function.
+export async function buildVoiceRepresentationInputs(snapshot,{trackInput=null,personalResultRef=null}={}) {
+  const {snapshotDigest,...input}=snapshot || {}
+  if(input.version!==VOICE_TRAIT_VERSION || !SHA256.test(snapshotDigest || '') || await hash(input)!==snapshotDigest ||
+    !SHA256.test(input.variationSeed || '') || input.assessment?.purpose!=='voice-sample') {
+    throw new Error('Shared voice trait snapshot was changed')
+  }
+  const common={traitVersion:input.version,traitDigest:snapshotDigest,profileRevision:input.profileRevision,
+    generatorVersion:input.generatorVersion,variationSeed:input.variationSeed,
+    personalTraits:structuredClone(input.assessment)}
+  let track=null
+  if(trackInput){
+    const {inputDigest,...trackData}=trackInput
+    if(trackData.contractVersion!==IDENTITY_CONTRACT_VERSION || !SHA256.test(inputDigest || '') || await hash(trackData)!==inputDigest) {
+      throw new Error('Track input manifest was changed')
+    }
+    const rebuilt=await buildTrackIdentityInput(trackData)
+    if(rebuilt.inputDigest!==inputDigest)throw new Error('Track input manifest is not canonical')
+    // Caller supplies the reference from its validated personal result. This
+    // match is not inference proof and does not validate an uploaded artifact.
+    if(personalResultRef?.inputDigest!==input.personalInputDigest || personalResultRef.generatorVersion!==input.generatorVersion ||
+      ['id','revision','outputSha256'].some(key=>personalResultRef[key]!==trackData.identityRef[key])) {
+      throw new Error('Track personal result does not match shared voice traits')
+    }
+    const features=trackData.source.data?.analysis
+    if(!features || trackData.source.analysisVersion!==features.version)throw new Error('Track analysis is required')
+    track={trackId:trackData.trackId,layerGeneratorVersion:trackData.generatorVersion,identityRef:structuredClone(trackData.identityRef),
+      source:structuredClone(trackData.source),assessment:assessVoiceCandidates(features,'project-track')}
+  }
+  return {
+    identity:{representation:'personal-form-input',...structuredClone(common)},
+    resonance:{representation:'vinyl-flow-input',...structuredClone(common),track}
+  }
+}
+
 export async function buildTrackIdentityInput({trackId, source, identityRef, generatorVersion}) {
   requiredText(trackId, 'trackId')
   requiredText(identityRef?.id, 'opaque identity id')

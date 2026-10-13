@@ -91,7 +91,16 @@ function layerValue(layer, key, fallback) {
   return Number.isFinite(value) ? value : fallback
 }
 
-function buildParticles({ slots, projectSeed, mobile }) {
+function voiceStyle(style) {
+  if(style==null)return null
+  if(style.version!=='ieum-voice-visual-mapping-probe-v1' ||
+    ['brightness','roughness','dynamics','variation'].some(key=>!Number.isFinite(style[key]) || style[key]<0 || style[key]>1)) {
+    throw new Error('Invalid prepared personal voice style')
+  }
+  return style
+}
+
+function buildParticles({ slots, projectSeed, mobile, voiceStyles=[] }) {
   const filaments = []
   const grains = []
   const activeCount = slots.filter(Boolean).length
@@ -99,16 +108,17 @@ function buildParticles({ slots, projectSeed, mobile }) {
   const pushLine = (start, end) => filaments.push(...start, 0, ...end, 0)
   slots.forEach((layer, partIndex) => {
     if (!layer) return
+    const style=voiceStyle(voiceStyles[partIndex])
     const energy = Math.max(0.08, Math.min(1, layerValue(layer, 'opacity', 0.32) * 2.25))
     const countWidth = activeCount >= 4 ? .82 : activeCount === 3 ? .92 : 1
     const sourceSpread = Math.max(.075, Math.min(.25, layerValue(layer, 'spread', 0.10)))
-    const spread = (.060 + ((sourceSpread - .075) / .175) * .220) * countWidth
-    const turbulence = Math.max(0.2, Math.min(1.5, layerValue(layer, 'turbulence', 0.65)))
+    const spread = (.060 + ((sourceSpread - .075) / .175) * .220) * countWidth * (style ? .85+style.dynamics*.30 : 1)
+    const turbulence = Math.max(0.2, Math.min(1.5, layerValue(layer, 'turbulence', 0.65))) * (style ? .75+style.roughness*.50 : 1)
     const drift = Math.max(0.08, Math.min(0.65, layerValue(layer, 'drift', 0.24)))
     const continuity = Math.max(0, Math.min(1, layerValue(layer, 'continuity', .68)))
     const articulation = Math.max(0, Math.min(1, layerValue(layer, 'articulation', .28)))
     const pitchWobble = Math.max(0, Math.min(1, layerValue(layer, 'pitchWobble', .24)))
-    const particleDensity = Math.max(.72, Math.min(1.28, .72 + (layerValue(layer, 'particleCount', 78) - 42) / 83 * .56))
+    const particleDensity = Math.max(.72, Math.min(1.28, .72 + (layerValue(layer, 'particleCount', 78) - 42) / 83 * .56)) * (style ? .8+style.brightness*.4 : 1)
     const layerPhase = layerValue(layer, 'phase', partIndex * 1.47)
     const layerSeed = hashSeed(`${projectSeed}:${layer.signature || layer.seed || partIndex}`)
     const random = randomFrom(layerSeed)
@@ -217,6 +227,11 @@ uniform float uPixelRatio;
 varying vec2 vFieldUV;
 uniform float uSoloPart;
 uniform float uConcentration;
+uniform vec4 uVoice0;
+uniform vec4 uVoice1;
+uniform vec4 uVoice2;
+uniform vec4 uVoice3;
+uniform vec4 uVoiceVariation;
 varying float vAlpha;
 varying float vBrightness;
 varying float vAngle;
@@ -252,6 +267,16 @@ vec2 flowBase(float part,float path,float t){
       -.024*cos(angle-.84);
   }
   radius+=(path-.5)*.030;
+  vec4 voice=uVoice0;
+  float variation=uVoiceVariation.x;
+  if(part>.5){voice=uVoice1;variation=uVoiceVariation.y;}
+  if(part>1.5){voice=uVoice2;variation=uVoiceVariation.z;}
+  if(part>2.5){voice=uVoice3;variation=uVoiceVariation.w;}
+  // Shared personal traits shape flow behaviour, not a copied profile form.
+  // Zero enable preserves the existing default path.
+  float personalPhase=variation*6.28318530718;
+  radius+=voice.w*(.014+.022*voice.z)*sin(angle*3.+personalPhase);
+  warpedAngle+=voice.w*(.020+.035*voice.y)*sin(angle*2.-personalPhase);
   return vec2(cos(warpedAngle),sin(warpedAngle))*radius;
 }
 vec2 pointAt(float part,float path,float t){
@@ -448,7 +473,9 @@ function drawMaterial(canvas, rotation = 0) {
   ctx.restore()
 }
 
-export function createResonanceRenderer({ canvas, materialCanvas, slots, projectSeed, state, activePartIndex, levelRef, reducedMotion, aiFields = [], timeline = {} }) {
+export function createResonanceRenderer({ canvas, materialCanvas, slots, projectSeed, state, activePartIndex, levelRef, reducedMotion, aiFields = [], timeline = {}, voiceStyles = [] }) {
+  if(!Array.isArray(voiceStyles) || voiceStyles.length>4)throw new Error('At most four personal voice styles are supported')
+  const preparedStyles=voiceStyles.map(voiceStyle)
   const gl = canvas.getContext('webgl', {
     alpha: true,
     antialias: true,
@@ -460,7 +487,7 @@ export function createResonanceRenderer({ canvas, materialCanvas, slots, project
   const program = createProgram(gl, VERTEX_SHADER, FRAGMENT_SHADER)
   const buffer = gl.createBuffer()
   const mobile = canvas.clientWidth < 440 || /Android|iPhone|iPad/i.test(navigator.userAgent)
-  const particles = buildParticles({ slots, projectSeed, mobile })
+  const particles = buildParticles({ slots, projectSeed, mobile, voiceStyles:preparedStyles })
   const vertexCount = particles.filamentVertexCount + particles.grainVertexCount
   const particleCount = particles.filamentVertexCount / 2 + particles.grainVertexCount
   gl.useProgram(program)
@@ -485,6 +512,13 @@ export function createResonanceRenderer({ canvas, materialCanvas, slots, project
   const pointModeLocation = gl.getUniformLocation(program, 'uPointMode')
   const soloPartLocation = gl.getUniformLocation(program, 'uSoloPart')
   const concentrationLocation = gl.getUniformLocation(program, 'uConcentration')
+  const variations=new Float32Array(4)
+  for(let index=0;index<4;index++){
+    const style=preparedStyles[index]
+    gl.uniform4fv(gl.getUniformLocation(program,`uVoice${index}`),style?new Float32Array([style.brightness,style.roughness,style.dynamics,1]):new Float32Array(4))
+    variations[index]=style?.variation || 0
+  }
+  gl.uniform4fv(gl.getUniformLocation(program,'uVoiceVariation'),variations)
   gl.uniform1f(activeLocation, state === 'recording' ? activePartIndex : -10)
   const textures=[]
   const fieldEnabled=new Float32Array(4)

@@ -65,6 +65,35 @@ export async function loadProjectTracks(projectId) {
   }) } finally { db.close() }
 }
 
+// Identity revisions coexist with recordings, but never overwrite them or
+// each other. Validation/hash verification belongs to voiceIdentityStore.
+export async function saveImmutableIdentityRecord(record) {
+  const prefix={'voice-identity-result':'identity-result:','voice-track-layer-result':'voice-layer-result:',
+    'voice-project-record-input':'project-record-input:'}[record?.kind]
+  if(!prefix || !record.projectId ||
+    !record.id?.startsWith(prefix) || !/^[a-f0-9]{64}$/.test(record.integrityDigest || '') ||
+    (record.kind!=='voice-project-record-input' && !(record.artifact?.blob instanceof Blob))) throw new Error('Invalid private Identity record')
+  const db=await openDatabase()
+  try {return await new Promise((resolve,reject)=>{
+    const tx=db.transaction(STORE,'readwrite'),store=tx.objectStore(STORE)
+    let saved,failure
+    tx.oncomplete=()=>resolve(saved)
+    tx.onerror=()=>reject(failure || tx.error)
+    tx.onabort=()=>reject(failure || tx.error || new Error('Identity result was not saved'))
+    const request=store.get(record.id)
+    request.onsuccess=()=>{
+      try {
+        const existing=request.result
+        if(existing){
+          if(existing.kind!==record.kind || existing.projectId!==record.projectId ||
+            existing.integrityDigest!==record.integrityDigest) throw new Error('Identity revision is immutable')
+          saved=existing
+        }else{store.add(record);saved=record}
+      }catch(error){failure=error;tx.abort()}
+    }
+  })}finally{db.close()}
+}
+
 export async function loadTrack(id) {
   const db = await openDatabase()
   try { return await new Promise((resolve, reject) => {

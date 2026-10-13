@@ -52,6 +52,7 @@ export async function loadSubmittedTrackIdentityInput({projectId,partId,identity
   const track=structuredClone(record),source=track?.sourceProvenance
   if(track?.id!==`${projectId}:${partId}`||track.projectId!==projectId||track.partId!==partId||
     track.origin!=='live-microphone-recording'||(track.kind&&track.kind!=='project-track')||
+    (track.submissionStatus&&track.submissionStatus!=='success')||
     !(track.blob instanceof Blob)||!track.blob.size||typeof identityOwnerId!=='string'||!identityOwnerId||track.participantId!==identityOwnerId) {
     throw new Error('Persisted submitted Track and personal result owner must match')
   }

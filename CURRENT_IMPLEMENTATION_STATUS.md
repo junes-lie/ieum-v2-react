@@ -1,3 +1,75 @@
+이 Git 마감 묶음에는 저장/소비 연결과 유지 QA만 포함한다. 아래 기록의 `qa/verify-personal-identity-model.py` v2/v3 변경 및 연구용 표현/감도 스크립트는 로컬 미커밋 작업으로 남으며 배포 완료 범위에 포함하지 않는다. 승인된 생성 이미지/운영 후보 자료를 공급한 것으로 처리하지 않는다.
+
+## 2026-10-13 R5 명시적 결과의 화면·WebGL 소비 연결
+
+voiceIdentityResources가 정확한 개인/Project ref로 저장 결과를 읽고 PNG를 실제 decode한 뒤 기존 VoiceIdentity/ResonanceRecord에 전달한다. 개인 Blob은 프로필 형상으로, Track Layer Blob과 동일 개인 특징의 Flow style은 별개로 바이닐에 전달한다. 개인 윤곽을 바이닐로 복사하지 않는다. 기존 상세/작업실/녹음/Multitrack/완성곡은 project.voiceRecordRef를 전달할 수 있고 공통 프로필 컴포넌트는 identity.selector를 읽는다. 자동 최신 결과/형상 선택·재생성 정책은 추가하지 않았다. 현재 사용자 데이터에는 새 승인 결과가 없으므로 기존 표시가 유지된다.
+
+consumer는 Project/Seed/Part 순서가 맞지 않으면 거부하고 이전 Project의 style을 재사용하지 않는다. Object URL은 owner ID가 없는 임시 Blob URL이며 stale 요청/불일치/실패/화면 종료에서 해제한다. disposed 결과는 다시 표시하지 않는다. 기존 Credits/화면 수/네비게이션/제출/Mix 흐름은 그대로다.
+
+실제 격리 Vite/Edge QA에서 native DB reload·유효한512 PNG decode·Part별 resource 정렬·실제 기존 React Identity 표시·WebGL 두 Part 개인 uniform 활성·잘못된 Seed 거부/기존 스타일0·unmount 후 URL0을 확인했다. QA React dependency interop의 createRoot is not a function 오류는 같은 Vite import 경로로 수정한 뒤 통과했다. React QA export는 in-memory plugin에만 있고 production source에는 추가하지 않았다. PNG는 canvas fixture이며 AI 형상/실제 음성/지각/디자인/Production 인수 증거가 아니다. 관련 trait/mapping/store QA 및 build 통과(43 modules, JS index-wv4k27Rs.js 552.39KB, 기존500KB 경고). 이 데이터 연결 묶음의 Git 마감을 검토 중이며 사용자 서버3파일과 AI 연구 실행/산출물은 구분해 보존한다. 실제 생성·승인 결과 선택/프로필 갱신 정책·전체 후보/운영 데이터·인수는 미완료다.
+
+## 2026-10-13 R5 Track Layer 저장·Project 참조 snapshot
+
+기존 voiceIdentityStore/trackStore를 확장해 실제 저장된 제출 원본과 명시적 개인 결과에 연결된 received AI Layer artifact를 immutable revision으로 저장·복원한다. 기존 validateAiVoiceLayer의 Project/Part/owner/seed/model revision/source/output SHA 계약을 재사용하며, 개인 입력digest·Track 분석 revision·dual controls·레이어 generator version을 함께 보존한다. 실제 AI 실행/형상 승인 증거는 아니다. 제출 loader는 명시적 pending/failure status도 거부하며 기존 status 없는 저장 제출 형식은 유지한다.
+
+Project input은 기존 Part 수2–4와 저장 제출 원본을 직접 읽고 명시적 Layer ref만 결합한다. 레이어가 없어도 제출 수는 유지되며 제출 안 된 Part의 그래픽 참조는 제출 수를 늘리지 않는다. Project input snapshot도 digest별로 저장하고 정확한 ref로 복원한다. 예전 pending-graphics snapshot은 후속 ready snapshot 때문에 재작성되지 않는다. 이것은 Record 생성 입력 계보이며 최종 Record 출력/Auto Mix/Completed Song 성공이 아니다. App producer 연결부에 Track Layer 저장/복원과 현재 active Project input 저장/복원을 연결했으며 UI 형상/정책은 바꾸지 않았다.
+
+확장된 fixture QA에서2/3/4 Part 레이어 저장·재시도·복원·잘못된 입력/seed/ref 거부·Project digest 재현·pending/ready 독립 snapshot·metadata 변조 거부·미제출 감소·원본 불변을 확인했다. 실제 격리 Edge/native IndexedDB에서 개인 Blob·2개 레이어·정확한 Project input의 reload 복원/module runtime/page error0 통과, browser/server 종료. 실제 보컬/PNG 전체 decode/AI inference/형상 인수/사용자 화면·Production 검증은 아니다. 관련 submitted-input QA/build 통과, 기존500KB 경고 유지. 사용자 서버3파일·미정 정책·다른 미커밋 연구는 보존하고 commit/push하지 않았다. 다음은 확정 결과의 화면/renderer 소비 경로이며 승인 결과 선택·실제 생성 gate와 분리한다.
+
+## 2026-10-13 R5 RAM 독립 저장·복원 연결
+
+전체 작업을 RAM 때문에 차단으로 묶었던 아래 판정은 부정확했다. 사용자 지시에 따라 독립적인 데이터 연결을 재개했다. voiceIdentityStore는 기존 IndexedDB에 개인 결과 PNG Blob·private manifest·공통 traits·입력/생성 버전·출력 SHA를 함께 저장하고, owner/Profile/id/revision의 명시적 참조로 복원한다. trackStore의 동일 revision 저장은 원자적·불변이며 같은 결과는 idempotent, 충돌 결과는 거부한다. 다른 revision은 공존하고 자동 최신 선택/재생성 정책은 추가하지 않았다. 복원 시 metadata/traits/원본 SHA를 다시 검사한다. 현재 검사는 기존 개인 결과 계약을 재사용하며 PNG 전체 decode나 실제 AI 실행/디자인 승인의 증거가 아니다.
+
+기존 App의 __IEUM_V2__ producer 연결부에 storeIdentityResult/loadIdentityResult/prepareStoredTrackIdentity를 연결했다. 저장은 현재 측정 Profile 입력과 artifact digest를 대조하고, Track 준비는 같은 owner의 실제 저장 제출 원본과 명시적 개인 결과를 참조한다. 개인 snapshot과 Track 분석은 분리한다. 임시 녹음/다른 owner/잘못된 결과는 거부하며 생성 준비가 제출·Mix 성공이나 확정 레이어를 만들지 않는다. Profile UI의 자동 형상 선택·실제 AI 생성·후보 전체 사용처·Project 확정 layer 저장/계보·Production 인수는 아직 남아 있다.
+
+격리 fake IndexedDB의 새 QA에서 저장/재진입 복원·동일 결과 동시 저장·충돌 결과 동시 저장(1성공/1거부)·명시적 구revision 유지·소비자 변경 격리·Blob/traits 변조 거부·저장 실패 원본 보존·제출 Track 연결을 확인했다. 추가로 qa/verify-voice-identity-browser.mjs의 실제 격리 Edge/native IndexedDB에서 Blob·traits·정확한 ref의 reload 복원/module runtime/page error0을 확인했다. 처음 한글 URL 경로 처리 때문에 Failed to fetch dynamically imported module 오류였고 fileURLToPath로 수정한 동일 QA가 통과했다. 외부 사이트/사용자 탭/Notion/Figma에 접근하지 않았고 QA browser/server는 finally로 종료했다. 계약 fixture이며 전체 PNG decode·실제 AI·App 화면·Production 인수를 대신하지 않는다. 관련 submitted-input QA와 build 통과(42 modules, JS index-Cjm51sc6.js 542.34KB, 기존500KB 경고). 기존 사용자 서버3파일·미커밋 연구·단계·정책을 보존하고 commit/push하지 않았다. RAM 제약은 대형 AI 실행에만 적용하며 전체 잔여 작업의 blocker로 확대하지 않는다.
+
+## 2026-10-13 현재 선행 조건 차단 확인 — 이후 독립 작업 재개로 정정
+
+연속 세 goal turn에서 새 구현 진척 없이 동일 선행 조건을 확인했다. 최신 여유 RAM3.19GiB는 대형 AI 시작8GiB 기준 미달이며 personal shared-trait v3의 import 전 admission은 유지된다. 실제 생성/개인 식별/두 표현의 지각 gate는 미완료다. 현재 Notion/figma-desktop/운영 서비스 전용 노출 도구는0개이며 로컬 .env 파일 목록은 .env.example뿐이다. 호스트 프로세스 read-only 확인에서 Python은 없었으므로 진행 중인 모델의 verified wait가 아니다. 사용자 앱 종료·대형 AI 재시작·유료/미보장 무료 경로·임의 최종 형상 적용을 하지 않는다. 독립적으로 진행한 renderer/조건 준비는 보존하며 이를 실제 AI 생성/앱 통합 완료로 대체하지 않는다. 전체 목표를 축소하거나 완료로 표시하지 않고 blocked로 기록한다. 현재 코드/미커밋 변경·사용자 서버3파일·기존 단계 및 미정 정책은 보존한다. 재개 조건은 안전한 실제 모델 실행 자원 확보이며 이후 생성/식별 검증, 승인된 결과의 앱 연결·Production 인수가 남아 있다.
+
+## 2026-10-13 R5 생성 조건의 정보 손실 보정
+
+v2 준비 결과를 확인하여 보존4개 가창 중3개가 같은 threshold prompt로 축약되는 문제를 발견했다. 기존 모델 시험을 v3 연속 prompt-embedding recipe로 수정했다. 세 공통 특징의 low/high6개 basis와 측정값 가중치를 사용하고 개인 seed/singer embedding 경로는 유지한다. 4개 원본 조건 구분·같은 Sample 다른 사용자 계수 불변·작은 특징 변화 전달·가중치 합1 검사 통과. 설치된 Diffusers 소스에서 encode_prompt/prompt_embeds API를 확인했으나 실제 encoder/모델 실행은 없다. endpoint token 잘림 거부와 실행 basis hash 보존도 연결했다. 실제 여유 RAM2.99GiB로8GiB 시작 조건 미달이다. 이 결과는 입력 정보 손실 보정이며 신규 AI 이미지·형상 승인·개인 식별/앱/배포 완료가 아니다.
+
+## 2026-10-13 R5 실제 AI 시험의 공통 특징 조건 연결
+
+기존 personal-identity 모델 시험에 shared-traits v2 경로와 prepare-only를 추가했다. 보존 가창 원본 SHA·현재 shared trait mapping을 사용하고 개인 variation seed와 측정 특징의 prompt 조건을 분리했다. v1은 explicit historical flag로만 재현한다. 기존 singer embedding·고정 모델은 유지하며 질적 prompt는 미검증 연구 가설이다. 보존4개 Sample/같은 Sample 다른 사용자 조건 준비·별도 process exact 재현·공통 축/개인 seed 차이·AI runtime 미import 검증 통과. 실제 여유 RAM2.96GiB로 모델을 실행하지 않았다. shared inference는 import 전에8GiB 시작 admission을 검사하며 낮은 RAM 주입 시 import 이전 거부/입력 보존을 확인했다. 실행 중 감시는 기존 guard가 필요하다. 새 AI 생성/형상 승인/개인 식별/Production 완료가 아니며 앱·사용자 서버3파일·기존 정책은 보존한다.
+
+## 2026-10-13 R5 공통 특징 → 서로 다른 표현의 renderer 연결
+
+voiceVisualMapping은 동일 개인 snapshot을 별도 Identity 생성 조건과 Flow style로 연결한다. brightness/roughness/dynamics proxy가 미측정이면 mapping을 거부하고 private seed 원문을 renderer에 노출하지 않는다. resonanceWebGL은 선택적 voiceStyles로 기존 Track 반응에 개인별 입자 밀도·요동·흐름 폭/곡률 차이를 더한다. 동일 Identity 윤곽을 복사하지 않는다. App은 아직 이 경로를 사용하지 않으며 최종 형상/디자인을 임의 적용하지 않았다.
+
+실제 GPU QA에서 같은 Track에 서로 다른 개인 특징을 넣은 출력 hash 차이와 styled 2/3/4개 결합(GL error0/page errors0)을 확인했다. 입력 없는 baseline hash/입자 수는 이전 출력과 같다. 개인 style 두 PNG와 4개 혼합을 실제 확인했다. 관련 mapping/renderer 계약 QA와 build 통과(40 modules, JS 531.73KB, 기존 500KB 경고). 실제 AI Identity 생성·개인 식별/지각·확정 제출 계보·모든 Profile 사용처·Production 마감은 미완료다. 생성 성공/제출/Mix 상태를 변경하지 않았고 사용자 서버3파일은 보존한다. QA 결과는 repository 밖에 보존했으며 commit/push/배포하지 않았다.
+
+## 2026-10-13 R5 기존 WebGL의 실제 특징 감도
+
+격리된 로컬 headless QA에서 기존 resonanceWebGL 소스를 실제 실행했다. sandbox Edge 시작 실패(Target page/context/browser closed, 임시 profile JSON error=-5) 뒤 승인된 같은 command로 성공했다. renderer는 ANGLE/NVIDIA GTX1660SUPER/D3D11이며 실제2/3/4 field composition·GL0/page errors0이다. 밝기/거칠기/성량 변화의 실제 RGBA 차이를 고정 배치seed/time에서 확인했고 low/high roughness 및4개 레이어 PNG를 열어 확인했다. 개인 구분/인지·AI/실제 사용자/혼합 인수는 아니다. 기본 곡선은 여전히 Part별 공식이므로 공통 개인 특징과 Identity의 표현별 연결은 미완료다. 자원은 Node OS 조회free3.4GiB(총15.95),대형AI 없음, QA browser종료. 외부 사이트/Notion/Figma/사용자 탭은 접근하지 않았고 앱 코드/UI/Production 변경 없음. 실제 출력 PNG/JSON은 repository 밖 thread visualization에 보존한다.
+
+## 2026-10-13 R5 서로 다른 표현의 특징 감도 연구
+
+qa/research-shared-trait-expressions.mjs로 같은 seed·세 proxy만 독립적으로 바꾸는 감도 시험을 실행했다. 연구용 Identity density raster와 기존 buildVoiceLayer/buildParticles의 실제 buffer에 각각 영향이 있음을 확인했다. 동일 silhouette를 바이닐로 복사하지 않는다. 실제 PNG 확인에서 거칠기의 바이닐 차이는 약하게 보여 지각 통과로 처리하지 않았다. 바이닐 PNG는 연구용 polar projection이며 actual WebGL 결과가 아니다. 모두 합성 분석의 통제값이고 실제 보컬/AI inference/승인 형태/개인 식별/2–4인 혼합 인수는 미완료다. PNG/JSON은 repository 밖에 보존하고 기존 동일형상 연구는 explicit historical flag 없이는 실행을 거부한다. Production과 사용자3파일은 그대로이며 이번 진전은 공통 특징이 서로 다른 출력에 영향을 준다는 감도 증거다.
+
+## 2026-10-13 R5 동일 특징·다른 표현 입력 연결
+
+최신 사용자 지시로 개인 Identity와 바이닐의 “동일한 형상/윤곽 유지” 기준을 폐기하고 동일 개인 특징·서로 다른 표현으로 계획 상단을 수정했다. voiceIdentityContract의 공통 private trait snapshot과 두 representation input builder를 추가했다. 기존 분석 추정/미지원/confidence·Sample 출처/revision/version을 보존하며 Track 분석은 개인 특징을 덮지 않는다. Track 개인 결과 ref의 입력digest/id/revision/outputSHA/generator 연결을 확인하고 Track layer version을 별도로 둔다. 원문 사용자 ID는 두 입력에 복제하지 않는다. qa/verify-shared-voice-traits와 기존 Identity 계약 QA/build 통과, 기존500KB 경고 유지. 합성/통제 데이터의 입력 계약 검증이며 서로 다른 실제 형상 생성·AI 실행·시각/혼합/기기 인수는 미완료다. 기존 UI/Production bundle/제출/Mix·사용자3파일은 변경하지 않았다. 아래v1/v2의 구조 보존 검사는 최신 표현 목표의 완료 증거가 아닌 폐기된 가정의 이력이다.
+
+## 2026-10-13 R5 목표 재설정 및 표현 미채택
+
+최신 사용자 지시에 따라 기존 구현계획 상단의 목표/생성 규칙/실패 기준을7개 요구로 고정했다. A 요구·매핑 대조 완료, B 구조·혼합 표현 시험 진행 중, C 실제 renderer/음성/AI 및 지각 검증·D 앱 통합/Production 미완료다. 기존v1 폐곡선 시험은 최종 후보에서 제외한다. qa/research-voice-flow-continuity.mjs v2는 음성 proxy와 사용자 seed를 분리하고 실제 좌표 영향, 열린 endpoint·입력별 길이/접힘, 같은 입력 재현·다른 사용자·Part/Project 변경에도 개인 구조 보존을 검사했다. 계산 시험은 통과했으나 실제 PNG 확인에서 바이닐의 개인 띠 겹침 인상이 남아v2도 미채택이다. 시각 다양성·자연스러운 혼합·흑백 개인 식별을 완료로 기록하지 않는다. 시험은 합성 PCM/통제 feature fixture이며 실제 보컬/AI/GPU 인수가 아니다. 앱 코드·제출/Mix·사용자3파일은 보존한다.
+
+## 2026-10-13 R5 개인→Track→2–4인 경량 구조 시험
+
+qa/research-voice-flow-continuity.mjs가 합성 PCM을 기존 분석기→private manifest→Sample proxy/구조 후보→기존 Track Layer 변형에 연결했다. 같은 입력 재현·같은 Sample/다른 사용자 구조 차이·Track 기본 구조 보존·2/3/4인 같은 영역 구성 검사를 Node heap128MiB로 통과했다. 모든 비교는 같은 색이며 결과에 원문 사용자 ID/digest를 넣지 않았다. 초기 윤곽선 겹침은 혼합 완료로 채택하지 않고 폭 있는 결/입자 표현을 후속 비교했다. 겹침 cell 비율.499/.589/.685는 진단값일 뿐 식별/자연스러운 혼합 통과가 아니다. SVG/PNG/result는 repository 밖 thread visualization에 보존한다. 실제 사람 음성·AI 생성·GPU 모션·지각 평가·앱 통합·Production 교체는 미완료이며 개인 갱신/버전/fallback 정책은 확정하지 않았다. 기존 앱/사용자 서버3파일/기존 매핑과 제출/Mix 상태를 변경하지 않았다.
+
+## 2026-10-13 R5 기존 음향→공명 매핑 연구
+
+기존 buildVoiceLayer→WebGL CPU particle builder를 실행한 qa/verify-voice-renderer-mapping.mjs에서 밝기/거칠기/음량 변화/energy/flux/발성 지속/articulation/pitchVariation의8개 매핑 경로를 확인했다. seed 고정·합성 feature fixture·Node heap128MiB이며 실제 음성/지각/GPU 검증은 아니다. layer의 baseRadius/filamentCount/envelope 변경은 particle buffer에 영향이 없었고 기본 곡률의 개인 참조는 없다. 기존 기능을 재구현하지 않고 계획에 이 차이와 개인 구조/Track 반응 구분을 기록했다. AI 이미지의 평균 밝기 경로를 기존 음향 반응 전체로 설명한 오류를 정정했다. 앱 코드/Production 디자인·제출/Mix 상태는 변경하지 않았으며 실제 개인 생성→Track 변형→2–4인 혼합/식별 인수는 미완료다. 현재 전용 Notion/Figma 도구0, 승인 로컬261012 export/직접 지시만 대조했다. 사용자 서버3파일과 이전 배포 기록은 보존한다.
+
+## 2026-10-13 현재 Mix 배포 확인
+
+e0045737bca7a00d7ba1b009042876654a58df7e main push/origin0/0. Vercel Git Integration Production7032677811 full SHA 일치·success, commit status success(https://vercel.com/junes-lie/ieum-v2-react/2VrMHvovQi1iaCkNSftLd8pSKn5e). Production HTML/JS/CSS200, index-DuvI_pBz.js SHA25631d7e8ff678a04dc0cebb61ea394d47b45719eb56d1215f112131a97847ee75b 및 CSS 검증 build와 byte exact. 변경 범위 집중 QA와 build40modules/530.28KB 통과·기존500KB 경고 유지. 완료된 서버/AI 전수 QA를 반복하지 않았다. 물리 청취·실제 서비스·음악/Identity/디자인 인수는 기존 미완료이며 사용자 서버3파일 보존. 이 문단은 배포 후 로컬 증거 기록이다.
+
 ## 2026-10-13 현재 Mix 선택 청취 마감
 
 기존02/03의 개인 Current Mix에서 한 Track만 선택할 때 원본 URL로 우회해 syncOffsetMs를 무시하던 경로를 제거했다.1–4 Track 모두 기존 preview renderer로 정렬하며, 단독 Track의 잘못된 duration metadata로 preview가 늘어나지 않는다. 개별 원본 재생·0개 선택 차단·조합 복귀는 유지하고 원본/제출/최종 Mix를 변경하지 않는다. 기존 사용자 승인 TEMP runtime의 실제0.6초 PCM 렌더에서1–4개 시작 위치/offset 제거 후 길이/원본 불변을 확인했다. Node React 제어에서2→1→0 선택·재생 정지/disabled·개별 원본/복귀·Final Mix 불변을 확인했다. 물리 청취/기기·시각 인수는 별도이며 build/Git 배포는 마감 후 기록한다. 사용자 서버3파일은 보존한다.

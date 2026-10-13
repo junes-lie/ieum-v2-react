@@ -1,3 +1,169 @@
+## 2026-10-13 R5 최신 기준 — 동일한 개인 특징, 서로 다른 두 표현
+
+사용자 최신 명시적 결정: **Voice Identity와 바이닐의 표현은 동일한 개인 특징을 공유하지만 서로 다른 형태다.** 개인 Identity의 윤곽을 Track/바이닐에 복사하거나 같은 형태로 보존하는 것은 목표가 아니다. 아래 과거 연구의 “동일 구조/윤곽 유지” 기준과v1/v2 표현 시험은 이 결정에 의해 대체된다. 실제 음성 분석·AI 생성·개인 재현·2–4인 혼합·상태 분리 요구는 유지한다. 같은 특징이 두 표현에서 일관되게 드러나는지 평가하며 서로 pixel/실루엣이 닮았는지를 통과 기준으로 삼지 않는다.
+
+### 조사 및 적용
+
+[Meyda 공식 feature 문서](https://meyda.js.org/audio-features)는 spectral centroid를 밝기 관련 지표, flatness를 잡음성, flux를 스펙트럼 변화로 설명한다. 이것이 특정 그래픽 형태를 결정하거나 개인 음색의 과학적 판정을 보장하지는 않는다. 현재 IEUM은 자체 분석기를 사용하며 Meyda를 설치/대체하지 않는다. 기존 밝기/거칠기/성량 변화는 추정 proxy·confidence null로 유지한다. 미지원 호흡량/비브라토/BPM/리듬 복잡도는 null이다. 아래 시각 연결은 기술/지각 시험 대상이며 확정된 디자인 토큰이 아니다.
+
+| 공통 개인 특징 | Voice Identity의 연구 방향 | 바이닐 표현 연결 |
+|---|---|---|
+| 밝기 proxy | 개인 형태의 세밀한 요소/조직 분포가 달라짐 | 기존 입자 수/밀도 반응과 연결. 광원 밝기만 바뀌는 것으로 대체하지 않음 |
+| 거칠기 proxy | 형태의 표면·윤곽 변화 정도가 달라짐 | 기존 결의 요동/불규칙성·입자 분포와 연결. 뉴런 구조 금지 |
+| 성량 변화 proxy | 형태 내부의 확장/축소 및 폭 대비가 달라짐 | 기존 흐름 퍼짐/폭 변화에 연결 |
+| private 사용자/revision/version | 비슷한 측정 특징의 개인도 일관되게 구분하는 보조 변형 | 같은 개인을 참조하되 곡선/모양을 복사하지 않음. 사용자 ID가 측정된 음색인 것처럼 취급하지 않음 |
+| 실제 Track 특징·입력 envelope | 개인 기본 결과를 덮거나 재생성하지 않음 | 같은 개인 특징과 별개로 곡의 실제 움직임/강도 반응을 연결 |
+
+데이터 경로: **Profile 분석 출처→공통 개인 특징 snapshot→(Identity 생성 입력 / 바이닐 Flow 생성 입력)**. 바이닐 Flow 입력에는 실제 Track 분석과 확정 개인 결과 참조를 별도로 추가한다. Project는 제출 성공한2–4 Track의 Flow와 version/계보를 결합한다. 개인 특징은 공통이며 각 표현의 generator/생성 결과는 별개다. 사용자·참여/제출 상태는 기존 텍스트로 제공한다.
+
+### 실제 진행과 다음 gate
+
+2026-10-13 명시적 소비 경로 하위 gate: 정확한 ref로 복원한 개인 PNG는 기존 프로필 컴포넌트에서, Track PNG/공통 개인 Flow style은 기존 상세·작업실·녹음·Multitrack·완성곡 레코드에서 읽도록 연결했다. 개인 Identity 이미지가 바이닐로 복사되는 경로는 없다. project.voiceRecordRef/identity.selector는 명시적 연결 입력이며 자동 최신 선택/재생성 정책을 뜻하지 않는다. 현재 사용자 데이터에는 신규 승인 결과/참조가 없어 기존 화면이 유지된다. Project/Seed/Part 불일치와 disposed/stale 요청은 거부하고 생성 리소스를 해제한다.
+
+실제 React consumer/native DB/PNG decode/Project WebGL style2개 활성·잘못된 Seed에서는0·unmount URL0 검증과 관련 QA/build 통과. QA는 canvas PNG fixture이며 개인 식별/AI inference/승인 디자인/실기기/Production 인수를 대체하지 않는다. 기존 미정 선택·Profile 갱신 정책을 유지한다. 다음 gate는 **실제 생성·승인된 결과를 명시적으로 공급하고 Profile/후보/Project의 운영 데이터 참조를 연결해 지각/연속성을 인수**하는 것이다. 대형 AI 자원 대기와 코드 저장/소비 연결은 분리하며 R5 전체 완료를 선언하지 않는다. 유지 데이터 연결 묶음만 Git 마감하고 별도 AI 실행 연구·일회성 산출물·사용자 서버3파일을 자동 포함하지 않는다.
+
+2026-10-13 Track/Project durable lineage 하위 gate: 기존 received AI Layer 검증기를 재사용해 개인 결과 ref·확정 제출 원본/분석 revision·입력digest·dual controls·모델/생성 버전·출력 SHA를 저장하는 immutable Track Layer 경로를 추가했다. Project input은 실제 저장 제출만 읽고 정확한 레이어 refs를 결합하며 기존2–4 Part/Seed를 유지한다. Project input도 snapshot digest로 보존하고 예전 partial/graphics-pending snapshot을 후속 제출/새 그래픽 때문에 덮어쓰지 않는다. App producer 연결부의 Track Layer/active Project input 저장·복원까지 연결했다. 이 저장 성공은 모델 실행/형상 인수나 최종 Project Record 출력 성공이 아니다.
+
+2/3/4 Part fixture 저장·재현·pending 그래픽/제출 상태 분리·잘못된 입력/seed/ref·변조 거부·원본 불변, actual Edge/native IndexedDB의 개인 Blob/2개 레이어/Project snapshot reload 복원이 통과했다. 관련 QA/build 통과·기존500KB 경고 유지. 새로운 형상을 UI에 적용하지 않았고 미정 갱신/선택 정책을 확정하지 않았다. **다음 RAM 독립 범위는 이 정확한 참조를 기존 화면/renderer 소비 경로에 전달하는 연결**이며, 자동 최신 선택·임의 AI 생성/승인·미제출 레이어 승격을 하지 않는다. 실제 생성/지각 인수·운영 서비스·실기기·Production 마감은 별도 미완료다.
+
+2026-10-13 사용자 지시로 RAM 독립 데이터 연결 재개: 전체 goal을 RAM 때문에 차단한 판정은 정정한다. 대형 모델 실행의 자원 제약과 저장/참조 구현을 분리한다. `voiceIdentityStore`와 기존 `trackStore`에 개인 결과의 durable immutable revision 저장·명시적 복원·공통 traits/manifest/Blob/version/hash 검증을 구현했다. 기존 App producer 연결부에서 현재 실제 Profile manifest와 생성 결과를 대조하여 저장하고, 정확한 결과 참조 및 같은 owner의 저장 제출 Track으로 dual controls를 준비한다. 자동 최신 선택/프로필 갱신/재생성 정책은 결정하지 않는다. 다른 revision은 공존하며 이전 Track/Record 참조는 재작성하지 않는다.
+
+저장·동시성·변조·실패 보존·제출 Track 연결 fixture QA와 관련 submitted-input QA/build 통과. 실제 격리 Edge/native IndexedDB에서 Blob·traits·정확한 ref의 reload 복원과 module runtime/page error0도 검증했다. 처음 QA의 한글 URL 경로 오류는 fileURLToPath로 수정했고 own browser/server는 종료했다. 실제 AI 생성/형상 승인/전체 PNG decode·사용자 화면/Production 인수 증거는 아니다. 이 기술 하위 gate 뒤 다음 RAM 독립 작업은 **확정 Track layer 결과의 별도 저장과 Project 제출 snapshot의 계보 연결**이다. 개인 결과 저장을 Track layer 성공으로 대체하지 않고, 실제 제출수·Mix 완료를 graphics readiness와 분리한다. App의 모든 사용처 복원·실제 생성·지각/디자인 인수와 미정 정책은 여전히 남는다. 사용자 서버3파일과 현재 연구 변경은 보존하며 이 하위 작업을 R5 전체 완료로 선언하지 않는다.
+
+2026-10-13 연속 조건 보정: 준비된 실제 보존4개 가창 분석을 확인하니 v2의0.5 분기 prompt가3개 Sample을 같은 조건으로 축약했다. 준비 계약 통과는 충분한 음성 조건 전달 증거가 아니었다. 기존 AI 시험을 v3로 수정해 세 축 각각의 low/high prompt embedding을 측정값에 따른 연속 가중치로 보간하도록 했다. 공통6개 text basis를 한번 encode하고 각 개인의6개 가중치(합1)를 적용한다. 이는 Diffusers의 공식 encode_prompt/prompt_embeds API를 사용하는 연구 가설이며 학습된 음성 adapter/지각적 단조성을 보장하지 않는다. 설치된 pipeline 소스의 해당 API 존재를 확인했으나 text encoder/모델을 실행하지 않았다. 공식 근거: https://huggingface.co/docs/diffusers/api/pipelines/stable_diffusion/text2img . 개인 variation seed와 singer embedding 경로는 유지한다.
+
+v3 prepare-only에서4개 원본의 연속 계수가 모두 다르고 같은 Sample/다른 사용자에서는 계수가 같음을 확인했다. 같은 구간 안.01 변화도 해당 축의 두 endpoint에 전달되고 다른 축은 고정되는 검사와 합1 검사가 통과했다. prompt endpoint가 tokenizer에서 잘리면 실제 inference 전에 거부하며 실행 결과에는 공통 basis hash를 보존하도록 했다. 이는 recipe 검증이지 실제 CLIP embedding/생성/형상 식별 시험이 아니다. 현재 여유 RAM2.99GiB로 실제 모델 실행은 시작 조건 미달이며 v3 신규 PNG는 없다. 예전 v2 준비 산출물은 보존하고 최종 생성/앱/배포 완료로 취급하지 않는다. 다음 gate는 자원 조건을 만족한 실제 encoder/inference와 두 표현의 특징 일관성·개인 구분이다.
+
+2026-10-13 실제 AI 시험 경로의 조건 연결: 기존 `qa/verify-personal-identity-model.py`를 직접 수정했다. `--shared-traits`는 기존 보존 가창 원본 SHA를 검사하고 현재 shared trait mapping의 Identity 조건으로 연구용 prompt를 준비한다. 세 축의 질적 prompt는 미검증 가설이며 확정 형상/학습된 음성-image adapter가 아니다. seed는 전체 특징 inputDigest 대신 private 사용자/revision/version variation에서 정해 특징 변화와 난수 변화를 분리한다. 기존 singer embedding noise conditioning·고정 모델 revision은 유지하고 generator version은 v2로 구분한다. 기존 v1 재현은 `--historical-conditioning` 명시가 필요하다.
+
+`--prepare-only`는 AI runtime import 전에 종료한다. 보존된4개 가창 원본과 같은 Sample/다른 사용자1개에서 private 조건을 준비하고 별도 process에서 exact 재현을 확인했다. import 차단 검사로 torch/numpy/diffusers가 불려오지 않는 것을 검증했으며 같은 Sample/다른 사용자의 측정 조건·prompt 불변과 개인 seed 차이를 확인했다. 산출물은 Git/public 밖 thread visualization에 보존했다. Node OS 조회 실제 여유 RAM2.96GiB/총15.95GiB로 대형 AI 시작8GiB 기준 미달이다. 실제 모델 추론은 실행하지 않았다. 새 inference 경로는 Windows 실제 RAM을 AI import 전에 검사하고 미달/조회 실패를 거부한다. 이는 시작 admission이며 실행 중 감시는 기존 resource guard가 담당한다. 낮은 RAM 응답 주입 시험에서 모델 import 이전 거부와 준비 입력 보존을 확인했다. 실제 생성 품질/개인 구분/두 표현의 지각 일관성은 다음 gate이며 준비 성공을 생성 성공으로 기록하지 않는다.
+
+2026-10-13 공통 특징의 실제 renderer 연결: `src/voiceVisualMapping.js`의 `prepareVoiceVisualControls`는 검증된 snapshot에서 Identity용 detailScale/surfaceVariation/expansionContrast와 Flow용 brightness/roughness/dynamics를 별도로 준비한다. 이는 잠정 기술 매핑이며 AI inference나 승인된 형상을 생성하지 않는다. 세 proxy가 미측정이면 임의 값을 채우지 않고 거부한다. private seed 원문은 renderer에 전달하지 않으며 bounded variation은 측정값이 아니다.
+
+`src/resonanceWebGL.js`에 선택적 voiceStyles 입력을 추가했다. 같은 Track의 기존 반응에 개인 특징의 입자 밀도·요동·흐름 폭과 작은 위상/곡률 변화를 더한다. Identity 윤곽/bitmap을 Flow로 복사하지 않는다. 입력이 없는 기존 App 경로는 유지하며 App에서 아직 활성화하지 않았다. 잠정 수치를 최종 디자인으로 확정하지 않는다. shader 소스가 bundle에 포함되므로 build 산출물은 이전 배포와 다르며, 아래 입력 계약만 추가했던 시점의 “bundle 동일” 기록은 당시 결과다.
+
+실제 GPU 시험(session38394, exit0)에서 **같은 Track/고정 time/같은 개인 variation에 서로 다른 Profile proxy**를 넣었을 때 실제 RGBA hash가 달랐다. styled 2/3/4 composition은 GL error0/page errors0이며, 입력 없는 baseline의 기존 출력 hash/입자 수는 이전 시험과 같았다. 개인 style 두 출력과 4개 결합 PNG를 열어 확인했다. 이것은 실제 특징 전달과 혼합 실행의 증거이지 개인 인지·흑백 구분·AI 생성·실제 제출 계보의 통과가 아니다. 실제 renderer는 ANGLE/NVIDIA GTX1660SUPER/D3D11이며 대형 AI는 실행하지 않았다. QA browser는 종료했다.
+
+관련 shared-trait/visual-mapping/renderer-mapping 검사와 production build가 통과했다(40 modules, JS index-Caer9TfD.js 531.73KB, 기존 500KB 경고). 연구용 Identity/Flow 감도 스크립트도 같은 mapping을 사용하도록 통합했다. 현재 다음 gate는 **승인 가능한 다양한 개인 형태의 AI 생성 조건 연결·실제 결과 검증**, 그 이후 확정 개인 결과/제출 Track 참조를 통한 기존 App 연결이다. 렌더 차이만으로 개인 식별 완료를 선언하지 않는다. R5 전체·배포는 미완료이며 사용자 서버 3파일과 기존 R 단계/정책은 보존한다.
+
+2026-10-13 현재 WebGL 실제 출력 시험: qa/research-webgl-trait-sensitivity.mjs가 로컬 renderer 소스를 about:blank의 격리된 headless QA에서 직접 import하고 단일 canvas를 재사용했다. 외부 원본/사용자 탭·앱/Notion/Figma에 접근하지 않았다. 처음 sandbox Edge 시작은 `browserType.launch: Target page, context or browser has been closed`와 임시 DualEngine JSON 교체 error=-5로 실패했다. 승인된 동일 command 실행 권한에서 재시도하여 성공했다. CIM RAM 조회는 “클라이언트에서 CIM 리소스에 대한 액세스를 사용할 수 없습니다.”였고 Node OS API free3.4/total15.95GiB를 확인했다. 대형 AI는 실행하지 않았다. 종료된 실패 session24674를 재시작 이유로 오해하지 않았고 재시도90781 완료/exit0을 확인했다. 생성된 QA browser는 finally로 종료했다.
+
+실제 WebGL renderer 문자열은 ANGLE/NVIDIA GeForce GTX1660SUPER/Direct3D11이다. 이는 WebGL 경로 증거이며 PyTorch/음악 모델 지원·VRAM/드라이버 정보·AI 실행 성공이 아니다. 같은 Part·배치seed/고정time에서 밝기 .1/.8의 실제 RGBA 변경채널 비율.01027, 거칠기.06545, dynamicRange.08683을 확인했다. RGBA 채널 진단값이며 개인 인지율이 아니다.2/3/4 field composition은23977/36223/48623 draw elements, GL error0/page errors0이었다. 기존 코드 전체를 실제 실행했으며 별도 shader/CPU 도식을 actual WebGL로 바꾸어 보고하지 않았다. source는 현재 코드이며 Figma로 대체하지 않는다.
+
+실제 low/high roughness 및4-field PNG를 열어 확인했다.4개 흐름은 같은 바이닐 공간에서 겹치지만 각 기본 곡선은 여전히 Part slot 공식이다. 개인 특징의 가시성/구분은 이 출력으로 입증되지 않는다. 정적 polar 진단에서 차이가 약한 것은 actual WebGL 변화 부재의 증거가 아니었으므로 두 결과를 분리한다. 다음은 공통 개인 특징의 표현별 mapping을 기존 renderer에 연결하고 actual Identity/Flow 쌍의 특징 일관성과 흑백2–4인 구분을 검사하는 것이다. 승인 디자인/AI 생성/실제 보컬/프로필 사용처 연결·Production 마감은 여전히 미완료다.
+
+2026-10-13 별도 표현의 출력 감도 시험: qa/research-shared-trait-expressions.mjs에서 같은 private variation seed를 유지하고 밝기/거칠기/성량 변화만 각각.1/.8로 바꿨다. 기존 shared trait/representation builder를 사용한다. Identity는 연구용 material density field, 바이닐은 기존 buildVoiceLayer→실제 buildParticles의 입력속성으로 별개 출력을 만든다. 세 특징 모두 Identity raster와 기존 particle buffer/입자 수에 영향을 주는 검사가 통과했다. 두 이미지에 같은 개인 윤곽을 전달하지 않았다. 아직 승인된 Identity 형상 generator나 actual AI inference가 아니며 glyph의 수식/수치를 production mapping으로 확정하지 않는다.
+
+PNG를 실제 확인했다. 성량 변화의 폭 차이는 보이지만 거칠기의 바이닐 정적 진단 차이는 약해 보인다. 계산 차이만으로 지각 차이 통과를 선언하지 않는다. 바이닐 PNG는 aT/aNormal/aMicro의 연구용 polar projection이며 production WebGL shader/실제 바이닐 렌더가 아니다. 낮은 해상도에서 차이가 안 보이는 이유를 렌더 결과와 구분해야 한다. 다음은 현재 WebGL 표현에서 개인 특징에 따른 차이의 실제 가시성과2–4인 혼합 검증이다. Identity의 다양한 최종 형태·실제 보컬·AI 생성·사용자 식별/디자인 인수는 계속 미완료다.
+
+감도 결과 PNG/JSON은 thread visualization에 보존하고 Git에 포함하지 않는다. 이전 동일형상 연구 스크립트는 삭제하지 않고 --historical-same-shape 명시 없이는 실행을 거부하도록 했다. 최신 검증에 과거 동일 윤곽 유지 실험이 섞이는 것을 방지한다. 앱/UI와 사용자3파일을 변경하지 않았으며 새로운 계획 문서/앱을 만들지 않았다.
+
+`src/voiceIdentityContract.js`에 buildVoiceTraitSnapshot/buildVoiceRepresentationInputs를 추가했다. 기존 canonical private manifest와 assessVoiceCandidates를 재사용하여 출처/revision/version·지원/미지원/confidence를 보존한다. 반환값은 비공개 생성 입력이며 이미지/개인 ID 공개 metadata가 아니다. 원문 사용자 ID를 두 입력에 복제하지 않으며 private variation seed는 특징 측정값과 구분한다. 두 입력은 동일 trait digest를 참조하면서 personal-form-input/vinyl-flow-input으로 분리하고 서로 mutable 객체를 공유하지 않는다. Track은 기존 validated 개인 결과 ref의 입력digest/id/revision/outputSHA/generator와 맞아야 한다. 이 참조 검사는 AI 실행/PNG 검증을 대신하지 않는다. 개인 특징은 Track 분석에 의해 덮어쓰지 않으며 Track layer generator version을 별도로 보존한다.
+
+qa/verify-shared-voice-traits.mjs에서 동일 입력 재현·같은 Sample/다른 사용자에도 측정 특징 불변/variation 차이·한 특징 perturbation/seed 유지·미지원 null·표현 간 데이터 분리·Track/Profile 목적 구분·잘못된 개인 결과/변조 거부를 확인했다. 합성 PCM/통제 fixture 계약 검사이며 지각·실제 사용자·생성 결과 완료가 아니다. 기존 Identity 계약 QA/build도 통과했다. production bundle은 이전 배포와 동일하고 기존500KB 경고 유지다. 앱 생성/UI에 아직 연결하지 않았고 사용자3파일은 보존한다.
+
+다음 gate는 공통 특징에 대한 **서로 다른 Identity 형상 생성과 Flow 매핑의 실제 출력** 비교다. 독립 아바타를 바이닐에 얹는 시안을 만들지 않고, 폐곡선 계열 한 가지로 개인 다양성을 제한하지 않는다. 한 특징만 바꿔 두 표현의 관련 요소가 모두 변하는지, 서로 다른 개인 구분/작은 프로필/2–4인 혼합에서 개인 특징 연속성이 읽히는지 검증한다. 이 gate가 미완료이므로 최종 형상·AI 생성·앱 통합/배포 완료로 기록하지 않는다. 기존 미정 정책·R 단계·예산/실효 시간 미측정 상태·완료 기능은 유지한다.
+
+## 이전 연구 이력 — 동일 형상 유지 가정은 위 최신 기준으로 폐기됨
+
+## 2026-10-13 R5 목표 재설정 — 음성·개인 구조·Track·혼합의 동시 충족
+
+최신 사용자 지시를 기준으로 목표를 재설정한다. **실제 음성 특징이 반영된 다양한 개인 구조가 동일 입력/버전에서 재현되고, 실제 Track에 반응한 뒤에도 같은 사람의 특징을 유지하며,2–4인 바이닐에서 자연스럽게 혼합되고 식별되는 것**이 최종 목표다. 아래 조건은 선택 가능한 대안이 아니라 모두 필요한 조건이다. 기존 시안과 v1 폐곡선 연구는 미채택이며 최종 후보/완료 증거로 사용하지 않는다.
+
+| 요구 | 생성/연결 규칙 | 실패 판정 |
+|---|---|---|
+| 개인별 다양한 구조 | 흐름 길이·방향 전환·접힘·폭 분포 등 구조 차이를 검증. 선/입자/재질의 공통 문법은 유지 | 모두 같은 폐곡선·기본 도형을 조금씩 변형하거나 색만 다름 |
+| 실제 음성 기반 | 기존 지원 분석과 신뢰도/출처를 참조. 밝기/거칠기/성량 변화의 기존 매핑을 재사용하고 구조 영향도 분리 확인 | 음성을 바꿔도 시각 입력에 영향 없음, 임의 hash 형상을 음성 결과처럼 설명, 미지원 수치 채움 |
+| 일관된 개인 식별 | private 사용자/revision/version·입력 snapshot 보존. 화면/세션/Part와 독립된 기본 구조 참조 | 같은 사람이 화면/곡/Part 변경으로 다른 사람이 됨 |
+| Track 반응 | 실제 Track 특징과 입력 envelope로 기존 반응을 연결. 개인 기본 구조와 가변 반응 분리 | 곡 반응 없음 또는 개인 구조를 지움 |
+|2–4인 혼합과 식별 | 동일 표현 체계로 공동 영역에 스며들며 구조 흔적 유지. 흑백 비교 및 작은 크기/모션 검증 | 독립 로고 배치·섬/구역/동심원 분리, 윤곽선만 겹침,4인에서 개인 흔적 소실 |
+| 기존 AI 요구 유지 | 구조 후보 시험→실제 음성/AI 조건 연결→생성 후 재현/식별 검사 | procedural 시험/합성 음원을 실제 사람 분석·AI 생성 성공으로 대체 |
+| 기존 제품/상태 보존 | 기존 화면·개인→Track→Project 참조, 확정 제출/그래픽/Mix 처리 분리 | 새로운 제작 화면·별도 앱, 임시 녹음을 확정 레이어로 처리 |
+
+실행 gate를 다시 구분한다: (A) 요구/매핑 대조와 v1 실패 원인 확인, (B) 다양성을 포함한 경량 구조·변형·혼합 표현 시험, (C) 실제 기존 renderer/음성/AI 연결과 지각 검증, (D) 승인 결과의 기존 앱 통합·Production 인수. A만 완료, B 진행 중이며 C/D는 미완료다. 미정 갱신·사진·버전/fallback 정책은 그대로 유지한다. 기존 R 단계·완료 기능·예산과 사용자 변경은 보존한다. 앱/디자인을 임의로 교체하지 않는다.
+
+2026-10-13 목표 재설정 후 진행: 기존 연구 스크립트를v2로 수정해 endpoint wrapping을 제거하고 흐름의 길이/방향 반전/접힘을 입력별로 변화시켰다. 사용자/revision/version의 구조 seed를 음성 proxy 매핑과 분리해, 밝기/거칠기/성량 변화값 하나만 바꾼 통제 fixture에서 실제 좌표가 달라지는지 검사했다. metadata만 달라지는 경우는 실패다. 같은 입력 재현·다른 사용자 구분·개인 구조의 Track/Part/Project 보존·2–4 입력 조합의 계산 검사는 통과했다. 실제 사람의 음성/AI/GPU/인지 시험은 아니다.
+
+PNG를 열어 확인한v2도 개인 흐름을 따로 얹은 띠의 인상이 남아 **미채택**이다. endpoint가 일치하지 않는다는 수치는 다양한 형태/혼합 성공을 의미하지 않는다. 기존 폐곡선을 열거나 단순 복제/회전하는 후속 시도를 다음 해결책으로 자동 채택하지 않는다. B gate는 여전히 미완료다. 다음은 개인 형상을 별도 물체로 만든 뒤 합성하는 모델 대신, **공동 공명 표현의 내부 구조를 개인 Sample/Track 조건이 함께 결정하고 그 안에서 개인별 특징을 확인하는 모델**을 연구하는 것이다. 이 과정도 실제 음성 입력·개인 재현·자연스러운 혼합·흑백 식별을 모두 검사해야 하며 단순 평균으로 개인 정보를 지우는 방식은 사용할 수 없다. 새 형태를 보여주는 것으로 다음 단계 완료를 대신하지 않는다. 연구 데이터/시각 인수/AI 실제 실행 각각의 결과를 분리한다.
+
+## 2026-10-13 R5 Voice Identity 연구 재개 — 개인 식별과 바이닐 혼합을 함께 검증
+
+사용자 지시: 독립 개인 형상을 먼저 선택하지 않는다. 개인 식별과 바이닐에서의 자연스러운 혼합을 동시에 만족하는 표현을 먼저 연구한다. 앞선 A/B/C·연속성 비교·12개 조형 시안은 이 조건을 입증하지 못한 검토 이력이며 승인된 형상/구현 입력이 아니다. 아래 연구 gate가 과거의 “형상 선택 후 연결” 순서보다 우선한다. 앱 코드·기획·디자인 토큰은 이번 연구로 변경하지 않는다.
+
+### 실제 코드에서 확인한 문제
+
+- 설명 정정: “평균 밝기로만 반영”은 AI 생성 이미지 경로에 한정한다. 기존 실제 음향 특징→procedural Voice Layer→선/입자 변화 경로는 이미 존재한다. 이를 없거나 새로 설계해야 하는 것으로 취급하지 않는다. 사용자 가이드와 PRD261012의 개인 Identity 요구(349–353행), Resonance Record System(798–802행)을 함께 적용한다.
+- `src/resonanceWebGL.js`의 `flowBase(part,path,t)`는 Part slot별 네 가지 기본 곡선을 사용한다. 개인 기본 형상 파라미터가 이 곡선에 연결되어 있지 않다. 슬롯별 차이는 사용자별 일관된 식별을 입증하지 않는다.
+- 같은 파일 fragment shader는 최대 네 생성 이미지를 평균한 뒤 luminance를 `fieldGain`으로 적용한다. 생성 결과의 형상이 곡선 구조로 전달되는 경로가 아니다. 따라서 개인 이미지가 달라도 색/밝기만 남는 구조적 원인이 있다.
+- 기존 `qa/verify-identity-track-model.py`의 latent 평균 결합과 activation 가중 결합은 수치/재현 시험이다. 기존 기록도 개인 흔적과 지각적 식별 미검증을 명시한다. 대비 향상·다른 hash·내부 owner 참조 보존을 혼합 결과의 개인 식별 통과로 확대하지 않는다. 완료된 모델 시험은 재실행하지 않았다.
+
+### 기존 매핑 실행 확인 및 개인/Track 연결 순서
+
+`qa/verify-voice-renderer-mapping.mjs`는 기존 buildVoiceLayer와 실제 renderer의 buildParticles를 실행한다. 임의 분석값 fixture를 사용하고 배치 random seed를 고정해 한 입력의 영향만 분리했다. 별도 렌더러/앱/AI 이미지는 만들지 않았다. Node heap128MiB 시험에서 아래8개 경로와 미연결3개를 확인했다. GPU 렌더/실제 목소리/음색 지각/개인 식별 검증이 아니다.
+
+| 음향 입력 | 확인한 현재 렌더 요소 | 개인/Track 연결 시 적용 기준 |
+|---|---|---|
+| 밝기 proxy | 입자 수/밀도: fixture .1→.8에서5983→7494 | 기존 매핑 재사용. 광원 밝기·곡률까지 연결됐다고 주장하지 않음 |
+| 거칠기 proxy | 결의 미세 요동, 입자 수 | 개인 Sample 기준 특징을 남기고 Track 변형 범위를 시험. 거칠기 때문에 가지/뉴런 형상을 만들지 않음 |
+| 음량 변화폭 | 흐름의 횡방향 퍼짐 | Track 반응으로 사용. 개인 기본 형상의 구조를 덮지 않음 |
+| RMS 기반 energy | 입자 크기·수·투명도 | 실제 Track/실시간 입력의 강도 반응. 사람의 고정 성격으로 취급하지 않음 |
+| spectralFlux | 이동 속도·퍼짐 | 기존 신호 변화 proxy. BPM 추출이나 박자 동기화로 표시하지 않음 |
+| activeRatio | 선 수/연속성: fixture .1→.8에서7056→8624 vertices | 실제 발성 지속 분포. 미측정 호흡량으로 해석하지 않음 |
+| articulation proxy | 선 투명도/입자 뭉침 | 실제 onset 기반 표현. 리듬 복잡도의 검증 결과로 대체하지 않음 |
+| pitchVariation | 미세 요동 | 음높이 변화 proxy. 비브라토 추출로 표시하지 않음 |
+
+미연결 확인: layer의 `baseRadius`, `filamentCount`, `envelope`만 바꿔도 기존 CPU particle buffer는 동일했다. shader 기본 곡률/국소 폭 공식에는 개인 구조 입력이 없다. 따라서 이미 작동하는8개 경로를 다시 만들지 않고 개인 기본 구조 전달과 시간별 envelope 연결의 필요성을 다음 연구에서 구분한다. 미연결 값을 무조건 그대로 꽂아 Part별 고정 동심원이나 개인 영역을 만드는 수정은 하지 않는다.
+
+개인 재현용 입력은 기존 private 사용자/revision/version·Profile 측정 출처로 고정하고, 실제 Sample의 지원 특징을 사용하는 매핑을 비교한다. Track에는 기존 음향 반응을 재사용하되 개인 특징 유지 범위를 검증한다. Project는 이 두 종류의 정보를 가진2–4 확정 레이어를 같은 흐름 공간에서 혼합한다. 같은 사람의 Track 음량/곡이 달라졌다고 개인 기본 구조를 새 사람처럼 바꾸지 않는다. 이 구분은 재측정 시 갱신/과거 결과 변경 등의 미정 정책을 확정하지 않는다.
+
+현재 세션 도구 목록의 Notion/figma-desktop 전용 도구는0개다. 사용자 승인261012 로컬 export와 현재 직접 지시로 기능 연구를 진행했으며 Figma 원본을 확인한 것으로 보고하지 않는다. 시각 디자인 확정/Production 렌더 변경은 아직 하지 않았다. 다음 gate는 기존 흐름에서 개인 구조를 전달하는 경량 표현 시험과2–4인 혼합 식별 평가다.
+
+### 조사 근거와 적용 한계
+
+1. [Cabral & Leedom, Imaging vector fields using Line Integral Convolution](https://digital.library.unt.edu/ark:/67531/metadc1399414/): 벡터 흐름을 따라 질감을 생성하는 방법이다. 하나의 연속된 흐름 표면을 만드는 기술 참고이며 여러 참여자의 식별 보존 증거는 아니다.
+2. [Urness & Interrante, Streamline Visualization of Multiple 2D Vector Fields](https://www-users.cse.umn.edu/~interran/vda08.pdf): 개별 흐름을 단순히 겹치면 위 레이어가 두드러지거나 병렬 흐름이 뭉치는 문제를 설명한다. 전체 밀도뿐 아니라 각 흐름의 영역 내 분포를 함께 고려하는 배치와 교차 표현을 다룬다. 두 vector field 연구이며 개인 음성 형상·4인 결합·이음 디자인 인수까지 증명하지 않는다. 논문의 halo/직조 외형을 그대로 채택하지 않는다.
+
+연구에서 도출한 가설은 아래와 같다. 논문이 검증한 사실과 IEUM에 대한 설계 가설을 구분한다. 평균값으로 모두 압축한 이미지는 서로 다른 입력 조합이 같은 평균을 만들 수 있으므로 개별 입력 복원이나 시각 식별 보존을 보장할 수 없다. 반대로 개별 곡선을 데이터에 보존해도 화면에서 보이지 않으면 사용자 식별 조건을 만족하지 못한다.
+
+### 비교할 표현과 우선 연구 가설
+
+| 표현 | 혼합 / 식별의 위험 | 이번 판정 |
+|---|---|---|
+| 독립 조형/로고를 바이닐 위에 배치 | 식별은 쉬워도 개인별 섬·영역으로 분리되기 쉽다 | 사용자 요구에 맞지 않는 방향으로 배제 |
+| 전체 image/latent/vector 평균 후 하나의 형상 생성 | 연속 표면은 만들 수 있으나 입력별 구조가 소실/상쇄될 수 있다 | 개인 식별 보장 방식으로 사용하지 않음 |
+| 개인 구조를 보존하는 흐름들을 같은 영역에 공동 배치하고 표면을 혼합 | 개인별 곡선 특징을 유지하며 서로 침투할 가능성. 가림·과밀·2→4인 증가 시 소실은 아직 미검증 | 우선 검증할 가설, 승인된 디자인/성공 결과 아님 |
+
+우선 가설의 개인 표현은 별도 입체 물체가 아니라 같은 공명 표현 체계에서 재현되는 **흐름의 구조적 특징**이다. 곡률 변화 순서·넓고 좁아지는 리듬·비대칭·접힘 간격을 후보로 비교한다. 정확한 파라미터·개수·매핑은 기술 검증에서 정하며 사람마다 정해진 도형 카탈로그를 배정하지 않는다. 색과 고정 위치를 식별 근거로 사용하지 않는다. 뉴런 같은 가지/가느다란 연결망은 사용자가 거부한 검토 방향이다.
+
+- 개인: 실제 측정된 Profile 입력과 private 사용자 식별 입력/revision/version으로 구조를 재현한다. 작은 프로필에서도 알아볼 수 있는 구조가 필요하다. 미지원 분석값은 null을 유지한다.
+- Track: 동일 구조의 특징 순서를 유지하면서 실제 Track 분석으로 변형하는 범위를 시험한다. 변형량이 커질 때 특징이 사라지면 시험 실패다. 무음/미지원 특징을 임의 음성 값으로 채우지 않는다.
+- Project: 각 확정 Track의 구조와 계보를 유지하고, 공동 배치가 교차·가림·전체 및 참여자별 분포를 조정한다. 모두 같은 바이닐 영역에 섞이며 고정 동심원/사분면/참여자별 구역을 만들지 않는다. 재질·입자·반사광의 혼합과 개인 구조의 연속성을 함께 평가한다. 재질만 섞고 개인 로고를 따로 놓는 방식도 실패다.
+- AI 생성: 기존 실제 음성 기반 분석/AI 요구를 유지한다. AI 출력의 역할을 밝기 이상의 구조/질감 조건으로 연결할 수 있는지 검증하되, procedural 흐름만으로 AI 생성 완료를 선언하지 않는다. 생성으로 구조가 사라질 수 있어 생성 후에도 동일 식별 검사를 적용한다. 구체적인 adapter/model 선택은 아직 미정이다.
+
+### 다음 연구 gate — 결합부터 검증, 프로필만 먼저 확정하지 않음
+
+2026-10-13 경량 구조 시험: `qa/research-voice-flow-continuity.mjs`에서 기존 analyzeAudioBuffer로1초 합성 PCM4종과 변형 Track4종을 분석하고 기존 private manifest/assessVoiceCandidates/buildVoiceLayer를 재사용했다. 개인 곡률 후보 계수는 manifest에 묶인 입력에서 재현하며 측정된 Sample proxy도 구조 폭 등에 반영했다. 원문 사용자 ID/입력 digest는 공개 비교 이미지/결과에 포함하지 않았다. 실제 사람의 음성·AI 추론·production renderer 교체는 아니다. 같은 입력 재현, 같은 Sample/다른 사용자 계수 차이, Track의 개인 구조 계수 보존,2/3/4인 같은 영역 결합을 Node heap128MiB에서 확인했다. 최대 중심선 변형은 정규화 좌표0.00444였으며 연구 상한0.012 이내였다. 수치 상한은 승인된 디자인/정책이 아니다.
+
+초기5개 윤곽선만 겹친 출력은 자연스러운 혼합 근거가 부족해 채택하지 않았다. 동일 구조를 폭 있는 결/입자 분포로 표현하는 후속 비교를 작성했다.64분해능 좌표의 표본 점유 진단에서 두 개 이상 레이어가 같은 cell을 차지하는 비율은2인.499/3인.589/4인.685였다. 이는 공간 겹침의 진단값이며 자연스러운 혼합·사용자 인식 점수나 G3 완료를 의미하지 않는다. 비교 SVG/PNG/result JSON은 thread visualization 경로에만 보존하고 repository에 생성 결과를 포함하지 않는다. 다음은 실제 renderer의 개인 구조 전달 경계·GPU 모션과 흑백 지각 평가이며, 이 정적 시험을 음향/AI/시각 인수로 확대하지 않는다.
+
+연구 예산은 우선 가설 비교에 최대2h를 적용한다. 이번 문헌/코드 대조의 실효 시간은 미측정이며 기존 모델 실행 예산을 초기화하지 않는다. 대형 AI/유료 API/새 runtime 설치 없이 가능한 경량 결정론적 표현 시험부터 진행한다. CPU/RAM 자원 규칙을 유지한다.
+
+1. 동일 개인 입력에서 개인→실제 Track→2/3/4인 결합을 동일 표현으로 만든 비교 증거를 준비한다. 임시 합성 파라미터가 필요하면 음성 분석 결과와 명확히 구분한다. 이는 구조 실험이며 실제 AI 생성 완료가 아니다.
+2. 모든 색을 같게 하고 이름·Part 위치 단서를 가린 상태에서, 기본 개인을 보고 해당 Track 및 혼합 속 특징을 찾을 수 있는지 평가한다. 참여하지 않은 개인도 선택지에 넣어 무조건 대응을 고르는 오류를 드러낸다. 단순 pixel/hash 차이로 대체하지 않는다. 지각 시험의 참여자 수·정량 통과 기준은 실험 전에 정하고 사용자 확정 결정과 구분한다.
+3. 같은 개인의 Part 순서 변경·다른 Project Seed·세션 복원에서도 특징을 확인한다. 다만 Seed가 다른 Project의 전체 Record까지 같아야 한다는 요구는 아니다. 한 사람을 교체한 결합도 비교해 색 없이 실제 구성 변경이 드러나는지 확인한다.
+4. 4인/비슷한 특징의 개인들/강한 Track 변형/작은 프로필/실제 바이닐 표시 크기/모션 중 프레임을 포함한다. 한 사람이 항상 위에 있거나 화면 일부에서 사라지는지, 과밀로 뉴런처럼 보이는지 확인한다. 참여자별 mask/기여도 진단은 연구용이며 새 사용자 화면이 아니다. 진단상 기여도만 존재해도 시각 식별 실패는 실패다.
+5. **개인 구조 식별 + 하나의 자연스러운 혼합 + 실제 음성 연결**이 함께 입증되기 전에는 형상 선정/앱 교체/Production 완료로 기록하지 않는다. 첫 두 조건을 통과한 경량 구조 시험과 실제 AI/음향 입력 G1–G5 통과를 별도로 기록한다. 현 단계는 문헌/코드 조사 완료, 표현 및 지각 시험 미완료다.
+
+기존 private manifest·실제 Sample/Track 분석·submitted 판정·Project Seed/2–4 Part·렌더러의 연속 흐름/재질 및 motion은 재사용 후보다. 아직 미정인 형상 갱신·버전 전환·fallback·사진 우선순위·성능 정책과 제출/그래픽/Mix 상태 분리, 기존 화면 수/역할은 유지한다. 이번 기록은 Figma 원본 확인이나 디자인 승인 결과가 아니다.
+
+후속 PNG를 실제 열어 확인했다. 개인→Track의 윤곽 연속성은 관찰되지만4인 혼합에서 개인별 특징이 흐려진다. 이는 작성자 관찰이며 블라인드 사용자 인수가 아니다. 후속 폭 있는 표현도 최종 채택/식별 통과로 기록하지 않는다. 다음 개선은 단순 대비/색 변경이 아니라 혼합 속 구조 특징의 가시성을 유지하는 범위·분포 시험이다.
+
+### 이전 형상 검토 이력 — 아래 형상 선택 gate는 위 연구 순서로 대체됨
+
+사용자 추가 확정: 바이닐 공명은 개인 문양을 분리 배치하지 않고 하나의 연속된 장으로 혼합해야 하며, 혼합 후에도 개인별 차이가 드러나야 한다. 개인별 특징은 독립 로고/섬/고정 위치가 아니라 혼합 흐름의 곡률·폭·접힘·빈 공간 등 구조에 남긴다. 프로필→Track→2/3/4인 결합을 함께 검토하고 흑백에서도 구조 차이를 확인한다. 이 방향 확정은 특정 시안 승인이나 실제 음성 기반 생성 완료를 의미하지 않는다.
+
+사용자가 Voice Identity부터 진행하도록 우선순위를 지정했다. 기존 개인 manifest/실제 Sample 분석·Track bridge 및 AI latent 기술 검증을 재사용한다. 기존 뉴런 같은 형상에 대한 거부를 반영해 내장 imagegen으로 A 넓은 리본 루프/B 부드러운 파동막/C 음각 형태의 비교 시안을 생성했다. 이는 음성 미입력의 디자인 검토 결과이며 개인 분석·결정론적 생성·Track 변형·G1–G5 완료가 아니다. 로컬 대형 모델/유료 외부 API/production 그래픽 교체는 실행하지 않았다. 다음 gate는 형상 선택이며 이후 선택 방향을 실제 측정 입력과 고정 model/generator version·seed에 연결해 재현/흑백 개인 구분을 확인한다. 미등록·사진·재측정·기존 Track 영향·버전 전환·fallback 정책은 여전히 미정으로 보존한다. 비교 시안은 Codex generated_images의 검토 산출물로만 보존하며 Figma 원본으로 취급하지 않는다. 기존 앱/서버 사용자 변경·계획 단계/완료 증거는 보존한다.
+
 ## 2026-10-13 R1/R2 현재 Mix 단일 선택 마감
 
 사용자 지시에 따라 추가 서버 준비/완료 검사 반복 대신 기존 W05/D09 개인 청취 기능의 확인된 잔여를 마감한다. 단일 Track 선택도 기존 createPreviewMix에서 syncOffsetMs를 검증·정렬하며, 잘못된 duration metadata 대신 해독 길이와 실제 정렬 offset으로 preview 길이를 정한다. 개별 원본 청취는 그대로이고 청취 선택은 제출/Part/Final Mix를 변경하지 않는다. 기존 화면·스타일을 재사용하며 Key 조정은 실제 다른 Key 편곡/음역 데이터 없이 임의 구현하지 않는다. 집중 예산 최대2h; 실효 공수 미측정, 외부 대기 없음. 승인 TEMP runtime의 짧은 실제1–4 Track 렌더 및 해당 React 제어만 검증하며 완료된 서버/모델 전수 QA를 반복하지 않는다. 다음 gate는 build/diff·Git Integration 및 Production asset 확인이며 물리 청취/실기기, 실제 협업·음악·Identity·디자인의 기존 미완료 조건은 유지한다.
