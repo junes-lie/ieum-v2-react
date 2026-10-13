@@ -44,6 +44,17 @@ try{
     await page.goBack();await page.waitForSelector('.vocal-name-line h1')
     assert.equal(await page.locator('.vocal-name-line h1').textContent(),name)
   }
+  for(const id of ['missing-person','constructor','__proto__']){
+    await page.evaluate(()=>{history.pushState({ieumScreen:'finder',selectedMatchVocalId:'min'},'','#finder');dispatchEvent(new PopStateEvent('popstate',{state:history.state}))})
+    await page.waitForSelector('.candidate-identity h1')
+    assert.equal(await page.locator('.candidate-identity h1').textContent(),name)
+    await page.evaluate(id=>{history.pushState({ieumScreen:'finder',selectedMatchVocalId:id},'','#finder');dispatchEvent(new PopStateEvent('popstate',{state:history.state}))},id)
+    await page.waitForSelector('.finder-screen')
+    assert.equal(await page.locator('.vocal-name-line,.voice-sample-block').count(),0)
+    assert.equal(await page.evaluate(()=>history.state.selectedMatchVocalId),id)
+    await page.goBack();await page.waitForSelector('.candidate-identity h1')
+    assert.equal(await page.locator('.candidate-identity h1').textContent(),name)
+  }
   assert.equal(await page.evaluate(()=>JSON.stringify({profile:window.__IEUM_V2__.state.profile,tracks:window.__IEUM_V2__.state.projectTracks,projects:window.__IEUM_V2__.state.createdProjects})),original)
   assert.deepEqual(errors,[])
   console.log('PASS actual existing App 05A: chosen person survives reload/back; unknown/inherited IDs remain unavailable across reload; no other person/Sample/save action or Profile/Track/Project mutation. Empty isolated audio bootstrap, not real candidate/voice/design acceptance.')

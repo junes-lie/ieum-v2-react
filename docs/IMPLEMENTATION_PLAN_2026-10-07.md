@@ -1,3 +1,6 @@
+## 2026-10-13 R2 보컬 대상 확인 경로 마감
+
+기존05A의 공통 대상 확인을 Finder/Match/초대 guard까지 연결했다. unknown History ID는 이전 후보가 아니라 기존 Finder 목록으로 처리하고 상속 객체는 대상에서 제외한다. 실제 native App의 정상 후보→wrong target→목록→Back 및05A 원본/복원 QA와 build 통과. 새 화면/디자인·후보 데이터·실서비스 활성화 없음. Git Integration→Production 동일 후보 QA 뒤 마감하며 기존 예산·단계·실기기/R3/R5/R6 조건 유지.
 ## 2026-10-13 R3 독립 복귀 연결 선행
 
 기존 Google 로그인 준비의 hash-only 복귀를 기존 App History snapshot 선택 보존으로 보완했다. Song/Project/Part·보컬·Setup 복귀/개설·scroll을 같은 탭 임시 문맥으로 반환하고 공개 URL/자격 증명/원본을 담지 않는다. 이는 App History 연결 계약이며 실제 서비스/로그인 화면 활성화·자동 참여를 하지 않는다. 관련 실제 Crypto/주입 OAuth 재진입·snapshot/유효 입력/저장 문맥·기존 인증 QA와 build 통과. 운영 App caller는 로그인 뒤 현재 사용자·Project/Part 가용성을 다시 확인해야 하며 실제 R3 완료 이후 R4 조건은 유지한다. 기존 완료 증거·예산/실효 공수 미측정 유지.

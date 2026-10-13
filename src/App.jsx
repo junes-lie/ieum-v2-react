@@ -1114,7 +1114,7 @@ function Finder({ back, preferences, updatePreferences, invite, invitedVocalIds 
     .filter(candidate=>!genreFilter || candidate.genres?.includes(genreFilter))
     .filter(candidate=>!tasteFilter || candidate.taste?.includes(tasteFilter))
     .sort((a,b)=>score(b,keyBySort[sort])-score(a,keyBySort[sort]))
-  const selected = selectedVocalId ? PERSON_BY_ID[selectedVocalId] : null
+  const selected = resolveVocalProfile(selectedVocalId)
   if (selected) return <MatchDetail vocal={selected} back={returnToList} openProfile={openVocalProfile} invite={invite} invitedVocalIds={invitedVocalIds} part={part} project={project} song={song} tracks={tracks} profile={profile}/>
   return <div className="screen finder-screen">
     <TopBar title={`${partName.toUpperCase()} · VOCAL FINDER`} back={back} action={filterOpen?'닫기':'필터'} onAction={()=>updatePreferences({filterOpen:!filterOpen})}/>
@@ -1730,7 +1730,7 @@ export default function App() {
   const join = partId => { const part=PARTS.find(item=>item.id===partId);if(!part || projectTracks[partId] || part.participantId || (joined && joinedPart===partId) || (candidateAccepted && partId==='bass') || !evaluatePartFit({rangeData:profile?.rangeData,part}).eligible)return; setJoinedPart(partId);setActiveCreatedProjectId(null); setJoined(true); touchProjectActivity(PROJECT_ID); setScreen('workspace'); setHistory([]) }
   const openFinder = partId => { if (!partId) return; setFinderPartId(partId); setSelectedMatchVocalId(null); go('finder') }
   const invite = vocal => {
-    const candidate=PERSON_BY_ID[vocal?.id]
+    const candidate=resolveVocalProfile(vocal?.id)
     if(!canSendInvite || !candidate || candidate.isSelf || !evaluatePartFit({rangeData:candidate,part:activeFinderPart}).eligible)return
     if(activeCreatedProject?(activeFinderPart.invitations || []).some(item=>item.vocalId===candidate.id&&item.status==='sent'):(invited&&invitedVocalId===candidate.id))return
     touchProjectActivity(activeCreatedProject?.id || PROJECT_ID)
@@ -1840,7 +1840,7 @@ export default function App() {
       if(event.state?.activeCreatedProjectId!==undefined)setActiveCreatedProjectId(event.state.activeCreatedProjectId)
       if(event.state?.finderPartId)setFinderPartId(event.state.finderPartId)
       if(event.state?.selectedVocalId===null || typeof event.state?.selectedVocalId==='string')setSelectedVocalId(event.state.selectedVocalId)
-      if(event.state?.selectedMatchVocalId===null || PERSON_BY_ID[event.state?.selectedMatchVocalId])setSelectedMatchVocalId(event.state.selectedMatchVocalId)
+      if(event.state?.selectedMatchVocalId===null || typeof event.state?.selectedMatchVocalId==='string')setSelectedMatchVocalId(event.state.selectedMatchVocalId)
       if(typeof event.state?.createDraftKey==='string')setCreateDraftKey(event.state.createDraftKey)
       if(event.state?.createProjectSongId===null || SONGS.some(song=>song.id===event.state?.createProjectSongId))setCreateProjectSongId(event.state.createProjectSongId)
       if([null,'range','sample'].includes(event.state?.voiceEditMode))setVoiceEditMode(event.state.voiceEditMode)

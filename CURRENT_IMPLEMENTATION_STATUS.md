@@ -1,3 +1,8 @@
+## 2026-10-13 R2 — Finder 후보 대상 일치 보완
+
+05A에서 사용한 resolveVocalProfile을 기존 Finder 후보 상세/초대 대상에도 재사용했다. History의 unknown 후보 ID를 이전 후보로 남겨두지 않고 같은 Finder 목록으로 처리하며 constructor/__proto__ 상속 객체를 보컬로 읽지 않는다. 정상 후보의 상세·프로필·Back과 기존 Part Fit/초대 처리·Profile/Track/Project 원본을 유지한다. 실제 후보 자료나 새로운 상태/화면/디자인을 추가하지 않았다.
+
+실제 기존 App native QA에서 known Min→unknown/inherited target→Finder 목록→Back Min 상세를 확인했고 관련05A reload/back·원본 불변 검사도 통과했다. 처음 추가 QA는05A 제목 selector를 Match Detail에도 사용해10초 timeout(앱 page errors0)이 발생했고 실제 후보 제목 selector로 수정 후 통과했다. build45modules/index-DfjDqpKm.js 통과, 기존500KB 경고 유지. 격리 demo bootstrap이며 실제 후보/물리 음성/디자인/서비스 인수는 미완료다. 기존 단계·예산·서버3파일/연구 보존, 실효 공수 미측정.
 ## 2026-10-13 R3 — 기존 로그인 복귀 문맥 보존
 
 Google PKCE helper는 기존 returnHash 외에 기존 App History의 선택 Song/Project/Part·보컬·Voice Setup 복귀/개설 문맥·scroll을 선택적으로 보존한다. 호출 시 snapshot을 고정하고 같은 탭의 임시 PKCE 저장에만 남기며 OAuth/공개 URL에는 대상 ID를 추가하지 않는다. 기존 hash-only 호출은 유지한다. 새로운 UI·IA·로그인 위치·데이터 이관·Part 배정/참여 정책은 추가하지 않는다.
@@ -2088,3 +2093,6 @@ a0b7e9959a12e8862a566b6a83285dc23929732c origin/main 일치·동일 SHA Producti
 Notion/figma-desktop 전용 세션 도구 노출0. 설정 변경 없이 지정된 http://127.0.0.1:3845/mcp에 MCP initialize 확인 시 PowerShell HttpIOException: Received an invalid chunk extension: '76-65-6E-74-3A-20-6D-65-73-73-61-67-65'. (InvalidResponse). 동일 endpoint의 HTTP1.0 curl 확인도 curl(56) Malformed encoding found in chunked-HTTP/1.1 200 OK/transfer-encoding:chunked/content-type:text/event-stream. JSON 초기화/원본 frame 읽기 성공으로 처리하지 않는다. Computer Use/Remote Figma/설정·재설치·원본 추정 우회 없음. 연결 복구 전 추가 시각 구현/형상 확정 불가.
 
 host 읽기 전용 RAM 관측 free2.78GiB/total15.95GiB; sandbox CIM은 접근 오류여서 host 확인 사용. 기존 actual shared-trait AI 실행기는 runtime import 전에8GiB admission을 요구하므로 모델을 실행하지 않았다. 준비 조건을 또 만들거나 같은 실패 추론을 반복하지 않았다. 실제 형상/자연 혼합 승인·갱신/버전/fallback 정책 및 운영 참가자 결과 접근, 실제 음악 권리/품질, 물리 마이크/청취/디자인 인수는 RAM만의 문제로 계산하지 않는다. 새로운 제품/UX/접근 정책을 임의 확정하지 않는다. 이번 관측으로 전체 독립 작업 완료를 입증하지 못했으며 Goal active 유지, 재검증 blocked audit 첫 회로 기록한다.
+### ed86b51 배포 증거 — 2026-10-13
+
+ed86b5120d992e9b2f47e224e9b16be0f150013b origin/main 일치·동일 SHA Production7040108954·Vercel success. Production HTML/JS200·index-BzC5wER3.js SHA256 0a164b821db85a64d969d1af38870be3540b4175fc8cebb726d4de2119c22630 local exact 유지. 기존 앱의 자산 검증이며 신규 준비 Google 복귀 계약의 실제 OAuth/App 활성화·실서비스 인수로 확대하지 않는다. Vercel API READY 원문 미확인. 기존 사용자 서버3파일/연구 보존.
