@@ -1,5 +1,12 @@
 # 단일 앱 서비스 연결 계약
 
+## 2026-10-13 R3 실제 catalog 반주 조회 연결
+
+executeProjectMix의 기본 반주 resolver를 서버 private registry 조회에 연결했다. 기존 immutable catalog arrangement 및 Project의 arrangement_id/같은6필드 Source를 service-only RPC로 대조하고 opaque objectId·기존9필드 decode receipt를 받는다. 기존 private Storage hash/MIME/size·남은 byte 예산으로 실제 Blob을 검증한 뒤 기존 native DSP에 전달한다. registry는 비어 있고 service-role trusted ingest만 insert할 수 있으며 공개 사용자 읽기/변경과 revision 덮어쓰기를 차단한다. 승인 없는 demo/곡/원본을 실제 catalog로 승격하지 않았다. 기존 native SQL pipeline QA를 기본 resolver로 변경해2/3/4 Part·반주 미등록/hash conflict/Storage 변조 거부·사용자 RPC/table 권한 차단·immutable 수정 차단·원본 보존/완료 실패 재시도/출력 동일성을 확인했다. QA Storage는 주입이며 native와 SQL/decoder는 실제 실행이다. build 통과·기존500KB 경고 유지. 운영 곡 ingest·서비스/host/runtime/자동 job scheduler·App 연결·실제 음악/청취/디자인은 미완료다. 기존 단계·예산·사용자3파일·미정 정책을 보존하고 실효 공수는 미측정이다.
+
+arrangement_audio migration은 project_participation 및 mix_completion_context 이후다. registry insert는 검증된 반주에 대한 trusted ingest 경계이고 음악 품질/사용 권한 승인이나 자동 업로드 완료가 아니다. 업데이트 대신 승인된 새 arrangement revision을 사용한다. 이 구현은 runtime 운영 설치/계정 생성/실서비스 활성화 허용을 뜻하지 않는다.
+
+
 ## 2026-10-13 R3 제출 원본→native Mix→저장 완료 연결
 
 서버 내부 executeProjectMix(jobId)를 기존 renderProjectMix/persistProjectMix에 연결했다. service-only ieum_get_mix_render_context가 현재 job snapshot·실제 제출 Track/검증 receipt·같은 Project Source·Part 목록을 제공하고, 기존 private Storage 스트림 검증을 재사용한 bounded loadVerifiedOriginal로 원본을 취득한다. 클라이언트 원본/특징/완료 주장은 받지 않으며 반주는 서버의 trusted loadBacking resolver가 실제 Source SHA와 맞는 Blob/receipt를 제공해야 한다. 승인 TEMP runtime에서 기존 DSP만 실행하고 immutable 업로드·실제 해독·최종 제출 snapshot 재검증 성공 뒤에만 완료한다. 기존 qa:native-mix를 확장해 실제 격리 PostgreSQL 제출/권한·FFmpeg receipt·native2/3/4 Part 출력→Storage 응답 주입→결과 decode→완료 transaction 및 원본 변조 차단·완료 DB 실패 시 mixing 유지·동일 출력 재시도/업로드 재사용·원본 불변을 검증했다. 기존 server Storage QA/build 통과·기존500KB 경고 유지. Storage/Auth 네트워크는 주입이며 실제 원격 서비스 완료로 계산하지 않는다. 자동 scheduler/운영 runtime 설치·capability 활성화는 없다. 실제 catalog backing 저장 위치/resolver 및 host 자원 제한·job trigger/스케줄러·Google/DB/Storage·App binding과 실기기/음악/디자인 인수는 미완료다. 기존 단계/예산/미정 정책·사용자 서버3파일은 보존하며 실효 공수는 미측정이다.
@@ -66,7 +73,7 @@ mix_completion_context 다음 mix_output_intents migration을 적용한다. 원�
 
 persistProjectMix({jobId,blob})는 worker 내부의 기존 WAV render output을 받는다. 사용자 ID/URL/길이/완료 주장을 받거나 별도 HTTP endpoint를 만들지 않는다. 명시적 byte 예산·stream hash 뒤 intent metadata를 대조하고 기존 Storage byte 검증/비공개 signed no-upsert uploader를 재사용한다. 업로드 오류/409는 저장 bytes가 동일하게 검증된 경우에만 이어가며 DB 실패/응답 유실 뒤 재시도에서도 같은 output ID를 사용한다. 실제 해독/완료 transaction이 마지막 성공 판정이고 완료 파일 유실/불일치에는 재생성·덮어쓰기·원본 삭제를 하지 않는다. signed token은 저장 metadata에 남기지 않고 service credential은 signed PUT에 보내지 않는다.
 
-Renderer 자체는 아직 없다. [node-web-audio-api 공식 문서](https://github.com/ircam-ismm/node-web-audio-api)는 Node용 Web Audio와 native 플랫폼·AudioBuffer 접근 caveat를 안내한다.2.2.0 별도 TEMP runtime 설치는 기존 설치 금지 제약으로 자동 승인 검토가 거부했으며 우회하지 않는다. 설치 시험은 사용자 응답 대기이며 새로운 서비스 계정/유료 경로 질문으로 바꾸지 않는다. 기존 PC/앱/모델 runtime은 보존한다. 실제 운영 runtime·Mix renderer/업로드 worker scheduler·Google/DB/Storage/App·실기기 청취는 계속 미완료이고 capability false를 유지한다.
+이하 내용은 runtime 시험 승인 전의 과거 기록이다. 현재 renderer 구현/검증은 문서 상단의2026-10-13 항목을 따른다. 당시 renderer 자체는 없었다. [node-web-audio-api 공식 문서](https://github.com/ircam-ismm/node-web-audio-api)는 Node용 Web Audio와 native 플랫폼·AudioBuffer 접근 caveat를 안내한다.2.2.0 별도 TEMP runtime 설치는 기존 설치 금지 제약으로 자동 승인 검토가 거부했으며 우회하지 않는다. 설치 시험은 사용자 응답 대기이며 새로운 서비스 계정/유료 경로 질문으로 바꾸지 않는다. 기존 PC/앱/모델 runtime은 보존한다. 실제 운영 runtime·Mix renderer/업로드 worker scheduler·Google/DB/Storage/App·실기기 청취는 계속 미완료이고 capability false를 유지한다.
 
 ## 2026-10-13 저장 Mix 완료 확정 연결 준비
 

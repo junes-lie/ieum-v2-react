@@ -4,6 +4,7 @@ import {createSupabaseAudioStorage} from './audioStorage.js'
 import {exactDecodedAudioReceipt} from './originalAudioVerification.js'
 import {renderProjectMix} from './mixRenderer.js'
 import {persistProjectMix} from './mixCompletion.js'
+import {createProjectMixBackingLoader} from './mixBacking.js'
 
 const fail=code=>new ServiceError('Mix 실행을 완료하지 못했어요. 제출 원본은 유지됩니다.',{code})
 const uuid=value=>typeof value==='string' && /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(value)
@@ -14,7 +15,7 @@ const referenceKeys=['songId','key','revision','duration','sourceSha256','backin
 // installation, scheduler activation or synthetic backing fallback here.
 export async function executeProjectMix(input,{env=process.env,fetchImpl=globalThis.fetch,rendererOptions,loadBacking}={}) {
   if(!input || Object.keys(input).length!==1 || !uuid(input.jobId))throw fail('INVALID_MIX_INPUT')
-  if(env.IEUM_DB_PROVIDER!=='supabase' || typeof loadBacking!=='function' ||
+  if(env.IEUM_DB_PROVIDER!=='supabase' || (loadBacking!==undefined && typeof loadBacking!=='function') ||
     !Number.isSafeInteger(rendererOptions?.maxInputBytes) || rendererOptions.maxInputBytes<=0)throw fail('MIX_RUNTIME_NOT_CONFIGURED')
   const jobId=input.jobId,configuration=readAuthConfiguration(env),storage=createSupabaseAudioStorage({env,fetchImpl})
   let response,context
@@ -42,7 +43,8 @@ export async function executeProjectMix(input,{env=process.env,fetchImpl=globalT
     bytes+=track.size
   }
   if(bytes>rendererOptions.maxInputBytes)throw fail('MIX_MEMORY_BUDGET_EXCEEDED')
-  const backing=await loadBacking(Object.freeze(structuredClone(source)),{maxBytes:rendererOptions.maxInputBytes-bytes})
+  const resolveBacking=loadBacking || createProjectMixBackingLoader({jobId,env,fetchImpl})
+  const backing=await resolveBacking(Object.freeze(structuredClone(source)),{maxBytes:rendererOptions.maxInputBytes-bytes})
   if(!(backing?.blob instanceof Blob) || backing.blob.size+bytes>rendererOptions.maxInputBytes)throw fail('MIX_MEMORY_BUDGET_EXCEEDED')
   exactDecodedAudioReceipt(backing.receipt,{size:backing.blob.size,sha256:source.backingSha256,contentType:backing.blob.type})
   // Download sequentially, validating the actual private Storage stream once.

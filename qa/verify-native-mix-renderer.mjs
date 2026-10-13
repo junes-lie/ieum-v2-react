@@ -91,7 +91,7 @@ const fetchImpl=async(url,request)=>{
     const name=url.split('/').at(-1),body=JSON.parse(request.body)
     if(mode==='completion-failure' && name==='ieum_complete_verified_mix')throw Error('Simulated DB outage')
     await db.exec('reset role;set role service_role')
-    const params={ieum_get_mix_render_context:[body.p_job_id],ieum_get_mix_completion_context:[body.p_job_id],
+    const params={ieum_get_mix_render_context:[body.p_job_id],ieum_get_mix_completion_context:[body.p_job_id],ieum_get_mix_backing:[body.p_job_id],
       ieum_prepare_mix_output:[body.p_job_id,body.p_sha256,body.p_size],ieum_complete_verified_mix:[body.p_job_id,body.p_object_id,body.p_sha256,body.p_duration]}[name]
     assert.ok(params)
     try{return Response.json((await db.query(`select public.${name}(${params.map((_,i)=>`$${i+1}`).join(',')}) as result`,params)).rows[0].result)}
@@ -115,13 +115,17 @@ try{
     create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
     grant usage on schema auth to authenticated;grant execute on function auth.uid() to authenticated;`)
   for(const user of users)await db.query('insert into auth.users values($1)',[user])
-  for(const name of ['project_tracks','verified_audio_receipts','mix_completion_context','mix_output_intents','mix_render_context'])
+  for(const name of ['project_tracks','project_participation','verified_audio_receipts','mix_completion_context','mix_output_intents','mix_render_context','arrangement_audio'])
     await db.exec(await readFile(new URL(`../server/migrations/20261013_${name}.sql`,import.meta.url),'utf8'))
   for(const count of [2,3,4]){
     await db.exec('reset role')
     const fixture=input(count),projectId=`native-${count}`,intents=[]
     await db.query('insert into public.ieum_projects(id,seed,song_id,project_key,audio_source_ref,part_count) values($1,$2,$3,$4,$5,$6)',
       [projectId,'same-seed','native-qa','original',JSON.stringify(fixture.project.audioSourceRef),count])
+    const arrangementId=`arrangement-${count}`,backingObject=`aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa${count}`
+    await db.query('insert into public.ieum_catalog_arrangements(id,song_id,project_key,audio_source_ref,parts) values($1,$2,$3,$4,$5)',
+      [arrangementId,'native-qa','original',JSON.stringify(fixture.project.audioSourceRef),JSON.stringify(fixture.project.partIds.map(id=>({id,requiredRange:{lowMidi:60,highMidi:72}})))])
+    await db.query('update public.ieum_projects set arrangement_id=$1 where id=$2',[arrangementId,projectId])
     for(let i=0;i<count;i++){
       const partId=`part-${i}`,receipt=voices[i].receipt
       await db.query('insert into public.ieum_project_parts(project_id,part_id,assigned_user_id,required_range) values($1,$2,$3,$4)',[projectId,partId,users[i],'{}'])
@@ -137,7 +141,20 @@ try{
     }
     await db.exec('reset role');const job=(await db.query('select * from public.ieum_mix_jobs where project_id=$1',[projectId])).rows[0]
     await db.exec('set role authenticated');await assert.rejects(db.query('select public.ieum_get_mix_render_context($1)',[job.id]),e=>e.code==='42501')
-    const pipelineOptions={env,fetchImpl,rendererOptions:options,loadBacking:async source=>{assert.ok(Object.isFrozen(source));assert.equal(source.backingSha256,backing.receipt.sha256);return backing}}
+    await assert.rejects(db.query('select public.ieum_get_mix_backing($1)',[job.id]),e=>e.code==='42501')
+    await assert.rejects(db.query('select * from public.ieum_arrangement_audio'),e=>e.code==='42501')
+    const pipelineOptions={env,fetchImpl,rendererOptions:options}
+    await assert.rejects(executeProjectMix({jobId:job.id},pipelineOptions),e=>e.code==='MIX_BACKING_UNAVAILABLE')
+    await db.exec('reset role')
+    await db.exec('begin')
+    await db.query('insert into public.ieum_arrangement_audio(arrangement_id,object_id,audio_source_ref,receipt) values($1,$2,$3,$4)',
+      [arrangementId,backingObject,JSON.stringify(fixture.project.audioSourceRef),JSON.stringify({...backing.receipt,sha256:'d'.repeat(64)})])
+    await assert.rejects(executeProjectMix({jobId:job.id},pipelineOptions),e=>e.code==='MIX_BACKING_UNAVAILABLE')
+    await db.exec('rollback;reset role')
+    await db.query('insert into public.ieum_arrangement_audio(arrangement_id,object_id,audio_source_ref,receipt) values($1,$2,$3,$4)',
+      [arrangementId,backingObject,JSON.stringify(fixture.project.audioSourceRef),JSON.stringify(backing.receipt)])
+    files.set(backingObject,Buffer.from(await backing.blob.arrayBuffer()))
+    await assert.rejects(db.query('update public.ieum_arrangement_audio set object_id=gen_random_uuid() where arrangement_id=$1',[arrangementId]),e=>e.code==='PT409')
     mode='source-mismatch';const before=uploads
     await assert.rejects(executeProjectMix({jobId:job.id},pipelineOptions),e=>e.code==='UPLOAD_OBJECT_MISMATCH');assert.equal(uploads,before)
     mode='completion-failure';await assert.rejects(executeProjectMix({jobId:job.id},pipelineOptions),e=>e.code==='PROJECT_UNAVAILABLE')
