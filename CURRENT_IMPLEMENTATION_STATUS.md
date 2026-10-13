@@ -1,3 +1,10 @@
+## 2026-10-13 R2 — 05A 보컬 대상 및 재진입 오류 마감
+
+선택한 ID가 catalog에 없으면 Luna로 바꾸던 오류를 제거했다. 동일 기존 05A 안에서 확인 불가 상태를 표시하며 다른 사람의 Identity·Sample·저장 동작을 제공하지 않는다. prototype 상속 키도 보컬 데이터로 처리하지 않는다. 선택한 대상과 기존 history context를 새로고침/뒤로가기에 유지한다. 새 IA·화면·프로필 데이터·디자인 정책을 추가하지 않았다.
+
+qa:vocal-profile-target의 실제 기존 App/native history/reload/back 검증과 관련 single-app-render QA 통과. Profile·Track·Project 원본 불변, 알려진 보컬의 기존 화면/저장 동작 유지. 빈 격리 demo bootstrap으로 수행한 navigation QA이며 실제 후보 자료·물리 음성·디자인 인수가 아니다. QA 초기 HTML의 bare React import 오류는 Vite virtual module 진입으로 수정했으며 최종 실행 오류0. production build45modules/index-1pEtYa4t.js 통과, 기존500KB 경고 유지. Production 인수는 push 후 별도 기록한다. 사용자 서버3파일/연구 변경은 포함하지 않는다.
+
+이전 R5 5e80cb61cf5ab93acd42243cc61d8d09f0fed0a6은 exact SHA Production7039116274·Vercel success, Production index-CGQnGpQB.js SHA256 fa4ccfc3ace4cc7c467427a7af87bd0c99a269e0a74e4a65702913b082e2dee1 로컬 일치 확인. Vercel API READY 원문·실서비스·실제 AI/승인 형상 인수는 별도 미확인이다.
 ## 2026-10-13 R5 본인 원격 이미지의 기존 React 리소스 연결
 
 기존 loadAiVoiceFields는 aiVoiceLayer 유무만 검사했으며 저장 제출 상태를 판정하지 않았다. 기존 submittedProjectTracks를 재사용해 실제 final Track만 읽고 caller 입력은 첫 await 전에 clone한다. legacy final(기존 kind/status 없음) 규칙은 유지한다. 기존 React 바이닐도 현재 제출 상태/원본·출력 hash와 맞는 필드만 GPU에 전달하고 fieldSignature로 갱신해 async 재조회 전의 오래된 AI texture 재사용을 막는다. Review 임시 envelope/기존 motion·제출수/Mix/원본/형상 규칙은 변경하지 않는다. 같은 native QA의 실제 React/WebGL에서 성공 제출 uFieldEnabled1, Review/Draft/Processing/Failed0, 오류0 및 조회중 caller 변경 차단이 통과했다. 테스트 texture는 AI 생성/승인 증거가 아니다.

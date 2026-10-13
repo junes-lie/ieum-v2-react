@@ -22,9 +22,24 @@ try {
   const preferencesSource=await readFile(new URL('../src/VoicePreferenceChoices.jsx',import.meta.url),'utf8')
   await writeFile(preferencesTemp,(await transformWithOxc(preferencesSource,'VoicePreferenceChoices.jsx',{jsx:{runtime:'classic'}})).code.replace('./Icons.jsx','./.qa-single-app-icons.mjs'))
   const transformed=await transformWithOxc(source,'App.jsx',{jsx:{runtime:'classic'}})
-  await writeFile(temp,transformed.code.replace('./Icons.jsx','./.qa-single-app-icons.mjs').replace('./VoicePreferenceChoices.jsx','./.qa-single-app-preferences.mjs'))
-  const {default:App,Workspace,Recorder,Complete,Home,Detail,PersonalArea}=await import(temp.href)
+  await writeFile(temp,transformed.code.replace('./Icons.jsx','./.qa-single-app-icons.mjs').replace('./VoicePreferenceChoices.jsx','./.qa-single-app-preferences.mjs')+'\nexport {OtherVocalProfile as OtherVocalProfileQA,resolveVocalProfile,initialVocalProfileId}\n')
+  const {default:App,Workspace,Recorder,Complete,Home,Detail,PersonalArea,OtherVocalProfileQA,resolveVocalProfile,initialVocalProfileId}=await import(temp.href)
   const noop=()=>{}
+  assert.equal(initialVocalProfileId({ieumScreen:'vocal-profile',selectedVocalId:'min'}),'min','Reload retains the selected person')
+  assert.equal(initialVocalProfileId({ieumScreen:'vocal-profile',selectedVocalId:'unknown-person'}),'unknown-person','Unknown targets must not silently become another person')
+  assert.equal(initialVocalProfileId({ieumScreen:'vocal-profile',selectedVocalId:null}),null)
+  assert.equal(initialVocalProfileId(undefined),'luna','Existing initial demo selection is unchanged without a target')
+  const known=resolveVocalProfile('min')
+  assert.equal(known.id,'min')
+  for(const id of ['unknown-person','constructor','__proto__',null]){
+    assert.equal(resolveVocalProfile(id),null)
+    const unavailable=renderToStaticMarkup(React.createElement(OtherVocalProfileQA,{vocal:resolveVocalProfile(id),back:noop}))
+    assert.ok(unavailable.includes('선택한 보컬 프로필을 확인할 수 없어요.'))
+    assert.ok(!unavailable.includes('voice-identity') && !unavailable.includes('voice-sample-block') && !unavailable.includes('toggle-vocal-save'))
+  }
+  const selected=renderToStaticMarkup(React.createElement(OtherVocalProfileQA,{vocal:known,back:noop,toggleSave:noop,setupVoice:noop}))
+  assert.ok(selected.includes(known.name) && selected.includes('toggle-vocal-save'))
+  console.log('PASS Other Vocal target: selected history ID retained, unknown/inherited IDs show unavailable inside existing 05A, known profile/save action preserved. Node render, not actual browser refresh.')
   const parts=[{id:'lead',name:'Lead',color:'#3b82f6',status:'ready',participantId:'jisun',participant:'나'},{id:'harmony',name:'Harmony',color:'#f16f61',status:'open'},{id:'lower',name:'Lower',color:'#2eb6ad',status:'open'}]
   const project={id:'qa-custom-trio',seed:'qa-trio-seed',parts,partCount:3,totalParts:3,key:'E minor',title:'QA Trio'}
   const song={id:'qa-song',title:'QA Song',artist:'QA Artist'}

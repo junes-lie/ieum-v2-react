@@ -53,6 +53,14 @@ function writeNavigationHint(key, value) {
   try { sessionStorage.setItem(key,value) } catch { /* React keeps this session's selection. */ }
 }
 
+function resolveVocalProfile(id){
+  return typeof id==='string' && Object.hasOwn(PERSON_BY_ID,id)?PERSON_BY_ID[id]:null
+}
+function initialVocalProfileId(state){
+  return state?.ieumScreen==='vocal-profile' && Object.hasOwn(state,'selectedVocalId')?
+    (typeof state.selectedVocalId==='string'?state.selectedVocalId:null):'luna'
+}
+
 const PART_CATALOG = [
   { id: 'soprano', name: 'Soprano', ko: '소프라노', color: '#3b82f6', range: 'C4–F5', participantId:'yoonseul', participant: '윤슬', status: 'accepted', duration: null },
   { id: 'alto', name: 'Alto', ko: '알토', color: '#f16f61', range: 'G3–C5', participantId:'doyoon', participant: '도윤', status: 'accepted', duration: null },
@@ -1052,6 +1060,10 @@ function MatchDetail({ vocal, back, openProfile, invite, invitedVocalIds, part, 
 
 function OtherVocalProfile({ vocal, back, saved, toggleSave, sampleUrl, sampleDuration, profile, setupVoice }) {
   const [playing,setPlaying] = useState(false)
+  if(!vocal)return <div className="screen candidate-screen other-vocal-screen">
+    <TopBar title="VOCAL PROFILE" back={back} meta="ME ↔ VOCAL"/>
+    <main><section className="empty-state" role="status"><p>선택한 보컬 프로필을 확인할 수 없어요.</p></section></main>
+  </div>
   const shared = sharedVoicePreferences(profile,vocal)
   const compatibility = [
     `나 ${profile?.range || '미등록'} · ${vocal.name} ${vocal.range || '미등록'}`,
@@ -1552,7 +1564,7 @@ function PersonalArea({ mainProject = PROJECT, collectionContext, type, go, edit
 
 export default function App() {
   const persisted = useRef(loadUserState()).current
-  const [screen,setScreen] = useState(() => new URLSearchParams(location.search).get('design')==='figma' ? 'workspace' : 'home')
+  const [screen,setScreen] = useState(()=>window.history?.state?.ieumScreen==='vocal-profile'?'vocal-profile':new URLSearchParams(location.search).get('design')==='figma'?'workspace':'home')
   const [history,setHistory] = useState([])
   const [voiceEditMode,setVoiceEditMode]=useState(null)
   const [voiceReturnScreen,setVoiceReturnScreen]=useState('detail')
@@ -1594,7 +1606,7 @@ export default function App() {
   const [mainKeyLocked,setMainKeyLocked]=useState(Boolean(persisted.mainKeyLocked))
   const [joinedPart,setJoinedPart]=useState(persisted.joinedPart || USER_PART_ID)
   const [recordingPart,setRecordingPart] = useState(USER_PART_ID)
-  const [selectedVocalId,setSelectedVocalId] = useState('luna')
+  const [selectedVocalId,setSelectedVocalId] = useState(()=>initialVocalProfileId(window.history?.state))
   const [selectedMatchVocalId,setSelectedMatchVocalId] = useState(null)
   const [selectedSongId,setSelectedSongId] = useState(SONG_ID)
   const [selectedProjectId,setSelectedProjectId] = useState(null)
@@ -1622,7 +1634,7 @@ export default function App() {
   const selectedSong = SONGS.find(song=>song.id===selectedSongId) || SONGS[0]
   const songSaved = songSaves.some(entry=>entry.songId===selectedSong.id)
   const layers = PARTS.map(part => projectTracks[part.id]?.layer || null)
-  const selectedVocal = PERSON_BY_ID[selectedVocalId] || PERSON_BY_ID.luna
+  const selectedVocal = resolveVocalProfile(selectedVocalId)
   const invitedPerson = PERSON_BY_ID[invitedVocalId] || PERSON_BY_ID.luna
   const selectedVocalTrack = Object.values(projectTracks).find(track => (track.participantId || personFromName(track.participant)?.id) === selectedVocalId)
   const activeCreatedProject = createdProjects.find(project=>project.id===activeCreatedProjectId) || null
@@ -1822,7 +1834,7 @@ export default function App() {
       if(event.state?.selectedProjectId!==undefined)setSelectedProjectId(event.state.selectedProjectId)
       if(event.state?.activeCreatedProjectId!==undefined)setActiveCreatedProjectId(event.state.activeCreatedProjectId)
       if(event.state?.finderPartId)setFinderPartId(event.state.finderPartId)
-      if(PERSON_BY_ID[event.state?.selectedVocalId])setSelectedVocalId(event.state.selectedVocalId)
+      if(event.state?.selectedVocalId===null || typeof event.state?.selectedVocalId==='string')setSelectedVocalId(event.state.selectedVocalId)
       if(event.state?.selectedMatchVocalId===null || PERSON_BY_ID[event.state?.selectedMatchVocalId])setSelectedMatchVocalId(event.state.selectedMatchVocalId)
       if(typeof event.state?.createDraftKey==='string')setCreateDraftKey(event.state.createDraftKey)
       if(event.state?.createProjectSongId===null || SONGS.some(song=>song.id===event.state?.createProjectSongId))setCreateProjectSongId(event.state.createProjectSongId)
@@ -2019,7 +2031,7 @@ export default function App() {
   else if (screen==='voice') content=<VoiceSetup key={voiceEditMode || "setup"} existing={profile} editMode={voiceEditMode} songSaves={songSaves} go={go} back={()=>{setVoiceEditMode(null);back(voiceReturnScreen)}} complete={completeProfile}/>
   else if (screen==='workspace' || (screen==='complete' && !activeComplete)) content=<Workspace go={go} project={activeProject} song={activeSong} isCreated={Boolean(activeCreatedProject)} ownerPartId={activeCreatedProject?.ownerPartId || joinedPart} findVocal={openFinder} joined={joined} invited={invited} invitedPerson={invitedPerson} candidateAccepted={candidateAccepted} candidateArrivalStatus={candidateArrivalStatus} projectTracks={activeTracks} layers={activeLayers} recordPart={recordPart} projectLiked={activeProjectLiked} toggleProjectLike={toggleActiveProjectLike} openVocalProfile={openVocalProfile} mix={activeMix} mixStatus={activeMixStatus} retryAutoMix={retryAutoMix} completionDelayed={delayedProjectIds.includes(activeProject.id)} hasDraft={Boolean(draftKeys[`${activeProject.id}:${activeCreatedProject?.ownerPartId||joinedPart}`])}/>
   else if (screen==='finder') content=<Finder project={activeProject} song={activeSong} tracks={activeTracks} profile={profile} back={()=>back('workspace')} preferences={finderPreferences[finderContextKey]} updatePreferences={patch=>setFinderPreferences(current=>({...current,[finderContextKey]:{...current[finderContextKey],...patch}}))} invite={canSendInvite?invite:null} invitedVocalIds={activeCreatedProject?(activeFinderPart?.invitations||[]).map(item=>item.vocalId):(invited?[invitedVocalId]:[])} part={activeFinderPart} vocalSaves={vocalSaves} toggleVocalSave={toggleVocalSave} openVocalProfile={openVocalProfile} selectedVocalId={selectedMatchVocalId} setSelectedVocalId={setSelectedMatchVocalId}/>
-  else if (screen==='vocal-profile') content=<OtherVocalProfile profile={profile} setupVoice={()=>go('voice')} vocal={selectedVocal} back={()=>back('collection')} saved={vocalSaves.some(item=>item.vocalId===selectedVocalId)} toggleSave={toggleVocalSave} sampleUrl={selectedVocal.sampleUrl} sampleDuration={selectedVocal.sampleDuration}/>
+  else if (screen==='vocal-profile') content=<OtherVocalProfile profile={profile} setupVoice={()=>go('voice')} vocal={selectedVocal} back={()=>back('collection')} saved={vocalSaves.some(item=>item.vocalId===selectedVocalId)} toggleSave={toggleVocalSave} sampleUrl={selectedVocal?.sampleUrl} sampleDuration={selectedVocal?.sampleDuration}/>
   else if (screen==='record') content=<Recorder go={go} submit={submit} onRecordingStart={()=>{touchProjectActivity(activeProject.id);if(!activeCreatedProject)setMainKeyLocked(true);if(activeCreatedProject)setCreatedProjects(current=>current.map(project=>project.id===activeProject.id?{...project,keyLocked:true}:project))}} partId={recordingPart} projectTracks={activeTracks} layers={activeLayers} project={{...activeProject,songTitle:activeSong.title,recordingDuration:activeProject.audioSource?.duration || activeSong.duration.split(":").reduce((total,value)=>total*60+Number(value),0)}} parts={activeParts} onDraftChange={present=>setDraftKeys(current=>({...current,[`${activeProject.id}:${recordingPart}`]:present}))}/>
   else if (screen==='complete') content=<Complete go={go} project={activeProject} song={activeSong} mix={activeMix} layers={activeLayers} projectTracks={activeTracks} projectLiked={activeProjectLiked} toggleProjectLike={toggleActiveProjectLike} openVocalProfile={openVocalProfile}/>
   else if (['projects','collection','my'].includes(screen)) content=<PersonalArea mainProject={mainProject} collectionContext={collectionContext} type={screen} go={target=>target==='create-project'?startCreateProject():go(target)} createdProjectTracks={createdProjectTracks} createdMixes={createdMixes} toggleProjectById={id=>setProjectLikes(current=>current.some(item=>item.projectId===id)?current.filter(item=>item.projectId!==id):[...current,{projectId:id,savedAt:new Date().toISOString()}])} editVoice={mode=>{setVoiceEditMode(mode);go("voice")}} updatePreferences={async preferences=>{await saveTrack({id:PROFILE_PROJECT_ID+":preferences",projectId:PROFILE_PROJECT_ID,kind:"voice-preferences",preferences});setProfile(current=>({...current,...preferences}))}} openMainWorkspace={openMainWorkspace} openSong={openSong} openCreatedProject={openCreatedProject} joined={joined} createdProjects={createdProjects} projectLikes={projectLikes} vocalSaves={vocalSaves} songSaves={songSaves} toggleProjectLike={toggleProjectLike} toggleVocalSave={toggleVocalSave} toggleSongSave={toggleSongSave} openVocalProfile={openVocalProfile} profile={profile} layers={layers} trackCount={Object.keys(projectTracks).length} mix={mix} readyForMix={readyForMix} resetDemo={resetDemo} delayedProjectIds={delayedProjectIds}/>
