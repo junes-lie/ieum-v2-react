@@ -1,6 +1,8 @@
 import {ServiceError} from '../src/projectService.js'
 import {validatePersonalIdentityResult,buildVoiceTraitSnapshot,buildVoiceRepresentationInputs} from '../src/voiceIdentityContract.js'
 import {readAuthConfiguration,verifyRequestUser} from './auth.js'
+import {trackVoiceLayerRequest,trackVoiceLayerErrorResponse} from './trackVoiceLayers.js'
+import {projectVoiceRecordInputRequest,projectVoiceRecordInputErrorResponse} from './projectVoiceRecordInputs.js'
 const fail=code=>new ServiceError('Voice Identity 결과를 확인하지 못했어요. 기존 원본은 유지됩니다.',{code})
 const text=value=>typeof value==='string' && value.trim() && value.length<=128 && !/[\x00-\x1f]/.test(value)
 const sha=value=>typeof value==='string' && /^[a-f0-9]{64}$/.test(value)
@@ -62,4 +64,16 @@ export function personalIdentityErrorResponse(error){
     INVALID_IDENTITY_RESULT:400,IDENTITY_RESULT_NOT_FOUND:404,IDENTITY_REVISION_CONFLICT:409,IDENTITY_UNAVAILABLE:503,INVALID_IDENTITY_RESPONSE:503,METHOD_NOT_ALLOWED:405}
   const code=Object.hasOwn(statuses,error?.code)?error.code:'IDENTITY_UNAVAILABLE'
   return Response.json({error:{code}},{status:statuses[code],headers})
+}
+// Reuse the existing deployed function instead of adding serverless functions.
+// The original personal-result request/response contract remains the default.
+export async function voiceIdentityRouteRequest(request,options={}){
+  const url=new URL(request.url),kinds=url.searchParams.getAll('kind'),kind=kinds[0]
+  if(kinds.length===1 && ['track-layer','project-record'].includes(kind)){
+    url.searchParams.delete('kind')
+    const scoped=new Request(url,request)
+    try{return kind==='track-layer'?await trackVoiceLayerRequest(scoped,options):await projectVoiceRecordInputRequest(scoped,options)}
+    catch(error){return kind==='track-layer'?trackVoiceLayerErrorResponse(error):projectVoiceRecordInputErrorResponse(error)}
+  }
+  return personalIdentityRequest(request,options)
 }

@@ -18,6 +18,10 @@
 
 ### 실제 진행과 다음 gate
 
+2026-10-13 R5 독립 계보 연결: 원격 received Track layer의 실제 submitted analysis/개인 ref/traits/원본 byte 검증과 불변 저장, 기존2–4 Part/Project Seed에 연결된 explicit 레이어 ref 기반 Project input의 CAS/과거 snapshot 저장 및 private 인증 조회를 구현했다. 원격 저장을 위해 별도 renderer/모델·앱을 만들지 않고 기존 분석/contract/controls/storage를 재사용했다. qa:remote-voice-lineage의 실제 짧은 decoder→격리 SQL Profile/Track→개인→레이어→2/3/4 Project/session 조회·실패/원본/Mix 분리 통과. 운영 migration/AI/실서비스/자연 혼합·식별 지각·시각 승인/정책은 기존 미완료다. 원격 binding 전체나 R5 전체 완료로 계산하지 않는다. 예산/전체 단계/완료 증거 보존·실효 공수 미측정. 다음은 실제 결과를 worker/기존 앱 소비까지 연결할 선행 gate와 남은 RAM 독립 경계를 확인한다.
+
+100fadfd00d265500364636af9e224c44223ac2a 배포: exact SHA Production7037604875/Vercel success, Production traits API401/private no-store·최신 JS200/hash 로컬 일치. 다음 RAM 독립 연결 대상은 원격 확정 Track 레이어/result와 Project 결합 입력의 immutable 계보다. 현재 로컬 저장/React 소비는 존재하지만 새 원격 개인 registry만으로 Track 레이어/Project 서버 저장 완료를 선언하지 않는다. 기존 계약·실제 submitted Track 분석·개인 결과/traits를 재사용하고 그래픽 received/stored와 제출/Mix/시각 승인을 분리한다. actual AI/승인 정책/실서비스 gate를 우회하지 않으며 기존 전체 단계 완료 판정은 보존한다.
+
 2026-10-13 R5 개인→바이닐 공통 특징의 원격 연결: 본인 immutable received result traits 조회와 loadRemoteSubmittedVoiceControls를 기존 Profile/Track/source 계약에 연결했다. 같은 traitDigest·특징을 개인 형상/바이닐 흐름의 서로 다른 표현에 전달하고 실제 Track 입력은 vinyl 쪽에만 연결한다. 기존 provisional mapping 재사용이며 silhouette/AI 결과 복사·형상 승인·갱신 정책 확정이 아니다. 실제 격리 SQL/API/session의 owner/digest/version·변조/await snapshot·재현 QA/build 통과. runtime/OS/대형 AI 변경 없이 독립 데이터 연결을 진행했고 실제 AI/운영/자연 혼합/시각 인수 gate는 남는다. personal_identity_traits migration은 personal_identity_results 이후 적용하며 원격 미적용이다. 실제 공수 미측정·기존 예산 유지.
 
 de2e73ee5d8fb02cc636df81b0ca7b872d81fd2e Mix 종료 변경의 exact SHA Production7037486968 및 Vercel Deployment has completed 확인. 실제 운영 서비스/음악 인수와 구분한다.

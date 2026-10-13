@@ -1,4 +1,16 @@
+## 2026-10-13 R5 원격 Track 레이어·Project 입력의 불변 계보
+
+storeReceivedTrackVoiceLayer는 trusted worker가 전달한 생성 결과를 실제 submitted Track/본인 개인 결과의 exact revision·저장 traits·서버 분석에 연결한다. private Storage 원본의 hash/MIME/길이와 기존 AI layer 계약을 검사하고 input/controls/개인 ref/모델·버전/출력 hash/PNG bytes를 불변 레이어 revision으로 보존한다. 입력 예산과512×512 PNG header를 확인한 뒤 원본을 다운로드하며 서명/header fixture를 실제 이미지 decode/AI 실행 증거로 간주하지 않는다. service-only context/등록 RPC와 본인 exact ref 조회 API를 분리한다. 생성·stored와 시각 승인·Track 제출·Mix 성공은 별개다.
+
+persistRemoteProjectVoiceRecordInput은 기존 Project Seed/실제2–4 Part·실제 제출 분석과 명시적인 저장 레이어 ref로 기존 buildProjectRecordInput을 만들고 revision CAS로 저장한다. 레이어 미지정은 pending이며 최신 결과를 자동 선택하지 않는다. 기존4필드 layer ref도 재사용한다. 과거 partial input은 후속 제출/생성으로 덮지 않는다. private exact input 조회는 Project owner/현재 배정 참여자용이며 공개 공유/새 Profile 정책/앱 활성화를 확정하지 않는다. 기존 /api/me/voice-identity의 kind=track-layer / kind=project-record 명시 조회로 연결해 배포 함수12개를 유지한다. 기존 기본 개인 ref/traits 조회 계약은 유지하고 원문 사용자 ID·PNG bytes를 일반 응답에 노출하지 않는다. 운영 migration/계정/서비스 설정은 실행하지 않았다.
+
+qa:remote-voice-lineage에서 기존 실제 FFmpeg/0.5초 시험 WAV→v5 분석→격리 SQL Profile 등록·직접 제출→개인 stored 결과/traits→9개 레이어→2/3/4 Part Project input→인증 session 조회를 검증했다. owner/다른 개인 ref/충돌/CAS/추가 Part·교차 layer/원본 변조/logout/예산/잘못된 이미지 크기 거부, exact 재시도/과거 ref·조회 권한/직접 DB 접근 거부·immutable bytes 및 Project/Track/Mix 전체 snapshot 유지 통과. Mix는 queued이며 full graphic flags를 성공한 Mix로 승격하지 않는다. PNG는 최소 header fixture, Auth/Storage HTTP는 주입이고 실제 AI/PNG decode·원격 사용자/서비스·자연 혼합/실기기 인수가 아니다.
+
+초기 SQL 조건은42601(syntax error at end of input)였고 CASE 괄호를 보완했다. 초기 CAS QA의 직접 service_role update는 격리 RLS로0행이라 변경이 발생하지 않았으며 관리자 시험 writer로 명시 revision+1 후 거부를 검증했다. QA 제출키도 Project별로 구분해 IDEMPOTENCY_CONFLICT를 해결했다. 운영 원본/파일/계획 단계는 되돌리지 않았다. 새 runtime/AI/OS 변경 없이 진행했고 build43modules/index-gUG8GOMY.js552.79KB·기존500KB 경고 유지. 사용자3파일·미커밋 연구는 별도 보존한다.
+
 ## 2026-10-13 R5 원격 개인 특징 → 서로 다른 Identity/바이닐 입력
+
+배포 확인: 100fadfd00d265500364636af9e224c44223ac2a main/origin push, exact SHA의 Production7037604875 및 Vercel success/Deployment has completed. Production include=traits API 익명401 AUTH_REQUIRED/private no-store. 최신 index-gUG8GOMY.js200 SHA256eb99e97a4f966d80a155deea3c9008934a6b6e087dae224341634b7c3b44dda0 로컬 build 일치. Vercel API literal READY·인증 사용자/실제 서버 migration/AI/시각 인수는 미확인이다. sandbox CIM 조회는 “클라이언트에서 CIM 리소스에 대한 액세스를 사용할 수 없습니다.”였고 읽기 전용 권한으로 확인한 free3.35GiB/total15.95GiB는 대형 AI admission8GiB 미달이다. 작은 코드/SQL 작업의 중단 사유로 확대하지 않는다.
 
 본인 exact received result의 저장된 shared traits를 기존 인증 API에서 include=traits로 명시적으로 조회할 수 있다. 기본 ref 조회 응답은 유지하며 manifest/Blob/원문 user ID는 반환하지 않는다. 서버는 immutable traits의 digest·개인 입력·Profile revision·generator version을 다시 대조한다. 추가 personal_identity_traits migration은 본인 authenticated RPC만 허용하며 운영 적용은 하지 않았다.
 

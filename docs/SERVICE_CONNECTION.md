@@ -1,5 +1,13 @@
 # 단일 앱 서비스 연결 계약
 
+## 2026-10-13 원격 received Track layer·Project record 입력
+
+Migration 순서: profile_source_registration + personal_identity_results/source_binding/traits + verified_audio_receipts + submitted_track_analysis → track_voice_layers → project_voice_record_inputs. 운영에 적용하지 않았다. 레이어 테이블은 실제 submitted Track/본인 개인 결과 FK 및 immutable PNG/result revision이며 일반 사용자/service_role 직접 접근을 차단하고 trusted context/store RPC만 service_role에 제공한다. storeReceivedTrackVoiceLayer는 저장 분석·개인 traits로 기존 Track input/controls를 재구성하고 private 원본 bytes를 명시 maxOriginalBytes 안에서 취득·검증한다. received output은 저장 계약일 뿐 모델 실행/시각 승인 증명은 아니다.
+
+Project input은 기존4필드 ref 또는 inputDigest가 포함된5필드 ref를 명시적으로 대조하며 최신 결과를 자동 선택하지 않는다. 실제 제출 Track 분석·원본/receipt와 exact 레이어 ref, 같은 Seed/2–4 Part/CAS에 묶어 저장하고 기존 partial input은 유지한다. Project input GET은 owner/현재 배정 참여자의 private 내부 조회이며 공개 공유/비참여 상세용 최종 서비스 정책은 활성화하지 않았다. 기존 /api/me/voice-identity?kind=track-layer&projectId&partId&id&revision은 본인6필드 stored ref metadata, kind=project-record&projectId&inputDigest는3필드 과거 입력 metadata를 반환한다. 기본 개인 결과/traits 조회는 유지하며 배포 함수 수12개를 늘리지 않는다. private no-store/Auth이고 raw user ID/원본/PNG bytes는 조회에 없다. client transport는 기존 session scope에서 getTrackVoiceLayer/getProjectVoiceRecord를 사용한다.
+
+qa:remote-voice-lineage는 기존 isolated SQL/FFmpeg 경로를 명시해야 하며 설치하지 않는다. 실제 짧은 WAV 분석과 SQL2/3/4 Part의 Profile 등록/Track 제출/received 결과/과거·현재 입력/session 조회·CAS/owner/변조/예산/immutable/원본·queued Mix 보존을 확인했다. Auth/Storage 네트워크 및 PNG는 fixture이고 다중 원격 DB session·실제 AI/PNG decode·사용자/서비스 인수는 아니다. App capability/Google/DB/Storage 활성화·새 worker/scheduler·임의 AI/형상·선택/갱신 정책은 없다.
+
 ## 2026-10-13 개인 공통 특징의 원격 Track/바이닐 입력 연결
 
 GET /api/me/voice-identity?id=…&revision=…&include=traits는 본인 저장 결과의4필드 metadata/ref/traits를 private no-store로 반환한다. 기본2개 query의3필드 응답은 유지하며 다른 include/추가 query는 거부한다. 새로운 authenticated-only ieum_get_owned_personal_identity_traits RPC는 기존 exact owner ref를 먼저 확인한다. 서버가 traits digest/Profile revision/personal input/generator version을 검증하고 원문 사용자 ID/manifest/PNG bytes는 응답하지 않는다. migration은 personal_identity_results 뒤이며 원격에 적용하지 않았다.
