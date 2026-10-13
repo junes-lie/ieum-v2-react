@@ -12,7 +12,7 @@ const server=await createServer({root,configFile:false,cacheDir:path.join(os.tmp
   esbuild:{jsx:'transform'},server:{host:'127.0.0.1',port:0,strictPort:false},plugins:[{
     name:'isolated-identity-consumer-qa',
     resolveId(id){if(id==='/qa-react-entry.js')return '\0ieum-consumer-qa'},
-    load(id){if(id==='\0ieum-consumer-qa')return "import React from 'react';import {createRoot} from 'react-dom/client';import {VoiceIdentityQA,ResonanceRecordQA} from '/src/App.jsx';export {React,createRoot,VoiceIdentityQA,ResonanceRecordQA}"},
+    load(id){if(id==='\0ieum-consumer-qa')return "import React from 'react';import {createRoot} from 'react-dom/client';import {VoiceIdentityQA,ResonanceRecordQA,Home,PersonalArea} from '/src/App.jsx';export {React,createRoot,VoiceIdentityQA,ResonanceRecordQA,Home,PersonalArea}"},
     transform(code,id){if(id.endsWith('/src/App.jsx'))return `${code}\nexport {VoiceIdentity as VoiceIdentityQA,ResonanceRecord as ResonanceRecordQA}`},
     configureServer(instance){instance.middlewares.use((request,response,next)=>{
       if(request.url==='/'){response.setHeader('Content-Type','text/html');response.end('<!doctype html><title>Private Identity storage QA</title>');return}
@@ -136,9 +136,42 @@ try{
   assert.deepEqual(flags,[0,0,0,0],'Wrong Project must not reuse old personal styles')
   await page.evaluate(()=>{window.consumerQa.identityRoot.unmount();window.consumerQa.recordRoot.unmount()})
   await page.waitForFunction(()=>window.consumerURLQa.live.size===0)
+  // The same immutable Project ref must reach existing Home and Collection
+  // covers; no graphic, layout or automatic selection policy is introduced.
+  for(const route of ['home','created-collection','main-projects','main-collection']){
+    await page.evaluate(async({route,graphRef})=>{
+      const {React,createRoot,Home,PersonalArea}=await import('/qa-react-entry.js')
+      const project={id:graphRef.projectId,seed:'isolated-seed',voiceRecordRef:graphRef,
+        title:'QA Project',name:'QA Session',songId:'a-thousand-years',partCount:2,
+        parts:[{id:'lead',name:'Lead',status:'open'},{id:'chorus',name:'Chorus',status:'open'}]}
+      // Main routes have the fixed catalog id; use the fixture as an explicit
+      // graphic consumer model only. Counts and participation are not inferred.
+      const mainId='ieum-thousand-years-v7'
+      const noop=()=>{}
+      document.body.innerHTML='<style>.record{position:relative;width:240px;height:240px}.record canvas{position:absolute;width:240px;height:240px}</style><div id="route"></div>'
+      const root=createRoot(document.getElementById('route'));window.routeIdentityQa=root
+      const props={mainProject:project,layers:[],projectTracks:{},profile:null,mix:null,
+        createdProjects:route==='created-collection'?[project]:[],createdProjectTracks:{},createdMixes:{},
+        projectLikes:[{projectId:route==='created-collection'?project.id:mainId}],vocalSaves:[],songSaves:[],
+        joined:route==='main-projects',type:route==='main-projects'?'projects':'collection',trackCount:0,
+        go:noop,openSong:noop,openCreateProject:noop,openComplete:noop,openCreatedProject:noop,
+        openMainWorkspace:noop,toggleProjectLike:noop,toggleProjectById:noop,toggleVocalSave:noop,toggleSongSave:noop}
+      root.render(React.createElement(route==='home'?Home:PersonalArea,props))
+    },{route,graphRef:initial.graphRef})
+    await page.waitForFunction(()=>{
+      const canvases=[...document.querySelectorAll('.record-particles')]
+      return canvases.length>0 && canvases.every(canvas=>{
+        const gl=canvas.getContext('webgl'),program=gl?.getParameter(gl.CURRENT_PROGRAM)
+        return program && Array.from({length:4},(_,i)=>gl.getUniform(program,gl.getUniformLocation(program,`uVoice${i}`))?.[3] || 0).filter(Boolean).length===2
+      })
+    },{},{timeout:10000})
+    assert.equal(await page.locator('.record-error').count(),0,route)
+    await page.evaluate(()=>window.routeIdentityQa.unmount())
+    await page.waitForFunction(()=>window.consumerURLQa.live.size===0)
+  }
   await page.evaluate(()=>{URL.createObjectURL=window.consumerURLQa.create;URL.revokeObjectURL=window.consumerURLQa.revoke})
   assert.deepEqual(errors,[])
-  console.log('PASS native DB/reload + PNG decode/resource cleanup + actual React Identity display/Project WebGL styles and wrong-Project refusal; canvas PNG fixtures, not microphone, AI inference, perceptual design or Production acceptance')
+  console.log('PASS native DB/reload + PNG decode/resource cleanup + actual React Identity/Project/Home/Collection covers and wrong-Project refusal; canvas PNG fixtures, not microphone, AI inference, perceptual design or Production acceptance')
 }finally{
   await browser?.close()
   await server.close()

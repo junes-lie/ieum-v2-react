@@ -18,6 +18,10 @@
 
 ### 실제 진행과 다음 gate
 
+2026-10-13 Home/목록 소비 누락 보완: 기존 Home·내 프로젝트·Collection의 기본 Project 커버와 생성 Project Collection 커버에도 정확한 Project/Seed/Part/voiceRecordRef를 전달했다. 생성 Project의 텍스트 전용 목록에 새 그래픽을 추가하지 않는다. 실제 React/WebGL의4개 경로·동일 snapshot style2개·URL 해제 및 관련 Home/Collection navigation QA/build 통과. 새 승인 결과/운영 참조를 자동 선택·생성하지 않으며 실제 AI·지각/운영 데이터·실기기 인수는 미완료다. 현재free4.53GiB로 대형AI8GiB admission 미달, 모델 실행 없음. 이전 소비 gate의 목록 참조 누락만 닫으며 R5 전체 완료로 처리하지 않는다.
+
+2026-10-13 저장·소비 연결 묶음 Git 마감: `e6ce336c1b0d99d2ba1847a2f4daf739cb560d61` main push/origin SHA 일치. 같은 commit의 Production deployment7036388236 및 Vercel status success(`Deployment has completed`)를 확인했다. Production HTML/JS200, index-wv4k27Rs.js SHA256608e7ba8b08b0c96445517d018af72adcf765b0671fae2853b0705784df28a49는 로컬 build와 byte exact다. literal Vercel READY·Production 사용자 흐름/실기기·실제 AI 형상 인수는 확인하지 않았다. 아래 저장/소비 하위 gate는 구현·관련 QA·배포 응답 검증까지 진행했지만 R5 전체는 미완료이며 기존 단계/미정 정책을 유지한다. 사용자 서버3파일 및 별도 AI 실행 연구는 이 commit에 포함하지 않았다. 배포 후 증거 기록은 다음 의미 있는 묶음과 구분해 로컬 보존한다.
+
 2026-10-13 명시적 소비 경로 하위 gate: 정확한 ref로 복원한 개인 PNG는 기존 프로필 컴포넌트에서, Track PNG/공통 개인 Flow style은 기존 상세·작업실·녹음·Multitrack·완성곡 레코드에서 읽도록 연결했다. 개인 Identity 이미지가 바이닐로 복사되는 경로는 없다. project.voiceRecordRef/identity.selector는 명시적 연결 입력이며 자동 최신 선택/재생성 정책을 뜻하지 않는다. 현재 사용자 데이터에는 신규 승인 결과/참조가 없어 기존 화면이 유지된다. Project/Seed/Part 불일치와 disposed/stale 요청은 거부하고 생성 리소스를 해제한다.
 
 실제 React consumer/native DB/PNG decode/Project WebGL style2개 활성·잘못된 Seed에서는0·unmount URL0 검증과 관련 QA/build 통과. QA는 canvas PNG fixture이며 개인 식별/AI inference/승인 디자인/실기기/Production 인수를 대체하지 않는다. 기존 미정 선택·Profile 갱신 정책을 유지한다. 다음 gate는 **실제 생성·승인된 결과를 명시적으로 공급하고 Profile/후보/Project의 운영 데이터 참조를 연결해 지각/연속성을 인수**하는 것이다. 대형 AI 자원 대기와 코드 저장/소비 연결은 분리하며 R5 전체 완료를 선언하지 않는다. 유지 데이터 연결 묶음만 Git 마감하고 별도 AI 실행 연구·일회성 산출물·사용자 서버3파일을 자동 포함하지 않는다.

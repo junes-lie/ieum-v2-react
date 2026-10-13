@@ -1,3 +1,15 @@
+## 2026-10-13 R5 Home·목록 공명 참조 전달 보완
+
+실제 코드에서 Collection 생성 Project 커버와 Home/내 프로젝트의 기존 기본 Project 커버는 저장 Record ref를 전달하지 않았다. 기존 App mainProject 모델을 Home/PersonalArea/CollectionArea에 전달하고 해당 커버의 Project/Seed/Part/voiceRecordRef를 기존 ResonanceRecord로 연결했다. 새 커버·화면·형상/선택 정책은 추가하지 않았고 생성 Project의 텍스트 전용 목록도 유지한다. 저장 결과가 없는 현재 운영 데이터는 기존 표시를 유지한다.
+
+확장된 actual React/native DB/WebGL QA에서 Home·생성 Project Collection·기본 Project 목록/Collection이 동일 명시적 snapshot의 두 개인 스타일을 읽고 unmount URL0을 확인했다. 실제 AI/운영 결과 공급/인수의 증거는 아니다. 유지 Collection navigation·Home range QA도 격리 로컬 Vite/Edge에서 통과(page errors0). 최초 sandbox Edge 시작 실패는 Target page, context or browser has been closed/site list temp error=-5였으며 승인된 같은 QA의 host 실행은 성공했다. CIM RAM 조회는 접근 불가였고 Node OS free4.53GiB/total15.95GiB로 대형 AI8GiB 기준 미달, 모델은 실행하지 않았다. build43modules/JS index-XhoOtjSF.js552.79KB(기존500KB 경고), diff check 통과. 사용자 서버3파일·별도 연구를 보존한다. Git/배포 결과는 실제 확인 후 별도 기록한다.
+
+## 2026-10-13 R5 저장·소비 연결 묶음 배포 확인
+
+commit `e6ce336c1b0d99d2ba1847a2f4daf739cb560d61`을 main에 push했고 origin/main SHA 일치를 확인했다. GitHub Production deployment `7036388236`은 같은 commit이며 Vercel commit status/deployment status는 success, 설명은 `Deployment has completed`다. 배포 링크: https://vercel.com/junes-lie/ieum-v2-react/8z5SafswqVKjVdbLcKpRfoYLs1BE . Vercel API의 literal READY 상태는 별도 조회하지 않았다.
+
+Production HTML 및 `/assets/index-wv4k27Rs.js` HTTP200, JS SHA256 `608e7ba8b08b0c96445517d018af72adcf765b0671fae2853b0705784df28a49`가 검증한 로컬 build와 정확히 일치한다. 이는 배포 응답/버전 검증이며 Production 실제 개인 결과·마이크·청취·전체 사용자 흐름 인수가 아니다. 실제 AI 생성·승인 형상·운영 참조 공급·지각 및 전체 R5 인수는 미완료다. 이 문단은 배포 후 로컬 증거 기록이다.
+
 이 Git 마감 묶음에는 저장/소비 연결과 유지 QA만 포함한다. 아래 기록의 `qa/verify-personal-identity-model.py` v2/v3 변경 및 연구용 표현/감도 스크립트는 로컬 미커밋 작업으로 남으며 배포 완료 범위에 포함하지 않는다. 승인된 생성 이미지/운영 후보 자료를 공급한 것으로 처리하지 않는다.
 
 ## 2026-10-13 R5 명시적 결과의 화면·WebGL 소비 연결
