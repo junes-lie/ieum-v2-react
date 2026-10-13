@@ -1290,8 +1290,13 @@ function Recorder({ go, submit, onRecordingStart, partId, projectTracks, layers,
     setRestoreState('loading')
     setError('')
     loadTrack(`${project.id}:${currentPart.id}`).then(submitted=>submitted?.origin==='live-microphone-recording' && submittedProjectTracks(project,{[currentPart.id]:submitted}).length?null:loadTrack(draftId).then(async stored=>stored || await loadTrack(legacyDraftId))).then(stored=>{
-      if (!active || stored?.kind!=='temporary-recording' || !stored.blob) return
-      if(stored.userId && stored.userId!==CURRENT_USER_ID)return
+      if (!active || !stored) return
+      if(stored.userId && stored.userId!==CURRENT_USER_ID){
+        if(stored.id===draftId)throw new Error('Stored recording owner does not match its key')
+        return
+      }
+      if(stored.kind!=='temporary-recording' || stored.projectId!==project.id || stored.partId!==currentPart.id ||
+        !(stored.blob instanceof Blob) || !stored.blob.size)throw new Error('Stored recording does not match the selected Project and Part')
       const restored={...stored,url:URL.createObjectURL(stored.blob)}
       if(stored.guides)setGuides(stored.guides)
       setDraft({...restored,id:draftId,userId:CURRENT_USER_ID}); setSeconds(restored.duration||0); setNoiseFloor(restored.noiseFloor||0); setStatus('review'); onDraftChange?.(true)

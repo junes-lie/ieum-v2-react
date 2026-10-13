@@ -1,3 +1,8 @@
+## 2026-10-13 R1 — 임시 녹음 복원 대상 검사
+
+기존 Recorder의 draft 복원이 userId만 확인하고 Project/Part 내용을 확인하지 않던 결함을 수정했다. 저장 내용이 현재 대상과 다르거나 유효 원본이 없으면 기존 복원 오류/다시 불러오기 상태를 사용하고 새 녹음·Review·제출을 차단한다. 기존 DB 원본을 삭제하거나 자동 수정하지 않는다. 다른 사용자의 legacy 임시본은 종전처럼 복원/삭제하지 않고, 정상 ownerless legacy 및 동일 대상2–4 Part 복원·직접 제출은 유지한다.
+
+관련 user-journey QA와 실제 기존 App/native IndexedDB QA에서 wrong Project/Part·재시도·Back의 원본 byte 불변·제출수0·새 녹음 차단을 확인했다. 기존 주입 cleanup 실패 로그는 의도한 QA 시나리오이며 제출 원본 보존/중복 방지 검사도 통과했다. build45modules/index-BzC5wER3.js 통과·기존500KB 경고 유지. 격리 fixture이며 물리 마이크/청취/디자인 인수가 아니다. 의미 있는 원본 보존 묶음으로 Git Integration→Production 검증 뒤 마감한다. 기존 서버3파일/연구·단계 번호/예산 보존, 실효 공수 미측정.
 ## 2026-10-13 R5 — 본인 확정 Track 결과의 바이닐 필드 소비
 
 loadRemoteTrackGraphic은 기존 session·owner metadata·chunk API·native PNG decoder를 재사용해 명시적인 결과 revision을 바이닐 field 형식으로 반환한다. Project/Part/Seed·generator/input/output digest·개인 결과 계보를 대조한 뒤 bytes를 읽는다. 개인 Identity bitmap을 flow 형태로 복사하지 않고 확정 Track 결과를 사용한다. 저장/선택/추론/제출/Mix 상태를 변경하지 않으며 운영 App remote 자동 활성화나 다른 참여자 접근 정책을 추가하지 않는다.
@@ -2064,3 +2069,7 @@ qa/verify-music-source-encode.py로 기존 local VAE만 실제 CUDA FP32/동일 
 최초 실행은 output 공백 경로가 Start-Process 인자에서 분리되어 argparse unrecognized arguments/exit2였고, 기존 guard와 공백 없는 상대 output 경로로 바로잡았다. 실패/성공 기록 모두 기존 runtime에 보존했다. 첫 성공 측정은 결과 기록 중 weight read_bytes를 포함하므로 최대 worker를 인코딩 자체 peak로 해석하지 않는다. 유지 스크립트는 source/weight 파일 hash를 bounded file_digest로 바꾸고 model import 전에 계산해 후속 진단의 불필요한 전체 파일 RAM 할당을 제거한다. 기존 CPU/GPU 환경·모델·음원·사용자 서버3파일은 변경하지 않는다.
 
 다음 R6 선행은 이 VAE 단독 결과와 기존 조건 모델 단독 결과를 근거로 전체 pipeline의 source encode/condition/denoising 진입별 실제 RAM을 분리하는 것이다. 동일 실패 경로의 무근거 전체 생성 반복과 생성 품질 문턱 완화는 하지 않는다. 일정 재산정 eae2974 main push/Git Integration success·Production HTTP200/index-DlRbC8xD.js SHA39509AA129CA1D0F39DED94EB1C660BF021700509F272D748B7278E7715DAB1B exact 확인.
+
+### 138e6c3 배포 증거 — 2026-10-13
+
+138e6c3d704ca367afff5d49cb6c337d03ff21f1 origin/main 일치·동일 SHA Production7039690506·Vercel success. Production HTML/JS200·index-1pEtYa4t.js SHA256 a68fa2c6daf7ea1d44ad47e89dbf8b44fe13ced8cf9c88f419f5b8a4d55893ae local exact 유지. Track 소비 함수는 운영 remote 자동 활성화 전 준비 코드이며 이 배포를 실제 사용자/AI/자연 혼합 인수로 표시하지 않는다. Vercel API READY 원문은 미확인. 기존 서버3파일/연구 변경 보존.

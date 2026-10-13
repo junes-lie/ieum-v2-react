@@ -245,6 +245,22 @@ try{
  await clearProjectTracks(projectId)
  await saveTrack(track('soprano'));await saveTrack(track('alto'))
  const legacyDraftId=projectId+':tenor:temporary-recording'
+ for(const wrongContext of [{projectId:'another-project',partId:'tenor'},{projectId,partId:'alto'}]){
+  await saveTrack({id:draftId,...wrongContext,kind:'temporary-recording',userId:'jisun',blob,features,duration:7})
+  root=createRoot(container);await act(async()=>root.render(React.createElement(App)));await settle();await settle()
+  await click('[data-action="record-part"]')
+  assert.ok(document.querySelector('[data-action="draft-restore-retry"]'))
+  assert.equal(document.querySelector('[data-action="record-submit"]'),null)
+  assert.equal(document.querySelector('[data-action="record-start"]').disabled,true)
+  assert.deepEqual({projectId:(await loadTrack(draftId)).projectId,partId:(await loadTrack(draftId)).partId},wrongContext)
+  assert.equal(await (await loadTrack(draftId)).blob.text(),await blob.text())
+  await click('[data-action="draft-restore-retry"]')
+  assert.equal(document.querySelector('[data-action="record-start"]').disabled,true)
+  await act(async()=>root.unmount())
+ }
+ // Remove only this QA fixture, never any real user's database.
+ const {deleteTrack}=await import('../src/trackStore.js');await deleteTrack(draftId)
+ check('Mismatched stored Project/Part remains preserved, never becomes Review or permits overwrite; restore retry stays blocked')
  await saveTrack({id:legacyDraftId,projectId,partId:'tenor',kind:'temporary-recording',userId:'another-user',blob,features,duration:7})
  root=createRoot(container);await act(async()=>root.render(React.createElement(App)));await settle();await settle()
  await click('[data-action="record-part"]')

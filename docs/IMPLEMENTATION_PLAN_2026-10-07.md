@@ -1,3 +1,6 @@
+## 2026-10-13 R1 독립 원본 보존 잔여 마감
+
+Recorder에서 저장키와 임시본의 실제 Project/Part/원본 계약을 함께 확인한다. 불일치하면 기존 복원 오류 상태에서 새 녹음·Review·제출을 막고 원본을 보존한다. 정상/legacy ownerless 및 다른 사용자 보호·2–4 Part 기존 흐름은 유지한다. 관련 격리 user-journey 및 실제 App/native IndexedDB wrong-context·재시도·Back 검증/build 통과. 배포 후 같은 Production QA로 마감하며 실제 마이크/음악/청취·외부 연결/디자인 gate를 축소하지 않는다. 기존 증거/예산 유지, 실효 공수 미측정.
 ## 2026-10-13 R5 독립 소비 연결 후 잔여
 
 본인 exact Track 결과의 metadata 계보→bounded bytes→native512 image→바이닐 field 소비와 실패/logout dispose를 구현·검증했다. 기존 renderer field 계약·개인 ref·session을 재사용하며 개인 이미지와 Track 형태를 동일하게 만들지 않는다. 새 IA/모델/정책/원격 자동 활성화 없음. 다음 실제 공급에는 운영 서비스/본인 선택 결과 연결이 필요하고2–4 참여자 자산 공급은 미정 접근 정책과 운영 연결 이후 확인한다. 실제 AI·승인 형상/측정 매핑·자연 혼합 지각·음악/실기기 미완료를 RAM 문제로 단일 분류하지 않는다. 기존 예산/완료 근거 보존, 실효 시간 미측정.
