@@ -22,7 +22,7 @@ try{
   await page.goto(`http://127.0.0.1:${server.httpServer.address().port}/`)
   const result=await page.evaluate(async()=>{
     const {createServiceSession}=await import('/src/serviceSession.js')
-    const {loadRemotePersonalGraphic}=await import('/src/voiceIdentityResources.js')
+    const {loadRemotePersonalGraphic,loadRemoteTrackGraphic}=await import('/src/voiceIdentityResources.js')
     const {loadAiVoiceFields}=await import('/src/aiVoiceLayer.js')
     const {React,createRoot,VoiceIdentityQA,ResonanceRecordQA}=await import('/qa-owned-image-entry.js')
     // Native canvas test PNG only, not AI/prototype/Figma reference.
@@ -34,11 +34,17 @@ try{
     const create=URL.createObjectURL.bind(URL),revoke=URL.revokeObjectURL.bind(URL),live=new Set(),NativeImage=Image
     URL.createObjectURL=value=>{const url=create(value);live.add(url);return url}
     URL.revokeObjectURL=url=>{live.delete(url);revoke(url)}
+    const layerRef={...reference,inputDigest:'b'.repeat(64),generatorVersion:'fixture-layer-v1'}
+    let layerReply={resultStatus:'stored',projectId:'project',partId:'lead',projectSeed:'seed',ref:layerRef,personalRef:{...layerRef,id:'personal-source'}}
+    let imageReads=0
     const session=createServiceSession({baseUrl:'https://ieum.example/api',fetchImpl:async(url,init)=>{
       if(url.endsWith('/capabilities'))return Response.json({contractVersion:'ieum-service-v1',mode:'remote',authenticated:true,sharedProjects:true})
       if(url.endsWith('/me/session'))return Response.json({authenticated:true,user:{id:'11111111-1111-4111-8111-111111111111'}})
       if(init.headers.Authorization!=='Bearer fixture-token')throw new Error('Missing session')
-      const q=new URL(url).searchParams,offset=Number(q.get('offset')),length=Number(q.get('length')),part=blob.slice(offset,offset+length)
+      const q=new URL(url).searchParams
+      if(q.get('kind')==='track-layer')return Response.json(layerReply)
+      imageReads++
+      const offset=Number(q.get('offset')),length=Number(q.get('length')),part=blob.slice(offset,offset+length)
       return new Response(part,{status:206,headers:{'Content-Type':'application/octet-stream','Content-Length':String(part.size),
         'Content-Range':`bytes ${offset}-${offset+part.size-1}/${blob.size}`,'X-Content-SHA256':reference.outputSha256}})
     }})
@@ -55,6 +61,24 @@ try{
       root.unmount();host.remove()
       graphic.dispose();graphic.dispose()
       const normalReleased=live.size===0 && graphic.disposed
+      const trackOptions={session,ref:layerRef,projectId:'project',partId:'lead',projectSeed:'seed',maxBytes:8388608}
+      const trackGraphic=await loadRemoteTrackGraphic(trackOptions)
+      const trackDecoded=trackGraphic.field.image.naturalWidth===512 && trackGraphic.field.partId==='lead' &&
+        trackGraphic.field.projectSeed==='seed' && trackGraphic.personalRef.id==='personal-source' && trackGraphic.ref.id===layerRef.id
+      trackGraphic.dispose();trackGraphic.dispose()
+      const trackReleased=live.size===0 && trackGraphic.disposed,beforeImages=imageReads
+      layerReply={...layerReply,projectSeed:'wrong-project-seed'}
+      const wrongLayerRefused=await rejected(()=>loadRemoteTrackGraphic(trackOptions)) && imageReads===beforeImages && live.size===0
+      layerReply={...layerReply,projectSeed:'seed'}
+      const originalLayer=structuredClone(layerReply)
+      let invalidLayersRefused=true
+      for(const mutate of [r=>r.resultStatus='pending',r=>r.partId='other',r=>r.ref.outputSha256='c'.repeat(64),
+        r=>r.ref.generatorVersion='other',r=>r.personalRef.inputDigest='invalid']){
+        layerReply=structuredClone(originalLayer);mutate(layerReply)
+        const before=imageReads
+        invalidLayersRefused=invalidLayersRefused && await rejected(()=>loadRemoteTrackGraphic(trackOptions)) && before===imageReads && live.size===0
+      }
+      layerReply=originalLayer
       const source=new Blob(['submitted original']),sourceSha256=await hash(source)
       const track=partId=>({id:`project:${partId}`,projectId:'project',partId,participantId:'private-fixture',kind:'project-track',submissionStatus:'success',blob:source,
         aiVoiceLayer:{version:'ieum-ai-voice-layer-v1',projectId:'project',partId,participantId:'private-fixture',projectSeed:'seed',inferenceSeed:1,
@@ -91,10 +115,15 @@ try{
       window.Image=class extends NativeImage{async decode(){await super.decode();started();await hold}}
       const pending=loadRemotePersonalGraphic(opts());await began;session.disconnect();release()
       const logoutRefused=await rejected(()=>pending),logoutReleased=live.size===0
-      return {dimensions,before,urlIsOpaque,rendered,normalReleased,submittedOnly,draftOnly,renderedSubmitted,excludedStates,layerErrors,badRefused,badReleased,logoutRefused,logoutReleased}
+      await session.connect('fixture-token')
+      const trackBegan=new Promise(resolve=>{started=resolve}),trackHold=new Promise(resolve=>{release=resolve})
+      window.Image=class extends NativeImage{async decode(){await super.decode();started();await trackHold}}
+      const trackPending=loadRemoteTrackGraphic(trackOptions);await trackBegan;session.disconnect();release()
+      const trackLogoutRefused=await rejected(()=>trackPending) && live.size===0
+      return {dimensions,before,urlIsOpaque,rendered,normalReleased,trackDecoded,trackReleased,wrongLayerRefused,invalidLayersRefused,trackLogoutRefused,submittedOnly,draftOnly,renderedSubmitted,excludedStates,layerErrors,badRefused,badReleased,logoutRefused,logoutReleased}
     }finally{session.disconnect();window.Image=NativeImage;for(const url of live)revoke(url);URL.createObjectURL=create;URL.revokeObjectURL=revoke}
   })
-  assert.deepEqual(result,{dimensions:[512,512],before:1,urlIsOpaque:true,rendered:true,normalReleased:true,submittedOnly:true,draftOnly:true,renderedSubmitted:true,excludedStates:true,layerErrors:0,badRefused:true,badReleased:true,logoutRefused:true,logoutReleased:true})
+  assert.deepEqual(result,{dimensions:[512,512],before:1,urlIsOpaque:true,rendered:true,normalReleased:true,trackDecoded:true,trackReleased:true,wrongLayerRefused:true,invalidLayersRefused:true,trackLogoutRefused:true,submittedOnly:true,draftOnly:true,renderedSubmitted:true,excludedStates:true,layerErrors:0,badRefused:true,badReleased:true,logoutRefused:true,logoutReleased:true})
   assert.deepEqual(errors,[])
   console.log('PASS owned remote bytes→native PNG decode→existing React Identity/Record: opaque URL, disposal, decode failure/logout cleanup, immutable caller snapshot and actual WebGL submitted1/review-draft-processing-failed0. Injected Auth/HTTP and canvas PNG, not AI/design/real user acceptance.')
 }finally{await browser?.close();await server.close()}

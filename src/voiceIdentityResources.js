@@ -39,6 +39,33 @@ export async function loadRemotePersonalGraphic({session,ref,maxBytes}){
     }catch(error){resource?.dispose();throw error}
   })
 }
+// Owned, explicitly selected Track output only. It is a vinyl field, not a
+// personal portrait or a completed Project/Mix. Access policy remains server-side.
+export async function loadRemoteTrackGraphic({session,ref,projectId,partId,projectSeed,maxBytes}){
+  const reference=structuredClone(ref)
+  const text=value=>typeof value==='string' && value.trim() && value.length<=128 && !/[\x00-\x1f]/.test(value)
+  const validRef=value=>value && Object.keys(value).length===5 &&
+    [value.id,value.revision,value.generatorVersion].every(text) &&
+    /^[a-f0-9]{64}$/.test(value.inputDigest || '') && /^[a-f0-9]{64}$/.test(value.outputSha256 || '')
+  if(typeof session?.run!=='function' || ![projectId,partId,projectSeed].every(text) || !validRef(reference))throw new Error('Explicit owned Track result is required')
+  return session.run(async({service,assertCurrent})=>{
+    let resource
+    try{
+      const stored=structuredClone(await service.getTrackVoiceLayer(projectId,partId,{id:reference.id,revision:reference.revision}))
+      assertCurrent()
+      if(!stored || Object.keys(stored).length!==6 || stored.resultStatus!=='stored' || stored.projectId!==projectId ||
+        stored.partId!==partId || stored.projectSeed!==projectSeed || !validRef(stored.ref) || !validRef(stored.personalRef) ||
+        Object.keys(reference).some(key=>stored.ref[key]!==reference[key]))throw new Error('Stored Track result does not match its explicit lineage')
+      const result=await loadRemoteOwnedVoiceImage({session,kind:'track-image',ref:reference,projectId,partId,maxBytes})
+      assertCurrent()
+      resource=await decoded(result.blob)
+      assertCurrent()
+      return {ref:reference,personalRef:stored.personalRef,
+        field:{projectId,projectSeed,partId,image:resource.image,outputSha256:reference.outputSha256},
+        get disposed(){return resource.disposed},dispose:resource.dispose}
+    }catch(error){resource?.dispose();throw error}
+  })
+}
 export async function loadStoredProjectRenderResources(ref){
   const graph=await loadStoredProjectRecordInput(ref)
   if(!graph)throw new Error('Explicit stored Project input was not found')

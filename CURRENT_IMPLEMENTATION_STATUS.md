@@ -1,3 +1,10 @@
+## 2026-10-13 R5 — 본인 확정 Track 결과의 바이닐 필드 소비
+
+loadRemoteTrackGraphic은 기존 session·owner metadata·chunk API·native PNG decoder를 재사용해 명시적인 결과 revision을 바이닐 field 형식으로 반환한다. Project/Part/Seed·generator/input/output digest·개인 결과 계보를 대조한 뒤 bytes를 읽는다. 개인 Identity bitmap을 flow 형태로 복사하지 않고 확정 Track 결과를 사용한다. 저장/선택/추론/제출/Mix 상태를 변경하지 않으며 운영 App remote 자동 활성화나 다른 참여자 접근 정책을 추가하지 않는다.
+
+관련 native browser QA에서512 decode·개인 ref/Track ref·dispose·잘못된 Seed/Part/상태/hash/version/개인 digest 거부 및 decode 도중 logout의 URL 정리 통과. Auth/HTTP·canvas PNG는 주입 fixture이고 실제 AI 생성/운영 DB·자연 혼합/형상·실기기 인수를 대체하지 않는다. build45modules 통과, 현재 운영 bundle exact 유지(아직 호출자 자동 활성화 없음). 독립 소비 준비이며 R5 전체 완료가 아니다.
+
+R2 0a7bf5fdeda62b5c967dc793c79659623c872659 마감: origin/main 일치·exact SHA Production7039584783·Vercel success. Production 실제 App 05A 새로고침/뒤로가기/미등록 대상·원본 불변 QA 오류0. JS index-1pEtYa4t.js SHA256 a68fa2c6daf7ea1d44ad47e89dbf8b44fe13ced8cf9c88f419f5b8a4d55893ae 로컬 일치. 실제 후보·물리 음성·디자인 인수 및 Vercel API READY 원문은 미확인이다.
 ## 2026-10-13 R2 — 05A 보컬 대상 및 재진입 오류 마감
 
 선택한 ID가 catalog에 없으면 Luna로 바꾸던 오류를 제거했다. 동일 기존 05A 안에서 확인 불가 상태를 표시하며 다른 사람의 Identity·Sample·저장 동작을 제공하지 않는다. prototype 상속 키도 보컬 데이터로 처리하지 않는다. 선택한 대상과 기존 history context를 새로고침/뒤로가기에 유지한다. 새 IA·화면·프로필 데이터·디자인 정책을 추가하지 않았다.
