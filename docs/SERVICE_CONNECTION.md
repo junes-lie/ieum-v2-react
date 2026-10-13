@@ -1,5 +1,16 @@
 # 단일 앱 서비스 연결 계약
 
+## 2026-10-13 R3 native Mix 실행 경계 검증
+
+승인된 TEMP node-web-audio-api2.2.0을 명시한 서버 내부 renderProjectMix를 추가했다. 제출 성공한 실제2–4 Part·같은 Project Source·기존 decoded receipt·원본 SHA와 backing SHA를 검사한 뒤 기존 src/audio.js createAutoMix만 실행한다. 입력/PCM/출력/길이 예산 및 timeout은 필수 설정이다. 처음 worker_threads 시험은 Windows 종료코드 -1073741819(접근 위반)로 부모 Node까지 종료됐으므로 native 실행을 별도 Node process로 격리했다. 새 runtime/앱 dependency 설치나 별도 DSP는 없다. 실제 FFmpeg receipt와 승인 TEMP runtime을 쓰는 qa:native-mix에서2/3/4 Part+backing 주파수·비무음·-3dBFS peak·동일 입력 hash 재현·원본 불변, Review/타 Project/변조/잘못된 receipt 거부·입력/PCM/출력 예산·timeout을 확인했다. 출력은 각각0.65초 stereo44100Hz WAV114704bytes이며 단독 TEMP 시험과 SHA가 같다. 부모 RSS59MiB는 종료 시점 값이며 native child peak/OS RAM 상한 증거가 아니다. V8 heap128MiB와 PCM admission은 native RSS hard limit이 아니므로 운영 host 자원 제한이 별도로 필요하다. HTTP endpoint/운영 capability/DB 성공 상태를 활성화하지 않았다. 실제 job context·private Storage 원본 취득→renderer→기존 persistProjectMix 연결, Linux 운영 runtime 승인/설정·scheduler·원격 서비스·실제 음악/청취는 미완료다. 사용자 서버3파일·기존 단계/예산/미정 정책을 보존하며 실효 공수는 미측정이다.
+
+qa:native-mix는 IEUM_WEB_AUDIO_ROOT(승인 TEMP 설치 경로)와 IEUM_QA_FFMPEG_PATH(기존 decoder)를 명시해야 하며 자동 설치하지 않는다. runtime2.2.0 외 버전/누락은 실패한다. renderer 입력은 인증된 서버 job/Storage 경계에서만 취득해야 하며 클라이언트 JSON으로 receipt/제출 상태를 신뢰하면 안 된다. renderer 자체는 인증·제출·업로드·완료 확정을 하지 않는다. child process에는 비밀키 환경변수를 넘기지 않는다.
+
+
+## 2026-10-13 승인된 runtime 호환성 시험
+
+사용자가 오디오 runtime 시험 설치만 허용했다. node-web-audio-api2.2.0을 C:/Users/LEE/AppData/Local/Temp/ieum-web-audio-trial-594d411b1c3f40beb11b2de74f954451에 exact/ignore-scripts/no-audit/no-fund로 설치했다. registry metadata unpackedSize42188827bytes와 lock integrity sha512-qM3dW3Z5HIz+O+++Uiia8x0OSNHcfJGUlexpCTdAkw8JlM17Ru1nV9a94wlxNRXqxT0Lr/ewwEnBXUwGMt24AA==를 확인했다. 앱 package/lock/AI 모델/OS 설정은 변경하지 않았다. 최초 npm view는 응답 없는 session80417을 종료하고 공식registry+systemCA+20초 한도로 같은 조회를 성공했다. 실제 기존 src/audio.js createAutoMix를 AudioContext sinkId none·OfflineAudioContext native로 실행했고, 합성0.45초 WAV2/3/4 Part+실제 시험 backing Blob에서 각각0.65초 stereo44100Hz PCM16 WAV114704bytes를 얻었다. 입력별 주파수 성분/비무음·peak -3dBFS 제한·동일 입력 재실행 SHA·원본 hash 불변·잘못된 offset 거부 및 progress18/54/88/100을 확인했다. 두 실행 포함 각142/50/53ms, 종료 RSS74MiB이며 native 전체 peak는 계측하지 않았다. 시험 전 가용 RAM6694948KiB(약6.38GiB), 대형 AI/마이크/실제 재생은 실행하지 않았다. 결과/시험 코드/lock은 해당TEMP에 보존했다. 이 결과는 기존 DSP의 Windows Node 호환성 선행 검증이며 실제 음악 품질/청취·Linux/Vercel 운영runtime·renderer worker/스케줄러·원격Auth/DB/Storage 완료가 아니다. 운영dependency 설치/활성화 허용으로 확대하지 않는다.
+
 ## 2026-10-13 기존 Identity 입력과 제출 분석 연결
 
 loadRemoteSubmittedTrackIdentityInput는 기존 session.run 안에서 service.analyzeSubmittedTrack을 호출하고 기존 buildTrackIdentityInput 계약으로 private 입력을 만든다. local Blob/demo의 remote 자동 이관이나 그래픽 성공/제출/Mix 쓰기는 없다. 본인과 identityOwnerId를 대조하고 개인 opaque ref/revision/output hash를 await 전에 snapshot한다. 이는 caller가 이미 보유한 개인 참조를 받는 준비 경계이며 실제 개인 artifact 생성/승인·서버 owner registry 검증은 아직 없다.

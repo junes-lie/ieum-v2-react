@@ -29,6 +29,7 @@
     "qa:service-session": "node qa/verify-service-session.mjs",
     "qa:remote-project-tracks": "node qa/verify-remote-project-tracks.mjs",
     "qa:mix-completion": "node qa/verify-mix-completion.mjs",
+    "qa:native-mix": "node --max-old-space-size=192 qa/verify-native-mix-renderer.mjs",
     "qa:playback": "node qa/verify-player-request-ownership.mjs",
     "qa:mix-errors": "node qa/verify-mix-source.mjs && node qa/verify-mix-save-preservation.mjs",
     "qa:audio-lengths": "node qa/verify-audio-lengths.mjs",

@@ -1,4 +1,10 @@
+## 2026-10-13 R3 native Mix 실행 경계 검증
+
+승인된 TEMP node-web-audio-api2.2.0을 명시한 서버 내부 renderProjectMix를 추가했다. 제출 성공한 실제2–4 Part·같은 Project Source·기존 decoded receipt·원본 SHA와 backing SHA를 검사한 뒤 기존 src/audio.js createAutoMix만 실행한다. 입력/PCM/출력/길이 예산 및 timeout은 필수 설정이다. 처음 worker_threads 시험은 Windows 종료코드 -1073741819(접근 위반)로 부모 Node까지 종료됐으므로 native 실행을 별도 Node process로 격리했다. 새 runtime/앱 dependency 설치나 별도 DSP는 없다. 실제 FFmpeg receipt와 승인 TEMP runtime을 쓰는 qa:native-mix에서2/3/4 Part+backing 주파수·비무음·-3dBFS peak·동일 입력 hash 재현·원본 불변, Review/타 Project/변조/잘못된 receipt 거부·입력/PCM/출력 예산·timeout을 확인했다. 출력은 각각0.65초 stereo44100Hz WAV114704bytes이며 단독 TEMP 시험과 SHA가 같다. 부모 RSS59MiB는 종료 시점 값이며 native child peak/OS RAM 상한 증거가 아니다. V8 heap128MiB와 PCM admission은 native RSS hard limit이 아니므로 운영 host 자원 제한이 별도로 필요하다. HTTP endpoint/운영 capability/DB 성공 상태를 활성화하지 않았다. 실제 job context·private Storage 원본 취득→renderer→기존 persistProjectMix 연결, Linux 운영 runtime 승인/설정·scheduler·원격 서비스·실제 음악/청취는 미완료다. 사용자 서버3파일·기존 단계/예산/미정 정책을 보존하며 실효 공수는 미측정이다.
+
 # 현재 실행 기준 — 2026-10-13 변경분 및 잔여 구현계획 개정
+
+2026-10-13 R3 runtime 선행 조건 갱신: 사용자가 TEMP 오디오 시험 설치만 허용했고 node-web-audio-api2.2.0/ignore-scripts 설치 및 기존 Auto Mix native2/3/4 Part 실제 렌더·동일입력 재현/원본 보존/각 입력 성분·offset 거부를 통과했다. 이전 설치 거부/응답 대기는 당시 이력이며 이번 시험 범위에서는 해소됐다. 앱 dependency/AI/OS/운영환경은 변경하지 않았다. 실제 운영 renderer/worker·Linux host·서비스/청취 인수는 여전히 미완료다. 기존 단계/예산/정책 및 외부 대기와 구분한다. 상세출력/hash/자원은 CURRENT_IMPLEMENTATION_STATUS.md의 승인TEMP시험 항목이다.
 
 2026-10-13 R1/R2 저장 복원 입구: 기본/생성 Project의 bootstrap에서 기존 submittedProjectTracks 판정으로 확정 원본만 분석/제출 목록에 연결한다. 실패·Review·알 수 없는 Part/잘못된 ID는 실제 Track 수를 늘리거나 재분석으로 덮어쓰지 않으며 기존 저장 원본/임시 파일은 유지한다. Recorder는 live origin만으로 내 Draft를 숨기지 않고 실제 확정 제출일 때만 완료 원본을 우선한다. 격리 DOM/IndexedDB App의 기본 Project·2–4 Part 생성 Project에서 제외/미분석/원본 불변·정상 제출/reload와 실제 Recorder의 실패 레코드+내 Draft Review 복원을 검증했다. build 통과·기존500KB 경고 유지. 실제 기기/청취·음악·원격 서비스·Identity 생성은 기존 잔여다. 사용자3파일·기존 단계/예산/정책은 보존한다. 실효 공수는 미측정이다.
 
