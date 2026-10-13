@@ -1,3 +1,9 @@
+## 2026-10-13 R3 Mix 반환 전 native 작업 종료
+
+renderProjectMix는 native 결과/오류 수신 즉시 반환하던 경계를 수정해 본인이 생성한 child를 종료하고 close까지 확인한 뒤 성공/실패를 반환한다. 다음 job/재시도·업로드와 이전 native 메모리의 생존 기간이 겹치는 누락을 닫았다. 사용자 앱/기존 CPU 생성 프로세스는 건드리지 않는다. 기존 승인 TEMP runtime·실제 FFmpeg·격리 SQL의 짧은2/3/4 Part native Mix와 제출→업로드→decode→완료 pipeline 통과. 성공/replay·timeout·decode 실패 뒤 live child0을 확인했고 출력3개 SHA/원본 보존/실패 복원은 동일하다. 새 runtime 설치나 대형 AI 실행 없음. 이는 프로세스 수명 종료 확인이며 OS/native peak RSS hard limit이나 물리 마이크·청취/운영 서비스 인수는 아니다.
+
+직전 R5 연결 98b4fb3269f5afb5960d9f6aeb0b0ef310f39e82 main push 및 Vercel Deployment has completed/exact SHA Production7037405005 확인. Production API401 AUTH_REQUIRED/private no-store, index-XhoOtjSF.js200/hash 로컬 일치. 운영 DB migration/계정/실제 AI 활성화와 구분한다.
+
 ## 2026-10-13 R5 등록 Profile → 개인 생성 입력 → 소유 결과 → Track 연결
 
 loadRemoteMeasuredProfileIdentityInput은 기존 인증 session/getVoiceSource에서 등록된 본인 음역·대표 Sample을 받아 private 개인 생성 입력을 만든다. 원본 revision·음역/특징 hash·분석 버전·용도·Sample ID·길이를 확인하며 미등록/legacy/변조/logout은 거부한다. 로컬 원본을 임의 이관하거나 개인 형상/갱신 정책을 선택하지 않는다. personal_identity_source_binding migration은 결과 저장 시 등록 metadata의 정확한 Sample ID·분석값까지 비교한다. 같은 원본 hash로 분석값만 바꾼 결과의 저장 가능성을 닫았다. 기존 source history 및 result 불변성은 유지하며 운영 migration은 적용하지 않았다.

@@ -53,9 +53,15 @@ function inspect(bytes,count){
   }
 }
 const results=[]
+// Diagnostic only: the renderer must not return while its native child lives.
+const assertChildrenReleased=()=>assert.equal(process._getActiveHandles().filter(handle=>
+  handle.constructor?.name==='ChildProcess' && handle.exitCode===null && handle.signalCode===null).length,0)
 for(const count of [2,3,4]){
   const request=input(count),before=JSON.stringify(request),hashes=await Promise.all(request.tracks.map(async t=>sha(Buffer.from(await t.blob.arrayBuffer()))))
-  const start=performance.now(),mix=await renderProjectMix(request,options),replay=await renderProjectMix(request,options)
+  const start=performance.now(),mix=await renderProjectMix(request,options)
+  assertChildrenReleased()
+  const replay=await renderProjectMix(request,options)
+  assertChildrenReleased()
   const bytes=Buffer.from(await mix.blob.arrayBuffer())
   inspect(bytes,count);assert.equal(mix.sha256,sha(bytes));assert.equal(replay.sha256,mix.sha256)
   assert.equal(mix.duration,(bytes.length-44)/4/44100)
@@ -69,11 +75,13 @@ await reject(input(2),'MIX_MEMORY_BUDGET_EXCEEDED',{maxPcmBytes:1})
 await reject(input(2),'MIX_MEMORY_BUDGET_EXCEEDED',{maxOutputBytes:1})
 await reject(input(2),'MIX_MEMORY_BUDGET_EXCEEDED',{maxInputBytes:1})
 await reject(input(2),'MIX_RENDER_TIMEOUT',{timeoutMs:1})
+assertChildrenReleased()
 await reject(input(2),'MIX_RUNTIME_UNAVAILABLE',{runtimeRoot:directory})
 const review=input(2);review.tracks[0].submitted=false;await reject(review,'INVALID_MIX_INPUT')
 const foreign=input(2);foreign.tracks[0].projectId='other';await reject(foreign,'INVALID_MIX_INPUT')
 const changed=input(2);changed.tracks[0].blob=new Blob([wav(880)],{type:'audio/wav'});await reject(changed,'MIX_SOURCE_MISMATCH')
 const wrongReceipt=input(2);wrongReceipt.tracks[0].receipt={...wrongReceipt.tracks[0].receipt,decodedFrames:24000,duration:.5};await reject(wrongReceipt,'MIX_DECODE_MISMATCH')
+assertChildrenReleased()
 const wrongBacking=input(2);wrongBacking.project.audioSourceRef.backingSha256='b'.repeat(64);await reject(wrongBacking,'MIX_SOURCE_MISMATCH')
 console.log(JSON.stringify({runtime:'node-web-audio-api 2.2.0 (approved TEMP)',engine:'existing src/audio.js',results,receiptSource:'actual FFmpeg decode',originalsPreserved:true,budgetAndInvalidInputRejected:true,parentRssMiB:Math.round(process.memoryUsage().rss/1048576)}))
 

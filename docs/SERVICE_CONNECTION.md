@@ -1,5 +1,9 @@
 # 단일 앱 서비스 연결 계약
 
+## 2026-10-13 native renderer 작업 종료 경계
+
+renderProjectMix는 own child의 결과/오류/timeout 뒤 SIGKILL 및 close를 기다린 후 반환한다. fork 생성 실패도 error→close 경로에서 실패를 반환한다. 이전 renderer 프로세스가 살아 있는 동안 다음 upload/retry/job을 시작하는 시간 겹침을 방지하며 native 메모리 peak hard limit은 host 책임으로 유지한다. 실제 승인 runtime2–4 Part/timeout/decode 실패 및 격리 SQL pipeline QA에서 반환 시 live child0·기존 output SHA·원본/완료 상태를 검증했다. 사용자 앱/CPU 작업 종료·runtime 설치·운영 host 활성화는 없다.
+
 ## 2026-10-13 R5 등록 원본과 개인 결과의 정확한 분석 연결
 
 loadRemoteMeasuredProfileIdentityInput은 기존 getVoiceSource/인증 session을 사용하고 등록된9필드 metadata의 출처·revision·음역 hash·Sample 분석 hash/version/ID/길이를 확인한다. 개인 manifest의 Sample recordId는 등록 uploadIntentId이며 range recordId는 voice-range:측정 revision이다. 원본 Blob/공개 URL을 반환하거나 사용자별 선택·갱신을 자동 결정하지 않는다. source_metadata가 없는 legacy 원본은 거부한다.

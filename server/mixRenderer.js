@@ -69,11 +69,17 @@ export async function renderProjectMix(input,options={}) {
     // separate process rather than worker_threads for this native runtime.
     const worker=fork(new URL('./mixRenderWorker.mjs',import.meta.url),[],{serialization:'advanced',windowsHide:true,
       execArgv:['--max-old-space-size=128'],env:process.env.SystemRoot?{SystemRoot:process.env.SystemRoot}:{},stdio:['ignore','ignore','ignore','ipc']})
-    let finished=false
-    const finish=(error,value)=>{if(finished)return;finished=true;clearTimeout(timer);worker.kill();error?reject(error):resolve(value)}
+    let finished=false,pending
+    // A received result still leaves the native process and its allocations
+    // alive. Release it before allowing upload/retry/the next job to begin.
+    const finish=(error,value)=>{if(finished)return;finished=true;pending={error,value};clearTimeout(timer);worker.kill('SIGKILL')}
     const timer=setTimeout(()=>finish(fail('MIX_RENDER_TIMEOUT')),timeoutMs)
     worker.once('error',()=>finish(fail('MIX_RENDER_FAILED')))
     worker.once('exit',()=>{if(!finished)finish(fail('MIX_RENDER_FAILED'))})
+    worker.once('close',()=>{
+      if(!finished)finish(fail('MIX_RENDER_FAILED'))
+      pending.error?reject(pending.error):resolve(pending.value)
+    })
     worker.once('message',message=>{
       if(message?.error)return finish(fail(['MIX_MEMORY_BUDGET_EXCEEDED','MIX_DECODE_MISMATCH'].includes(message.error)?message.error:'MIX_RENDER_FAILED'))
       if(!(message?.bytes instanceof ArrayBuffer) || message.bytes.byteLength!==outputBytes || message.duration!==frames/44100)return finish(fail('INVALID_MIX_RESULT'))

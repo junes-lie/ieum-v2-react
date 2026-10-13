@@ -18,6 +18,10 @@
 
 ### 실제 진행과 다음 gate
 
+2026-10-13 독립 R3 운영 준비 보완: 기존 native Mix renderer가 결과 수신 뒤 own child close까지 기다려 다음 처리와 살아 있는 이전 native 프로세스가 겹치지 않도록 했다. 실제 짧은2–4 Part 결과/실패 및 SQL pipeline QA에서 live child0·기존 출력 SHA/원본 유지 확인. OS RSS hard limit·운영 host/Auth/DB/Storage·물리 마이크/실제 음악 인수는 기존 별도 gate다. 사용자 프로세스 종료/새 runtime 설치는 없으며 전체 R3 완료로 계산하지 않는다.
+
+R5 원본 연결98b4fb3269f5afb5960d9f6aeb0b0ef310f39e82 배포 증거: 같은 SHA Production7037405005 및 Vercel success/Deployment has completed, Production API 익명401·기존 JS200/hash 일치. 실제 서비스/AI/디자인 인수는 유지한다.
+
 2026-10-13 R5 독립 데이터 연결 마감: 서버 등록 Profile의 실제 source metadata→private 개인 manifest→불변 received result→본인 exact ref→기존 Track 입력이 하나의 경로로 연결됐다. 결과 저장의 추가 source_binding migration은 Sample 원본 hash뿐 아니라 등록 Sample ID·실제 분석값/버전까지 대조한다. 기존 실제 격리 SQL 등록/조회/저장/session 연결과 변조/복원/상태 독립 검증 및 build 통과. 미등록/legacy 원본을 생성 가능한 실제 분석으로 승격하지 않는다. 실제 AI/승인 형상·원격 연결·자동 선택/갱신 정책 gate는 유지하고 입력 연결 완료와 구분한다. 운영 migration 순서는 profile_source_registration + personal_identity_results → personal_identity_source_binding. 실제 작업 공수는 미측정이며 예산을 새로 초기화하지 않는다.
 
 owner registry 17173a1b9f3d441027ce99a1d3548184c9aa1615 배포 증거: 같은 SHA의 GitHub Production7037143939 및 Vercel Deployment has completed, 신규 Production API 익명401/private no-store, 기존 JS200/hash 로컬 일치. Vercel API READY 원문·인증 사용자/실서비스·AI/시각 인수는 별도 미확인이다.
