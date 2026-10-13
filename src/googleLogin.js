@@ -4,6 +4,23 @@ const storageKey='ieum:google-pkce:v1'
 const fail=code=>new ServiceError('로그인을 완료하지 못했어요. 기존 녹음과 프로필은 유지됩니다.',{code})
 const base64url=bytes=>btoa(String.fromCharCode(...bytes)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'')
 const token=value=>typeof value==='string' && value.length>0 && value.length<=16384 && !/[\s,]/.test(value)
+const historyText=value=>typeof value==='string' && value.trim() && value.length<=128 && !/[\x00-\x1f]/.test(value)
+// Preserve only the existing App history contract, never authority, credentials,
+// audio, or an external redirect. The App must recheck Part availability on return.
+function checkedReturnContext(value,returnHash){
+  if(value===undefined)return undefined
+  if(!value || Array.isArray(value) || ![Object.prototype,null].includes(Object.getPrototypeOf(value)))throw fail('INVALID_AUTH_RETURN')
+  const fields=['ieumScreen','selectedSongId','selectedProjectId','activeCreatedProjectId','finderPartId','selectedVocalId',
+    'selectedMatchVocalId','voiceEditMode','voiceReturnScreen','createProjectSongId','createDraftKey','scrollTop']
+  if(Object.keys(value).some(key=>!fields.includes(key)))throw fail('INVALID_AUTH_RETURN')
+  for(const [key,item] of Object.entries(value)){
+    if(key==='scrollTop'){
+      if(!Number.isFinite(item) || item<0)throw fail('INVALID_AUTH_RETURN')
+    }else if(item!==null && !historyText(item))throw fail('INVALID_AUTH_RETURN')
+  }
+  if(value.ieumScreen!==undefined && value.ieumScreen!==returnHash.slice(1))throw fail('INVALID_AUTH_RETURN')
+  return structuredClone(value)
+}
 function originURL(value,local=false){
   let url
   try{url=new URL(value)}catch{throw fail('INVALID_AUTH_CONFIGURATION')}
@@ -71,9 +88,10 @@ export function createGoogleLogin({session,authUrl,publishableKey,appUrl,storage
     timer?.unref?.()
   }
   const login={
-    async begin(returnHash='#my'){
+    async begin(returnHash='#my',returnContext){
       if(busy)throw fail('AUTH_IN_PROGRESS')
       if(!/^#[a-z-]+$/.test(returnHash))throw fail('INVALID_AUTH_RETURN')
+      const context=checkedReturnContext(returnContext,returnHash)
       busy=true
       const version=++generation
       try{
@@ -82,7 +100,8 @@ export function createGoogleLogin({session,authUrl,publishableKey,appUrl,storage
         const challenge=base64url(new Uint8Array(await cryptoImpl.subtle.digest('SHA-256',new TextEncoder().encode(verifier))))
         check(version)
         const callback=new URL(app);callback.searchParams.set('ieum_auth_state',state)
-        const pending={verifier,state,authOrigin:auth.origin,appOrigin:app.origin,returnHash,createdAt:now()}
+        const pending={verifier,state,authOrigin:auth.origin,appOrigin:app.origin,returnHash,createdAt:now(),
+          ...(context===undefined?{}:{returnContext:context})}
         try{storage.setItem(storageKey,JSON.stringify(pending))}catch{throw fail('AUTH_STORAGE_UNAVAILABLE')}
         const authorize=new URL('/auth/v1/authorize',auth)
         authorize.searchParams.set('provider','google');authorize.searchParams.set('redirect_to',callback.href)
@@ -109,6 +128,8 @@ export function createGoogleLogin({session,authUrl,publishableKey,appUrl,storage
           !Number.isFinite(pending.createdAt) || now()<pending.createdAt || now()-pending.createdAt>30*60*1000){clear();throw fail('INVALID_AUTH_CALLBACK')}
         const code=callback.searchParams.get('code')
         if(!token(code)){clear();throw fail('INVALID_AUTH_CALLBACK')}
+        let context
+        try{context=checkedReturnContext(pending.returnContext,pending.returnHash)}catch{clear();throw fail('INVALID_AUTH_CALLBACK')}
         await ready();check(version)
         clear()
         const result=await json(`${auth.origin}/auth/v1/token?grant_type=pkce`,{method:'POST',headers:{apikey:key,'Content-Type':'application/json',Accept:'application/json'},
@@ -120,7 +141,7 @@ export function createGoogleLogin({session,authUrl,publishableKey,appUrl,storage
         const connected=await session.connect(result.access_token,{expiresAt});check(version)
         active={accessToken:result.access_token,refreshToken:result.refresh_token,userId:connected.userId,expiresAt}
         schedule()
-        return {session:connected,returnHash:pending.returnHash}
+        return {session:connected,returnHash:pending.returnHash,...(context===undefined?{}:{returnContext:context})}
       }catch(error){
         if(error instanceof ServiceError)throw error
         throw fail('INVALID_AUTH_CALLBACK')

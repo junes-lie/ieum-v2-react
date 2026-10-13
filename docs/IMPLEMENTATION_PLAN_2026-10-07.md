@@ -1,3 +1,6 @@
+## 2026-10-13 R3 독립 복귀 연결 선행
+
+기존 Google 로그인 준비의 hash-only 복귀를 기존 App History snapshot 선택 보존으로 보완했다. Song/Project/Part·보컬·Setup 복귀/개설·scroll을 같은 탭 임시 문맥으로 반환하고 공개 URL/자격 증명/원본을 담지 않는다. 이는 App History 연결 계약이며 실제 서비스/로그인 화면 활성화·자동 참여를 하지 않는다. 관련 실제 Crypto/주입 OAuth 재진입·snapshot/유효 입력/저장 문맥·기존 인증 QA와 build 통과. 운영 App caller는 로그인 뒤 현재 사용자·Project/Part 가용성을 다시 확인해야 하며 실제 R3 완료 이후 R4 조건은 유지한다. 기존 완료 증거·예산/실효 공수 미측정 유지.
 ## 2026-10-13 R1 독립 원본 보존 잔여 마감
 
 Recorder에서 저장키와 임시본의 실제 Project/Part/원본 계약을 함께 확인한다. 불일치하면 기존 복원 오류 상태에서 새 녹음·Review·제출을 막고 원본을 보존한다. 정상/legacy ownerless 및 다른 사용자 보호·2–4 Part 기존 흐름은 유지한다. 관련 격리 user-journey 및 실제 App/native IndexedDB wrong-context·재시도·Back 검증/build 통과. 배포 후 같은 Production QA로 마감하며 실제 마이크/음악/청취·외부 연결/디자인 gate를 축소하지 않는다. 기존 증거/예산 유지, 실효 공수 미측정.

@@ -1,3 +1,8 @@
+## 2026-10-13 R3 — 기존 로그인 복귀 문맥 보존
+
+Google PKCE helper는 기존 returnHash 외에 기존 App History의 선택 Song/Project/Part·보컬·Voice Setup 복귀/개설 문맥·scroll을 선택적으로 보존한다. 호출 시 snapshot을 고정하고 같은 탭의 임시 PKCE 저장에만 남기며 OAuth/공개 URL에는 대상 ID를 추가하지 않는다. 기존 hash-only 호출은 유지한다. 새로운 UI·IA·로그인 위치·데이터 이관·Part 배정/참여 정책은 추가하지 않는다.
+
+기존 필드 외 userId/토큰/Blob/중첩 값·잘못된 화면/scroll을 거부하고, callback의 저장 문맥도 token 교환 전에 검사/한 번 소비한다. qa:service-auth에서 실제 Crypto·주입 OAuth/session·helper 재진입 후 원래 target/원본 snapshot·URL 비노출·invalid 입력/저장 문맥 거부 및 기존 인증 회귀 통과. build45modules/index-BzC5wER3.js exact 유지(운영 App remote 활성화 전 준비 함수). 실제 Google redirect·두 사용자·원격 DB/Storage·운영 App 복귀 인수는 미완료다. 기존 단계/예산·사용자 서버3파일/연구 보존, 실효 공수 미측정.
 ## 2026-10-13 R1 — 임시 녹음 복원 대상 검사
 
 기존 Recorder의 draft 복원이 userId만 확인하고 Project/Part 내용을 확인하지 않던 결함을 수정했다. 저장 내용이 현재 대상과 다르거나 유효 원본이 없으면 기존 복원 오류/다시 불러오기 상태를 사용하고 새 녹음·Review·제출을 차단한다. 기존 DB 원본을 삭제하거나 자동 수정하지 않는다. 다른 사용자의 legacy 임시본은 종전처럼 복원/삭제하지 않고, 정상 ownerless legacy 및 동일 대상2–4 Part 복원·직접 제출은 유지한다.
@@ -2073,3 +2078,13 @@ qa/verify-music-source-encode.py로 기존 local VAE만 실제 CUDA FP32/동일 
 ### 138e6c3 배포 증거 — 2026-10-13
 
 138e6c3d704ca367afff5d49cb6c337d03ff21f1 origin/main 일치·동일 SHA Production7039690506·Vercel success. Production HTML/JS200·index-1pEtYa4t.js SHA256 a68fa2c6daf7ea1d44ad47e89dbf8b44fe13ced8cf9c88f419f5b8a4d55893ae local exact 유지. Track 소비 함수는 운영 remote 자동 활성화 전 준비 코드이며 이 배포를 실제 사용자/AI/자연 혼합 인수로 표시하지 않는다. Vercel API READY 원문은 미확인. 기존 서버3파일/연구 변경 보존.
+### a0b7e99 Production 확인 — 2026-10-13
+
+a0b7e9959a12e8862a566b6a83285dc23929732c origin/main 일치·동일 SHA Production7039878502·Vercel success. Production 기존 App/native IndexedDB QA에서 wrong Project/Part·현재 사용자 키의 다른 owner 임시본 모두 Review/새 녹음/제출을 차단하고 retry/Back 후 원본 byte·제출수0 보존 확인. JS index-BzC5wER3.js HTTP200·SHA256 0a164b821db85a64d969d1af38870be3540b4175fc8cebb726d4de2119c22630 local exact. Vercel API READY 원문·물리 음성/청취·실제 서비스/AI/디자인은 미확인으로 유지한다. Notion/figma-desktop 전용 도구 현 노출0개 재확인; 온라인 Source를 읽었다고 주장하지 않는다.
+### 2026-10-13 후속 독립 실행 gate 확인 — 아직 전체 완료 아님
+
+직전 goal turn은 a0b7e99 원본 보존 코드·native/local/Production QA·main 배포로 progress다. 현재 추가 핵심 실행을 위해 실제 R3/R5/R6/R7 선행 조건을 재확인했다. 로컬 .env는 example만 있고 현 프로세스 IEUM_DB_PROVIDER/IEUM_AUTH_PROVIDER/IEUM_SUPABASE_URL/PUBLISHABLE_KEY/SECRET_KEY/VITE_IEUM_SERVICE_URL은 모두 absent(값 출력 없음). 준비 계약/API를 실제 두 사용자 서비스로 활성화할 근거는 없다. 기존 계획 R4는 실제 R3 완료 이후이므로 초대·공유·Push 구현을 임의 선행하지 않았다.
+
+Notion/figma-desktop 전용 세션 도구 노출0. 설정 변경 없이 지정된 http://127.0.0.1:3845/mcp에 MCP initialize 확인 시 PowerShell HttpIOException: Received an invalid chunk extension: '76-65-6E-74-3A-20-6D-65-73-73-61-67-65'. (InvalidResponse). 동일 endpoint의 HTTP1.0 curl 확인도 curl(56) Malformed encoding found in chunked-HTTP/1.1 200 OK/transfer-encoding:chunked/content-type:text/event-stream. JSON 초기화/원본 frame 읽기 성공으로 처리하지 않는다. Computer Use/Remote Figma/설정·재설치·원본 추정 우회 없음. 연결 복구 전 추가 시각 구현/형상 확정 불가.
+
+host 읽기 전용 RAM 관측 free2.78GiB/total15.95GiB; sandbox CIM은 접근 오류여서 host 확인 사용. 기존 actual shared-trait AI 실행기는 runtime import 전에8GiB admission을 요구하므로 모델을 실행하지 않았다. 준비 조건을 또 만들거나 같은 실패 추론을 반복하지 않았다. 실제 형상/자연 혼합 승인·갱신/버전/fallback 정책 및 운영 참가자 결과 접근, 실제 음악 권리/품질, 물리 마이크/청취/디자인 인수는 RAM만의 문제로 계산하지 않는다. 새로운 제품/UX/접근 정책을 임의 확정하지 않는다. 이번 관측으로 전체 독립 작업 완료를 입증하지 못했으며 Goal active 유지, 재검증 blocked audit 첫 회로 기록한다.

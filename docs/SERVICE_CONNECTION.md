@@ -426,3 +426,9 @@ P0 실제 모델 기술 검증과 기존 Record의 검증된 출력 표시 연�
 - 업로드 준비가 기존 파일을 재검증했다면 `{uploadIntentId,uploadStatus:'verified',verifiedFile:{sha256,size,contentType}}`로 응답할 수 있음. 정확히 같은 원본 receipt일 때만 재업로드를 건너뜀. 파일 존재나 클라이언트 uploaded=true만으로 이 응답을 만들면 안 됨.
 
 기본 QA13 suites와 `npm run qa:service-http`의 loopback5MB 전송은 실제 외부서비스 성공이 아니다. [Vercel Node Web handler](https://vercel.com/docs/functions/runtimes/node-js)를 기존 Vite 프로젝트의 api/에 사용한다. 로그인 UI/App 실제 사용자 경계·권한/RLS/DB transaction·실제 bucket quota·두 사용자 allow/deny/동시성·Mix job/result/Push는 계속 남아 있다.
+
+## 2026-10-13 Google PKCE 기존 App 복귀 계약
+
+begin(returnHash, returnContext?)는 기존 App history의 ieumScreen/selectedSongId/selectedProjectId/activeCreatedProjectId/finderPartId/selectedVocalId/selectedMatchVocalId/voiceEditMode/voiceReturnScreen/createProjectSongId/createDraftKey/scrollTop만 받는다. 선택값은 snapshot·nullable bounded string, scroll은 finite nonnegative이며 ieumScreen은 hash와 일치해야 한다. 새로운 returnContext를 URL에 싣지 않고 동일 탭 임시 저장에만 보존한다. finish는 callback context를 token 교환 전에 재검사하고 성공 뒤 같은 returnContext를 caller에게 돌려준다. 과거 hash-only 임시 context는 지원한다.
+
+이는 가용성/권한 증거가 아니다. 실제 App caller는 원래 화면·곡·Project·Part로 복귀한 뒤 현재 세션/배정/마감 여부를 기존 Gate로 재검사해야 한다. 별도 로그인 UI·자동 join/invite·local 데이터 이관·remote 활성화 없음. 실제 Crypto/주입 HTTP/helper 재진입 검사이며 실제 Google·운영 App·기기 인수는 미완료.

@@ -168,4 +168,30 @@ assert.equal(oauthSession.snapshot().authenticated,false);assert.equal(memory.si
 for(const configuration of [{...settings,publishableKey:'sb_secret_do_not_expose'},{...settings,authUrl:'http://unsafe.invalid'},
   {...settings,appUrl:'https://ieum.example/?redirect=https://external.invalid'},
   {...settings,publishableKey:`a.${Buffer.from(JSON.stringify({role:'service_role'})).toString('base64url')}.c`}])assert.throws(()=>createGoogleLogin(configuration),error=>error.code==='INVALID_AUTH_CONFIGURATION')
+logoutFails=false
+const returnContext={ieumScreen:'detail',selectedSongId:'song-a',selectedProjectId:'project-a',finderPartId:'harmony',
+  activeCreatedProjectId:null,selectedVocalId:'min',selectedMatchVocalId:null,voiceEditMode:null,voiceReturnScreen:'detail',
+  createProjectSongId:null,createDraftKey:'draft-a',scrollTop:180}
+const contextSnapshot=structuredClone(returnContext)
+const contextStart=login.begin('#detail',returnContext);returnContext.selectedProjectId='mutated-during-await'
+const contextAuthorize=new URL((await contextStart).authorizeUrl)
+assert.ok(!contextAuthorize.href.includes('project-a') && !contextAuthorize.href.includes('harmony'))
+const contextCallback=new URL(contextAuthorize.searchParams.get('redirect_to'));contextCallback.searchParams.set('code','one-time-code')
+assert.ok(!contextCallback.href.includes('project-a'))
+const reentered=createGoogleLogin(settings)
+assert.deepEqual((await reentered.finish(contextCallback.href,value=>{cleaned=value})).returnContext,contextSnapshot)
+assert.equal(cleaned,'https://ieum.example/#detail');assert.equal(memory.size,0);reentered.disconnect()
+for(const invalid of [{...contextSnapshot,userId:'forged'}, {...contextSnapshot,accessToken:'private'},
+  {...contextSnapshot,blob:new Blob(['audio'])},{...contextSnapshot,ieumScreen:'workspace'},
+  {...contextSnapshot,scrollTop:-1},{...contextSnapshot,finderPartId:{id:'harmony'}}]){
+  const before=oauthCalls.length
+  await assert.rejects(login.begin('#detail',invalid),error=>error.code==='INVALID_AUTH_RETURN')
+  assert.equal(oauthCalls.length,before);assert.equal(memory.size,0)
+}
+url=await callback();const [pendingKey,pendingText]=[...memory.entries()][0]
+memory.set(pendingKey,JSON.stringify({...JSON.parse(pendingText),returnContext:{ieumScreen:'workspace',userId:'forged'}}))
+const beforeContextTokens=oauthCalls.length
+await assert.rejects(login.finish(url.href,value=>{cleaned=value}),error=>error.code==='INVALID_AUTH_CALLBACK')
+assert.equal(oauthCalls.length,beforeContextTokens);assert.equal(memory.size,0)
+console.log('PASS existing App return context: fixed Song/Project/Part/history across login helper re-entry, no IDs in OAuth URL, no credentials/Blob/authority, invalid stored context refused before token exchange. No automatic join or App activation.')
 console.log('PASS Google PKCE bridge: real SHA256/random challenge, same-tab verifier/context only, readiness gate, callback/state/origin/expiry/URL cleanup, server-verified user/session, refresh rotation and one idle timer, suspended-tab expiry opens fresh scopes only, renewal failure/logouts cancel timer, callback concurrency/privacy. Injected clock/OAuth, not actual Google/App activation or reload persistence.')
