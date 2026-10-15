@@ -1,0 +1,133 @@
+[
+  {
+    "name": "pitch 90",
+    "pass": true,
+    "detail": 90
+  },
+  {
+    "name": "pitch 146.83",
+    "pass": true,
+    "detail": 147
+  },
+  {
+    "name": "pitch 220",
+    "pass": true,
+    "detail": 220
+  },
+  {
+    "name": "pitch 440",
+    "pass": true,
+    "detail": 440
+  },
+  {
+    "name": "pitch 880",
+    "pass": true,
+    "detail": 880
+  },
+  {
+    "name": "pitch changes proportions",
+    "pass": true,
+    "detail": {
+      "low": 0.27,
+      "high": 0.81
+    }
+  },
+  {
+    "name": "harmonics increase brightness",
+    "pass": true,
+    "detail": {
+      "a": 220,
+      "b": 415
+    }
+  },
+  {
+    "name": "gain-invariant descriptors",
+    "pass": true,
+    "detail": {
+      "a": {
+        "pitch": 0.47,
+        "brightness": 0,
+        "air": 0,
+        "phase": 0.99
+      },
+      "b": {
+        "pitch": 0.47,
+        "brightness": 0,
+        "air": 0,
+        "phase": 0.99
+      }
+    }
+  },
+  {
+    "name": "deterministic same input",
+    "pass": true
+  },
+  {
+    "name": "opposite phase stereo",
+    "pass": true
+  },
+  {
+    "name": "sample-rate consistency",
+    "pass": true
+  },
+  {
+    "name": "reject silence",
+    "pass": true
+  },
+  {
+    "name": "reject noise",
+    "pass": true
+  },
+  {
+    "name": "reject too short",
+    "pass": true
+  },
+  {
+    "name": "analysis cancellation",
+    "pass": true
+  },
+  {
+    "name": "A closed, within record, raised",
+    "pass": true,
+    "detail": {
+      "seam": 1.3440693017233999e-15,
+      "minR": 1.0052204510142528,
+      "maxR": 2.2153029770827257,
+      "minY": 0.043,
+      "maxY": 1.3005112694277579
+    }
+  },
+  {
+    "name": "B closed, within record, raised",
+    "pass": true,
+    "detail": {
+      "seam": 1.11722656473849e-15,
+      "minR": 1.073960831859262,
+      "maxR": 2.1853385116788417,
+      "minY": 0.043,
+      "maxY": 1.6408841196140096
+    }
+  },
+  {
+    "name": "C closed, within record, raised",
+    "pass": true,
+    "detail": {
+      "seam": 1.2543094401183198e-15,
+      "minR": 1.0461526737933156,
+      "maxR": 2.235033408519202,
+      "minY": 0.043,
+      "maxY": 1.6678675582652025
+    }
+  },
+  {
+    "name": "D closed, within record, raised",
+    "pass": true,
+    "detail": {
+      "seam": 1.0371267395744223e-15,
+      "minR": 1.104276732723808,
+      "maxR": 2.2105082646301955,
+      "minY": 0.043,
+      "maxY": 1.449331085804067
+    }
+  }
+]

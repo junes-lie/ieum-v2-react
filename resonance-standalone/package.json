@@ -8,12 +8,14 @@
     "esbuild": "0.28.2"
   },
   "name": "ieum-resonance",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "private": true,
   "type": "module",
   "scripts": {
     "build": "node build.mjs",
     "test": "node qa/analysis.mjs",
-    "test:browser": "node qa/browser.cjs"
+    "test:browser": "node qa/browser.cjs",
+    "test:extended": "node qa/extended.cjs",
+    "capture:motion": "node qa/motion.cjs"
   }
 }

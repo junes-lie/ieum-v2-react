@@ -1,0 +1,182 @@
+{
+  "date": "2026-10-15T18:19:44.686Z",
+  "environment": "Headless Chromium / SwiftShader software WebGL; not device-GPU performance certification",
+  "passed": 39,
+  "checks": [
+    {
+      "name": "renders 3D",
+      "pass": true
+    },
+    {
+      "name": "embedded Korean font",
+      "pass": true
+    },
+    {
+      "name": "signature focuses matching record layer",
+      "pass": true
+    },
+    {
+      "name": "restore collective resonance",
+      "pass": true
+    },
+    {
+      "name": "2D transition",
+      "pass": true
+    },
+    {
+      "name": "3D transition",
+      "pass": true
+    },
+    {
+      "name": "demo independent analysers",
+      "pass": true
+    },
+    {
+      "name": "pause holds position",
+      "pass": true
+    },
+    {
+      "name": "resume preserves position",
+      "pass": true
+    },
+    {
+      "name": "seek while paused",
+      "pass": true
+    },
+    {
+      "name": "no silent demo fallback for inactive real recording",
+      "pass": true
+    },
+    {
+      "name": "uploaded audio analyzed",
+      "pass": true,
+      "detail": {
+        "medianHz": 220,
+        "lowHz": 220,
+        "highHz": 220,
+        "centroidHz": 222,
+        "clarity": 1,
+        "flatness": 0.0007,
+        "voicedFrames": 60,
+        "activeFrames": 60,
+        "sampledFrames": 60,
+        "peakRms": 0.17695444140288863,
+        "clipping": 0
+      }
+    },
+    {
+      "name": "profile bound to geometry",
+      "pass": true
+    },
+    {
+      "name": "only loaded voice reacts",
+      "pass": true
+    },
+    {
+      "name": "mute affects audio and motion",
+      "pass": true
+    },
+    {
+      "name": "hide independent from mute",
+      "pass": true
+    },
+    {
+      "name": "different voice changes shape",
+      "pass": true
+    },
+    {
+      "name": "common timeline duration",
+      "pass": true
+    },
+    {
+      "name": "short stem ends independently",
+      "pass": true
+    },
+    {
+      "name": "natural end stops and resets",
+      "pass": true
+    },
+    {
+      "name": "repeat restarts synchronized tracks",
+      "pass": true
+    },
+    {
+      "name": "reject silence.wav without losing identity",
+      "pass": true
+    },
+    {
+      "name": "reject noise.wav without losing identity",
+      "pass": true
+    },
+    {
+      "name": "reject broken.wav without losing identity",
+      "pass": true
+    },
+    {
+      "name": "profile dialog",
+      "pass": true
+    },
+    {
+      "name": "save-flower download",
+      "pass": true
+    },
+    {
+      "name": "save-profile download",
+      "pass": true
+    },
+    {
+      "name": "keyboard closes dialog",
+      "pass": true
+    },
+    {
+      "name": "particle control",
+      "pass": true
+    },
+    {
+      "name": "motion freeze",
+      "pass": true
+    },
+    {
+      "name": "height control",
+      "pass": true
+    },
+    {
+      "name": "demo reset",
+      "pass": true
+    },
+    {
+      "name": "no overflow 320",
+      "pass": true
+    },
+    {
+      "name": "no overflow 390",
+      "pass": true
+    },
+    {
+      "name": "no overflow 768",
+      "pass": true
+    },
+    {
+      "name": "rebuild releases geometries",
+      "pass": true,
+      "detail": {
+        "before": 10,
+        "after": 10
+      }
+    },
+    {
+      "name": "finite particle geometry after rebuilds",
+      "pass": true
+    },
+    {
+      "name": "no external requests",
+      "pass": true,
+      "detail": []
+    },
+    {
+      "name": "no console / JS errors",
+      "pass": true,
+      "detail": []
+    }
+  ]
+}
