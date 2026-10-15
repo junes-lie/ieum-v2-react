@@ -1,0 +1,17 @@
+{
+  "events": [
+    {
+      "state": "idle",
+      "seconds": 0
+    },
+    {
+      "state": "playing",
+      "seconds": 6.04310000000149
+    },
+    {
+      "state": "paused",
+      "seconds": 19.601300000000744
+    }
+  ],
+  "duration": 27.037400000002236
+}

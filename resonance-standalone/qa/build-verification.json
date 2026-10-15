@@ -1,0 +1,8 @@
+{
+  "artifact": "public/IEUM-Resonance.html",
+  "sha256": "4a19364929da4c67eaf54ee383f1c0c77833059821cef58b5ed1e098cfdafa94",
+  "analysisChecks": 19,
+  "browserChecks": 39,
+  "extendedChecks": 14,
+  "note": "Extended 60s soak preceded the final inactive-recording guard and negative-delta guard. All 39 browser checks ran after both guards. Still captures freeze further draws during readback; transition behavior is tested separately. Motion recording does not freeze rendering."
+}

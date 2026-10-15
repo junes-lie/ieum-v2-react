@@ -1,0 +1,205 @@
+{
+  "date": "2026-10-15T18:15:04.479Z",
+  "environment": "Linux headless Chromium / SwiftShader; software rendering, not target device performance or listening verification",
+  "soakMs": 60000,
+  "checks": [
+    {
+      "name": "four participants before first play",
+      "pass": true
+    },
+    {
+      "name": "real FFT bands populated",
+      "pass": true
+    },
+    {
+      "name": "pause settles energy and bands",
+      "pass": true
+    },
+    {
+      "name": "two participants render",
+      "pass": true
+    },
+    {
+      "name": "addition removal preserves identity",
+      "pass": true
+    },
+    {
+      "name": "existing particle phase preserved",
+      "pass": true
+    },
+    {
+      "name": "crossing field changes composition",
+      "pass": true
+    },
+    {
+      "name": "four different silhouettes",
+      "pass": true
+    },
+    {
+      "name": "same profile exact SVG reproduction",
+      "pass": true
+    },
+    {
+      "name": "repeated playback stable",
+      "pass": true
+    },
+    {
+      "name": "soak rendered continuously",
+      "pass": true
+    },
+    {
+      "name": "soak GPU resources bounded",
+      "pass": true,
+      "detail": {
+        "geometries": [
+          12,
+          12,
+          12,
+          12,
+          12,
+          12,
+          12,
+          12,
+          12,
+          12,
+          12,
+          12
+        ],
+        "textures": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ]
+      }
+    },
+    {
+      "name": "no runtime errors",
+      "pass": true,
+      "detail": []
+    },
+    {
+      "name": "four-person mobile fits",
+      "pass": true
+    }
+  ],
+  "samples": [
+    {
+      "elapsed": 5004,
+      "frames": 452,
+      "fps": 7.297494526879109,
+      "geometries": 12,
+      "textures": 1,
+      "heap": 44700000,
+      "sources": 4
+    },
+    {
+      "elapsed": 10008,
+      "frames": 714,
+      "fps": 60.00393468424128,
+      "geometries": 12,
+      "textures": 1,
+      "heap": 44700000,
+      "sources": 4
+    },
+    {
+      "elapsed": 15010,
+      "frames": 925,
+      "fps": 60.0039346842417,
+      "geometries": 12,
+      "textures": 1,
+      "heap": 44700000,
+      "sources": 4
+    },
+    {
+      "elapsed": 20016,
+      "frames": 1206,
+      "fps": 59.99803285138169,
+      "geometries": 12,
+      "textures": 1,
+      "heap": 44700000,
+      "sources": 4
+    },
+    {
+      "elapsed": 25451,
+      "frames": 1298,
+      "fps": 19.673421207948092,
+      "geometries": 12,
+      "textures": 1,
+      "heap": 44700000,
+      "sources": 4
+    },
+    {
+      "elapsed": 30460,
+      "frames": 1488,
+      "fps": 39.342972361561756,
+      "geometries": 12,
+      "textures": 1,
+      "heap": 44700000,
+      "sources": 4
+    },
+    {
+      "elapsed": 35767,
+      "frames": 1574,
+      "fps": 3.23368784133372,
+      "geometries": 12,
+      "textures": 1,
+      "heap": 44700000,
+      "sources": 4
+    },
+    {
+      "elapsed": 40769,
+      "frames": 1669,
+      "fps": 9.62962962962963,
+      "geometries": 12,
+      "textures": 1,
+      "heap": 44700000,
+      "sources": 4
+    },
+    {
+      "elapsed": 45900,
+      "frames": 1828,
+      "fps": 37.375823743483934,
+      "geometries": 12,
+      "textures": 1,
+      "heap": 44700000,
+      "sources": 4
+    },
+    {
+      "elapsed": 50909,
+      "frames": 1926,
+      "fps": 42.731157377943106,
+      "geometries": 12,
+      "textures": 1,
+      "heap": 44700000,
+      "sources": 4
+    },
+    {
+      "elapsed": 56383,
+      "frames": 1966,
+      "fps": 5,
+      "geometries": 12,
+      "textures": 1,
+      "heap": 44700000,
+      "sources": 4
+    },
+    {
+      "elapsed": 61493,
+      "frames": 2082,
+      "fps": 0.7407407407407407,
+      "geometries": 12,
+      "textures": 1,
+      "heap": 44700000,
+      "sources": 4
+    }
+  ],
+  "errors": []
+}
