@@ -80,3 +80,31 @@
 **다음 시작 지점:** 브랜치 최신 commit 확인 → 본 문서와 실제 HTML/QA 읽기 → Phase 6의 미세 접힘/다발의 판 같은 인상 개선 → 실제 렌더 비교 → 관련 QA → 원격 체크포인트. 실제 보컬·실기기 자료가 제공되면 별도로 검증. 완료된 DSP/Transport를 다시 구현하지 않는다.
 
 실제 캔버스+오디오 녹화: 27.037초. 대기 0초, 재생 6.043초, 일시정지 19.601초. 정지 캡처는 readback 동안 추가 draw만 잠깐 중단하며, 모션 검증을 대신하지 않습니다. 영상은 실제 루프를 중단하지 않고 녹화했습니다.
+
+
+## 중단 체크포인트 — 실행 환경 연결 장애
+
+**전체 완료 아님. Phase 6–7 재개 필요.**
+
+- 마지막으로 원격 반영을 확인한 실행 가능한 구현: `c5d6e14bf1ab443bf66692ec6935b48f81d9f81d`. 해당 HTML·소스·검사·렌더·영상은 이 브랜치에 보존되어 있음.
+- 이 구현은 `ba01989cb6847bc133febc5b323c01d0c0abd4ac`의 개선과 별도 작업의 preview 설정 `089cd2b13da1bf19b8dd4fb0a0340855c06618b8`을 합친 것. 동시 작업의 `vercel.json`을 덮어쓰지 않았음.
+- 이후 로컬에서 다발 폭/높이 분산 축소, 선별 깊이 변화, 부드러운 바이닐 접근 곡선, 오디오 에너지에 따른 교차 입자 압축, 배경 대비를 추가 개선.
+- 그 수정본 SHA-256: `9c866280325be27ac072eb92f66967a6617dfe5679fd4fed3462768dd7228583`. 동일 파일의 분석/기하 19개 및 브라우저 39개 통과를 직접 확인. 실제 2–4명/개인/2D/3D/모션을 다시 캡처했고 실제 캔버스+오디오 녹화도 로컬에서 생성.
+- **마지막 추가 개선본의 HTML/이미지/영상 파일은 원격 업로드 전 실행기 연결이 끊겼다. 현재 공개된 실행 HTML과 혼동하지 말 것.**
+- 10분 연속 검증을 시작하여 초기 구간의 geometry 12 / texture 1 / source 4 및 heap 약 33.1MB를 확인했지만, 완료 결과는 회수하지 못함. **10분 검증 통과로 기록하지 않음.**
+- 실제 오류: `exec-server transport disconnected; failed to resume exec-server session: recovery timed out after 25s`. 기본 명령과 실행 중 검사 조회도 응답하지 않아 중단. Work 종료 이후 자동 진행을 약속하지 않음.
+
+### 최신 소스 수정 복구
+
+최신 세 소스 파일의 정확한 변경을 `qa/recovery-polish.json`에 저장했다. 원본/결과 Git blob SHA를 검사하는 `qa/recover-polish.mjs`도 포함했다. 이 복구 도구 자체는 실행기 장애 때문에 실행하지 못했으며, 모든 치환이 원격 기준 파일에서 정확히 한 번 매칭되고 결과 blob이 생성되는 것까지 확인했다.
+
+1. 최신 브랜치와 이 문서를 확인한다.
+2. `node qa/recover-polish.mjs` — 기준 파일에 다른 변경이 있으면 중단하며 덮어쓰지 않는다.
+3. `npm ci && npm run build && npm test`.
+4. 생성 HTML 해시를 위 로컬 수정본 해시와 비교하고, 브라우저 39개 회귀 검사를 다시 실행.
+5. `qa/capture.cjs`로 실제 렌더를 재생성. 정지 캡처는 readback 동안 추가 draw만 멈추며 모션 검증과 구분.
+6. `qa/motion.cjs`로 실제 캔버스/오디오 WebM 재생성. MP4가 필요하면 FFmpeg로 `-vf fps=30 -c:v libx264 -preset veryfast -crf 23 -pix_fmt yuv420p -c:a aac -movflags +faststart` 변환. 움직임 보간은 하지 않음.
+7. 최종 10분 연속 검증을 새로 완료하고 결과·시각 차이를 기록한 뒤 commit/push 및 원격 확인.
+8. Phase 6의 미세 결 차이와 실제 사람 보컬/실기기 미검증을 해결하기 전 전체 DoD 완료로 표시하지 않는다.
+
+기존 React 앱, main, Notion, Figma, Vercel Production은 이 작업에서 수정하지 않았다.
