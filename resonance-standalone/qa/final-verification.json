@@ -1,0 +1,60 @@
+{
+  "date": "2026-10-16T16:59:12.734Z",
+  "buildSha256": "81767576464395243c79465c37a487f12f8c9c254b552b28f9bcbd535004c92e",
+  "environment": "Chromium / SwiftShader; reduced-motion and failure-path checks, not physical device certification",
+  "checks": [
+    {
+      "name": "reduced motion defaults to stationary geometry",
+      "pass": true
+    },
+    {
+      "name": "audio remains functional without animated deformation",
+      "pass": true
+    },
+    {
+      "name": "reduced motion holds particle phase",
+      "pass": true
+    },
+    {
+      "name": "2 participants use line-only colored materials",
+      "pass": true
+    },
+    {
+      "name": "3 participants use line-only colored materials",
+      "pass": true
+    },
+    {
+      "name": "4 participants use line-only colored materials",
+      "pass": true
+    },
+    {
+      "name": "same descriptor ignores participant slot in SVG geometry",
+      "pass": true
+    },
+    {
+      "name": "render scene resource inventory",
+      "pass": true,
+      "detail": {
+        "count": 12
+      }
+    },
+    {
+      "name": "context-loss failure message visible",
+      "pass": true
+    },
+    {
+      "name": "personal signature remains available after renderer failure",
+      "pass": true
+    },
+    {
+      "name": "page teardown releases audio sources",
+      "pass": true
+    },
+    {
+      "name": "no JavaScript exceptions",
+      "pass": true,
+      "detail": []
+    }
+  ],
+  "errors": []
+}

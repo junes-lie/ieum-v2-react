@@ -16,6 +16,7 @@
     "test": "node qa/analysis.mjs",
     "test:browser": "node qa/browser.cjs",
     "test:extended": "node qa/extended.cjs",
-    "capture:motion": "node qa/motion.cjs"
+    "capture:motion": "node qa/motion.cjs",
+    "test:final": "node qa/final.cjs"
   }
 }

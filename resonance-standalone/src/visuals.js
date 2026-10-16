@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 import {record,flower,TAU,clamp} from './profiles.js';
+const strandLane=(i,n)=>{const u=i/(n-1);return u+.009*Math.sin(u*17)+.006*Math.sin(u*37);};
 const rand=n=>{const x=Math.sin(n*127.1+311.7)*43758.5453;return x-Math.floor(x);};
 const contactAt=(field,t)=>{const x=((t/TAU*128)%128+128)%128,i=Math.floor(x);return field[i]*(1-x+i)+field[(i+1)%128]*(x-i);};
 export function bloomSVG(p,size=320){
@@ -8,21 +9,21 @@ export function bloomSVG(p,size=320){
  const centers=Array.from({length:steps},(_,i)=>flower(p,i/steps*TAU,.5));
  for(let l=0;l<lanes;l++){
   let d='',pen=false;for(let i=0;i<=steps;i++){
-   flower(p,i/steps*TAU,l/(lanes-1),pt);
+   flower(p,i/steps*TAU,strandLane(l,lanes),pt);
    let hidden=false;
    for(let j=0;j<steps;j+=2){const gap=Math.min(Math.abs(i%steps-j),steps-Math.abs(i%steps-j));if(gap<38)continue;const c=centers[j];if(c[2]>pt[2]+.08&&Math.hypot(c[0]-pt[0],c[1]-pt[1])<.105){hidden=true;break;}}
    if(hidden){pen=false;continue;}
    d+=(pen?'L':'M')+(160+pt[0]*112).toFixed(2)+','+(156-pt[1]*112).toFixed(2);pen=true;
   }
-  paths+=`<path d="${d}" stroke="${p.color}" stroke-width=".85" opacity="${(.72+.25*Math.sin(Math.PI*l/(lanes-1))).toFixed(2)}"/>`;
+  paths+=`<path d="${d}" stroke="${p.color}" stroke-width="${(.62+.24*rand(l+45)).toFixed(2)}" opacity="${(.72+.25*Math.sin(Math.PI*l/(lanes-1))).toFixed(2)}"/>`;
  }
- let dots='';for(let i=0;i<400+p.air*280;i++){flower(p,rand(i+1)*TAU,rand(i+323),pt);const spread=1+.025+rand(i+88)*p.air*.12;dots+=`<circle cx="${(160+pt[0]*112*spread).toFixed(2)}" cy="${(156-pt[1]*112*spread).toFixed(2)}" r="${(.35+rand(i+12)*.65).toFixed(2)}" opacity="${(.25+rand(i+5)*.5).toFixed(2)}"/>`;}
+ let dots='';for(let i=0;i<400+p.air*280;i++){flower(p,rand(i+1)*TAU,rand(i+323),pt);const spread=1.005+Math.pow(rand(i+88),3)*(.10+p.air*.13);dots+=`<circle cx="${(160+pt[0]*112*spread).toFixed(2)}" cy="${(156-pt[1]*112*spread).toFixed(2)}" r="${(.35+rand(i+12)*.65).toFixed(2)}" opacity="${(.25+rand(i+5)*.5).toFixed(2)}"/>`;}
  return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 320 320" role="img" aria-label="${p.id} 목소리 매듭"><g fill="none" stroke-linecap="round">${paths}</g><g fill="${p.color}">${dots}</g></svg>`;
 }
 const vertex=`attribute vec3 aStart,aEnd;attribute float aT,aLane;uniform float uLift,uTime,uEnergy;uniform vec2 uResolution;uniform float uDpr;uniform vec4 uBands;varying float vFade,vEdge,vT,vLane;
 vec3 deform(vec3 p){float pulse=sin(aT*7.-uTime*2.);float bend=sin(aT*3.+uTime*.8);p.xz*=1.+uEnergy*.012*pulse+uBands.y*.015*bend;p.y=.018+(p.y-.018)*uLift+uLift*(.008*sin(aT*2.+uTime*.45)+uEnergy*(.07+.09*pulse*pulse)+uBands.x*.12*pow(sin(aT*2.-uTime),2.)+uBands.z*.035*sin(aT*11.-uTime*2.)+uBands.w*.05*bend);return p;}
-void main(){vec4 a=projectionMatrix*modelViewMatrix*vec4(deform(aStart),1.);vec4 b=projectionMatrix*modelViewMatrix*vec4(deform(aEnd),1.);vec2 direction=normalize((b.xy/b.w-a.xy/a.w)*uResolution);vec2 normal=vec2(-direction.y,direction.x);vec4 clip=mix(a,b,position.x);clip.xy+=normal*position.y*1.45*uDpr/uResolution*clip.w;gl_Position=clip;vEdge=position.y;vT=aT;vLane=aLane;vFade=(.80+.20*exp(-pow((aLane-.5)*4.,2.)))*(.86+.14*sin(aT*3.+.4));}`;
-const fragment=`uniform vec3 uColor;uniform float uOpacity,uAir,uTime;varying float vFade,vEdge,vT,vLane;void main(){float edge=1.-smoothstep(.60,1.,abs(vEdge));if(edge<.02)discard;float flow=.88+.12*sin(vT*8.-uTime*.65+vLane*3.);gl_FragColor=vec4(uColor,uOpacity*vFade*edge*flow);
+void main(){vec4 a=projectionMatrix*modelViewMatrix*vec4(deform(aStart),1.);vec4 b=projectionMatrix*modelViewMatrix*vec4(deform(aEnd),1.);vec2 direction=normalize((b.xy/b.w-a.xy/a.w)*uResolution);vec2 normal=vec2(-direction.y,direction.x);vec4 clip=mix(a,b,position.x);clip.xy+=normal*position.y*(1.45+.20*sin(aLane*91.)+.10*sin(aT*5.+aLane*23.))*uDpr/uResolution*clip.w;gl_Position=clip;vEdge=position.y;vT=aT;vLane=aLane;vFade=(.80+.20*exp(-pow((aLane-.5)*4.,2.)))*(.86+.14*sin(aT*3.+.4));}`;
+const fragment=`uniform vec3 uColor;uniform float uOpacity,uAir,uTime;varying float vFade,vEdge,vT,vLane;void main(){float edge=1.-smoothstep(.60,1.,abs(vEdge));if(edge<.02)discard;float flow=(.87+.13*sin(vT*8.-uTime*.65+vLane*3.))*(.94+.06*sin(vLane*123.+vT*5.));gl_FragColor=vec4(uColor,uOpacity*vFade*edge*flow);
 #include <colorspace_fragment>
 }`;
 export class ResonanceView{
@@ -41,7 +42,7 @@ export class ResonanceView{
  const label=new THREE.Mesh(new THREE.CircleGeometry(.72,80),new THREE.MeshBasicMaterial({map:tex}));label.rotation.x=-Math.PI/2;label.position.y=-.008;this.group.add(label);
  const hole=new THREE.Mesh(new THREE.CircleGeometry(.047,32),new THREE.MeshBasicMaterial({color:0x030405}));hole.rotation.x=-Math.PI/2;hole.position.y=.002;this.group.add(hole);
  }
- makeLayer(v){const contacts=this.contactField(v);const lanes=24,N=360,positions=new Float32Array(lanes*N*6),params=new Float32Array(lanes*N*2),laneValues=new Float32Array(lanes*N*2);let o=0,q=0;const xyz=[0,0,0];for(let l=0;l<lanes;l++)for(let i=0;i<N;i++)for(let j=0;j<2;j++){const t=(i+j)/N*TAU;const lane=.5+(l/(lanes-1)-.5)*(1-.4*contactAt(contacts,t));record(v.p,t,lane,0,0,1,xyz);positions.set(xyz,o);o+=3;laneValues[q]=l/(lanes-1);params[q++]=t;}
+ makeLayer(v){const contacts=this.contactField(v);const lanes=24,N=360,positions=new Float32Array(lanes*N*6),params=new Float32Array(lanes*N*2),laneValues=new Float32Array(lanes*N*2);let o=0,q=0;const xyz=[0,0,0];for(let l=0;l<lanes;l++)for(let i=0;i<N;i++)for(let j=0;j<2;j++){const t=(i+j)/N*TAU;const lane=.5+(strandLane(l,lanes)-.5)*(1-.4*contactAt(contacts,t));record(v.p,t,lane,0,0,1,xyz);positions.set(xyz,o);o+=3;laneValues[q]=l/(lanes-1);params[q++]=t;}
  const geometry=new THREE.BufferGeometry(),vertices=lanes*N*6;
  const corners=[[0,-1],[1,-1],[0,1],[0,1],[1,-1],[1,1]];
  const quad=new Float32Array(vertices*3),starts=new Float32Array(vertices*3),ends=new Float32Array(vertices*3),ts=new Float32Array(vertices),ls=new Float32Array(vertices);
@@ -71,7 +72,7 @@ export class ResonanceView{
  // Stable personal layout: no whole-record spin and no random path replacement.
  const xyz=[0,0,0];for(const layer of this.layers){const {v,uniforms}=layer;const focused=this.selected===null||this.selected===v.p.id;
  uniforms.uResolution.value.set(this.renderer.domElement.width,this.renderer.domElement.height);uniforms.uLift.value=this.morph*this.height;uniforms.uTime.value=this.time;uniforms.uEnergy.value=this.reduced||!this.speed?0:v.energy;const bands=this.reduced||!this.speed?{}:(v.bands||{});uniforms.uBands.value.set(bands.low||0,bands.mid||0,bands.high||0,bands.onset||0);uniforms.uOpacity.value=(1-v.p.air*.05)*(focused?1:.12);layer.line.visible=v.visible&&v.active!==false;layer.points.visible=layer.line.visible&&this.particles;layer.points.material.uniforms.uOpacity.value=focused?1:.1;
- if(v.active===false)continue;layer.flow+=dt*this.speed*(.025+v.energy*.12);for(let i=0;i<layer.count;i++){let t=layer.phases[i];const contact=contactAt(layer.contacts,t);t=layer.phases[i]=(t+dt*this.speed*(.025+v.energy*.12)/(1+contact*1.4))%TAU;const lane=.5+(rand(i+239)-.5)*(1-.4*contact*(1+.35*v.energy));record(v.p,t,lane,0,0,this.morph*this.height,xyz);const e=uniforms.uEnergy.value,pulse=Math.sin(t*7-this.time*2),bend=Math.sin(t*3+this.time*.8),b=uniforms.uBands.value;xyz[0]*=1+e*.012*pulse+b.y*.015*bend;xyz[2]*=1+e*.012*pulse+b.y*.015*bend;xyz[1]+=this.morph*this.height*(.008*Math.sin(t*2+this.time*.45)+e*(.07+.09*pulse*pulse)+b.x*.12*Math.sin(t*2-this.time)**2+b.z*.035*Math.sin(t*11-this.time*2)+b.w*.05*bend);const jitter=(.022+v.p.air*.045)*Math.sin(i*12.98);xyz[0]+=jitter*Math.cos(t);xyz[2]+=jitter*Math.sin(t);xyz[1]+=Math.abs(jitter)*this.morph;layer.pos.set(xyz,i*3);}layer.points.geometry.attributes.position.needsUpdate=true;}
+ if(v.active===false)continue;layer.flow+=dt*this.speed*(.025+v.energy*.12);for(let i=0;i<layer.count;i++){let t=layer.phases[i];const contact=contactAt(layer.contacts,t);t=layer.phases[i]=(t+dt*this.speed*(.025+v.energy*.12)/(1+contact*1.4))%TAU;const lane=.5+(rand(i+239)-.5)*(1-.4*contact*(1+.35*v.energy));record(v.p,t,lane,0,0,this.morph*this.height,xyz);const e=uniforms.uEnergy.value,pulse=Math.sin(t*7-this.time*2),bend=Math.sin(t*3+this.time*.8),b=uniforms.uBands.value;xyz[0]*=1+e*.012*pulse+b.y*.015*bend;xyz[2]*=1+e*.012*pulse+b.y*.015*bend;xyz[1]+=this.morph*this.height*(.008*Math.sin(t*2+this.time*.45)+e*(.07+.09*pulse*pulse)+b.x*.12*Math.sin(t*2-this.time)**2+b.z*.035*Math.sin(t*11-this.time*2)+b.w*.05*bend);const halo=Math.pow(rand(i+941),5);const jitter=(.018+halo*(.14+v.p.air*.12))*Math.sin(i*12.98);xyz[0]+=jitter*Math.cos(t);xyz[2]+=jitter*Math.sin(t);xyz[1]+=Math.abs(jitter)*this.morph;layer.pos.set(xyz,i*3);}layer.points.geometry.attributes.position.needsUpdate=true;}
  this.renderer.render(this.scene,this.camera);}
 
  dispose(){this.observer.disconnect();this.controls.dispose();this.scene.traverse(o=>{o.geometry?.dispose();if(o.material){o.material.map?.dispose();o.material.dispose();}});this.renderer.dispose();}

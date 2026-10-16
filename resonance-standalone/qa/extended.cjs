@@ -1,8 +1,9 @@
 const {chromium}=require(process.env.IEUM_PLAYWRIGHT_PATH||'playwright');
-const fs=require('fs'),path=require('path'),assert=require('node:assert/strict');
+const fs=require('fs'),path=require('path'),assert=require('node:assert/strict'),crypto=require('node:crypto');
 const root=path.resolve(__dirname,'..'),out=path.join(__dirname,'renders');fs.mkdirSync(out,{recursive:true});
 (async()=>{
  const browser=await chromium.launch({headless:true,executablePath:process.env.IEUM_CHROMIUM_PATH||undefined,args:process.env.IEUM_CHROMIUM_ARGS?JSON.parse(process.env.IEUM_CHROMIUM_ARGS):['--no-sandbox','--use-angle=swiftshader','--enable-unsafe-swiftshader']});
+ const buildSha256=crypto.createHash('sha256').update(fs.readFileSync(path.join(root,'public/IEUM-Resonance.html'))).digest('hex');
  const checks=[],errors=[],samples=[];const check=(name,ok,detail)=>{assert.ok(ok,name+': '+JSON.stringify(detail));checks.push({name,pass:true,detail});console.log('PASS',name);};
  try{
  const page=await browser.newPage({viewport:{width:1280,height:1800},deviceScaleFactor:1});page.setDefaultTimeout(30000);page.on('pageerror',e=>errors.push(e.message));
@@ -38,6 +39,6 @@ const root=path.resolve(__dirname,'..'),out=path.join(__dirname,'renders');fs.mk
  check('soak GPU resources bounded',samples.every(s=>s.geometries<=12&&s.textures===1&&s.sources<=4),{geometries:samples.map(s=>s.geometries),textures:samples.map(s=>s.textures)});
  check('no runtime errors',errors.length===0,errors);
  await page.click('#play');await page.setViewportSize({width:390,height:950});await snap('mobile-four');check('four-person mobile fits',await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
- fs.writeFileSync(path.join(__dirname,'extended-verification.json'),JSON.stringify({date:new Date().toISOString(),environment:'Linux headless Chromium / SwiftShader; software rendering, not target device performance or listening verification',soakMs,checks,samples,errors},null,2));
+ fs.writeFileSync(path.join(__dirname,'extended-verification.json'),JSON.stringify({date:new Date().toISOString(),buildSha256,environment:'Linux headless Chromium / SwiftShader; software rendering, not target device performance or listening verification',soakMs,checks,samples,errors},null,2));
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exit(1);});
