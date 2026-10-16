@@ -36,14 +36,16 @@ export function record(p,t,lane,energy=0,time=0,lift=1,out=[0,0,0]){
  const folds=3+Math.round(p.brightness*5), strand=(lane-.5)*2;
  const center=1.64+.22*Math.sin(2*t+p.phase)+.15*Math.sin(3*t-p.phase);
  const gather=.16+.84*Math.pow(.5+.5*Math.cos(2*t+p.phase),1.7);
- const width=(.27+.16*(1-p.brightness))*gather;
- const r=center+strand*width+.025*Math.sin(3*t+lane*13)*Math.sin(Math.PI*lane)+.075*p.brightness*Math.sin(folds*t+p.phase);
+ const width=(.17+.11*(1-p.brightness))*gather;
+ const r=center+strand*width+.045*Math.sin(3*t+lane*29)*gather*Math.sin(Math.PI*lane)+.075*p.brightness*Math.sin(folds*t+p.phase);
  const turn=t+.07*strand*Math.sin(3*t+p.phase);
  const main=Math.pow(.5+.5*Math.cos(t-p.phase),2.5+p.pitch*3.5)+.26*Math.pow(.5+.5*Math.cos(2*t+p.phase),4);
  const detail=Math.pow(.5+.5*Math.sin(folds*t-p.phase),3);
  const arch=(.55+.90*p.pitch)*main+(.10+.24*p.brightness)*detail;
- const spread=.13+(.22+.15*p.air)*gather;
- const y=Math.max(.025,.055+arch+strand*spread*Math.sin(2*t+p.phase+.4)+.025*Math.sin(4*t+lane*19)
-  +.075*(1-strand*strand)*Math.sin(3*t+p.phase)+energy*.15);
+ const spread=.08+(.13+.10*p.air)*gather;
+ const rawY=.055+arch+strand*spread*Math.sin(2*t+p.phase+.4)+.055*Math.sin(4*t+lane*23)*gather
+  +.075*(1-strand*strand)*Math.sin(3*t+p.phase)+energy*.15;
+ // Smooth clearance avoids a clipped horizontal sheet where strands approach the record.
+ const clearance=rawY-.025;const y=.025+.5*(clearance+Math.sqrt(clearance*clearance+.004));
  out[0]=Math.cos(turn)*r;out[1]=.018+lift*y;out[2]=Math.sin(turn)*r;return out;
 }

@@ -108,3 +108,13 @@
 8. Phase 6의 미세 결 차이와 실제 사람 보컬/실기기 미검증을 해결하기 전 전체 DoD 완료로 표시하지 않는다.
 
 기존 React 앱, main, Notion, Figma, Vercel Production은 이 작업에서 수정하지 않았다.
+
+
+## 2026-10-17 복구 재개 — 검증된 복구본
+
+- 원격 시작점: b33cff0ef987a876ff2e47e032ea9ce169f1f7d0. Git 직접 clone 인증 불가로 GitHub Connector에서 정확한 ref의 파일을 취득했다. 로컬 Git 이력은 검토용이며 원격 이력과 별개다.
+- recovery-polish의 세 base/result blob 검증 통과. 재빌드 HTML SHA-256은 9c866280325be27ac072eb92f66967a6617dfe5679fd4fed3462768dd7228583으로 중단 전 기록과 일치.
+- npm ci/build 및 분석·기하 19개, Chromium 153 / SwiftShader 브라우저 39개 통과.
+- Notion Resonance 원문 확인. Figma Desktop 도구가 없어 최신 Figma 확인은 하지 않았고 저장된 승인 이미지 기준으로 비교했다. 공유 대화 링크는 fetch 실패.
+- 실제 2–4인 렌더 재생성. 기준보다 균등한 선과 좁은 산포가 남아 Phase 6 추가 보정 예정. 10분 soak는 시작했으나 이 체크포인트 시점에 완료 아님.
+- 다음: 미세 선/입자 보정 → 캡처 비교 → 최종 회귀 및 10분 검사 → preview. main/기존 앱/Production 변경 없음.
