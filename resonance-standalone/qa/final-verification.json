@@ -1,10 +1,14 @@
 {
-  "date": "2026-10-16T16:59:12.734Z",
-  "buildSha256": "81767576464395243c79465c37a487f12f8c9c254b552b28f9bcbd535004c92e",
+  "date": "2026-10-16T17:03:29.952Z",
+  "buildSha256": "6c02d9f2715662345b1290bec07c1cba35f047d9fbef560ef4dcf4ed9bce666e",
   "environment": "Chromium / SwiftShader; reduced-motion and failure-path checks, not physical device certification",
   "checks": [
     {
       "name": "reduced motion defaults to stationary geometry",
+      "pass": true
+    },
+    {
+      "name": "first playback after participant change repairs timeline duration",
       "pass": true
     },
     {

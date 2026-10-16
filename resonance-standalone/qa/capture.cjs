@@ -8,7 +8,12 @@ await snap('final-three');await freeze();await p.screenshot({path:path.join(out,
 await p.selectOption('#voice-count','2');await snap('final-two');await p.selectOption('#voice-count','4');await snap('final-four');
 await p.selectOption('#voice-count','3');await p.click('#flat');await p.waitForTimeout(1000);await p.evaluate(()=>ieumDebug.view.update(0,ieumDebug.transport.playing));await p.waitForFunction(()=>ieumDebug.view.morph<.01);await snap('final-planar');
 await p.click('#raised');await p.waitForTimeout(1000);await p.evaluate(()=>ieumDebug.view.update(0,ieumDebug.transport.playing));await p.waitForFunction(()=>ieumDebug.view.morph>.99);await p.click('#play');await p.waitForFunction(()=>ieumDebug.voices[0].energy>.1);await p.evaluate(()=>scrollTo(0,0));await snap('final-playing');await p.click('#play');await p.waitForTimeout(1500);await snap('final-paused');
-await p.setViewportSize({width:390,height:1100});await p.evaluate(()=>scrollTo(0,0));await freeze();await p.screenshot({path:path.join(out,'final-mobile.jpg'),type:'jpeg',quality:90,fullPage:true,timeout:30000});
+// Fresh mobile viewport avoids a resized SwiftShader surface/full-page readback race.
+const mobile=await b.newPage({viewport:{width:390,height:1800},deviceScaleFactor:1});
+await mobile.goto('file://'+path.resolve(__dirname,'../public/IEUM-Resonance.html'));
+await mobile.waitForFunction(()=>ieumDebug.view.frames>3);await mobile.evaluate(()=>document.fonts.ready);
+await mobile.evaluate(()=>{ieumDebug.view.update(0,false);ieumDebug.view.update=()=>{};});
+await mobile.screenshot({path:path.join(out,'final-mobile.jpg'),type:'jpeg',quality:90,timeout:30000});await mobile.close();
 // Exported personal SVGs are the same functions and profiles used by the app.
 const svg=await p.evaluate(()=>ieumDebug.voices.map(v=>ieumDebug.bloomSVG(v.p,350)));const q=await b.newPage({viewport:{width:1440,height:440}});await q.setContent('<body style="margin:0;background:#151515;display:flex;align-items:center;height:440px">'+svg.map((s,i)=>'<div style="width:360px;color:#eee;text-align:center;font:14px sans-serif">'+s+String.fromCharCode(65+i)+'</div>').join('')+'</body>');await q.screenshot({path:path.join(out,'final-personal.png')});
 }finally{await b.close();}})().catch(e=>{console.error(e);process.exit(1);});

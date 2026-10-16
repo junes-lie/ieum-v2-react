@@ -1,0 +1,23 @@
+{
+  "reference": "qa/renders/approved-reference.jpg",
+  "referenceType": "User-approved generated concept, not code render",
+  "referenceSha256": "cb8aab4828cbe0d456f3865e3d5eeb3fc23cc706d9dafb7ddd93022323d4d4ed",
+  "observedPreserved": [
+    "Personal A/B/C/D distinct silhouette and proportions",
+    "2–4 voices share one record without sector division",
+    "Colored geometry uses line strokes and particles; no colored tube or surface",
+    "Existing center paths, loaded files, audio analyser and transport retained"
+  ],
+  "observedImproved": [
+    "Nonuniform strand spacing and subtle periodic filament offsets",
+    "Line widths vary slightly without replacing center paths",
+    "Sparse particle halo extends beyond tightly gathered bands"
+  ],
+  "remainingVisualDifference": [
+    "Reference has more irregular local folds and richer high-contrast filament detail",
+    "Personal SVG uses approximate depth occlusion",
+    "Some viewing angles still read as organized parallel bundles"
+  ],
+  "visualApproval": "not claimed",
+  "physicalDeviceAndHumanVocalValidation": "not performed"
+}

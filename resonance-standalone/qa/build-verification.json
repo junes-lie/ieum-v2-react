@@ -1,8 +1,52 @@
 {
+  "date": "2026-10-17",
   "artifact": "public/IEUM-Resonance.html",
-  "sha256": "4a19364929da4c67eaf54ee383f1c0c77833059821cef58b5ed1e098cfdafa94",
+  "sha256": "6c02d9f2715662345b1290bec07c1cba35f047d9fbef560ef4dcf4ed9bce666e",
+  "recoveredArtifactSha256": "9c866280325be27ac072eb92f66967a6617dfe5679fd4fed3462768dd7228583",
   "analysisChecks": 19,
   "browserChecks": 39,
+  "additionalChecks": 13,
+  "soakArtifactSha256": "81767576464395243c79465c37a487f12f8c9c254b552b28f9bcbd535004c92e",
+  "soakStatus": "completed",
+  "postSoakSourceDifference": "Only first-play duration label and seek max synchronization; renderer, geometry, particles and audio engine unchanged.",
+  "motionArtifactSha256": "81767576464395243c79465c37a487f12f8c9c254b552b28f9bcbd535004c92e",
+  "sources": {
+    "src/audio.js": "4de643a23a7cb8462df7d08f969a000d2c8af2ce304df68144d1d187644a4121",
+    "src/visuals.js": "7e95a6c6c53059d9e01f1337a912a36159e31cd1b7b68a4cf3a987a926f62e2b",
+    "src/index.html": "b8f4109d8b932f21845b8303217c39e5c755940d32590ad2566217f76ae548cf",
+    "src/analyze.js": "ede4319937a3d3743636004ec3bf0f396e9503fe0332ca7b35ab72ceca1e7833",
+    "src/app.js": "7b617ebc71bc4e82b452479093a056d1dbed3a210adc16b56c4daae94f212d07",
+    "src/profiles.js": "92c4b2b5464cc805ed383aef2027b763f65ec437e0aee0d4bc377a7b4faafb4a"
+  },
+  "environment": "Chromium 153 / Linux headless / SwiftShader; software rendering and concurrent QA, not target-device performance certification",
+  "renders": {
+    "qa/renders/final-playing.jpg": "93b983671014da890dea619d3dbeeaac7ded01adcdb68207ae8ff9347c65f655",
+    "qa/renders/final-personal.png": "cd7bba2edb342e2e6807a157912e8931ae8f861ac87cc4d68286d51a0852d174",
+    "qa/renders/final-three.jpg": "9a8d25aa0dafbd71543a31e7bd4ed3ab382130c53dd442c59f6176b1bfe8c2b8",
+    "qa/renders/final-paused.jpg": "a428e9e9cf1dc4f357a9af4d7b53de3373a1d78de3040490e22d6e49c855bc61",
+    "qa/renders/final-app.jpg": "0bc1f7b5cc6368bebb649c860997373b5c24624d85efee4aa7246deaf2d3b93a",
+    "qa/renders/final-mobile.jpg": "2adfa24d7a6b6a2d3fb5b01638b307a762f4bc728f3a4d871b3084248eed9df6",
+    "qa/renders/final-planar.jpg": "42a2798dc7153323c5cfdee4df4e8ec999ca689faa136020a63edd5e6ef35231",
+    "qa/renders/final-four.jpg": "565b554f166a0177a556363509291dbfedea9bb29f5d4d58e6be45ac38ab15c5",
+    "qa/renders/final-two.jpg": "83fa6fe65050e3ca527bf921b63585b30fd0e8595dad38fbd9b4cdbe8bd72c45"
+  },
+  "motionSha256": "fe2fd62c72c64b756053cd331dd01afed1da3adb8aee06c3cf8706889ab422c1",
   "extendedChecks": 14,
-  "note": "Extended 60s soak preceded the final inactive-recording guard and negative-delta guard. All 39 browser checks ran after both guards. Still captures freeze further draws during readback; transition behavior is tested separately. Motion recording does not freeze rendering."
+  "soakSummary": {
+    "elapsedMs": 601538,
+    "sampleCount": 115,
+    "averageObservedFps": 17.27,
+    "geometries": [
+      12
+    ],
+    "textures": [
+      1
+    ],
+    "maxSources": 4,
+    "heapReportedBytes": [
+      53500000
+    ],
+    "checks": 14,
+    "errors": []
+  }
 }

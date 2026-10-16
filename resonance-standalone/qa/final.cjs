@@ -11,7 +11,9 @@ const check=(name,condition,detail)=>{assert.ok(condition,name);checks.push({nam
   page.on('pageerror',e=>errors.push(e.message));
   await page.goto('file://'+file);await page.waitForFunction(()=>ieumDebug.view?.frames>3);
   check('reduced motion defaults to stationary geometry',await page.evaluate(()=>ieumDebug.view.speed===0&&!document.querySelector('#motion').checked));
+  await page.selectOption('#voice-count','4');
   await page.click('#play');await page.waitForFunction(()=>ieumDebug.voices[0].energy>.02);
+  check('first playback after participant change repairs timeline duration',await page.evaluate(()=>document.querySelector('#duration').textContent==='0:24'&&Number(document.querySelector('#seek').max)===ieumDebug.transport.duration));
   const frozen=await page.evaluate(()=>({time:ieumDebug.view.time,phases:Array.from(ieumDebug.view.layers[0].phases)}));
   await page.waitForTimeout(800);
   check('audio remains functional without animated deformation',await page.evaluate(()=>ieumDebug.transport.playing&&ieumDebug.view.layers.every(l=>l.uniforms.uEnergy.value===0)));
