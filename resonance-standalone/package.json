@@ -17,6 +17,7 @@
     "test:browser": "node qa/browser.cjs",
     "test:extended": "node qa/extended.cjs",
     "capture:motion": "node qa/motion.cjs",
-    "test:final": "node qa/final.cjs"
+    "test:final": "node qa/final.cjs",
+    "test:planar": "node qa/planar.cjs"
   }
 }

@@ -2,5 +2,12 @@
   "sourceFilename": "exec-a60e698a-27ee-4d5a-89ab-392cd0b2732b.png",
   "sourceSha256": "b27795ad8618064629476f1283f8b7953e98da8a46b4124e513750445cb7ceaa",
   "role": "User-approved generated concept, not an implementation render",
-  "derivative": "Resized JPEG for side-by-side review only"
+  "derivative": "Resized JPEG for side-by-side review only",
+  "planarReference": {
+    "file": "qa/renders/approved-planar-reference.png",
+    "sourceFilename": "삼색 입자의 유기적 비닐 만다라(3).png",
+    "sha256": "99a8beeae4eeeee308b60ab8fa62ffe65283f052bd4d888f4e0ccf041461d884",
+    "providedAt": "2026-10-18",
+    "scope": "Additional approved 2D reference. Existing 3D and personal knot reference remains valid."
+  }
 }

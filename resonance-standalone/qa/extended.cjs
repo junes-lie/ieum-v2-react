@@ -6,7 +6,7 @@ const root=path.resolve(__dirname,'..'),out=path.join(__dirname,'renders');fs.mk
  const buildSha256=crypto.createHash('sha256').update(fs.readFileSync(path.join(root,'public/IEUM-Resonance.html'))).digest('hex');
  const checks=[],errors=[],samples=[];const check=(name,ok,detail)=>{assert.ok(ok,name+': '+JSON.stringify(detail));checks.push({name,pass:true,detail});console.log('PASS',name);};
  try{
- const page=await browser.newPage({viewport:{width:1280,height:1800},deviceScaleFactor:1});page.setDefaultTimeout(30000);page.on('pageerror',e=>errors.push(e.message));
+ const page=await browser.newPage({viewport:{width:1280,height:1800},deviceScaleFactor:1});page.setDefaultTimeout(30000);page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
  let busy=false,capturingFull=false;const pump=setInterval(async()=>{if(busy||capturingFull||page.isClosed())return;busy=true;try{await page.screenshot({clip:{x:0,y:0,width:1,height:1},timeout:5000});}catch{}finally{busy=false;}},600);page.on('close',()=>clearInterval(pump));
  const snap=async name=>{if(process.env.IEUM_CAPTURE!=='1')return;capturingFull=true;while(busy)await page.waitForTimeout(50);busy=true;try{await page.evaluate(()=>document.fonts.ready);await page.screenshot({path:path.join(out,name+'.jpg'),type:'jpeg',quality:88,fullPage:true,animations:'disabled',timeout:60000});}finally{busy=false;capturingFull=false;}};
  await page.goto('file://'+path.join(root,'public/IEUM-Resonance.html'));await page.waitForFunction(()=>ieumDebug.state.frames>3);
@@ -34,11 +34,11 @@ const root=path.resolve(__dirname,'..'),out=path.join(__dirname,'renders');fs.mk
  check('repeated playback stable',await page.evaluate(()=>!ieumDebug.transport.sources.length));
  await page.selectOption('#voice-count','4');await page.click('#play');await page.waitForFunction(()=>ieumDebug.state.playing);
  const soakMs=Number(process.env.IEUM_SOAK_MS||180000),start=Date.now();
- while(Date.now()-start<soakMs){await page.waitForTimeout(5000);const sample=await page.evaluate(()=>({frames:ieumDebug.view.frames,fps:ieumDebug.view.fps,geometries:ieumDebug.view.renderer.info.memory.geometries,textures:ieumDebug.view.renderer.info.memory.textures,heap:performance.memory?.usedJSHeapSize||null,sources:ieumDebug.transport.sources.length}));samples.push({elapsed:Date.now()-start,...sample});if(samples.length%6===0)console.log('SOAK',samples.at(-1));}
+ while(Date.now()-start<soakMs){if(process.env.IEUM_ALTERNATE_MODES==='1'&&samples.length%6===0){await page.click(samples.length%12===0?'#flat':'#raised');await page.waitForFunction(()=>!ieumDebug.view.transition);}await page.waitForTimeout(5000);const sample=await page.evaluate(()=>({mode:ieumDebug.view.mode,frames:ieumDebug.view.frames,fps:ieumDebug.view.fps,geometries:ieumDebug.view.renderer.info.memory.geometries,textures:ieumDebug.view.renderer.info.memory.textures,heap:performance.memory?.usedJSHeapSize||null,sources:ieumDebug.transport.sources.length}));samples.push({elapsed:Date.now()-start,...sample});if(samples.length%6===0)console.log('SOAK',samples.at(-1));}
  check('soak rendered continuously',samples.at(-1).frames>samples[0].frames+30);
  check('soak GPU resources bounded',samples.every(s=>s.geometries<=12&&s.textures===1&&s.sources<=4),{geometries:samples.map(s=>s.geometries),textures:samples.map(s=>s.textures)});
  check('no runtime errors',errors.length===0,errors);
  await page.click('#play');await page.setViewportSize({width:390,height:950});await snap('mobile-four');check('four-person mobile fits',await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
- fs.writeFileSync(path.join(__dirname,'extended-verification.json'),JSON.stringify({date:new Date().toISOString(),buildSha256,environment:'Linux headless Chromium / SwiftShader; software rendering, not target device performance or listening verification',soakMs,checks,samples,errors},null,2));
+ fs.writeFileSync(path.join(__dirname,'extended-verification.json'),JSON.stringify({date:new Date().toISOString(),buildSha256,environment:'Linux headless Chromium / SwiftShader; software rendering, not target device performance or listening verification',soakMs,alternatingModes:process.env.IEUM_ALTERNATE_MODES==='1',checks,samples,errors},null,2));
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exit(1);});

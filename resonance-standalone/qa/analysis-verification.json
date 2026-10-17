@@ -129,5 +129,57 @@
       "minY": 0.052796560316656596,
       "maxY": 1.358891675552749
     }
+  },
+  {
+    "name": "A planar closed, label-clear, within vinyl",
+    "pass": true,
+    "detail": {
+      "seam": 1.9119265631021455e-15,
+      "minR": 0.9466163506080104,
+      "maxR": 2.474492718931084
+    }
+  },
+  {
+    "name": "A planar deterministic and slot independent",
+    "pass": true
+  },
+  {
+    "name": "B planar closed, label-clear, within vinyl",
+    "pass": true,
+    "detail": {
+      "seam": 2.156210340852533e-15,
+      "minR": 0.8564965106040483,
+      "maxR": 2.4157403510721642
+    }
+  },
+  {
+    "name": "B planar deterministic and slot independent",
+    "pass": true
+  },
+  {
+    "name": "C planar closed, label-clear, within vinyl",
+    "pass": true,
+    "detail": {
+      "seam": 1.3256420387187055e-15,
+      "minR": 0.8450174973295348,
+      "maxR": 2.205456719307556
+    }
+  },
+  {
+    "name": "C planar deterministic and slot independent",
+    "pass": true
+  },
+  {
+    "name": "D planar closed, label-clear, within vinyl",
+    "pass": true,
+    "detail": {
+      "seam": 1.5543122344752192e-15,
+      "minR": 0.848142749555683,
+      "maxR": 2.2600851338050796
+    }
+  },
+  {
+    "name": "D planar deterministic and slot independent",
+    "pass": true
   }
 ]
