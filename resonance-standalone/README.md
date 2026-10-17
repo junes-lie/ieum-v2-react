@@ -36,6 +36,7 @@ npm test
 
 ```sh
 npm run test:browser
+npm run test:planar
 npm run test:extended
 npm run capture:motion
 ```
@@ -60,3 +61,14 @@ npm run capture:motion
 2026-10-17 복구 완료. 원격 `29842c2`는 기존 중단 개선본과 정확히 같은 HTML 해시를 재현하고 분석 19개·브라우저 39개를 다시 통과한 체크포인트입니다. 이후 선 간격/굵기/미세 굴곡과 입자 산포를 보정했습니다. 현재 소스에 과거 복구 패치를 다시 적용하지 마세요. 추가 검증은 `node qa/final.cjs`, 10분 연속 검증은 `IEUM_SOAK_MS=600000 npm run test:extended`입니다.
 
 최신 완료 범위와 미검증 항목은 `PROGRESS.md` 마지막 항목을 확인하세요. 테스트 통과는 기준 이미지와의 시각적 일치, 실제 사람 보컬 타당성 또는 실제 기기 성능 인증을 의미하지 않습니다.
+
+## 추가 2D 기준 (2026-10-18 KST)
+
+평면 모드에는 보컬 descriptor 기반의 닫힌 직조 경로를 사용합니다. 기존 3D 경로와 연속 보간되며, 3D 좌표는 보존합니다. 추가 기준은 `qa/renders/approved-planar-reference.png`, 실제 2–4명 비교는 `qa/index.html`에서 확인합니다.
+
+```sh
+IEUM_SOAK_MS=600000 IEUM_ALTERNATE_MODES=1 npm run test:extended
+IEUM_MOTION_MODE=planar npm run capture:motion
+```
+
+평면 모션 캡처는 `qa/renders/planar-motion.webm`과 별도 해시/전환 시점 보고서를 생성하여 기존 3D 녹화를 덮어쓰지 않습니다.
