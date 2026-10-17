@@ -19,5 +19,21 @@
     "Some viewing angles still read as organized parallel bundles"
   ],
   "visualApproval": "not claimed",
-  "physicalDeviceAndHumanVocalValidation": "not performed"
+  "physicalDeviceAndHumanVocalValidation": "not performed",
+  "planarReview": {
+    "reference": "qa/renders/approved-planar-reference.png",
+    "actual": "qa/renders/planar-3.jpg",
+    "observed": [
+      "Separate closed planar paths replace simple flattening of the spatial knot",
+      "Three colored bands cross in a shared record without participant sectors",
+      "Strands weave across each band and converge at periodic narrow regions",
+      "Label and record clearance is smooth; existing spatial coordinate buffers remain unchanged"
+    ],
+    "remaining": [
+      "The reference has richer irregular filament detail and more varied particle sizes",
+      "The procedural weave is more regular than the reference"
+    ],
+    "method": "Actual WebGL canvas readback on Chromium/SwiftShader; no generated render or pixel-match claim",
+    "visualApproval": "not claimed"
+  }
 }
