@@ -1,53 +1,21 @@
 {
-  "date": "2026-10-17T19:31:05.944713+00:00",
+  "date": "2026-10-18T12:00:26.540173+00:00",
   "artifact": "public/IEUM-Resonance.html",
-  "sha256": "1f756e3caa8b34ff47bba4723a519b73a8cf78797ae2c1081690058a90702127",
-  "analysisChecks": 27,
-  "browserChecks": 39,
-  "additionalChecks": 13,
+  "sha256": "852b0d46e10edc0da6577b896cb775c20c024612a81ea6430e749cb4650eaf2e",
+  "analysisChecks": 32,
   "planarChecks": 9,
-  "soakStatus": "completed",
-  "previousSpatialEvidence": "qa/build-verification-spatial-2026-10-17.json",
+  "additionalChecks": 13,
+  "previousFullValidation": {
+    "commit": "84c8b45bcdf9cacca5d565cd4620713578c6e1a6",
+    "report": "qa/build-verification-planar-2026-10-18.json"
+  },
+  "soakStatus": "not run for this candidate",
   "sources": {
-    "src/app.js": "7b617ebc71bc4e82b452479093a056d1dbed3a210adc16b56c4daae94f212d07",
-    "src/visuals.js": "4652667b1b5394521fff74b87b142ceba1f4282cf3cf311935d25313fc5384d3",
+    "src/index.html": "b8f4109d8b932f21845b8303217c39e5c755940d32590ad2566217f76ae548cf",
     "src/analyze.js": "ede4319937a3d3743636004ec3bf0f396e9503fe0332ca7b35ab72ceca1e7833",
+    "src/visuals.js": "98bd6c93a5611c2f67b79c2c4ab6c75b09af36f2e6f0b780b6bbe6160cbd6408",
     "src/audio.js": "4de643a23a7cb8462df7d08f969a000d2c8af2ce304df68144d1d187644a4121",
-    "src/profiles.js": "5f947a728949518cad1645714eaf542e29cf2dacda791041c860157597851b3f",
-    "src/index.html": "b8f4109d8b932f21845b8303217c39e5c755940d32590ad2566217f76ae548cf"
-  },
-  "environment": "Chromium 153 / Linux headless / SwiftShader; not physical device or human-vocal certification",
-  "extendedChecks": 14,
-  "soakArtifactSha256": "1f756e3caa8b34ff47bba4723a519b73a8cf78797ae2c1081690058a90702127",
-  "soakSummary": {
-    "elapsedMs": 601832,
-    "sampleCount": 103,
-    "modes": [
-      0,
-      1
-    ],
-    "observedFrameRate": 11.47,
-    "geometries": [
-      12
-    ],
-    "textures": [
-      1
-    ],
-    "maxSources": 4,
-    "heapReportedBytes": [
-      39600000
-    ],
-    "errors": []
-  },
-  "renders": {
-    "qa/renders/planar-4.jpg": "c05b8252e907628512a16c7b4234df939a228e0da554a1a0cd801c949c2e40f3",
-    "qa/renders/planar-3.jpg": "f86a028fdc02a41b114d6d72c587319681243fe635f93e7ab05b200794c23182",
-    "qa/renders/planar-2.jpg": "4a93163815726d1dd30cbd074e28b652783e25a04946b14d99fef42dab4bbf01"
-  },
-  "planarMotionReport": "qa/planar-motion-verification.json",
-  "planarMotionArtifactSha256": "1f756e3caa8b34ff47bba4723a519b73a8cf78797ae2c1081690058a90702127",
-  "planarMotionSha256": {
-    "webm": "85b03242f839f7289c5c9a0e1779335f6018e3ea3eb3e905e51e92bd5f52918a",
-    "mp4": "71c3b4736c9802166d71c7c88e7d3266db73e3ed91e8e43dc07431744aeb7d8f"
+    "src/app.js": "7b617ebc71bc4e82b452479093a056d1dbed3a210adc16b56c4daae94f212d07",
+    "src/profiles.js": "e8d173402a8ebc67e98a8489c6a0ca082b3d817c08c4d5b49ac86c3fc9b22134"
   }
 }

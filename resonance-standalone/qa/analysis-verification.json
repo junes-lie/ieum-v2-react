@@ -134,9 +134,9 @@
     "name": "A planar closed, label-clear, within vinyl",
     "pass": true,
     "detail": {
-      "seam": 1.9119265631021455e-15,
-      "minR": 0.9466163506080104,
-      "maxR": 2.474492718931084
+      "seam": 1.3788858507315566e-15,
+      "minR": 1.0006866038176911,
+      "maxR": 2.470892186361616
     }
   },
   {
@@ -147,9 +147,9 @@
     "name": "B planar closed, label-clear, within vinyl",
     "pass": true,
     "detail": {
-      "seam": 2.156210340852533e-15,
-      "minR": 0.8564965106040483,
-      "maxR": 2.4157403510721642
+      "seam": 2.4983487260117617e-15,
+      "minR": 0.8551615806749732,
+      "maxR": 2.4053814711496817
     }
   },
   {
@@ -160,9 +160,9 @@
     "name": "C planar closed, label-clear, within vinyl",
     "pass": true,
     "detail": {
-      "seam": 1.3256420387187055e-15,
-      "minR": 0.8450174973295348,
-      "maxR": 2.205456719307556
+      "seam": 1.862954908585887e-15,
+      "minR": 0.8443768923787235,
+      "maxR": 2.190168707299392
     }
   },
   {
@@ -173,13 +173,39 @@
     "name": "D planar closed, label-clear, within vinyl",
     "pass": true,
     "detail": {
-      "seam": 1.5543122344752192e-15,
-      "minR": 0.848142749555683,
-      "maxR": 2.2600851338050796
+      "seam": 2.234280737922546e-15,
+      "minR": 0.8488287984787304,
+      "maxR": 2.223001712229319
     }
   },
   {
     "name": "D planar deterministic and slot independent",
     "pass": true
+  },
+  {
+    "name": "A grain finite bounded and identity independent",
+    "pass": true
+  },
+  {
+    "name": "B grain finite bounded and identity independent",
+    "pass": true
+  },
+  {
+    "name": "C grain finite bounded and identity independent",
+    "pass": true
+  },
+  {
+    "name": "D grain finite bounded and identity independent",
+    "pass": true
+  },
+  {
+    "name": "coral and ivory grain tails differ from fine blue",
+    "pass": true,
+    "detail": [
+      2.73787258944,
+      4.2928700592,
+      4.250095379839999,
+      4.07344017216
+    ]
   }
 ]

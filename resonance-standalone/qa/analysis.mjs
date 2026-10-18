@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {analyzeBuffer} from '../src/analyze.js';
-import {record,planar,flower,defaults,TAU} from '../src/profiles.js';
+import {record,planar,planarGrain,flower,defaults,TAU} from '../src/profiles.js';
 const results=[];
 const check=(name,condition,detail)=>{assert.ok(condition,name+': '+JSON.stringify(detail));results.push({name,pass:true,detail});};
 function buffer(hz,{gain=.2,noise=0,harmonics=0,sr=44100,stereo=false,seconds=2}={}){const a=new Float32Array(sr*seconds);let seed=123456;for(let i=0;i<a.length;i++){seed=(1664525*seed+1013904223)>>>0;const t=i/sr;a[i]=gain*(Math.sin(TAU*hz*t)+harmonics*Math.sin(TAU*hz*3*t))+noise*(seed/4294967296*2-1);}return {duration:seconds,sampleRate:sr,length:a.length,numberOfChannels:stereo?2:1,getChannelData:i=>i?Float32Array.from(a,x=>-x):a};}
@@ -21,4 +21,7 @@ for(const p of defaults){
  check(p.id+' planar closed, label-clear, within vinyl',seam<1e-9&&minR>.8&&maxR<2.62,{seam,minR,maxR});
  check(p.id+' planar deterministic and slot independent',JSON.stringify(planar(p,1.23,.37))===JSON.stringify(planar({...p,id:'other',color:'#000000'},1.23,.37)));
 }
+// Texture must vary by measured descriptors, never by display color or slot.
+for(const p of defaults){const a=Array.from({length:100},(_,i)=>planarGrain(p,i/99,(i*37%100)/99));const b=Array.from({length:100},(_,i)=>planarGrain({...p,id:'X',color:'#000000'},i/99,(i*37%100)/99));check(p.id+' grain finite bounded and identity independent',a.every(g=>Number.isFinite(g.size)&&g.size>0&&g.size<6.3&&g.alpha>=0&&g.alpha<=1)&&JSON.stringify(a)===JSON.stringify(b));}
+const tails=defaults.map(p=>planarGrain(p,.98,.8).size);check('coral and ivory grain tails differ from fine blue',tails[1]>tails[0]*1.3&&tails[2]>tails[0]*1.3&&Math.abs(tails[1]-tails[2])>.03,tails);
 fs.writeFileSync(new URL('./analysis-verification.json',import.meta.url),JSON.stringify(results,null,2));console.log(`${results.length} analysis/geometry checks passed`);

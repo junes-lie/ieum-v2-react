@@ -58,14 +58,20 @@ export function record(p,t,lane,energy=0,time=0,lift=1,out=[0,0,0]){
 export function planar(p,t,lane,out=[0,0,0]){
  const s=(lane-.5)*2,phase=p.phase;
  const center=1.66+.24*Math.sin(2*t+phase)+.17*Math.sin(3*t-phase)+.10*(1-p.pitch);
- const gather=.35+.65*Math.pow(.5+.5*Math.sin(3*t+phase*.8),.8);
- const twist=3*t+phase+.34*Math.sin(t+phase);
+ const gather=.18+.82*Math.pow(.5+.5*Math.sin(3*t+phase*.8+.22*Math.sin(2*t-phase)),.8);
+ const twist=3*t+phase+.34*Math.sin(t+phase)+.22*p.brightness*Math.sin(5*t-phase)+.12*p.air*Math.sin(7*t+phase);
  const spread=(.48+.10*p.air+.06*(1-p.brightness))*gather;
- const raw=.94*(center+spread*Math.sin(twist+lane*TAU)+.035*Math.sin(5*t+lane*17+phase));
+ const raw=.94*(center+spread*Math.sin(twist+lane*TAU)+(.012+.028*p.brightness)*gather*Math.sin(5*t+lane*17+phase));
  const inner=raw-.84,cleared=.84+.5*(inner+Math.sqrt(inner*inner+.0025));
  const outer=2.50-cleared,r=2.50-.5*(outer+Math.sqrt(outer*outer+.0025));
  const turn=t+.19*Math.cos(twist+lane*TAU)+.025*Math.sin(2*t+phase);
  out[0]=Math.cos(turn)*r;out[2]=Math.sin(turn)*r;
  out[1]=.028+.022*Math.sin(3*t+phase)+.004*s*Math.sin(twist);
  return out;
+}
+
+// Static per-particle texture from descriptors, independent of color and participant slot.
+export function planarGrain(p,u,v){
+ return {size:1.3+.8*u+2.2*p.brightness*u**4+1.8*p.air*u**2,
+  alpha:clamp(.55+.40*v+.24*p.air*u**4)};
 }
