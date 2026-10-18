@@ -38,6 +38,60 @@
     ],
     "method": "Actual WebGL canvas readback on Chromium/SwiftShader; no generated render or pixel-match claim",
     "visualApproval": "not claimed",
-    "buildSha256": "ccc55e605908cc0ab7bd5139c1a3b942c646b48390e97677314049c68bf34426"
+    "buildSha256": "ccc55e605908cc0ab7bd5139c1a3b942c646b48390e97677314049c68bf34426",
+    "gatherSpacingComparison": {
+      "method": "720 angular samples, 24 lanes; local minima of lane RMS width below 0.12 scene units; rounded degrees; diagnostic, not perceptual validation",
+      "previousCommit": "f672b113ce5bf1ed662b175d97661b7dc2f278f3",
+      "profiles": {
+        "A": {
+          "previous": [
+            120,
+            126,
+            114
+          ],
+          "current": [
+            149,
+            116,
+            96
+          ]
+        },
+        "B": {
+          "previous": [
+            118,
+            116,
+            126
+          ],
+          "current": [
+            119,
+            103,
+            138
+          ]
+        },
+        "C": {
+          "previous": [
+            126,
+            119,
+            115
+          ],
+          "current": [
+            113,
+            136,
+            112
+          ]
+        },
+        "D": {
+          "previous": [
+            127,
+            115,
+            119
+          ],
+          "current": [
+            144,
+            97,
+            120
+          ]
+        }
+      }
+    }
   }
 }
