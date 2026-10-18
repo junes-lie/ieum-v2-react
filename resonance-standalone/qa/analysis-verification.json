@@ -134,7 +134,7 @@
     "name": "A planar closed, label-clear, within vinyl",
     "pass": true,
     "detail": {
-      "seam": 1.3788858507315566e-15,
+      "seam": 1.3555018683845599e-15,
       "minR": 1.0006866038176911,
       "maxR": 2.470892186361616
     }
@@ -147,9 +147,9 @@
     "name": "B planar closed, label-clear, within vinyl",
     "pass": true,
     "detail": {
-      "seam": 2.4983487260117617e-15,
-      "minR": 0.8551615806749732,
-      "maxR": 2.4053814711496817
+      "seam": 2.3528887829944514e-15,
+      "minR": 0.8551615806749733,
+      "maxR": 2.4053814711496813
     }
   },
   {
@@ -160,9 +160,9 @@
     "name": "C planar closed, label-clear, within vinyl",
     "pass": true,
     "detail": {
-      "seam": 1.862954908585887e-15,
-      "minR": 0.8443768923787235,
-      "maxR": 2.190168707299392
+      "seam": 1.4895699882669032e-15,
+      "minR": 0.8443768923787237,
+      "maxR": 2.1901687072993914
     }
   },
   {
@@ -173,8 +173,8 @@
     "name": "D planar closed, label-clear, within vinyl",
     "pass": true,
     "detail": {
-      "seam": 2.234280737922546e-15,
-      "minR": 0.8488287984787304,
+      "seam": 1.897149936107019e-15,
+      "minR": 0.8488287984787305,
       "maxR": 2.223001712229319
     }
   },
@@ -207,5 +207,41 @@
       4.250095379839999,
       4.07344017216
     ]
+  },
+  {
+    "name": "A band gathers in both planar axes",
+    "pass": true,
+    "detail": {
+      "min": 0.0728074295477758,
+      "max": 0.4430170293242426,
+      "ratio": 6.084777777157171
+    }
+  },
+  {
+    "name": "B band gathers in both planar axes",
+    "pass": true,
+    "detail": {
+      "min": 0.07068640260939664,
+      "max": 0.42054582041647426,
+      "ratio": 5.949458522317973
+    }
+  },
+  {
+    "name": "C band gathers in both planar axes",
+    "pass": true,
+    "detail": {
+      "min": 0.0800334504904187,
+      "max": 0.4452008332263079,
+      "ratio": 5.562684483778512
+    }
+  },
+  {
+    "name": "D band gathers in both planar axes",
+    "pass": true,
+    "detail": {
+      "min": 0.07765222337935095,
+      "max": 0.43016795055676327,
+      "ratio": 5.539673325968826
+    }
   }
 ]

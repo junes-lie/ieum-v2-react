@@ -27,13 +27,16 @@
       "Separate closed planar paths replace simple flattening of the spatial knot",
       "Three colored bands cross in a shared record without participant sectors",
       "Strands weave across each band and converge at periodic narrow regions",
-      "Label and record clearance is smooth; existing spatial coordinate buffers remain unchanged"
+      "Label and record clearance is smooth; existing spatial coordinate buffers remain unchanged",
+      "Descriptor-driven grain size/opacity distinguishes fine blue, coral clusters and ivory intensity variation without color/ID branches",
+      "Band convergence now narrows both radial and tangential spread; original spatial coordinates retained"
     ],
     "remaining": [
-      "The reference has richer irregular filament detail and more varied particle sizes",
-      "The procedural weave is more regular than the reference"
+      "The reference still has finer irregular filament detail than the procedural crosshatching",
+      "Overall reference match and real-device viewing remain unverified"
     ],
     "method": "Actual WebGL canvas readback on Chromium/SwiftShader; no generated render or pixel-match claim",
-    "visualApproval": "not claimed"
+    "visualApproval": "not claimed",
+    "buildSha256": "aa4bef0ca86b15c11353985a64ecf2bc96f45245367c6c45f08386f8b2a39871"
   }
 }

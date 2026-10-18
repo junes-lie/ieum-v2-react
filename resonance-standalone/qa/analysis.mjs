@@ -24,4 +24,6 @@ for(const p of defaults){
 // Texture must vary by measured descriptors, never by display color or slot.
 for(const p of defaults){const a=Array.from({length:100},(_,i)=>planarGrain(p,i/99,(i*37%100)/99));const b=Array.from({length:100},(_,i)=>planarGrain({...p,id:'X',color:'#000000'},i/99,(i*37%100)/99));check(p.id+' grain finite bounded and identity independent',a.every(g=>Number.isFinite(g.size)&&g.size>0&&g.size<6.3&&g.alpha>=0&&g.alpha<=1)&&JSON.stringify(a)===JSON.stringify(b));}
 const tails=defaults.map(p=>planarGrain(p,.98,.8).size);check('coral and ivory grain tails differ from fine blue',tails[1]>tails[0]*1.3&&tails[2]>tails[0]*1.3&&Math.abs(tails[1]-tails[2])>.03,tails);
+// A gathered band must converge in both radial and tangential directions.
+for(const p of defaults){let min=9,max=0;for(let i=0;i<360;i++){const pts=Array.from({length:24},(_,l)=>planar(p,i/360*TAU,l/23));const x=pts.reduce((s,p)=>s+p[0],0)/24,z=pts.reduce((s,p)=>s+p[2],0)/24;const rms=Math.sqrt(pts.reduce((s,p)=>s+(p[0]-x)**2+(p[2]-z)**2,0)/24);min=Math.min(min,rms);max=Math.max(max,rms);}check(p.id+' band gathers in both planar axes',max/min>4&&min>.025,{min,max,ratio:max/min});}
 fs.writeFileSync(new URL('./analysis-verification.json',import.meta.url),JSON.stringify(results,null,2));console.log(`${results.length} analysis/geometry checks passed`);

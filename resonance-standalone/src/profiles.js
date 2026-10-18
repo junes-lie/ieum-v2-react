@@ -64,7 +64,7 @@ export function planar(p,t,lane,out=[0,0,0]){
  const raw=.94*(center+spread*Math.sin(twist+lane*TAU)+(.012+.028*p.brightness)*gather*Math.sin(5*t+lane*17+phase));
  const inner=raw-.84,cleared=.84+.5*(inner+Math.sqrt(inner*inner+.0025));
  const outer=2.50-cleared,r=2.50-.5*(outer+Math.sqrt(outer*outer+.0025));
- const turn=t+.19*Math.cos(twist+lane*TAU)+.025*Math.sin(2*t+phase);
+ const turn=t+.19*gather*Math.cos(twist+lane*TAU)+.025*Math.sin(2*t+phase);
  out[0]=Math.cos(turn)*r;out[2]=Math.sin(turn)*r;
  out[1]=.028+.022*Math.sin(3*t+phase)+.004*s*Math.sin(twist);
  return out;
