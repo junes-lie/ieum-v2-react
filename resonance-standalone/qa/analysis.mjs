@@ -26,4 +26,18 @@ for(const p of defaults){const a=Array.from({length:100},(_,i)=>planarGrain(p,i/
 const tails=defaults.map(p=>planarGrain(p,.98,.8).size);check('coral and ivory grain tails differ from fine blue',tails[1]>tails[0]*1.3&&tails[2]>tails[0]*1.3&&Math.abs(tails[1]-tails[2])>.03,tails);
 // A gathered band must converge in both radial and tangential directions.
 for(const p of defaults){let min=9,max=0;for(let i=0;i<360;i++){const pts=Array.from({length:24},(_,l)=>planar(p,i/360*TAU,l/23));const x=pts.reduce((s,p)=>s+p[0],0)/24,z=pts.reduce((s,p)=>s+p[2],0)/24;const rms=Math.sqrt(pts.reduce((s,p)=>s+(p[0]-x)**2+(p[2]-z)**2,0)/24);min=Math.min(min,rms);max=Math.max(max,rms);}check(p.id+' band gathers in both planar axes',max/min>4&&min>.025,{min,max,ratio:max/min});}
+// Sweep descriptor endpoints and interior values: local warping must never open a
+// seam, create a cusp at the seam, or enter the label / leave the record.
+let worstSeam=0,worstTangent=0,minSweepR=9,maxSweepR=0;
+for(const pitch of [0,.5,1])for(const brightness of [0,.5,1])for(const air of [0,.5,1])for(const phase of [0,1.7,5.9]){
+ const p={pitch,brightness,air,phase};
+ for(const lane of [0,.23,.57,1]){
+  const start=planar(p,0,lane),end=planar(p,TAU,lane),left=planar(p,-1e-5,lane),right=planar(p,1e-5,lane);
+  worstSeam=Math.max(worstSeam,Math.hypot(...start.map((v,i)=>v-end[i])));
+  worstTangent=Math.max(worstTangent,Math.hypot(...start.map((v,i)=>(right[i]-2*v+left[i])/1e-5)));
+  for(let i=0;i<360;i++){const v=planar(p,i/360*TAU,lane);assert.ok(v.every(Number.isFinite));const r=Math.hypot(v[0],v[2]);minSweepR=Math.min(minSweepR,r);maxSweepR=Math.max(maxSweepR,r);}
+ }
+}
+check('descriptor-domain planar seams and tangents continuous',worstSeam<1e-9&&worstTangent<.01,{worstSeam,worstTangent});
+check('descriptor-domain planar clearance and bounds',minSweepR>.8&&maxSweepR<2.62,{minSweepR,maxSweepR});
 fs.writeFileSync(new URL('./analysis-verification.json',import.meta.url),JSON.stringify(results,null,2));console.log(`${results.length} analysis/geometry checks passed`);

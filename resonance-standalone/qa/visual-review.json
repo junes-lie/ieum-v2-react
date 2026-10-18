@@ -29,7 +29,8 @@
       "Strands weave across each band and converge at periodic narrow regions",
       "Label and record clearance is smooth; existing spatial coordinate buffers remain unchanged",
       "Descriptor-driven grain size/opacity distinguishes fine blue, coral clusters and ivory intensity variation without color/ID branches",
-      "Band convergence now narrows both radial and tangential spread; original spatial coordinates retained"
+      "Band convergence now narrows both radial and tangential spread; original spatial coordinates retained",
+      "Continuous descriptor-driven phase warping gives unequal gathering intervals and local strand bending; viewed actual 2/3/4 participant renders"
     ],
     "remaining": [
       "The reference still has finer irregular filament detail than the procedural crosshatching",
@@ -37,6 +38,6 @@
     ],
     "method": "Actual WebGL canvas readback on Chromium/SwiftShader; no generated render or pixel-match claim",
     "visualApproval": "not claimed",
-    "buildSha256": "aa4bef0ca86b15c11353985a64ecf2bc96f45245367c6c45f08386f8b2a39871"
+    "buildSha256": "ccc55e605908cc0ab7bd5139c1a3b942c646b48390e97677314049c68bf34426"
   }
 }

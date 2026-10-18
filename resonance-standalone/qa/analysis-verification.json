@@ -134,9 +134,9 @@
     "name": "A planar closed, label-clear, within vinyl",
     "pass": true,
     "detail": {
-      "seam": 1.3555018683845599e-15,
-      "minR": 1.0006866038176911,
-      "maxR": 2.470892186361616
+      "seam": 4.00299009870075e-15,
+      "minR": 0.910717155688924,
+      "maxR": 2.4295669088065863
     }
   },
   {
@@ -147,9 +147,9 @@
     "name": "B planar closed, label-clear, within vinyl",
     "pass": true,
     "detail": {
-      "seam": 2.3528887829944514e-15,
-      "minR": 0.8551615806749733,
-      "maxR": 2.4053814711496813
+      "seam": 1.4441070223605687e-15,
+      "minR": 0.8593652840894368,
+      "maxR": 2.4301871745940415
     }
   },
   {
@@ -160,9 +160,9 @@
     "name": "C planar closed, label-clear, within vinyl",
     "pass": true,
     "detail": {
-      "seam": 1.4895699882669032e-15,
-      "minR": 0.8443768923787237,
-      "maxR": 2.1901687072993914
+      "seam": 1.182918610115125e-15,
+      "minR": 0.843563235034256,
+      "maxR": 2.2143078452998712
     }
   },
   {
@@ -173,9 +173,9 @@
     "name": "D planar closed, label-clear, within vinyl",
     "pass": true,
     "detail": {
-      "seam": 1.897149936107019e-15,
-      "minR": 0.8488287984787305,
-      "maxR": 2.223001712229319
+      "seam": 2.020064446043164e-15,
+      "minR": 0.8476447352271945,
+      "maxR": 2.302714470452473
     }
   },
   {
@@ -212,36 +212,52 @@
     "name": "A band gathers in both planar axes",
     "pass": true,
     "detail": {
-      "min": 0.0728074295477758,
-      "max": 0.4430170293242426,
-      "ratio": 6.084777777157171
+      "min": 0.07357331417866188,
+      "max": 0.43841782434964294,
+      "ratio": 5.958924499241808
     }
   },
   {
     "name": "B band gathers in both planar axes",
     "pass": true,
     "detail": {
-      "min": 0.07068640260939664,
-      "max": 0.42054582041647426,
-      "ratio": 5.949458522317973
+      "min": 0.07023011358696725,
+      "max": 0.4263378529364758,
+      "ratio": 6.070584698806357
     }
   },
   {
     "name": "C band gathers in both planar axes",
     "pass": true,
     "detail": {
-      "min": 0.0800334504904187,
-      "max": 0.4452008332263079,
-      "ratio": 5.562684483778512
+      "min": 0.07911447670288509,
+      "max": 0.44860566606539215,
+      "ratio": 5.670336008795628
     }
   },
   {
     "name": "D band gathers in both planar axes",
     "pass": true,
     "detail": {
-      "min": 0.07765222337935095,
-      "max": 0.43016795055676327,
-      "ratio": 5.539673325968826
+      "min": 0.0776251226381946,
+      "max": 0.4284731681638802,
+      "ratio": 5.519774444170149
+    }
+  },
+  {
+    "name": "descriptor-domain planar seams and tangents continuous",
+    "pass": true,
+    "detail": {
+      "worstSeam": 3.15634259302993e-15,
+      "worstTangent": 0.0001495865872040611
+    }
+  },
+  {
+    "name": "descriptor-domain planar clearance and bounds",
+    "pass": true,
+    "detail": {
+      "minSweepR": 0.8425042313897178,
+      "maxSweepR": 2.475794734330535
     }
   }
 ]

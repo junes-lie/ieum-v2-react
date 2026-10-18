@@ -1,48 +1,29 @@
 {
-  "date": "2026-10-18T12:07:49.508683+00:00",
+  "date": "2026-10-18T17:35:24.986956+00:00",
   "artifact": "public/IEUM-Resonance.html",
-  "sha256": "aa4bef0ca86b15c11353985a64ecf2bc96f45245367c6c45f08386f8b2a39871",
-  "analysisChecks": 36,
+  "sha256": "ccc55e605908cc0ab7bd5139c1a3b942c646b48390e97677314049c68bf34426",
+  "analysisChecks": 38,
   "planarChecks": 9,
-  "additionalChecks": 13,
+  "additionalChecks": null,
   "previousFullValidation": {
     "commit": "84c8b45bcdf9cacca5d565cd4620713578c6e1a6",
     "report": "qa/build-verification-planar-2026-10-18.json"
   },
-  "soakStatus": "targeted 3-minute validation completed; prior 10-minute result belongs to 84c8b45",
+  "soakStatus": "current candidate: final QA / 10-minute soak pending",
   "sources": {
     "src/index.html": "b8f4109d8b932f21845b8303217c39e5c755940d32590ad2566217f76ae548cf",
     "src/analyze.js": "ede4319937a3d3743636004ec3bf0f396e9503fe0332ca7b35ab72ceca1e7833",
     "src/visuals.js": "98bd6c93a5611c2f67b79c2c4ab6c75b09af36f2e6f0b780b6bbe6160cbd6408",
     "src/audio.js": "4de643a23a7cb8462df7d08f969a000d2c8af2ce304df68144d1d187644a4121",
     "src/app.js": "7b617ebc71bc4e82b452479093a056d1dbed3a210adc16b56c4daae94f212d07",
-    "src/profiles.js": "374ede4634d86b25a803bf6bcee3c600e9eeecc16b9e5f98eb8188e4207bcdda"
+    "src/profiles.js": "a65b718a98111aa6c1585331131cc12561d4b5cf0250c4926a3a706147da0637"
   },
-  "extendedChecks": 14,
-  "soakArtifactSha256": "aa4bef0ca86b15c11353985a64ecf2bc96f45245367c6c45f08386f8b2a39871",
-  "soakSummary": {
-    "elapsedMs": 182969,
-    "sampleCount": 30,
-    "modes": [
-      0,
-      1
-    ],
-    "geometries": [
-      12
-    ],
-    "textures": [
-      1
-    ],
-    "maxSources": 4,
-    "heapReportedBytes": [
-      39600000
-    ],
-    "observedFrameRate": 14.81,
-    "errors": []
-  },
+  "extendedChecks": null,
+  "soakArtifactSha256": null,
+  "soakSummary": null,
   "renders": {
-    "qa/renders/planar-3.jpg": "2c92d0ceddbfd61f1631c2dc4a6d569ffae0e6e814116c286cef4477a9f697a6",
-    "qa/renders/planar-2.jpg": "6352a60476bf9fee1a917af80a359ac5ffac85f3a320b9e5fe93521b4f2afeaa",
-    "qa/renders/planar-4.jpg": "8aa667877a0a17af555a622a99b85a6d9c3d04361fd6d17a13866fe54e882e1e"
+    "qa/renders/planar-3.jpg": "36fe1255882c73769bd36ac603b86b8277b05bc8229332c02fbca8e40230a4b6",
+    "qa/renders/planar-2.jpg": "2deb149707a37503586be08a92be16b0de0ed3be06064eb75e36c98b64de2033",
+    "qa/renders/planar-4.jpg": "ce2b5a608cd16009d3a0676034b1948f3881dd5f4b2b36dbe69dd15d25c0ffa3"
   }
 }

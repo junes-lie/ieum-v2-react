@@ -58,8 +58,12 @@ export function record(p,t,lane,energy=0,time=0,lift=1,out=[0,0,0]){
 export function planar(p,t,lane,out=[0,0,0]){
  const s=(lane-.5)*2,phase=p.phase;
  const center=1.66+.24*Math.sin(2*t+phase)+.17*Math.sin(3*t-phase)+.10*(1-p.pitch);
- const gather=.18+.82*Math.pow(.5+.5*Math.sin(3*t+phase*.8+.22*Math.sin(2*t-phase)),.8);
- const twist=3*t+phase+.34*Math.sin(t+phase)+.22*p.brightness*Math.sin(5*t-phase)+.12*p.air*Math.sin(7*t+phase);
+ // Periodic phase warping changes spacing continuously with the voice descriptors.
+ // Integer harmonics keep every strand closed, including extreme input profiles.
+ const local=t+(.12+.19*(1-p.brightness))*Math.sin(t+phase)+(.04+.13*p.air)*Math.sin(2*t-phase);
+ const gather=.18+.82*Math.pow(.5+.5*Math.sin(3*local+phase*.8),.65+.6*p.air);
+ const twist=3*local+phase+(.18+.55*p.brightness)*Math.sin(2*t-phase)
+  +.24*p.air*Math.sin(5*t+phase)+.16*p.brightness*Math.sin(3*t+lane*9+phase);
  const spread=(.48+.10*p.air+.06*(1-p.brightness))*gather;
  const raw=.94*(center+spread*Math.sin(twist+lane*TAU)+(.012+.028*p.brightness)*gather*Math.sin(5*t+lane*17+phase));
  const inner=raw-.84,cleared=.84+.5*(inner+Math.sqrt(inner*inner+.0025));
