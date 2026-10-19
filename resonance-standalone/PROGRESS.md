@@ -61,6 +61,12 @@ main·기존 React 앱·Production·Notion·Figma 변경 및 Computer Use 금지
 - **다음 시작점:** 이제 외부 임시 파일을 찾지 말고 저장소의 approved-repetition-reference.png를 사용한다. 상단 팬의 교차 전후를 한 선씩 수동 대응하며 관찰/가림/추정을 구분한다. 전체 두 폐곡선의 정체성은 아직 입증되지 않았으므로 중간 선·입자·합성으로 확장하지 않는다. same-ray 계수 실험이나 기존 실패 진단 반복으로 진전을 대신하지 않는다.
 - main/기존 React 앱/Production/Notion/Figma 변경 및 Computer Use 사용 없음. 전체 목표 미완료.
 
+### 원본 보존 체크포인트 저장·Preview
+
+- 변경 7개 파일을 원격 `0360f798053f55de576a92b4e8a3a1be207e65fa`에 저장했다. 7개 업로드 blob 모두 로컬 Git blob과 일치, expected HEAD로 feature 브랜치만 fast-forward 갱신.
+- Git 자동 Preview의 commit 일치·READY·HTTP 200 확인: https://ieum-resonance-preview-nnvuay7xg-junes-lie.vercel.app/?contourStudy=1 . 실행 화면은 기존과 같으며 QA 원본/도구는 Git 저장소에서 확인한다. 원격 브라우저 기능 검사로 주장하지 않는다.
+- 시각 개선과 전체 목표는 미완료. 다음 시작점은 위 관찰/가림을 구분한 개별 전체 폐곡선 연결이다.
+
 ## 2026-10-20 02시 KST — 개별 선 추적 진단 및 검사 의미 정정
 
 - 시작 원격 `171445520ed030b2baf8d46cd17a5e536ef71290`. PROGRESS 전체·AGENTS·Git 규칙을 확인했다. 독립 작업 사본의 독립본/규칙 92개 파일 Git blob이 원격 tree와 일치. 진행 중 개발/QA 프로세스 없음. 이전 사본 수정·복구 재적용 없음.
