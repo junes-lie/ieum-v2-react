@@ -307,3 +307,9 @@
 - 최종 HTML SHA-256 `1686333751f3f99d24d8acdcf993b56a5b73f8d4007f1fa227ed790aeb9c4069`. 분석/기하 48 + 평면/오디오 9 + 확장 14 = 71개 통과. 같은 빌드로 180.899초 4명 반복 재생·2D/3D 교대, geometry 12 / texture 1 / source 최대 4 / 보고 heap 42,100,000 bytes, 오류 0. SwiftShader 검사이며 실기기 성능 보증이 아니다. 기존 39+13 검사·10분·영상은 새 빌드에서 재실행하지 않았고 이전 보고서를 분리 보존.
 - **다음 시작 지점:** 이 비교와 planar-3 렌더에서 남은 규칙적 고리 간격·교차부 밀도를 진단한다. 둥근 되감김을 보존하면서 기준의 비균등한 미세 접힘으로 개선; 입자 수치 조정으로 대체하지 않는다. 단색에서 개선이 분명할 때 합성에 적용. 최종 시각 후보가 확보되면 그 해시로 10분/모션을 갱신한다. 실제 보컬·실기기·청취는 여전히 미검증.
 - 전체 목표 미완료. main/기존 React 앱/Production/Notion/Figma 변경 및 Computer Use 없음. Preview 확인은 이 커밋 저장 후 기록한다.
+
+### 원격 저장·Preview 검증
+
+- 구현·검증·전후 비교 18개 파일을 원격 `769c6825922b730c5285b13e7c6b725a67db5064`에 저장. 업로드 blob 18개 모두 로컬 Git blob과 일치; expected HEAD 기반 feature fast-forward 성공. 다른 브랜치 변경 없음.
+- 해당 커밋의 독립 실행본 Preview READY / HTTP 200 확인: https://ieum-resonance-preview-dljq4o5w4-junes-lie.vercel.app/ . 응답은 로컬 HTML 전체 3,363,969자와 정확히 일치한 뒤 Vercel feedback script 163자가 추가됨. 원격 브라우저 기능 검사를 새로 수행했다고 주장하지 않는다.
+- 이번 QA 프로세스는 종료됨. 다음 시작점은 위의 단색 고리 간격·합성 교차 밀도 개선. 전체 DoD 미완료 상태 유지.
