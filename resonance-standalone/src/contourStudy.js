@@ -9,9 +9,16 @@ function tracePoint(which,t){
 export function contourStudy(p,t,lane,out=[0,0,0]){
  const a=tracePoint(0,t);
  const group=Math.min(2,Math.floor(lane*3)),fine=lane*3-group;
- const scale=(1-group*.13)*1.18;
- const gather=.18+.82*(.5+.5*Math.cos(3*t+p.phase));
- const thread=.18*gather*(fine-.5)+.022*gather*Math.sin(3*t+fine*2.4+p.phase)*Math.sin(Math.PI*fine);
+ // Reference envelope widths at corresponding trace landmarks (occluded regions estimated).
+ // A periodic smooth field gathers all repeated contours at narrow crossings,
+ // while keeping the whole contour correspondence through the broad lobes.
+ const widths=[.88,.52,.54,.10,.32,.20,.10,.10,.16,.61,1,.90,.18,.10,.08,.08,.10,.66,.82];
+ const u=((t/TAU%1)+1)%1*widths.length,idx=Math.floor(u),f=u-idx;
+ const blend=f*f*(3-2*f),spread=widths[idx]*(1-blend)+widths[(idx+1)%widths.length]*blend;
+ const gap=.035+.095*spread;
+ const scale=(1-group*gap)*1.18;
+ const gather=.16+.84*spread;
+ const thread=.30*gather*(fine-.5)+.022*gather*Math.sin(3*t+fine*2.4+p.phase)*Math.sin(Math.PI*fine);
  const radius=Math.hypot(a[0],a[1]);
  const shape=1+.035*(p.pitch-.48)*Math.cos(t-p.phase)+.045*(p.brightness-.85)*Math.sin(2*t+p.phase)+.04*(p.air-.28)*Math.cos(3*t-p.phase);
  const x=a[0]*(scale*shape+thread/radius),z=a[1]*(scale*shape+thread/radius);
