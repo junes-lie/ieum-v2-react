@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
-import {referenceContour} from './referenceContours.js';
+if(process.env.IEUM_SOURCE_FOLD==='1')globalThis.location={search:'?sourceFold=1'};
+const {referenceContour}=await import('./referenceContours.js');
 // Placement can differ; one voice must retain angular fold correspondence,
 // radial derivatives and strand height across inward repetitions.
 const profiles=[{phase:.35,brightness:.22},{phase:1.2,brightness:.6}];

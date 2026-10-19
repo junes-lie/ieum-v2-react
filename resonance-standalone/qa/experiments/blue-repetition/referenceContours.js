@@ -12,7 +12,17 @@ function sample(row,x){
 // Both radial repetitions use the same parent, fold phase and local strand.
 // This is a source-informed candidate, not a recovered source filament.
 const wideFoldStudy=typeof location!=='undefined'&&new URLSearchParams(location.search).get('wideFold')==='1';
+const sourceFoldStudy=typeof location!=='undefined'&&new URLSearchParams(location.search).get('sourceFold')==='1';
 export function blueVoiceShape(p,t,strand){
+ if(sourceFoldStudy){
+  // Three broad folds observed in blue; each complete filament shares this
+  // progression, with a limited strand phase instead of a full phase rotation.
+  const phase=3*(t+Math.PI/2)+(strand-5.5)/11*1.7+(p.phase-.35)*.2;
+  const angle=t-.70*Math.sin(phase);
+  const center=438+96*Math.cos(phase);
+  return {radius:center,angle:angle+(p.phase-.35)*.15,height:.031+.004*Math.sin(t*3+strand*.2)};
+ }
+
  const center=sample(paths[6],t);
  const width=Math.max(3,(sample(paths[11],t)-sample(paths[0],t))*.5);
  const folds=3+Math.round(p.brightness*2);

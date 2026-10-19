@@ -2,8 +2,8 @@ const {chromium}=require(process.env.IEUM_PLAYWRIGHT_PATH||'playwright');
 const fs=require('fs'),path=require('path'),assert=require('assert/strict');
 const output=process.env.IEUM_BLUE_OUTPUT||'/tmp/ieum-blue-verification';fs.mkdirSync(output,{recursive:true});
 (async()=>{const browser=await chromium.launch({executablePath:process.env.IEUM_CHROMIUM_PATH,args:['--no-sandbox','--use-angle=swiftshader','--enable-unsafe-swiftshader']});
-try{const page=await browser.newPage({viewport:{width:1100,height:1400}}),errors=[];let busy=false;
-const pump=setInterval(async()=>{if(busy)return;busy=true;try{await page.screenshot({clip:{x:0,y:0,width:1,height:1},timeout:5000})}catch{}finally{busy=false}},300);
+try{const page=await browser.newPage({viewport:{width:1100,height:1400}}),errors=[];let busy=false;let pumpPage=page;page.setDefaultTimeout(20000);
+const pump=setInterval(async()=>{if(busy)return;busy=true;try{await pumpPage.screenshot({clip:{x:0,y:0,width:1,height:1},timeout:5000})}catch{}finally{busy=false}},300);
 try{page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});
 await page.goto(process.env.IEUM_BLUE_URL||('file://'+path.resolve(__dirname,'../../../public/repetition-candidate.html')+'?repetition=1'));
 await page.waitForFunction(()=>ieumDebug.view?.morph===0);await page.evaluate(()=>{ieumDebug.view.speed=0;ieumDebug.view.time=0});
@@ -13,14 +13,15 @@ const geometry=await page.evaluate(()=>{const view=ieumDebug.view;return {visibl
 assert.deepEqual(geometry.visible,['A']);assert.equal(geometry.particles,false);assert.ok(geometry.layers.every(l=>l.drift===0&&l.minR>.60&&l.sharedHeightDrift===0));
 await page.click('#raised');await page.evaluate(()=>{const v=ieumDebug.view;v.transitionAt=performance.now()-450;v.update(0,false);v.transition=false});await capture('transition-half');
 await page.click('#raised');await page.waitForFunction(()=>ieumDebug.view.morph>.999);await capture('spatial');
-await page.click('#flat');await page.waitForFunction(()=>ieumDebug.view.morph<.001);
+await page.click('#flat');await page.evaluate(()=>{const v=ieumDebug.view;v.transitionAt=performance.now()-1000;v.update(0,false)});await page.waitForFunction(()=>ieumDebug.view.morph<.001);
+clearInterval(pump);await page.close();
 // Use a fresh mobile viewport: resizing the desktop page can leave a stale
 // desktop bitmap in this Chromium build. Validate actual PNG dimensions.
-const mobile=await browser.newPage({viewport:{width:390,height:844}});
+const mobile=await browser.newPage({viewport:{width:390,height:844}});pumpPage=mobile;mobile.setDefaultTimeout(20000);
 try {
  mobile.on('pageerror',e=>errors.push(e.message));
  mobile.on('console',m=>{if(m.type()==='error')errors.push(m.text())});
- await mobile.goto(page.url());await mobile.screenshot({clip:{x:0,y:0,width:1,height:1}});
+ await mobile.goto(process.env.IEUM_BLUE_URL||('file://'+path.resolve(__dirname,'../../../public/repetition-candidate.html')+'?repetition=1'));await mobile.screenshot({clip:{x:0,y:0,width:1,height:1}});
  await mobile.waitForFunction(()=>ieumDebug.view?.morph===0);
  await mobile.click('[data-contours="0"]');
  await mobile.locator('#stage canvas').screenshot({path:path.join(output,'mobile-flat.png')});

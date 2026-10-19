@@ -1,0 +1,36 @@
+{
+  "geometry": {
+    "visible": [
+      "A"
+    ],
+    "layers": [
+      {
+        "drift": 0,
+        "minR": 0.6333632847231353,
+        "sharedHeightDrift": 0
+      },
+      {
+        "drift": 0,
+        "minR": 0.633333512604101,
+        "sharedHeightDrift": 0
+      },
+      {
+        "drift": 0,
+        "minR": 0.6333333291018078,
+        "sharedHeightDrift": 0
+      },
+      {
+        "drift": 0,
+        "minR": 0.633333380631538,
+        "sharedHeightDrift": 0
+      }
+    ],
+    "particles": false
+  },
+  "errors": [],
+  "sourceFidelityApproved": false,
+  "scope": "Blue two-component structural comparison. Captures require visual source comparison; no audio, particles, synthesis or long-run approval.",
+  "query": "?repetition=1&sourceFold=1",
+  "visualDecision": "rejected: regular triple groups and triangular connectors differ from approved source",
+  "mobileWidth": 366
+}
