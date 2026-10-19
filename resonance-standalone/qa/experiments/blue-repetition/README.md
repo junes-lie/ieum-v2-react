@@ -1,13 +1,9 @@
-# Blue reference repetition comparison
+# Blue — one voice, inward repetitions
 
-The user corrected the experiment target: blue and ivory show whole-form inward repetition; coral is not the criterion for that two-part structure. This candidate starts with blue only. The earlier coral work is historical, not a validated model.
+The runtime candidate uses one `blueVoiceShape(profile, t, strand)` for both outer and inner repetitions. The same parent, fold count/phase, spread and local strand index drive both. The inner repetition only changes radial placement by 190 source pixels; this is not an independent voice or a source-fidelity approval. The original independent `paths.json` extraction is retained as source observation/history; its inner curves no longer drive runtime shape.
 
-`extract.py` validates the exact committed source hash, isolates blue pixels, and independently samples outer (350–560 px) and inner (165–335 px) components about source center (625,615). Twelve radial quantiles per component are periodically smoothed. The space between components is not filled with interpolated strands. Missing directions are inferred; observed flags are stored in `paths.json`. This is a representative path approximation, not recovery of individual source-thread identities.
+`build-candidate.mjs` also uses the paired local strand index for 3D height, line width and flow. The default restored standalone is unchanged. Particles remain off in this candidate.
 
-The source overlay shows one representative path from each component. Green/yellow solid = source direction has blue pixels; magenta dashed = inferred direction. Even a solid segment is a smoothed estimate and may not coincide with an exact source filament.
+Run `node qa/experiments/blue-repetition/same-voice.mjs` for shared morphology/closure/determinism checks. Run `verify.cjs` with Playwright/Chromium paths for actual one/two/all line captures, 2D/intermediate/3D, paired geometry height checks and a fresh mobile viewport with PNG size assertion. Build with `node build-candidate.mjs`.
 
-Run `python qa/experiments/blue-repetition/extract.py`, then `npm run build` within standalone. Existing source/patch is applied in a temporary directory; the default runtime stays byte-identical. The candidate switches visibility to BLUE, uses separate outer/inner paths, keeps matching XZ positions during lift, and adjusts only its label radius to .60 for the source's proportion. Particles are disabled.
-
-Run `verify.cjs` with installed Playwright/Chromium paths in IEUM_PLAYWRIGHT_PATH/IEUM_CHROMIUM_PATH. Actual Chromium captures cover one outer path, outer+inner pair, 24 strands, transition midpoint, spatial and 390px view. Captures and verification are evidence, not visual acceptance.
-
-Current limitation: two source components are visible, but quantile paths mostly run alongside one another. Reference-like cross-weaving, loops, fold texture and hidden source connections are not reproduced. Ivory, audio, synthesis, particle correspondence and long-run stability are not newly validated. Do not claim completed visual reconstruction.
+Remaining: source-like wide return folds and natural weave, mobile crowding, particles and synthesis/audio/long-run verification. Shared morphology tests do not prove image reconstruction or user acceptance.
