@@ -11,13 +11,14 @@ function sample(row,x){
 // One voice owns one morphology. Repetition changes placement only.
 // Both radial repetitions use the same parent, fold phase and local strand.
 // This is a source-informed candidate, not a recovered source filament.
+const wideFoldStudy=typeof location!=='undefined'&&new URLSearchParams(location.search).get('wideFold')==='1';
 export function blueVoiceShape(p,t,strand){
  const center=sample(paths[6],t);
  const width=Math.max(3,(sample(paths[11],t)-sample(paths[0],t))*.5);
  const folds=3+Math.round(p.brightness*2);
  const phase=folds*t+p.phase+strand/12*2*Math.PI;
  const radial=width*Math.cos(phase);
- const angle=t+(p.phase-.35)*.15+.65*width/center*Math.sin(phase);
+ const angle=t+(p.phase-.35)*.15+(wideFoldStudy?1.32/folds:.65*width/center)*Math.sin(phase);
  return {radius:center+radial,angle,height:.031+.004*Math.sin(t*3+strand*.2)};
 }
 export function referenceContour(p,t,lane,out=[0,0,0]){
@@ -29,3 +30,4 @@ export function referenceContour(p,t,lane,out=[0,0,0]){
  out[0]=Math.cos(q.angle)*r;out[2]=Math.sin(q.angle)*r;
  out[1]=q.height;return out;
 }
+

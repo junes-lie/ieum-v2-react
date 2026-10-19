@@ -1,0 +1,35 @@
+{
+  "geometry": {
+    "visible": [
+      "A"
+    ],
+    "layers": [
+      {
+        "drift": 0,
+        "minR": 0.7192486523877003,
+        "sharedHeightDrift": 0
+      },
+      {
+        "drift": 0,
+        "minR": 0.7214617139491228,
+        "sharedHeightDrift": 0
+      },
+      {
+        "drift": 0,
+        "minR": 0.7195225576532721,
+        "sharedHeightDrift": 0
+      },
+      {
+        "drift": 0,
+        "minR": 0.7202852340296595,
+        "sharedHeightDrift": 0
+      }
+    ],
+    "particles": false
+  },
+  "errors": [],
+  "sourceFidelityApproved": false,
+  "scope": "Blue two-component structural comparison. Captures require visual source comparison; no audio, particles, synthesis or long-run approval.",
+  "visualDecision": "rejected: broad source lobes flatten and periodic small hooks appear",
+  "query": "?repetition=1&wideFold=1"
+}
