@@ -1,0 +1,41 @@
+{
+  "parameters": [
+    -0.11703155359378592,
+    0.5338607321770386,
+    59.54934281180499,
+    1.367348571326637,
+    -1.4766303007965593
+  ],
+  "loss": 124.28593401158295,
+  "sourceFourier": [
+    373.98333327777794,
+    -37.0202328412657,
+    -20.2606866468337,
+    -8.127043651151213,
+    -16.5823555452808,
+    1.2257699017754833,
+    -13.615811793735007,
+    3.956667058532515,
+    -4.216751531652443,
+    23.618343100751982,
+    -10.991084861570812,
+    7.9455368917190095,
+    3.9692937181380494,
+    -9.725872371861776,
+    -1.5603178148595451,
+    1.2830213026470487,
+    8.608042818411855,
+    -0.9798981192700734,
+    3.2573236498322915,
+    -2.447972210658044,
+    2.003063736308321,
+    -0.2051806655220259,
+    -1.789091157550788,
+    -0.7515855793180716,
+    -2.3192957163297283
+  ],
+  "method": "Phase-shifted whole reference contour, low harmonics preserve placement; large bends repeat inward. Source-guided approximation, not exact recovered thread identity.",
+  "visualApproval": false,
+  "sourceSha256": "be889493982f41b186426f42266b8107bdaa8b1c072f943fb0232502edc32e4b",
+  "scope": "Single-color full-contour comparison candidate only. Visual approval and complete source fidelity are not established."
+}
