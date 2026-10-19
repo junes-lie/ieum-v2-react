@@ -8,8 +8,17 @@ function sample(row,x){
  const a=row[(i+n-1)%n],b=row[i%n],c=row[(i+1)%n],d=row[(i+2)%n];
  return .5*((2*b)+(-a+c)*u+(2*a-5*b+4*c-d)*u*u+(-a+3*b-3*c+d)*u*u*u);
 }
+const rankWeave=typeof location!=='undefined'&&new URLSearchParams(location.search).get('rankWeave')==='1';
 export function referenceContour(p,t,lane,out=[0,0,0]){
- const index=Math.round(Math.max(0,Math.min(1,lane))*23),r=sample(paths[index],t)/240;
+ const index=Math.round(Math.max(0,Math.min(1,lane))*23);
+ // Keep the independently traced outer/inner envelopes; let a continuous
+ // strand travel across ranks instead of freezing its radial ordering.
+ // This is a correspondence hypothesis, not recovered source thread identity.
+ const group=index<12?0:12, strand=index%12;
+ const phase=strand/12*2*Math.PI;
+ const rank=(.5+.5*Math.sin(3*t+phase+(group?1.1:0)))*11;
+ const lower=Math.floor(rank),blend=rank-lower;
+ const r=rankWeave?(sample(paths[group+lower],t)*(1-blend)+sample(paths[group+Math.min(11,lower+1)],t)*blend)/240:sample(paths[index],t)/240;
  const angle=t+(p.phase-.35)*.15;
  out[0]=Math.cos(angle)*r;out[2]=Math.sin(angle)*r;
  out[1]=.031+.004*Math.sin(t*3+index*.2);return out;
