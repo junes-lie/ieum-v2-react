@@ -1,40 +1,16 @@
 {
-  "date": "2026-10-18T18:03:21.081728+00:00",
+  "date": "2026-10-19T08:29:15.442691+00:00",
   "artifact": "public/IEUM-Resonance.html",
-  "sha256": "c91dbd99e0d31b420391c79e094e7d138483de2ffde955a7239341c8dd6e737e",
-  "analysisChecks": 47,
+  "sha256": "ee51d9449b80eba332cecf43c61864f8df30bea6eeb5897f04a9fe6a33a0fd2c",
+  "analysisChecks": 48,
   "planarChecks": 9,
-  "browserChecks": 39,
   "additionalChecks": 13,
   "extendedChecks": 14,
-  "soakStatus": "completed: recovered same-build 10-minute report",
-  "previousFullValidation": {
-    "commit": "ddf92eea07a5bdcf394745b2dd8c639ebd8b83f5",
-    "report": "qa/build-verification-spacing-2026-10-19.json"
-  },
-  "sources": {
-    "src/index.html": "b8f4109d8b932f21845b8303217c39e5c755940d32590ad2566217f76ae548cf",
-    "src/analyze.js": "ede4319937a3d3743636004ec3bf0f396e9503fe0332ca7b35ab72ceca1e7833",
-    "src/visuals.js": "6b269fbef0337713b1d420a893e404a66e8eb2c4a9b44aa3e33c47f2c9e535c0",
-    "src/audio.js": "4de643a23a7cb8462df7d08f969a000d2c8af2ce304df68144d1d187644a4121",
-    "src/app.js": "7b617ebc71bc4e82b452479093a056d1dbed3a210adc16b56c4daae94f212d07",
-    "src/profiles.js": "ceb2794e034f784b0212631b91d4bd9669057a42fb69bb607818a2c8ed8a9622"
-  },
-  "renders": {
-    "qa/renders/planar-3.jpg": "78ded7cea0a67b6721c1a003e138db1a1c47558fc24b4e48027a0aa62e074d24",
-    "qa/renders/planar-2.jpg": "5af74ad90c7f0c202c7dc8981d525254f9f1b9f354a93733358e00a47031983e",
-    "qa/renders/planar-4.jpg": "24f4205e742f89be94f4a57f0adc35f5a1fdd4a049052e55d9ee3a39940b2fd3"
-  },
-  "motion": {
-    "report": "qa/planar-motion-verification.json",
-    "buildSha256": "c91dbd99e0d31b420391c79e094e7d138483de2ffde955a7239341c8dd6e737e",
-    "video": "qa/renders/planar-motion.mp4",
-    "sha256": "c4cdac8447436822ae943273f06a5cb32c17db7432962d586b14e0a4dbea6147"
-  },
-  "soakArtifactSha256": "c91dbd99e0d31b420391c79e094e7d138483de2ffde955a7239341c8dd6e737e",
+  "browserChecks": "39 not rerun; prior build only",
+  "soakStatus": "completed: 3-minute targeted regression, not a new 10-minute final certification",
   "soakSummary": {
-    "elapsedMs": 604120,
-    "sampleCount": 103,
+    "elapsedMs": 181996,
+    "sampleCount": 34,
     "geometries": [
       12
     ],
@@ -47,9 +23,26 @@
     ],
     "errors": []
   },
-  "resumedVerification": {
-    "date": "2026-10-19T07:12:13.331717+00:00",
-    "buildAndAnalysisChecks": 47,
-    "note": "Recovered prior same-build browser/soak reports; fresh build hash and motion checked this run."
+  "previousFullValidation": {
+    "commit": "3036f96833b51ff868c9f5e19ff2484c7fcf6465",
+    "report": "qa/build-verification-fans-2026-10-19.json"
+  },
+  "motion": {
+    "status": "previous build only, not regenerated",
+    "buildSha256": "c91dbd99e0d31b420391c79e094e7d138483de2ffde955a7239341c8dd6e737e"
+  },
+  "sources": {
+    "src/audio.js": "4de643a23a7cb8462df7d08f969a000d2c8af2ce304df68144d1d187644a4121",
+    "src/analyze.js": "ede4319937a3d3743636004ec3bf0f396e9503fe0332ca7b35ab72ceca1e7833",
+    "src/index.html": "b8f4109d8b932f21845b8303217c39e5c755940d32590ad2566217f76ae548cf",
+    "src/app.js": "7b617ebc71bc4e82b452479093a056d1dbed3a210adc16b56c4daae94f212d07",
+    "src/visuals.js": "6b269fbef0337713b1d420a893e404a66e8eb2c4a9b44aa3e33c47f2c9e535c0",
+    "src/profiles.js": "191675abdf6c657ce3307acb9b5724b70a7ad4859e7f2e6f0e78059bda9cfa30"
+  },
+  "renders": {
+    "qa/renders/planar-2.jpg": "f5fd1d8ba1384d107bc3077d38fd10bcbf4afc21e5d7e265770ad0a0924428f0",
+    "qa/renders/planar-3.jpg": "98680d95675712a5d6a1a739c40f842ab4cb32762b4149869cdd8945256d33f6",
+    "qa/renders/planar-4.jpg": "0c57b4c4db819e54d18f3c509124244c4c2573ca38f9004b4aabc1ce97d95f21",
+    "qa/renders/spatial-preserved.jpg": "6fa2ee80dc1fa5e28d0ec7d942f76ef5d182b880ed3472247cabf7d49150caac"
   }
 }

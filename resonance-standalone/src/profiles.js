@@ -82,12 +82,12 @@ export function planar(p,t,lane,out=[0,0,0]){
 
 // Static per-particle texture from descriptors, independent of color and participant slot.
 export function planarGrain(p,u,v){
- return {size:1.3+.8*u+2.2*p.brightness*u**4+1.8*p.air*u**2,
-  alpha:clamp(.55+.40*v+.24*p.air*u**4)};
+ return {size:1.3+.8*u+2.8*p.brightness*u**4+1.8*p.air*u**2,
+  alpha:clamp(.62+.40*v+.24*p.air*u**4)};
 }
 
 // Monotone periodic remapping bunches grains without changing their stored phase.
 // The 3D trace still uses its original t; both endpoints meet continuously.
 export function planarParticleT(p,t){
- return t+(.06+.11*p.brightness+.04*p.air)*Math.sin(3*t+p.phase);
+ return t+(.06+.17*p.brightness+.06*p.air)*Math.sin(3*t+p.phase);
 }

@@ -199,13 +199,17 @@
     "pass": true
   },
   {
+    "name": "grain descriptor-domain size and opacity bounded",
+    "pass": true
+  },
+  {
     "name": "coral and ivory grain tails differ from fine blue",
     "pass": true,
     "detail": [
-      2.73787258944,
-      4.2928700592,
-      4.250095379839999,
-      4.07344017216
+      2.8596251865599998,
+      4.7632778208,
+      4.48253215616,
+      4.39442429184
     ]
   },
   {
@@ -273,8 +277,8 @@
     "name": "grain flow monotone and closed 0/0.5",
     "pass": true,
     "detail": {
-      "minStep": 0.006632446912553991,
-      "maxStep": 0.010820845607389273,
+      "minStep": 0.006370671994126553,
+      "maxStep": 0.011082620525817433,
       "seam": 0
     }
   },
@@ -282,8 +286,8 @@
     "name": "grain flow monotone and closed 0/1",
     "pass": true,
     "detail": {
-      "minStep": 0.006108897075699615,
-      "maxStep": 0.011344395444243816,
+      "minStep": 0.005585347238845129,
+      "maxStep": 0.011867945281098358,
       "seam": 0
     }
   },
@@ -291,8 +295,8 @@
     "name": "grain flow monotone and closed 0.5/0",
     "pass": true,
     "detail": {
-      "minStep": 0.005716234698058709,
-      "maxStep": 0.011737057821885166,
+      "minStep": 0.0049309099427770064,
+      "maxStep": 0.012522382577166091,
       "seam": 0
     }
   },
@@ -300,8 +304,8 @@
     "name": "grain flow monotone and closed 0.5/0.5",
     "pass": true,
     "detail": {
-      "minStep": 0.0051926848612042775,
-      "maxStep": 0.012260607658739708,
+      "minStep": 0.004145585187495193,
+      "maxStep": 0.013307707332448793,
       "seam": 0
     }
   },
@@ -309,8 +313,8 @@
     "name": "grain flow monotone and closed 0.5/1",
     "pass": true,
     "detail": {
-      "minStep": 0.004669135024349735,
-      "maxStep": 0.01278415749559425,
+      "minStep": 0.003360260432213824,
+      "maxStep": 0.014093032087729718,
       "seam": 0
     }
   },
@@ -318,8 +322,8 @@
     "name": "grain flow monotone and closed 1/0",
     "pass": true,
     "detail": {
-      "minStep": 0.004276472646709106,
-      "maxStep": 0.013176819873234713,
+      "minStep": 0.0027058231361456464,
+      "maxStep": 0.01474746938379834,
       "seam": 0
     }
   },
@@ -327,8 +331,8 @@
     "name": "grain flow monotone and closed 1/0.5",
     "pass": true,
     "detail": {
-      "minStep": 0.003752922809854675,
-      "maxStep": 0.013700369710089255,
+      "minStep": 0.0019204983808642218,
+      "maxStep": 0.015532794139079265,
       "seam": 0
     }
   },
@@ -336,9 +340,9 @@
     "name": "grain flow monotone and closed 1/1",
     "pass": true,
     "detail": {
-      "minStep": 0.0032293729730001886,
-      "maxStep": 0.014223919546943797,
-      "seam": 0
+      "minStep": 0.00113517362558202,
+      "maxStep": 0.016318118894361966,
+      "seam": 8.881784197001252e-16
     }
   }
 ]

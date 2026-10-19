@@ -4,7 +4,7 @@
   "referenceSha256": "cb8aab4828cbe0d456f3865e3d5eeb3fc23cc706d9dafb7ddd93022323d4d4ed",
   "observedPreserved": [
     "Personal A/B/C/D distinct silhouette and proportions",
-    "2\u20134 voices share one record without sector division",
+    "2–4 voices share one record without sector division",
     "Colored geometry uses line strokes and particles; no colored tube or surface",
     "Existing center paths, loaded files, audio analyser and transport retained"
   ],
@@ -31,7 +31,8 @@
       "Descriptor-driven grain size/opacity distinguishes fine blue, coral clusters and ivory intensity variation without color/ID branches",
       "Band convergence now narrows both radial and tangential spread; original spatial coordinates retained",
       "Continuous descriptor-driven phase warping gives unequal gathering intervals and local strand bending; viewed actual 2/3/4 participant renders",
-      "Coherent filament fan with unequal lane lag reduces full-band crosshatching; monotone particle remap adds descriptor-driven local density without phase reset"
+      "Coherent filament fan with unequal lane lag reduces full-band crosshatching; monotone particle remap adds descriptor-driven local density without phase reset",
+      "Particle-only refinement: higher descriptor-driven size tails and opacity, stronger monotone local bunching; existing planar/3D geometry restored exactly after rejecting four fold candidates."
     ],
     "remaining": [
       "Reference has more rounded, intricate repeated loops and denser local grain; some current lobes still read angular or parallel",
@@ -39,7 +40,7 @@
     ],
     "method": "Actual WebGL canvas readback on Chromium/SwiftShader; no generated render or pixel-match claim",
     "visualApproval": "not claimed",
-    "buildSha256": "c91dbd99e0d31b420391c79e094e7d138483de2ffde955a7239341c8dd6e737e",
+    "buildSha256": "ee51d9449b80eba332cecf43c61864f8df30bea6eeb5897f04a9fe6a33a0fd2c",
     "gatherSpacingComparison": {
       "method": "720 angular samples, 24 lanes; local minima of lane RMS width below 0.12 scene units; rounded degrees; diagnostic, not perceptual validation",
       "previousCommit": "f672b113ce5bf1ed662b175d97661b7dc2f278f3",
@@ -93,6 +94,12 @@
           ]
         }
       }
-    }
+    },
+    "rejectedCandidates": [
+      "Low-frequency paired curl: inadequate rounded-loop improvement",
+      "Greater tangential fan: stronger hooks",
+      "Larger circular component: more regular crosshatching",
+      "High-frequency local curls: pointed inner scallops"
+    ]
   }
 }
