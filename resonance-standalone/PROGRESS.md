@@ -10,6 +10,12 @@
 - README 및 QA 페이지에 실험 폐기/복구 상태 명시. 과거 study 검사·이미지는 현행 통과 근거가 아니다. **다음 실행에서 이 실패한 study 모드나 same-ray 간격 보정을 다시 활성화하지 않는다.** 현 복구본을 보호하며 이후 변경은 이번 사용자 정정에 맞춰 별도로 검증해야 한다.
 - main/기존 React 앱/Production/Notion/Figma 수정 없음. Computer Use 사용 없음. 다른 작업 사본 변경 없음.
 
+### 복구 저장·Preview 확인
+
+- 원격 복구 커밋 `4192776bdadc526061d821a237f9c6e3e64b9096`. expected HEAD 기반 feature fast-forward 성공, 원격 compare의 변경 9개 파일 모두 resonance-standalone/ 내부임을 확인했다.
+- 해당 commit Git Preview READY·HTTP 200 확인: https://ieum-resonance-preview-6yv38yuru-junes-lie.vercel.app/ . 옛 query를 붙인 HTTP 응답에도 폐기한 검증 안내 문구가 없음. 실제 기능 QA는 위 로컬 동일 빌드에서 수행했으며 원격 브라우저 QA라고 주장하지 않는다.
+- 복구 요청 범위는 반영했다. 기준 이미지의 안쪽 반복/최종 시각 완성은 여전히 미완료이며 실패 검증 모드 재활성화 금지.
+
 ## 최우선 정정 — 2026-10-19 사용자 지시: 최근 두 실행 원복, ‘반복’ 해석 수정
 
 **이 항목이 아래 모든 과거 기록·다음 시작점보다 우선한다. 승인 2D 이미지 자체가 시각 기준이며, 아래 설명은 그 이미지의 관찰 기록이다.**
