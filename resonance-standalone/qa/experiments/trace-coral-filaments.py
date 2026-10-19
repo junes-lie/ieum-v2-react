@@ -1,5 +1,6 @@
 """Trace TWO VISIBLE ARCS, not envelopes or recovered closed loops.
-Usage: python trace-coral-filaments.py reference.png output-prefix
+Usage: python trace-coral-filaments.py [reference.png] [output-prefix]
+Defaults to the committed repetition reference and /tmp/ieum-coral-filaments.
 Requires numpy, scipy, Pillow. Exact source hash is enforced.
 The narrow manual corridors select candidate filaments. Second-order dynamic
 programming prefers coral pixels and tangent continuity across intersections.
@@ -10,10 +11,9 @@ from pathlib import Path
 import numpy as np
 from PIL import Image,ImageDraw
 from scipy.interpolate import PchipInterpolator
-source=Path(sys.argv[1]);prefix=Path(sys.argv[2])
-expected=json.loads((Path(__file__).parent/'coral-envelope-2026-10-19.json').read_text())['sourceSha256']
-sha=hashlib.sha256(source.read_bytes()).hexdigest()
-assert sha==expected,'Wrong reference: use the first, woven repetition reference.'
+from reference_source import repetition_reference
+source,sha=repetition_reference(sys.argv[1] if len(sys.argv)>1 else None)
+prefix=Path(sys.argv[2]) if len(sys.argv)>2 else Path('/tmp/ieum-coral-filaments')
 im=Image.open(source).convert('RGB');a=np.asarray(im,dtype=float)
 r,g,b=a[:,:,0],a[:,:,1],a[:,:,2]
 score=np.clip((r-g*1.10)/90,0,1)*np.clip((r-b)/90,0,1)

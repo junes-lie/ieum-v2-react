@@ -50,6 +50,17 @@
 
 main·기존 React 앱·Production·Notion·Figma 변경 및 Computer Use 금지. 다른 조형 탐색 금지.
 
+## 2026-10-20 03시 KST — 반복 기준 원본 누락과 재현 경로 수정
+
+- 시작 원격 `f2200f2e62d30f902a1ecb4ae1b0dbcea5de6d5e`. PROGRESS 전체·AGENTS·Git 규칙을 읽고 별도 사본의 독립본/AGENTS 96개 blob과 원격 tree 일치를 확인했다. 이전 작업 사본은 변경하지 않았다. 복구 완료 상태라 재적용하지 않았다.
+- 실제 다음 단계의 원본을 찾다가 저장소 누락을 확인: 반복 최우선 기준 「삼색 직조 공명 바이닐(1).png」는 Git tree에 없고 과거 scratch upload에만 남아 있었다. 기존 추적 JSON의 SHA-256과 정확히 일치하는 원본을 `qa/renders/approved-repetition-reference.png`에 보존했다. `approved-planar-reference.png`는 다른 이미지이며 그대로 유지한다.
+- `reference-provenance.json`에 두 기준의 우선순위/역할을 구분. 두 Python 추적 도구가 저장소 원본을 기본값으로 읽고 공통 SHA-256 검사에서 잘못된 이미지 입력을 거부하도록 수정. CLI의 명시적 입력/출력도 유지. 기본 출력은 /tmp이므로 기존 결과를 자동 덮어쓰지 않는다. qa/index.html에 정확한 반복 원본과 재현 명령을 추가했다.
+- 검증: 원본 SHA-256 `be889493982f41b186426f42266b8107bdaa8b1c072f943fb0232502edc32e4b` 일치. 인자 없이 두 도구 실행 성공, 기존 envelope/short-arcs JSON과 결과 전체 일치. 옛 planar 이미지를 명시 입력하면 ValueError로 거부됨. 이 검사는 기준 선택/재현 경로 확인이며 새 선 추적 성공이 아니다.
+- 원본과 상단 코랄 확대를 직접 확인했으나 교차 이후 동일 선의 전체 연결을 확정하지 못했다. **전체 폐곡선 두 개 추적·시각 개선 채택은 이번에도 미완료.** 관찰되지 않은 연결을 임의로 정답 좌표로 만들지 않았고, 기존 짧은 추적 후보를 성공으로 재분류하지 않았다.
+- 실행 src/HTML은 변경하지 않음. HTML SHA-256 `1a6052814ef6cbf870418b297ad1e54309a48d2568b29d42b50694566edfd661` 유지. 변경 없는 브라우저/장시간/오디오 QA는 반복하지 않았다. 실제 사람 보컬·실기기·청취 미검증 유지.
+- **다음 시작점:** 이제 외부 임시 파일을 찾지 말고 저장소의 approved-repetition-reference.png를 사용한다. 상단 팬의 교차 전후를 한 선씩 수동 대응하며 관찰/가림/추정을 구분한다. 전체 두 폐곡선의 정체성은 아직 입증되지 않았으므로 중간 선·입자·합성으로 확장하지 않는다. same-ray 계수 실험이나 기존 실패 진단 반복으로 진전을 대신하지 않는다.
+- main/기존 React 앱/Production/Notion/Figma 변경 및 Computer Use 사용 없음. 전체 목표 미완료.
+
 ## 2026-10-20 02시 KST — 개별 선 추적 진단 및 검사 의미 정정
 
 - 시작 원격 `171445520ed030b2baf8d46cd17a5e536ef71290`. PROGRESS 전체·AGENTS·Git 규칙을 확인했다. 독립 작업 사본의 독립본/규칙 92개 파일 Git blob이 원격 tree와 일치. 진행 중 개발/QA 프로세스 없음. 이전 사본 수정·복구 재적용 없음.
