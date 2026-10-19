@@ -12,7 +12,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "node build.mjs",
+    "build": "node build.mjs && node build-candidate.mjs",
     "test": "node qa/analysis.mjs",
     "test:browser": "node qa/browser.cjs",
     "test:extended": "node qa/extended.cjs",

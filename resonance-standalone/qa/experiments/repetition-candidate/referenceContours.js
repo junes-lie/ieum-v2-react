@@ -10,7 +10,7 @@ export function referenceContour(p,t,lane,out=[0,0,0]){
  const u=Math.max(0,Math.min(1,lane)),q=t+fit[0]+fit[1]*u;
  let low=c[0],bends=0;
  for(let k=1;k<=12;k++){
-  if(k<=3)low+=c[2*k-1]*Math.cos(k*t)+c[2*k]*Math.sin(k*t);
+  if(k<=3)low+=c[2*k-1]*Math.cos(k*q)+c[2*k]*Math.sin(k*q);
   else bends+=c[2*k-1]*Math.cos(k*q)+c[2*k]*Math.sin(k*q);
  }
  const r=(low+bends*fit[3]*(1-.12*u)-fit[2]*u+fit[4])/240;
