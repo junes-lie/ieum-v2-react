@@ -1,0 +1,21 @@
+{
+  "baseCommit": "7a221fac3281a50f2e54519295961fad7c4af25d",
+  "candidates": [
+    {
+      "name": "candidate-one",
+      "planarSource": "export function planar(p,t,lane,out=[0,0,0]){\n const phase=p.phase;\n const q=t+.10*Math.sin(t+phase)+.055*p.air*Math.sin(2*t-phase);\n const contour=.24*Math.sin(2*q+phase)+.17*Math.sin(3*q-phase);\n const depth=lane+.055*Math.sin(lane*TAU+phase)*Math.sin(Math.PI*lane);\n const span=.46+.10*p.air+.07*(1-p.brightness);\n const fan=.68+.32*(.5+.5*Math.sin(3*q+phase));\n const r=1.98+.08*(1-p.pitch)+contour-depth*span*fan;\n const turn=q+.025*Math.sin(2*t+phase);\n out[0]=Math.cos(turn)*r;out[2]=Math.sin(turn)*r;\n out[1]=.028+.022*Math.sin(3*t+phase)+.004*(lane-.5)*2*Math.sin(3*q+phase);\n return out;\n}\n\n",
+      "adopted": false
+    },
+    {
+      "name": "candidate-two",
+      "planarSource": "export function planar(p,t,lane,out=[0,0,0]){\n const phase=p.phase;\n const q=t+.10*Math.sin(t+phase)+.055*p.air*Math.sin(2*t-phase);\n const contour=.16*Math.sin(2*q+phase)+.34*Math.sin(3*q-phase)+.06*p.air*Math.sin(5*q+phase);\n const depth=lane+.055*Math.sin(lane*TAU+phase)*Math.sin(Math.PI*lane);\n const span=.77+.10*p.air+.07*(1-p.brightness);\n const fan=.26+.74*(.5+.5*Math.sin(3*q+phase));\n const r=1.98+.08*(1-p.pitch)+contour-depth*span*fan;\n const turn=q+.025*Math.sin(2*t+phase)+.15*depth*Math.sin(3*q-phase);\n out[0]=Math.cos(turn)*r;out[2]=Math.sin(turn)*r;\n out[1]=.028+.022*Math.sin(3*t+phase)+.004*(lane-.5)*2*Math.sin(3*q+phase);\n return out;\n}\n\n",
+      "adopted": false
+    }
+  ],
+  "findings": [
+    "Candidate one: full nested paths visible, but parallel strip replaces woven texture. Existing gather QA fails: A ratio 1.47057, required >4.",
+    "Candidate two: stronger shared contour and variable radial spacing; parallel strip remains, inner corners appear. Not adopted.",
+    "Capture single = CORAL only. Composite = A/B/C only. First trial composite accidentally included D and is excluded.",
+    "Runtime restored byte-for-byte. No full regression or soak claimed for rejected candidates."
+  ]
+}
