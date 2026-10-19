@@ -62,19 +62,18 @@ export function planar(p,t,lane,out=[0,0,0]){
  // Integer harmonics keep every strand closed, including extreme input profiles.
  const local=t+(.12+.19*(1-p.brightness))*Math.sin(t+phase)+(.04+.13*p.air)*Math.sin(2*t-phase);
  const gather=.18+.82*Math.pow(.5+.5*Math.sin(3*local+phase*.8),.65+.6*p.air);
- const twist=3*local+phase+(.18+.55*p.brightness)*Math.sin(2*t-phase)
-  +.24*p.air*Math.sin(5*t+phase)+.16*p.brightness*Math.sin(3*t+lane*9+phase);
- const spread=(.48+.10*p.air+.06*(1-p.brightness))*gather;
- // A coherent fan opens from a common gathering region. Relative phase changes
- // smoothly per filament; a full 2pi lane offset would make an even crosshatch.
- const fan=s+(.12+.16*p.air)*Math.sin(lane*TAU+phase)*Math.sin(Math.PI*lane);
- const lag=(.34+.36*p.brightness)*s+.16*Math.sin(lane*11+phase)*Math.sin(Math.PI*lane);
- const fold=twist+lag*gather;
- const across=.65*fan*Math.sin(fold)+.45*Math.sin(twist+lane*TAU)+.10*Math.sin(lane*TAU+2*local+phase)*Math.sin(Math.PI*lane);
- const raw=.94*(center+spread*across+(.012+.028*p.brightness)*gather*Math.sin(5*t+lane*17+phase));
+ // Returning loops reverse tangential travel inside each expanding band.
+ // Radial/tangential quadrature and lane phase keep nested overlaps round;
+ // the convergence envelope collapses both axes at the same locations.
+ const loops=4+Math.round(p.brightness*2);
+ const q=loops*local+phase+lane*TAU;
+ const amplitude=(.40+.10*Math.sin(Math.PI*lane))*(.09+.91*(gather-.18)/.82);
+ const radial=.07*s*gather+amplitude*Math.cos(q);
+ const raw=.94*(center+radial);
  const inner=raw-.84,cleared=.84+.5*(inner+Math.sqrt(inner*inner+.0025));
  const outer=2.50-cleared,r=2.50-.5*(outer+Math.sqrt(outer*outer+.0025));
- const turn=t+.19*gather*(.65*fan*Math.cos(fold)+.35*Math.cos(twist+lane*TAU))+.025*Math.sin(2*t+phase);
+ const turn=t+-amplitude*1.1*Math.sin(q)+.025*Math.sin(2*t+phase);
+ const twist=q;
  out[0]=Math.cos(turn)*r;out[2]=Math.sin(turn)*r;
  out[1]=.028+.022*Math.sin(3*t+phase)+.004*s*Math.sin(twist);
  return out;
