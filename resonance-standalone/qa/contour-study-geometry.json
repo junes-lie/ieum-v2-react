@@ -1,0 +1,12 @@
+{
+  "profiles": 81,
+  "finite": true,
+  "closed": true,
+  "orderedRadialMacroContours": true,
+  "referenceFilamentCorrespondence": false,
+  "slotIndependent": true,
+  "minRadius": 0.9087369441385982,
+  "maxRadius": 2.324733423483218,
+  "maxSeam": 1.1158088768293973e-15,
+  "visualApproval": false
+}

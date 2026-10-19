@@ -1,0 +1,55 @@
+import assert from 'node:assert/strict'
+import { createLocalProjectService, createRemoteProjectService, readLocalUserState, writeLocalUserState } from '../src/projectService.js'
+
+const values = new Map()
+const storage = { getItem: key => values.get(key) ?? null, setItem: (key, value) => values.set(key, value) }
+assert.equal(readLocalUserState(storage, 'state'), null)
+writeLocalUserState(storage, 'state', { projectId: 'p', joined: true })
+assert.deepEqual(readLocalUserState(storage, 'state'), { projectId: 'p', joined: true })
+assert.throws(() => writeLocalUserState({ setItem() { throw new Error('quota') } }, 'state', {}), /quota/)
+storage.setItem('bad', '[]')
+assert.throws(() => readLocalUserState(storage, 'bad'), /저장된/)
+assert.equal(createLocalProjectService({ storage, stateKey: 'state', trackStore: {} }).capabilities.sharedProjects, false)
+assert.throws(() => createRemoteProjectService(), error => error.code === 'SERVICE_NOT_CONFIGURED')
+assert.throws(() => createRemoteProjectService({ baseUrl: 'http://example.com' }), error => error.code === 'INVALID_SERVICE_URL')
+assert.throws(() => createRemoteProjectService({ baseUrl: 'https://user:password@example.com' }), error => error.code === 'INVALID_SERVICE_URL')
+const calls = []
+const remote = createRemoteProjectService({ baseUrl: 'https://example.invalid/api/', getAccessToken: () => 'test-token', fetchImpl: async (url, options) => {
+  calls.push({ url, options })
+  return { ok: true, status: 200, json: async () => ({ status: 'pending' }) }
+} })
+assert.deepEqual(await remote.invite('project/a', 'part-b', 'recipient', 'request-1'), { status: 'pending' })
+assert.equal(calls[0].url, 'https://example.invalid/api/projects/project%2Fa/invitations')
+assert.equal(calls[0].options.headers['Idempotency-Key'], 'request-1')
+assert.deepEqual(JSON.parse(calls[0].options.body), { partId: 'part-b', recipientId: 'recipient' })
+assert.throws(() => remote.respondToInvitation('inv', 'auto-accept', 'request-2'), error => error.code === 'INVALID_DECISION')
+assert.throws(() => remote.joinPart('p', 'a', ''), error => error.code === 'IDEMPOTENCY_KEY_REQUIRED')
+assert.throws(() => remote.getProject('..'), error => error.code === 'INVALID_ID')
+let sent = false
+const unauthenticated = createRemoteProjectService({ baseUrl: 'http://127.0.0.1:9999/', fetchImpl: async () => { sent = true; return { ok: true, status: 200, json: async () => ({}) } } })
+await assert.rejects(unauthenticated.getProject('p'), error => error.code === 'AUTH_REQUIRED')
+assert.equal(sent, false)
+await unauthenticated.discover()
+assert.equal(sent, true)
+const conflict = createRemoteProjectService({ baseUrl: 'https://example.invalid', getAccessToken: () => 'test-token', fetchImpl: async () => ({ ok: false, status: 409 }) })
+await assert.rejects(conflict.respondToInvitation('inv', 'accept', 'request-3'), error => error.code === 'CONFLICT' && error.status === 409)
+const file={size:9000000,contentType:'audio/wav',sha256:'AB'.repeat(32)}
+await remote.prepareTrackUpload('p','tenor',file,'upload-1')
+const preparation=calls.at(-1)
+assert.equal(preparation.url,'https://example.invalid/api/projects/p/parts/tenor/upload-intents')
+assert.deepEqual(JSON.parse(preparation.options.body),{...file,sha256:file.sha256.toLowerCase()})
+assert.equal(preparation.options.headers['Idempotency-Key'],'upload-1')
+await remote.submitUploadedTrack('p','tenor',{uploadIntentId:'intent-1',duration:19,syncOffsetMs:200,blob:new Blob(['must not be sent']),features:{version:'qa'},projectSeed:'seed'},'submit-1')
+const confirmation=calls.at(-1)
+assert.equal(confirmation.options.headers['Content-Type'],'application/json')
+assert.equal(confirmation.options.headers['Idempotency-Key'],'submit-1')
+assert.deepEqual(JSON.parse(confirmation.options.body),{uploadIntentId:'intent-1',duration:19,syncOffsetMs:200,features:{version:'qa'},projectSeed:'seed'})
+assert.ok(confirmation.options.body.length<1000,'Original audio must not pass through Function payload')
+const beforeInvalid=calls.length
+for(const bad of [{...file,size:0},{...file,size:NaN},{...file,contentType:'text/plain'},{...file,sha256:'invalid'}])assert.throws(()=>remote.prepareTrackUpload('p','a',bad,'upload-2'),error=>error.code==='INVALID_UPLOAD_FILE')
+assert.throws(()=>remote.submitUploadedTrack('p','a',{},'submit-2'),error=>error.code==='UPLOAD_INTENT_REQUIRED')
+for(const bad of [{duration:0},{duration:19,syncOffsetMs:-1},{duration:19,syncOffsetMs:19000},{duration:19,syncOffsetMs:'1'}])assert.throws(()=>remote.submitUploadedTrack('p','a',{uploadIntentId:'intent',...bad},'submit-2'),error=>error.code==='INVALID_TAKE_METADATA')
+assert.equal(calls.length,beforeInvalid)
+await assert.rejects(unauthenticated.prepareTrackUpload('p','a',file,'upload-3'),error=>error.code==='AUTH_REQUIRED')
+await assert.rejects(conflict.submitUploadedTrack('p','a',{uploadIntentId:'intent',duration:19},'submit-3'),error=>error.code==='CONFLICT')
+console.log('Project service contract checks passed, including separate upload preparation and JSON submission (stub HTTP; no server connection claimed).')

@@ -1,0 +1,348 @@
+[
+  {
+    "name": "pitch 90",
+    "pass": true,
+    "detail": 90
+  },
+  {
+    "name": "pitch 146.83",
+    "pass": true,
+    "detail": 147
+  },
+  {
+    "name": "pitch 220",
+    "pass": true,
+    "detail": 220
+  },
+  {
+    "name": "pitch 440",
+    "pass": true,
+    "detail": 440
+  },
+  {
+    "name": "pitch 880",
+    "pass": true,
+    "detail": 880
+  },
+  {
+    "name": "pitch changes proportions",
+    "pass": true,
+    "detail": {
+      "low": 0.27,
+      "high": 0.81
+    }
+  },
+  {
+    "name": "harmonics increase brightness",
+    "pass": true,
+    "detail": {
+      "a": 220,
+      "b": 415
+    }
+  },
+  {
+    "name": "gain-invariant descriptors",
+    "pass": true,
+    "detail": {
+      "a": {
+        "pitch": 0.47,
+        "brightness": 0,
+        "air": 0,
+        "phase": 0.99
+      },
+      "b": {
+        "pitch": 0.47,
+        "brightness": 0,
+        "air": 0,
+        "phase": 0.99
+      }
+    }
+  },
+  {
+    "name": "deterministic same input",
+    "pass": true
+  },
+  {
+    "name": "opposite phase stereo",
+    "pass": true
+  },
+  {
+    "name": "sample-rate consistency",
+    "pass": true
+  },
+  {
+    "name": "reject silence",
+    "pass": true
+  },
+  {
+    "name": "reject noise",
+    "pass": true
+  },
+  {
+    "name": "reject too short",
+    "pass": true
+  },
+  {
+    "name": "analysis cancellation",
+    "pass": true
+  },
+  {
+    "name": "A closed, within record, raised",
+    "pass": true,
+    "detail": {
+      "seam": 1.286243355853489e-15,
+      "minR": 1.129420049261184,
+      "maxR": 2.1335790484164354,
+      "minY": 0.06480301483954465,
+      "maxY": 1.176050525802268
+    }
+  },
+  {
+    "name": "B closed, within record, raised",
+    "pass": true,
+    "detail": {
+      "seam": 1.1133411481696098e-15,
+      "minR": 1.167371797623026,
+      "maxR": 2.1093933348717067,
+      "minY": 0.05118609677682838,
+      "maxY": 1.5684531971260565
+    }
+  },
+  {
+    "name": "C closed, within record, raised",
+    "pass": true,
+    "detail": {
+      "seam": 1.2008898127460162e-15,
+      "minR": 1.1522996601642987,
+      "maxR": 2.1586385867961315,
+      "minY": 0.052871829600812215,
+      "maxY": 1.642788661990079
+    }
+  },
+  {
+    "name": "D closed, within record, raised",
+    "pass": true,
+    "detail": {
+      "seam": 1.0507785861527644e-15,
+      "minR": 1.2024452296385473,
+      "maxR": 2.149696744245847,
+      "minY": 0.052796560316656596,
+      "maxY": 1.358891675552749
+    }
+  },
+  {
+    "name": "A planar closed, label-clear, within vinyl",
+    "pass": true,
+    "detail": {
+      "seam": 3.2025607682116503e-15,
+      "minR": 1.1899876115814283,
+      "maxR": 2.378072801334445
+    }
+  },
+  {
+    "name": "A planar deterministic and slot independent",
+    "pass": true
+  },
+  {
+    "name": "B planar closed, label-clear, within vinyl",
+    "pass": true,
+    "detail": {
+      "seam": 1.5787165486658845e-15,
+      "minR": 0.9923767553342467,
+      "maxR": 2.3874414633403145
+    }
+  },
+  {
+    "name": "B planar deterministic and slot independent",
+    "pass": true
+  },
+  {
+    "name": "C planar closed, label-clear, within vinyl",
+    "pass": true,
+    "detail": {
+      "seam": 1.2559984978944531e-15,
+      "minR": 0.8738583303863369,
+      "maxR": 2.1264017813119094
+    }
+  },
+  {
+    "name": "C planar deterministic and slot independent",
+    "pass": true
+  },
+  {
+    "name": "D planar closed, label-clear, within vinyl",
+    "pass": true,
+    "detail": {
+      "seam": 1.880440247958859e-15,
+      "minR": 0.9442486504330883,
+      "maxR": 2.220542940872411
+    }
+  },
+  {
+    "name": "D planar deterministic and slot independent",
+    "pass": true
+  },
+  {
+    "name": "A grain finite bounded and identity independent",
+    "pass": true
+  },
+  {
+    "name": "B grain finite bounded and identity independent",
+    "pass": true
+  },
+  {
+    "name": "C grain finite bounded and identity independent",
+    "pass": true
+  },
+  {
+    "name": "D grain finite bounded and identity independent",
+    "pass": true
+  },
+  {
+    "name": "grain descriptor-domain size and opacity bounded",
+    "pass": true
+  },
+  {
+    "name": "coral and ivory grain tails differ from fine blue",
+    "pass": true,
+    "detail": [
+      2.8596251865599998,
+      4.7632778208,
+      4.48253215616,
+      4.39442429184
+    ]
+  },
+  {
+    "name": "A band gathers in both planar axes",
+    "pass": true,
+    "detail": {
+      "min": 0.04616463751437633,
+      "max": 0.2722125360436041,
+      "ratio": 5.896559589768971
+    }
+  },
+  {
+    "name": "B band gathers in both planar axes",
+    "pass": true,
+    "detail": {
+      "min": 0.04764332686998379,
+      "max": 0.2876028700150024,
+      "ratio": 6.036582432621802
+    }
+  },
+  {
+    "name": "C band gathers in both planar axes",
+    "pass": true,
+    "detail": {
+      "min": 0.04026908967045661,
+      "max": 0.26867989621317145,
+      "ratio": 6.672112491539343
+    }
+  },
+  {
+    "name": "D band gathers in both planar axes",
+    "pass": true,
+    "detail": {
+      "min": 0.05036465139991404,
+      "max": 0.29776422621314924,
+      "ratio": 5.912166925345927
+    }
+  },
+  {
+    "name": "descriptor-domain planar seams and tangents continuous",
+    "pass": true,
+    "detail": {
+      "worstSeam": 2.9891495344402414e-15,
+      "worstTangent": 0.00014974412465940183
+    }
+  },
+  {
+    "name": "descriptor-domain planar clearance and bounds",
+    "pass": true,
+    "detail": {
+      "minSweepR": 0.8651938376898154,
+      "maxSweepR": 2.475090509187842
+    }
+  },
+  {
+    "name": "grain flow monotone and closed 0/0",
+    "pass": true,
+    "detail": {
+      "minStep": 0.0071559967494083665,
+      "maxStep": 0.01029729577053562,
+      "seam": 0
+    }
+  },
+  {
+    "name": "grain flow monotone and closed 0/0.5",
+    "pass": true,
+    "detail": {
+      "minStep": 0.006370671994126553,
+      "maxStep": 0.011082620525817433,
+      "seam": 0
+    }
+  },
+  {
+    "name": "grain flow monotone and closed 0/1",
+    "pass": true,
+    "detail": {
+      "minStep": 0.005585347238845129,
+      "maxStep": 0.011867945281098358,
+      "seam": 0
+    }
+  },
+  {
+    "name": "grain flow monotone and closed 0.5/0",
+    "pass": true,
+    "detail": {
+      "minStep": 0.0049309099427770064,
+      "maxStep": 0.012522382577166091,
+      "seam": 0
+    }
+  },
+  {
+    "name": "grain flow monotone and closed 0.5/0.5",
+    "pass": true,
+    "detail": {
+      "minStep": 0.004145585187495193,
+      "maxStep": 0.013307707332448793,
+      "seam": 0
+    }
+  },
+  {
+    "name": "grain flow monotone and closed 0.5/1",
+    "pass": true,
+    "detail": {
+      "minStep": 0.003360260432213824,
+      "maxStep": 0.014093032087729718,
+      "seam": 0
+    }
+  },
+  {
+    "name": "grain flow monotone and closed 1/0",
+    "pass": true,
+    "detail": {
+      "minStep": 0.0027058231361456464,
+      "maxStep": 0.01474746938379834,
+      "seam": 0
+    }
+  },
+  {
+    "name": "grain flow monotone and closed 1/0.5",
+    "pass": true,
+    "detail": {
+      "minStep": 0.0019204983808642218,
+      "maxStep": 0.015532794139079265,
+      "seam": 0
+    }
+  },
+  {
+    "name": "grain flow monotone and closed 1/1",
+    "pass": true,
+    "detail": {
+      "minStep": 0.00113517362558202,
+      "maxStep": 0.016318118894361966,
+      "seam": 8.881784197001252e-16
+    }
+  }
+]

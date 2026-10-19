@@ -1,0 +1,18 @@
+{
+  "buildSha256": "ee51d9449b80eba332cecf43c61864f8df30bea6eeb5897f04a9fe6a33a0fd2c",
+  "date": "2026-10-19T18:14:56.428Z",
+  "checks": [
+    "legacy study query no longer activates rejected geometry",
+    "legacy query and default flat geometry identical",
+    "actual 2D-to-3D animation reaches both endpoints",
+    "no browser or shader errors"
+  ],
+  "observedMidMorph": 0.2141825097248973,
+  "snaps": [
+    "restored-flat.png",
+    "restored-transition.png",
+    "restored-spatial.png"
+  ],
+  "errors": [],
+  "scope": "Recovery of pre-study runtime, not reference visual acceptance"
+}

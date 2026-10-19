@@ -1,0 +1,23 @@
+{
+  "dependencies": {
+    "fft.js": "4.0.4",
+    "pitchy": "4.1.0",
+    "three": "0.186.1"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2"
+  },
+  "name": "ieum-resonance",
+  "version": "0.4.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "test": "node qa/analysis.mjs",
+    "test:browser": "node qa/browser.cjs",
+    "test:extended": "node qa/extended.cjs",
+    "capture:motion": "node qa/motion.cjs",
+    "test:final": "node qa/final.cjs",
+    "test:planar": "node qa/planar.cjs"
+  }
+}

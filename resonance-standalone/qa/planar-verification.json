@@ -1,0 +1,43 @@
+{
+  "buildSha256": "ee51d9449b80eba332cecf43c61864f8df30bea6eeb5897f04a9fe6a33a0fd2c",
+  "date": "2026-10-19T08:24:26.733Z",
+  "checks": [
+    {
+      "name": "planar interpolation reaches endpoint",
+      "pass": true
+    },
+    {
+      "name": "planar geometry differs from flattened spatial geometry",
+      "pass": true
+    },
+    {
+      "name": "2 planar layers finite",
+      "pass": true
+    },
+    {
+      "name": "3 planar layers finite",
+      "pass": true
+    },
+    {
+      "name": "4 planar layers finite",
+      "pass": true
+    },
+    {
+      "name": "spatial source coordinates unchanged by switching",
+      "pass": true
+    },
+    {
+      "name": "planar responds to real analyser",
+      "pass": true
+    },
+    {
+      "name": "pause settles planar motion energy",
+      "pass": true
+    },
+    {
+      "name": "no render or runtime errors",
+      "pass": true
+    }
+  ],
+  "errors": []
+}

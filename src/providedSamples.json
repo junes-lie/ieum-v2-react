@@ -1,0 +1,210 @@
+[
+  {
+    "id": "ieum-ai-light-v1-sample",
+    "title": "서로의 빛",
+    "key": "원키",
+    "range": "G3–B4",
+    "lyric": "서로의 밤을 비추네",
+    "mood": "잔잔한 어쿠스틱 팝",
+    "duration": 16,
+    "audioFile": "/audio/ai-light-v1/sample.mp3",
+    "backingFile": "/audio/ai-light-v1/backing.mp3",
+    "lyrics": [
+      {
+        "time": 0.0,
+        "text": "서로의 밤을 비추네"
+      },
+      {
+        "time": 3.84,
+        "text": "닫힌 마음 문을 열어"
+      },
+      {
+        "time": 9.86,
+        "text": "너의 노래 들려오네"
+      }
+    ],
+    "provenance": {
+      "model": "ACE-Step/Ace-Step1.5",
+      "revision": "19671f406d603126926c1b7e2adc169acbcade22",
+      "license": "MIT",
+      "seed": 65349,
+      "sourceSha256": "d5d70b20e830f2336140913714327df9b79bfb0f12de6c9d279b2b188445b4cb",
+      "sourceStart": 31.5,
+      "audioSha256": "e2e6f1e675ff731be2703300a88e1cd2dc1b3062a0992621554d8e89d38349e7",
+      "backingSha256": "911be13834dabb8f19898ec8c6238e0761648ce8cfe0543f10d5fc2ed4de8002",
+      "rangeMethod": "pYIN voiced observations, probability >= 0.75, 679 retained frames; estimated G3–B4",
+      "lyricsMethod": "openai/whisper-large-v3-turbo actual excerpt word alignment; similarity 0.8936170212765957; automatic times require listening review",
+      "listeningReview": "pending; full-song Turbo cross-check 0.791 failed; actual 16-second clip Turbo 0.893617 passed, small 0.782609 failed",
+      "generationTask": "cover",
+      "clipValidation": {
+        "model": "openai/whisper-large-v3-turbo",
+        "revision": "41f01f3fe87f28c78e2fbf8b568835947dd65ed9",
+        "similarity": 0.8936170212765957,
+        "timestampsWithinAudio": true,
+        "passed": true,
+        "smallSimilarity": 0.782608695652174,
+        "smallPassed": false
+      },
+      "keyStatus": "unconfirmed; requested key is not asserted as actual key",
+      "leadIn": {
+        "sha256": "ea838dec27d821efef1b0bfbeb5e68b6e0c50ef5aa32f47c316f6df11cef99a8",
+        "sourceSha256": "d5d70b20e830f2336140913714327df9b79bfb0f12de6c9d279b2b188445b4cb",
+        "fullBackingSha256": "c7f8d8fbcadf6a23eb7332aca29a5c26fa7831a4c595e757aa11b4568ea1041f",
+        "sourceStart": 28.5,
+        "sourceEnd": 31.5,
+        "duration": 3,
+        "method": "Exact float PCM excerpt of verified actual full-song separated backing; no fabricated metronome or vocals added",
+        "beatAcceptance": "Pending; actual preceding music context, not confirmed beat count"
+      }
+    },
+    "leadInFile": "/audio/ai-light-v1/lead-in.wav",
+    "leadInDuration": 3
+  },
+  {
+    "id": "ieum-ai-warm-direct-v1-sample",
+    "title": "천천히 함께",
+    "key": "원키",
+    "range": "F♯3–E♭4",
+    "lyric": "오늘도 함께해요",
+    "mood": "따뜻한 어쿠스틱 팝",
+    "duration": 19,
+    "audioFile": "/audio/ai-warm-direct-v1/sample.mp3",
+    "backingFile": "/audio/ai-warm-direct-v1/backing.mp3",
+    "lyrics": [
+      {
+        "time": 0.0,
+        "text": "오늘도 함께해요"
+      },
+      {
+        "time": 8.2,
+        "text": "우리 함께 걸어요"
+      },
+      {
+        "time": 13.96,
+        "text": "작은 노래 모아서"
+      }
+    ],
+    "provenance": {
+      "model": "ACE-Step/Ace-Step1.5",
+      "revision": "19671f406d603126926c1b7e2adc169acbcade22",
+      "license": "MIT",
+      "seed": 65352,
+      "sourceSha256": "7ef11d5e7d574134154c7fddc3022654feec474ac5cba70ed24c606232ca0eb9",
+      "sourceStart": 31.7,
+      "audioSha256": "6db2b97aae5a644e2fe46d7aeef097e7e665d924be6f3efbe5c22e3b5dd15a47",
+      "backingSha256": "6bc86dc622c9dcc25f2496f59986009531389c07e01760339c6e3c315afbd736",
+      "rangeMethod": "pYIN voiced observations, probability >= 0.75, 678 retained frames; estimated F♯3–E♭4",
+      "lyricsMethod": "openai/whisper-small actual excerpt word alignment; similarity 1.0",
+      "listeningReview": "pending; automatic validation is not pronunciation listening acceptance",
+      "keyStatus": "unconfirmed; requested key is not asserted as actual key",
+      "generationTask": "text2music",
+      "clipValidation": {
+        "model": "openai/whisper-small",
+        "revision": "973afd24965f72e36ca33b3055d56a652f456b4d",
+        "similarity": 1.0,
+        "timestampsWithinAudio": true,
+        "passed": true
+      },
+      "leadIn": {
+        "sha256": "6edc7bf845a4b43b5abf6c500c4ae4c108a47ef9a936459adb74b4aea81d798b",
+        "sourceSha256": "7ef11d5e7d574134154c7fddc3022654feec474ac5cba70ed24c606232ca0eb9",
+        "fullBackingSha256": "e4a4f50f40b178d53c491b77aa6ebcd8533d74367bc28f6b02f67dc1431dbbfe",
+        "sourceStart": 28.7,
+        "sourceEnd": 31.7,
+        "duration": 3,
+        "method": "Exact float PCM excerpt of verified actual full-song separated backing; no fabricated metronome or vocals added",
+        "beatAcceptance": "Pending; actual preceding music context, not confirmed beat count"
+      }
+    },
+    "leadInFile": "/audio/ai-warm-direct-v1/lead-in.wav",
+    "leadInDuration": 3
+  },
+  {
+    "id": "ieum-ai-rain-v1-sample",
+    "title": "비가 그친 뒤",
+    "key": "원키",
+    "range": "E3–C♯5",
+    "lyric": "작은 창을 열어요",
+    "mood": "부드러운 피아노 팝",
+    "duration": 18,
+    "audioFile": "/audio/ai-rain-v1/sample.mp3",
+    "backingFile": "/audio/ai-rain-v1/backing.mp3",
+    "lyrics": [
+      {
+        "time": 0.0,
+        "text": "작은 창을 열어요"
+      },
+      {
+        "time": 5.76,
+        "text": "너의 소리 들려요"
+      },
+      {
+        "time": 13.28,
+        "text": "너와 나의 노래가"
+      }
+    ],
+    "provenance": {
+      "model": "ACE-Step/Ace-Step1.5",
+      "revision": "19671f406d603126926c1b7e2adc169acbcade22",
+      "license": "MIT",
+      "seed": 65353,
+      "sourceSha256": "fc52c21aa198c4f5b16b617f137cf01ca5594975638ef76c1387da66b61303a1",
+      "sourceStart": 0,
+      "audioSha256": "0f9853330e02f2a64873d47fa2d879f70b0de31b5a7ec740053f9a3a30d1d41f",
+      "backingSha256": "439ae4ddd600f49170c382c556a611219255e6c3aaff57846eb586bea70fbdf5",
+      "rangeMethod": "pYIN voiced observations, probability >= 0.75, 1035 retained frames; estimated E3–C♯5",
+      "lyricsMethod": "openai/whisper-small actual excerpt word alignment; similarity 0.8780487804878049",
+      "listeningReview": "pending; automatic validation is not pronunciation listening acceptance",
+      "keyStatus": "unconfirmed; requested key is not asserted as actual key",
+      "excerptLineage": {
+        "originalSourceSha256": "91c8a06a8569b84b829f04ab131029729ec23097fbb7c6a11dcb8f22866b8d07",
+        "originalDuration": 90.0,
+        "sourceStart": 30.5,
+        "duration": 18.0,
+        "limits": "Excerpt target must pass independent actual ASR and word alignment. Full-song failure remains unchanged."
+      },
+      "acceptanceScope": "Validated provided excerpt only; not original full-song lyric acceptance",
+      "originalFullSongValidation": [
+        {
+          "model": "openai/whisper-small",
+          "similarity": 0.75,
+          "passed": false
+        },
+        {
+          "model": "openai/whisper-large-v3-turbo",
+          "similarity": 0.6788990825688074,
+          "passed": false
+        }
+      ],
+      "generationTask": "text2music",
+      "clipValidation": {
+        "model": "openai/whisper-small",
+        "revision": "973afd24965f72e36ca33b3055d56a652f456b4d",
+        "similarity": 0.8780487804878049,
+        "timestampsWithinAudio": true,
+        "passed": true
+      },
+      "clipCrosschecks": [
+        {
+          "model": "openai/whisper-large-v3-turbo",
+          "revision": "41f01f3fe87f28c78e2fbf8b568835947dd65ed9",
+          "similarity": 0.926829268292683,
+          "timestampsWithinAudio": true,
+          "passed": true
+        }
+      ],
+      "leadIn": {
+        "sha256": "9ccf3e06513f26e14f932603d6738bf1c7da4fb0f2b7937040858a3b74299c0a",
+        "sourceSha256": "91c8a06a8569b84b829f04ab131029729ec23097fbb7c6a11dcb8f22866b8d07",
+        "fullBackingSha256": "ee06f6443263ba2db17ca6f5ca4630687ad4801860d25fe59515f59618c96af8",
+        "sourceStart": 27.5,
+        "sourceEnd": 30.5,
+        "duration": 3,
+        "method": "Exact float PCM excerpt of verified actual full-song separated backing; no fabricated metronome or vocals added",
+        "beatAcceptance": "Pending; actual preceding music context, not confirmed beat count"
+      }
+    },
+    "leadInFile": "/audio/ai-rain-v1/lead-in.wav",
+    "leadInDuration": 3
+  }
+]

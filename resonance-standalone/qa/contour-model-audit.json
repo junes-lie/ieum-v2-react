@@ -1,0 +1,9 @@
+{
+  "samples": 66240,
+  "maxAngularSeparationRadians": 3.8421418117333517e-16,
+  "minMacroGap": 0.06556305423582787,
+  "conclusion": "All lanes are radial scalar multiples of one sampled envelope at matched t. Three macro-contour centers stay ordered. This preserves the old study but cannot establish correspondence to independently traced reference filaments.",
+  "caveat": "Fine-lane radial crossings are not ruled out by this audit. Matched-t collinearity alone is not proof that all geometric crossings are impossible.",
+  "nextGate": "Two complete candidate reference filaments with observed and inferred portions distinguished, followed by overlay review. Do not replace with more same-ray spacing adjustments.",
+  "visualApproval": false
+}
