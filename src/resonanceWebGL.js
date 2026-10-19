@@ -405,6 +405,10 @@ function drawMaterial(canvas, rotation = 0) {
   ctx.beginPath()
   ctx.arc(center, center, radius, 0, Math.PI * 2)
   ctx.clip()
+  // Canvas uses screen coordinates: a positive angle turns the whole disc clockwise.
+  ctx.translate(center, center)
+  ctx.rotate(rotation)
+  ctx.translate(-center, -center)
   const vinyl = ctx.createRadialGradient(center * .72, center * .68, 0, center, center, radius)
   vinyl.addColorStop(0, '#241c16')
   vinyl.addColorStop(.18, '#15100d')
@@ -412,7 +416,7 @@ function drawMaterial(canvas, rotation = 0) {
   vinyl.addColorStop(1, '#020202')
   ctx.fillStyle = vinyl
   ctx.fillRect(0, 0, pixels, pixels)
-  const reflectionAngle=-Math.PI*3/4+rotation
+  const reflectionAngle=-Math.PI*3/4
   const reflectionX=Math.cos(reflectionAngle)*radius,reflectionY=Math.sin(reflectionAngle)*radius
   const grooveSheen=ctx.createLinearGradient(center-reflectionX,center-reflectionY,center+reflectionX,center+reflectionY)
   grooveSheen.addColorStop(0,'rgba(205,187,162,.12)')
@@ -436,7 +440,7 @@ function drawMaterial(canvas, rotation = 0) {
   sheen.addColorStop(1, 'rgba(255,235,205,0)')
   ctx.fillStyle = sheen
   ctx.fillRect(0, 0, pixels, pixels)
-  // Start on the label light axis; Home can rotate this surface beneath the voice field.
+  // The light axis belongs to the rotating surface, together with the grooves and hub.
   const reflection = ctx.createConicGradient(reflectionAngle-Math.PI*2*.075,center,center)
   for(const [offset,alpha] of [[0,0],[.045,.04],[.075,.32],[.105,.07],[.15,0],[.50,0],[.545,.04],[.575,.12],[.605,.035],[.65,0],[1,0]]){
     reflection.addColorStop(offset,`rgba(239,229,214,${alpha})`)
@@ -586,6 +590,7 @@ export function createResonanceRenderer({ canvas, materialCanvas, slots, project
     const flowTime=fixedTime?captureTime*motion:timeline.flowTime
     const rotation=fixedTime?captureTime*targetRate:timeline.rotation
     const bloom=reducedMotion || state!=='complete'?0:.035*Math.sin(Math.PI*Math.min(1,Math.max(0,(elapsed-timeline.completeStarted)/1.2)))
+    // The shader's clockwise screen-space matrix needs a negative angle for counterclockwise voices.
     const voiceRotation=counterRotate?-rotation:rotation
     drawMaterial(materialCanvas,counterRotate?rotation:0)
     materialCanvas.dataset.rotation=String(counterRotate?rotation:0)
