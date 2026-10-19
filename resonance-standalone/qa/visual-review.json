@@ -32,24 +32,16 @@
       "Band convergence now narrows both radial and tangential spread; original spatial coordinates retained",
       "Continuous descriptor-driven phase warping gives unequal gathering intervals and local strand bending; viewed actual 2/3/4 participant renders",
       "Coherent filament fan with unequal lane lag reduces full-band crosshatching; monotone particle remap adds descriptor-driven local density without phase reset",
-      "Particle-only refinement: higher descriptor-driven size tails and opacity, stronger monotone local bunching; existing planar/3D geometry restored exactly after rejecting four fold candidates.",
-      "2026-10-19 inner-loop pass: replaced planar fan offsets with descriptor-driven returning loops. Same-profile, zero-time BLUE before/after reveals rounded repeated overlaps; original knot/record/DSP/Transport unchanged."
+      "Particle-only refinement: higher descriptor-driven size tails and opacity, stronger monotone local bunching; existing planar/3D geometry restored exactly after rejecting four fold candidates."
     ],
     "remaining": [
-      "Rounded loops remain more regular than reference; crossings in three-color composition remain dense.",
-      "Reference-level fine folds, actual human vocals, real GPU/device viewing and listening are not validated."
+      "Reference has more rounded, intricate repeated loops and denser local grain; some current lobes still read angular or parallel",
+      "Overall reference match, real-device viewing and actual human vocals remain unverified"
     ],
-    "method": "Actual WebGL readback: BLUE profile, viewport 1000x1200, stage 928x800, top camera, time 0, deterministic initial particle phases. Reference and equally cropped actual images displayed at 500x500. Repeat candidate PNG byte-identical.",
+    "method": "Actual WebGL canvas readback on Chromium/SwiftShader; no generated render or pixel-match claim",
     "visualApproval": "not claimed",
-    "buildSha256": "1686333751f3f99d24d8acdcf993b56a5b73f8d4007f1fa227ed790aeb9c4069",
-    "rejectedCandidates": [
-      "Low-frequency paired curl: inadequate rounded-loop improvement",
-      "Greater tangential fan: stronger hooks",
-      "Larger circular component: more regular crosshatching",
-      "High-frequency local curls: pointed inner scallops",
-      "This run: in-phase radius family made scallops; reversed radius family made separate outer curls; high-frequency full lane phase made a mechanical spring; adopted lower loop count with shared two-axis gathering."
-    ],
-    "previousGatherSpacingComparison": {
+    "buildSha256": "ee51d9449b80eba332cecf43c61864f8df30bea6eeb5897f04a9fe6a33a0fd2c",
+    "gatherSpacingComparison": {
       "method": "720 angular samples, 24 lanes; local minima of lane RMS width below 0.12 scene units; rounded degrees; diagnostic, not perceptual validation",
       "previousCommit": "f672b113ce5bf1ed662b175d97661b7dc2f278f3",
       "profiles": {
@@ -103,6 +95,11 @@
         }
       }
     },
-    "comparison": "qa/renders/inner-loop-comparison.jpg"
+    "rejectedCandidates": [
+      "Low-frequency paired curl: inadequate rounded-loop improvement",
+      "Greater tangential fan: stronger hooks",
+      "Larger circular component: more regular crosshatching",
+      "High-frequency local curls: pointed inner scallops"
+    ]
   }
 }
