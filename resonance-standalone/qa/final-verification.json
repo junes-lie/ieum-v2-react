@@ -1,6 +1,6 @@
 {
-  "date": "2026-10-18T17:35:32.826Z",
-  "buildSha256": "ccc55e605908cc0ab7bd5139c1a3b942c646b48390e97677314049c68bf34426",
+  "date": "2026-10-18T18:04:13.478Z",
+  "buildSha256": "c91dbd99e0d31b420391c79e094e7d138483de2ffde955a7239341c8dd6e737e",
   "environment": "Chromium / SwiftShader; reduced-motion and failure-path checks, not physical device certification",
   "checks": [
     {

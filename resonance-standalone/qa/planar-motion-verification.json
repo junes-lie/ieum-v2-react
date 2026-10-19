@@ -6,43 +6,21 @@
     },
     {
       "state": "playing",
-      "seconds": 10.53139999999851
+      "seconds": 5.3365
     },
     {
       "state": "paused",
-      "seconds": 34.10719999999925
+      "seconds": 18.25230000000028
     }
   ],
-  "duration": 41.60589999999851,
+  "duration": 25.213600000000092,
   "mode": "planar",
-  "buildSha256": "ccc55e605908cc0ab7bd5139c1a3b942c646b48390e97677314049c68bf34426",
+  "buildSha256": "c91dbd99e0d31b420391c79e094e7d138483de2ffde955a7239341c8dd6e737e",
   "media": {
-    "programs": [],
-    "streams": [
-      {
-        "codec_type": "video",
-        "width": 1088,
-        "height": 570,
-        "start_time": "0.000000",
-        "duration": "40.966667"
-      },
-      {
-        "codec_type": "audio",
-        "start_time": "10.462000",
-        "duration": "23.571833"
-      }
-    ],
-    "format": {
-      "duration": "40.966667"
-    }
-  },
-  "encoding": "Actual canvas.captureStream + Web Audio master output; ffmpeg fps=30, H.264/AAC; frame duplication/drop only, no motion interpolation",
-  "timingNote": "Browser wall-clock events and normalized media timestamps differ. MP4 audio starts at 10.462 s and lasts 23.572 s.",
-  "audioMeanDb": -29.9,
-  "audioPeakDb": -17.1,
-  "physicalListeningVerified": false,
-  "sha256": {
-    "webm": "a9e42b701ecb6e43b4b817d045bde4da6fad1c5b6ee11a48bbdb19db2858a928",
-    "mp4": "8159ab7577714f73ff9b8a8f519a55d47ea7e790761319348798020967ceade5"
+    "duration": 24.766667,
+    "audioStart": 5.338,
+    "audioDuration": 12.923333,
+    "meanDb": -29.8,
+    "peakDb": -19.9
   }
 }

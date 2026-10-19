@@ -1,32 +1,40 @@
 {
-  "date": "2026-10-18T17:47:06.878014+00:00",
+  "date": "2026-10-18T18:03:21.081728+00:00",
   "artifact": "public/IEUM-Resonance.html",
-  "sha256": "ccc55e605908cc0ab7bd5139c1a3b942c646b48390e97677314049c68bf34426",
-  "analysisChecks": 38,
+  "sha256": "c91dbd99e0d31b420391c79e094e7d138483de2ffde955a7239341c8dd6e737e",
+  "analysisChecks": 47,
   "planarChecks": 9,
+  "browserChecks": 39,
   "additionalChecks": 13,
+  "extendedChecks": 14,
+  "soakStatus": "completed: recovered same-build 10-minute report",
   "previousFullValidation": {
-    "commit": "84c8b45bcdf9cacca5d565cd4620713578c6e1a6",
-    "report": "qa/build-verification-planar-2026-10-18.json"
+    "commit": "ddf92eea07a5bdcf394745b2dd8c639ebd8b83f5",
+    "report": "qa/build-verification-spacing-2026-10-19.json"
   },
-  "soakStatus": "completed current-build 10-minute 4-participant alternating planar/spatial repeat playback",
   "sources": {
     "src/index.html": "b8f4109d8b932f21845b8303217c39e5c755940d32590ad2566217f76ae548cf",
     "src/analyze.js": "ede4319937a3d3743636004ec3bf0f396e9503fe0332ca7b35ab72ceca1e7833",
-    "src/visuals.js": "98bd6c93a5611c2f67b79c2c4ab6c75b09af36f2e6f0b780b6bbe6160cbd6408",
+    "src/visuals.js": "6b269fbef0337713b1d420a893e404a66e8eb2c4a9b44aa3e33c47f2c9e535c0",
     "src/audio.js": "4de643a23a7cb8462df7d08f969a000d2c8af2ce304df68144d1d187644a4121",
     "src/app.js": "7b617ebc71bc4e82b452479093a056d1dbed3a210adc16b56c4daae94f212d07",
-    "src/profiles.js": "a65b718a98111aa6c1585331131cc12561d4b5cf0250c4926a3a706147da0637"
+    "src/profiles.js": "ceb2794e034f784b0212631b91d4bd9669057a42fb69bb607818a2c8ed8a9622"
   },
-  "extendedChecks": 14,
-  "soakArtifactSha256": "ccc55e605908cc0ab7bd5139c1a3b942c646b48390e97677314049c68bf34426",
+  "renders": {
+    "qa/renders/planar-3.jpg": "78ded7cea0a67b6721c1a003e138db1a1c47558fc24b4e48027a0aa62e074d24",
+    "qa/renders/planar-2.jpg": "5af74ad90c7f0c202c7dc8981d525254f9f1b9f354a93733358e00a47031983e",
+    "qa/renders/planar-4.jpg": "24f4205e742f89be94f4a57f0adc35f5a1fdd4a049052e55d9ee3a39940b2fd3"
+  },
+  "motion": {
+    "report": "qa/planar-motion-verification.json",
+    "buildSha256": "c91dbd99e0d31b420391c79e094e7d138483de2ffde955a7239341c8dd6e737e",
+    "video": "qa/renders/planar-motion.mp4",
+    "sha256": "c4cdac8447436822ae943273f06a5cb32c17db7432962d586b14e0a4dbea6147"
+  },
+  "soakArtifactSha256": "c91dbd99e0d31b420391c79e094e7d138483de2ffde955a7239341c8dd6e737e",
   "soakSummary": {
-    "elapsedMs": 606319,
-    "sampleCount": 97,
-    "modes": [
-      0,
-      1
-    ],
+    "elapsedMs": 604120,
+    "sampleCount": 103,
     "geometries": [
       12
     ],
@@ -35,23 +43,13 @@
     ],
     "maxSources": 4,
     "heapReportedBytes": [
-      44700000
+      47400000
     ],
-    "observedFrameRate": 10.3,
-    "allSampleIntervalsAdvanced": true,
-    "errors": [],
-    "environmentNote": "Software rendering; browser regression overlapped part of soak. Not a target-device benchmark or proof of absence of all memory leaks."
+    "errors": []
   },
-  "renders": {
-    "qa/renders/planar-3.jpg": "36fe1255882c73769bd36ac603b86b8277b05bc8229332c02fbca8e40230a4b6",
-    "qa/renders/planar-2.jpg": "2deb149707a37503586be08a92be16b0de0ed3be06064eb75e36c98b64de2033",
-    "qa/renders/planar-4.jpg": "ce2b5a608cd16009d3a0676034b1948f3881dd5f4b2b36dbe69dd15d25c0ffa3"
-  },
-  "browserChecks": 39,
-  "motion": {
-    "report": "qa/planar-motion-verification.json",
-    "buildSha256": "ccc55e605908cc0ab7bd5139c1a3b942c646b48390e97677314049c68bf34426",
-    "video": "qa/renders/planar-motion.mp4",
-    "sha256": "8159ab7577714f73ff9b8a8f519a55d47ea7e790761319348798020967ceade5"
+  "resumedVerification": {
+    "date": "2026-10-19T07:12:13.331717+00:00",
+    "buildAndAnalysisChecks": 47,
+    "note": "Recovered prior same-build browser/soak reports; fresh build hash and motion checked this run."
   }
 }

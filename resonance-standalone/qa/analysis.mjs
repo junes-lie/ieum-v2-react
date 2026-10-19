@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {analyzeBuffer} from '../src/analyze.js';
-import {record,planar,planarGrain,flower,defaults,TAU} from '../src/profiles.js';
+import {record,planar,planarGrain,planarParticleT,flower,defaults,TAU} from '../src/profiles.js';
 const results=[];
 const check=(name,condition,detail)=>{assert.ok(condition,name+': '+JSON.stringify(detail));results.push({name,pass:true,detail});};
 function buffer(hz,{gain=.2,noise=0,harmonics=0,sr=44100,stereo=false,seconds=2}={}){const a=new Float32Array(sr*seconds);let seed=123456;for(let i=0;i<a.length;i++){seed=(1664525*seed+1013904223)>>>0;const t=i/sr;a[i]=gain*(Math.sin(TAU*hz*t)+harmonics*Math.sin(TAU*hz*3*t))+noise*(seed/4294967296*2-1);}return {duration:seconds,sampleRate:sr,length:a.length,numberOfChannels:stereo?2:1,getChannelData:i=>i?Float32Array.from(a,x=>-x):a};}
@@ -40,4 +40,12 @@ for(const pitch of [0,.5,1])for(const brightness of [0,.5,1])for(const air of [0
 }
 check('descriptor-domain planar seams and tangents continuous',worstSeam<1e-9&&worstTangent<.01,{worstSeam,worstTangent});
 check('descriptor-domain planar clearance and bounds',minSweepR>.8&&maxSweepR<2.62,{minSweepR,maxSweepR});
+// A density remap must remain monotone, periodic and slot independent to avoid
+// particle reversal or jumps when the stored phase wraps around the closed loop.
+for(const brightness of [0,.5,1])for(const air of [0,.5,1]){
+ const p={brightness,air,phase:1.7};let minStep=Infinity,maxStep=0;
+ for(let i=0;i<720;i++){const a=planarParticleT(p,i/720*TAU),b=planarParticleT(p,(i+1)/720*TAU);minStep=Math.min(minStep,b-a);maxStep=Math.max(maxStep,b-a);}
+ const seam=planarParticleT(p,TAU)-planarParticleT(p,0)-TAU;
+ check('grain flow monotone and closed '+brightness+'/'+air,minStep>0&&Math.abs(seam)<1e-12,{minStep,maxStep,seam});
+}
 fs.writeFileSync(new URL('./analysis-verification.json',import.meta.url),JSON.stringify(results,null,2));console.log(`${results.length} analysis/geometry checks passed`);

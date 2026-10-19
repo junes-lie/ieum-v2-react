@@ -134,9 +134,9 @@
     "name": "A planar closed, label-clear, within vinyl",
     "pass": true,
     "detail": {
-      "seam": 4.00299009870075e-15,
-      "minR": 0.910717155688924,
-      "maxR": 2.4295669088065863
+      "seam": 3.2025607682116503e-15,
+      "minR": 1.1899876115814283,
+      "maxR": 2.378072801334445
     }
   },
   {
@@ -147,9 +147,9 @@
     "name": "B planar closed, label-clear, within vinyl",
     "pass": true,
     "detail": {
-      "seam": 1.4441070223605687e-15,
-      "minR": 0.8593652840894368,
-      "maxR": 2.4301871745940415
+      "seam": 1.5787165486658845e-15,
+      "minR": 0.9923767553342467,
+      "maxR": 2.3874414633403145
     }
   },
   {
@@ -160,9 +160,9 @@
     "name": "C planar closed, label-clear, within vinyl",
     "pass": true,
     "detail": {
-      "seam": 1.182918610115125e-15,
-      "minR": 0.843563235034256,
-      "maxR": 2.2143078452998712
+      "seam": 1.2559984978944531e-15,
+      "minR": 0.8738583303863369,
+      "maxR": 2.1264017813119094
     }
   },
   {
@@ -173,9 +173,9 @@
     "name": "D planar closed, label-clear, within vinyl",
     "pass": true,
     "detail": {
-      "seam": 2.020064446043164e-15,
-      "minR": 0.8476447352271945,
-      "maxR": 2.302714470452473
+      "seam": 1.880440247958859e-15,
+      "minR": 0.9442486504330883,
+      "maxR": 2.220542940872411
     }
   },
   {
@@ -212,52 +212,133 @@
     "name": "A band gathers in both planar axes",
     "pass": true,
     "detail": {
-      "min": 0.07357331417866188,
-      "max": 0.43841782434964294,
-      "ratio": 5.958924499241808
+      "min": 0.04616463751437633,
+      "max": 0.2722125360436041,
+      "ratio": 5.896559589768971
     }
   },
   {
     "name": "B band gathers in both planar axes",
     "pass": true,
     "detail": {
-      "min": 0.07023011358696725,
-      "max": 0.4263378529364758,
-      "ratio": 6.070584698806357
+      "min": 0.04764332686998379,
+      "max": 0.2876028700150024,
+      "ratio": 6.036582432621802
     }
   },
   {
     "name": "C band gathers in both planar axes",
     "pass": true,
     "detail": {
-      "min": 0.07911447670288509,
-      "max": 0.44860566606539215,
-      "ratio": 5.670336008795628
+      "min": 0.04026908967045661,
+      "max": 0.26867989621317145,
+      "ratio": 6.672112491539343
     }
   },
   {
     "name": "D band gathers in both planar axes",
     "pass": true,
     "detail": {
-      "min": 0.0776251226381946,
-      "max": 0.4284731681638802,
-      "ratio": 5.519774444170149
+      "min": 0.05036465139991404,
+      "max": 0.29776422621314924,
+      "ratio": 5.912166925345927
     }
   },
   {
     "name": "descriptor-domain planar seams and tangents continuous",
     "pass": true,
     "detail": {
-      "worstSeam": 3.15634259302993e-15,
-      "worstTangent": 0.0001495865872040611
+      "worstSeam": 2.9891495344402414e-15,
+      "worstTangent": 0.00014974412465940183
     }
   },
   {
     "name": "descriptor-domain planar clearance and bounds",
     "pass": true,
     "detail": {
-      "minSweepR": 0.8425042313897178,
-      "maxSweepR": 2.475794734330535
+      "minSweepR": 0.8651938376898154,
+      "maxSweepR": 2.475090509187842
+    }
+  },
+  {
+    "name": "grain flow monotone and closed 0/0",
+    "pass": true,
+    "detail": {
+      "minStep": 0.0071559967494083665,
+      "maxStep": 0.01029729577053562,
+      "seam": 0
+    }
+  },
+  {
+    "name": "grain flow monotone and closed 0/0.5",
+    "pass": true,
+    "detail": {
+      "minStep": 0.006632446912553991,
+      "maxStep": 0.010820845607389273,
+      "seam": 0
+    }
+  },
+  {
+    "name": "grain flow monotone and closed 0/1",
+    "pass": true,
+    "detail": {
+      "minStep": 0.006108897075699615,
+      "maxStep": 0.011344395444243816,
+      "seam": 0
+    }
+  },
+  {
+    "name": "grain flow monotone and closed 0.5/0",
+    "pass": true,
+    "detail": {
+      "minStep": 0.005716234698058709,
+      "maxStep": 0.011737057821885166,
+      "seam": 0
+    }
+  },
+  {
+    "name": "grain flow monotone and closed 0.5/0.5",
+    "pass": true,
+    "detail": {
+      "minStep": 0.0051926848612042775,
+      "maxStep": 0.012260607658739708,
+      "seam": 0
+    }
+  },
+  {
+    "name": "grain flow monotone and closed 0.5/1",
+    "pass": true,
+    "detail": {
+      "minStep": 0.004669135024349735,
+      "maxStep": 0.01278415749559425,
+      "seam": 0
+    }
+  },
+  {
+    "name": "grain flow monotone and closed 1/0",
+    "pass": true,
+    "detail": {
+      "minStep": 0.004276472646709106,
+      "maxStep": 0.013176819873234713,
+      "seam": 0
+    }
+  },
+  {
+    "name": "grain flow monotone and closed 1/0.5",
+    "pass": true,
+    "detail": {
+      "minStep": 0.003752922809854675,
+      "maxStep": 0.013700369710089255,
+      "seam": 0
+    }
+  },
+  {
+    "name": "grain flow monotone and closed 1/1",
+    "pass": true,
+    "detail": {
+      "minStep": 0.0032293729730001886,
+      "maxStep": 0.014223919546943797,
+      "seam": 0
     }
   }
 ]
