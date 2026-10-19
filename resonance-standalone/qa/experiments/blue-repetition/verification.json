@@ -1,0 +1,34 @@
+{
+  "geometry": {
+    "visible": [
+      "A"
+    ],
+    "layers": [
+      {
+        "drift": 0,
+        "minR": 0.6886795947855429
+      },
+      {
+        "drift": 0,
+        "minR": 0.68867960767468
+      },
+      {
+        "drift": 0,
+        "minR": 0.688679588178254
+      },
+      {
+        "drift": 0,
+        "minR": 0.6886795946962762
+      }
+    ],
+    "particles": false
+  },
+  "errors": [],
+  "sourceFidelityApproved": false,
+  "scope": "Blue two-component structural comparison. Captures require visual source comparison; no audio, particles, synthesis or long-run approval.",
+  "mobile": {
+    "width": 366,
+    "height": 390,
+    "overflow": false
+  }
+}
