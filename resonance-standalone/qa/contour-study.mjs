@@ -11,10 +11,12 @@ for(const pitch of [0,.5,1])for(const brightness of [0,.5,1])for(const air of [0
  for(let i=0;i<360;i++){
   const t=TAU*i/360,points=[1/6,.5,5/6].map(l=>contourStudy(p,t,l));
   const radii=points.map(q=>Math.hypot(q[0],q[2]));assert(radii[0]>radii[1]&&radii[1]>radii[2]);
-  // The nested macro-contours must preserve angular correspondence around the full loop.
+  // Regression of the CURRENT radial-copy study only, not a reference fidelity requirement.
+  // Independent traced reference paths may cross/change angular correspondence.
+  // Keep this assertion while runtime is unchanged; do not use it as visual acceptance.
   assert(Math.abs(points[0][0]*points[2][2]-points[0][2]*points[2][0])<1e-8);
  }n++;
 }
 assert(seam<1e-8);assert(min>.8&&max<2.62);
 for(const p of defaults)assert.deepEqual(contourStudy(p,1.2,.36),contourStudy({...p,id:'other',color:'#000'},1.2,.36));
-console.log(JSON.stringify({profiles:n,finite:true,closed:true,nestedWholeContour:true,slotIndependent:true,minRadius:min,maxRadius:max,maxSeam:seam,visualApproval:false},null,2));
+console.log(JSON.stringify({profiles:n,finite:true,closed:true,orderedRadialMacroContours:true,referenceFilamentCorrespondence:false,slotIndependent:true,minRadius:min,maxRadius:max,maxSeam:seam,visualApproval:false},null,2));
