@@ -1,5 +1,0 @@
-{
-  "buildCommand": "npm run build && cp public/IEUM-Resonance.html public/index.html",
-  "outputDirectory": "public",
-  "framework": null
-}
