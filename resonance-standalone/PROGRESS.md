@@ -60,6 +60,12 @@ main·기존 React 앱·Production·Notion·Figma 변경 및 Computer Use 금지
 - 검증 모드 확장 검사 14개 통과, 181.287초 / 33 samples의 4명 반복 재생·2D/3D 교대 완료. geometry 12 / texture 1 / source 최대 4 / 보고 heap 39,600,000 bytes 유지, 오류 0. 결과는 `qa/contour-study-extended.json`. SwiftShader의 약 3분 관찰이며 10분 최종 검증이나 실기기 성능 보장이 아니다. 실제 보컬·실기기 GPU·청취 및 최종 시각 승인은 미검증. main/React 앱/Production/Notion/Figma 변경 없음.
 - 다음 시작점: 원격 저장된 `?contourStudy=1` 구조 검증본에서 코랄 단색의 전체 굴곡 대응을 유지하되, 세 묶음이 분리된 등간격 윤곽으로 읽히는 원인을 먼저 다룬다. 현재 `group*.13`의 일정 축소와 좁은 `thread` 폭이 그 간격을 만든다. 동일 축소비를 조절한 후보를 되풀이하지 말고 기준의 대응 굴곡별 내부 간격과 선 분포를 관찰한 후 단색 실제 렌더에서 확인한다. 개인차/질감 검증 전 기본 모드에 합치지 않는다. 이번 결과를 전체 완성으로 보고하지 않는다.
 
+### 회수본 원격 저장·Preview 확인
+
+- 검증본·QA·문서 20개 파일을 `7b9c8d27133eddc5648a77ff844fb3e47071a6d0`에 저장. Git blob 20개 전체 일치, 원격 비교에서 독립본 디렉터리만 변경 확인. expected HEAD를 지정해 feature만 fast-forward 갱신.
+- 해당 커밋 전용 Preview READY / HTTP 200 / HTML 앞 2,000자 일치 및 contourStudy 진입 코드 포함 확인: https://ieum-resonance-preview-rnbnmpbjn-junes-lie.vercel.app/?contourStudy=1 . 원격 브라우저 기능 검증이나 응답 전체 해시 일치로 표현하지 않는다.
+- 로컬 브라우저 검사는 모두 종료. 회수본 기본 모드 함수는 opt-in 분기를 제외하면 기존 원문과 일치. 전체 목표 미완료이며 위 다음 시작점에서 시각 개선을 재개한다.
+
 ## 2026-10-19 사용자 “다시 해” — 전체 폐곡선 반복 구조 검증본 보존
 
 - 시작 원격 `89d3455f1e672d91d1e7a2f6c1057bca73ff06f9`. 직전 실패 후보를 반복 채택하지 않고 기준 코랄 외곽/내곽 랜드마크를 직접 표시해 원본 위에 겹쳐 확인했다. 첫 내곽은 검은 여백에 침범해 수정. 가려진 구간은 수동 추정이며 정확한 원본 선 복원으로 주장하지 않는다.
