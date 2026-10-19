@@ -1,0 +1,11 @@
+{
+  "profiles": 81,
+  "finite": true,
+  "closed": true,
+  "nestedWholeContour": true,
+  "slotIndependent": true,
+  "minRadius": 0.8154607430556425,
+  "maxRadius": 2.3724972261098265,
+  "maxSeam": 9.037376557561133e-16,
+  "visualApproval": false
+}

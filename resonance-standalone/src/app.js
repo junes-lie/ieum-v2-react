@@ -51,3 +51,8 @@ $('#save-flower').onclick=()=>{if(currentDialog)download(bloomSVG(currentDialog.
 let last=performance.now();function frame(now){if(disposed)return;requestAnimationFrame(frame);const realDt=Math.max(0,(now-last)/1000),dt=Math.min(realDt,.06);last=now;transport.tick(Math.min(realDt,.25));view?.update(dt,transport.playing,realDt);if(view&&view.frames%30===0)$('#performance').textContent=`${Math.round(view.fps)} FPS · ${voices.filter(v=>v.active&&v.visible).length} LAYERS`;voices.forEach(v=>v.meter.style.transform=`scaleX(${v.energy})`);if(document.activeElement!==$('#seek'))$('#seek').value=transport.time;$('#elapsed').textContent=format(transport.time);}requestAnimationFrame(frame);
 window.ieumDebug={voices,profiles,transport,view,analyzeBuffer,setMode,setCount,bloomSVG,get state(){return{playing:transport.playing,time:transport.time,duration:transport.duration,energies:voices.map(v=>v.energy),morph:view?.morph,height:view?.height,frames:view?.frames,calls:view?.renderer.info.render.calls}}};
 window.addEventListener('pagehide',()=>{disposed=true;voices.forEach(v=>v.generation++);transport.dispose();view?.dispose();});
+// QA-only entry: open the contour study in its relevant planar view.
+if(new URLSearchParams(location.search).get('contourStudy')==='1'){
+ setMode(0);
+ $('#view-hint').textContent='내부 폐곡선 반복 검증본 · 질감과 개인차 조정 중';
+}

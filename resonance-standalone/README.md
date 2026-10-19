@@ -17,6 +17,18 @@
 
 데모 프로필과 합성 데모 사운드는 실제 사람의 보컬 분석 결과가 아닙니다. 업로드한 녹음은 기기 안에서만 처리하며 서버에 보내지 않습니다. 새로고침하면 파일과 분석 상태는 사라집니다. JSON 저장은 기록용이며 재가져오기 기능은 없습니다.
 
+## 내부 반복 검증 모드
+
+실행 URL에 `?contourStudy=1`을 붙이면 전체 폐곡선 내부 반복 검증본으로 시작합니다. 기본 모드는 유지하며, 이 모드는 규칙적인 간격·교차와 제한적인 개인차가 남은 미완성 비교용입니다. `qa/index.html`에서 추정 경계와 실제 렌더를 함께 확인할 수 있습니다.
+
+```sh
+node qa/contour-study.mjs
+node qa/contour-study.cjs
+IEUM_CONTOUR_STUDY=1 IEUM_ALTERNATE_MODES=1 npm run test:extended
+```
+
+마지막 명령은 기존 기본 모드 보고서를 덮어쓰지 않고 `qa/contour-study-extended.json`에 기록합니다. 실제 보컬·실기기·청취 검증을 대신하지 않습니다.
+
 ## 개발
 
 Node 22 이상:

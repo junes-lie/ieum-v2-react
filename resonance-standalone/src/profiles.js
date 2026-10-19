@@ -1,3 +1,4 @@
+import {contourStudy} from './contourStudy.js';
 export const TAU=Math.PI*2;
 export const clamp=(x,a=0,b=1)=>Math.max(a,Math.min(b,x));
 export const defaults=[
@@ -55,7 +56,7 @@ export function record(p,t,lane,energy=0,time=0,lift=1,out=[0,0,0]){
 
 // Planar counterpart of the same voice descriptors. All strands are closed paths.
 // Alternating strand convergence creates a woven interior without a filled surface.
-export function planar(p,t,lane,out=[0,0,0]){
+function baselinePlanar(p,t,lane,out=[0,0,0]){
  const s=(lane-.5)*2,phase=p.phase;
  const center=1.66+.24*Math.sin(2*t+phase)+.17*Math.sin(3*t-phase)+.10*(1-p.pitch);
  // Periodic phase warping changes spacing continuously with the voice descriptors.
@@ -91,3 +92,6 @@ export function planarGrain(p,u,v){
 export function planarParticleT(p,t){
  return t+(.06+.17*p.brightness+.06*p.air)*Math.sin(3*t+p.phase);
 }
+
+// Opt-in QA mode; preserve the existing default renderer and all audio/UI behavior.
+export const planar = typeof location !== 'undefined' && new URLSearchParams(location.search).get('contourStudy') === '1' ? contourStudy : baselinePlanar;

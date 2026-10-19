@@ -1,0 +1,472 @@
+{
+  "date": "2026-10-19T14:36:49.113Z",
+  "buildSha256": "8ca5fe36ac43a035255f25d7a1431cf6b88e69b940feec97ae0ec6673699bec9",
+  "contourStudy": true,
+  "environment": "Linux headless Chromium / SwiftShader; software rendering, not target device performance or listening verification",
+  "soakMs": 180000,
+  "alternatingModes": true,
+  "checks": [
+    {
+      "name": "four participants before first play",
+      "pass": true
+    },
+    {
+      "name": "real FFT bands populated",
+      "pass": true
+    },
+    {
+      "name": "pause settles energy and bands",
+      "pass": true
+    },
+    {
+      "name": "two participants render",
+      "pass": true
+    },
+    {
+      "name": "addition removal preserves identity",
+      "pass": true
+    },
+    {
+      "name": "existing particle phase preserved",
+      "pass": true
+    },
+    {
+      "name": "crossing field changes composition",
+      "pass": true
+    },
+    {
+      "name": "four different silhouettes",
+      "pass": true
+    },
+    {
+      "name": "same profile exact SVG reproduction",
+      "pass": true
+    },
+    {
+      "name": "repeated playback stable",
+      "pass": true
+    },
+    {
+      "name": "soak rendered continuously",
+      "pass": true
+    },
+    {
+      "name": "soak GPU resources bounded",
+      "pass": true,
+      "detail": {
+        "geometries": [
+          12,
+          12,
+          12,
+          12,
+          12,
+          12,
+          12,
+          12,
+          12,
+          12,
+          12,
+          12,
+          12,
+          12,
+          12,
+          12,
+          12,
+          12,
+          12,
+          12,
+          12,
+          12,
+          12,
+          12,
+          12,
+          12,
+          12,
+          12,
+          12,
+          12,
+          12,
+          12,
+          12
+        ],
+        "textures": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ]
+      }
+    },
+    {
+      "name": "no runtime errors",
+      "pass": true,
+      "detail": []
+    },
+    {
+      "name": "four-person mobile fits",
+      "pass": true
+    }
+  ],
+  "samples": [
+    {
+      "elapsed": 6056,
+      "mode": 0,
+      "frames": 628,
+      "fps": 51.150895140664886,
+      "geometries": 12,
+      "textures": 1,
+      "heap": 39600000,
+      "sources": 4
+    },
+    {
+      "elapsed": 11071,
+      "mode": 0,
+      "frames": 929,
+      "fps": 60.0039346842417,
+      "geometries": 12,
+      "textures": 1,
+      "heap": 39600000,
+      "sources": 4
+    },
+    {
+      "elapsed": 16076,
+      "mode": 0,
+      "frames": 1169,
+      "fps": 59.99803285138212,
+      "geometries": 12,
+      "textures": 1,
+      "heap": 39600000,
+      "sources": 4
+    },
+    {
+      "elapsed": 21237,
+      "mode": 0,
+      "frames": 1241,
+      "fps": 13.247097327203349,
+      "geometries": 12,
+      "textures": 1,
+      "heap": 39600000,
+      "sources": 4
+    },
+    {
+      "elapsed": 26311,
+      "mode": 0,
+      "frames": 1335,
+      "fps": 21.63863479885897,
+      "geometries": 12,
+      "textures": 1,
+      "heap": 39600000,
+      "sources": 4
+    },
+    {
+      "elapsed": 31314,
+      "mode": 0,
+      "frames": 1489,
+      "fps": 50.1622897609916,
+      "geometries": 12,
+      "textures": 1,
+      "heap": 39600000,
+      "sources": 4
+    },
+    {
+      "elapsed": 38806,
+      "mode": 1,
+      "frames": 1681,
+      "fps": 18.001028630207465,
+      "geometries": 12,
+      "textures": 1,
+      "heap": 39600000,
+      "sources": 4
+    },
+    {
+      "elapsed": 44341,
+      "mode": 1,
+      "frames": 1816,
+      "fps": 14.401440144014401,
+      "geometries": 12,
+      "textures": 1,
+      "heap": 39600000,
+      "sources": 4
+    },
+    {
+      "elapsed": 49389,
+      "mode": 1,
+      "frames": 1893,
+      "fps": 4.285591840233147,
+      "geometries": 12,
+      "textures": 1,
+      "heap": 39600000,
+      "sources": 4
+    },
+    {
+      "elapsed": 55063,
+      "mode": 1,
+      "frames": 2043,
+      "fps": 27.43013886507786,
+      "geometries": 12,
+      "textures": 1,
+      "heap": 39600000,
+      "sources": 4
+    },
+    {
+      "elapsed": 60067,
+      "mode": 1,
+      "frames": 2105,
+      "fps": 4.330343334364367,
+      "geometries": 12,
+      "textures": 1,
+      "heap": 39600000,
+      "sources": 4
+    },
+    {
+      "elapsed": 65411,
+      "mode": 1,
+      "frames": 2223,
+      "fps": 21.818181818181817,
+      "geometries": 12,
+      "textures": 1,
+      "heap": 39600000,
+      "sources": 4
+    },
+    {
+      "elapsed": 73627,
+      "mode": 0,
+      "frames": 2362,
+      "fps": 48.1951411429135,
+      "geometries": 12,
+      "textures": 1,
+      "heap": 39600000,
+      "sources": 4
+    },
+    {
+      "elapsed": 78758,
+      "mode": 0,
+      "frames": 2525,
+      "fps": 59.014458542342204,
+      "geometries": 12,
+      "textures": 1,
+      "heap": 39600000,
+      "sources": 4
+    },
+    {
+      "elapsed": 83769,
+      "mode": 0,
+      "frames": 2679,
+      "fps": 11.667638969914217,
+      "geometries": 12,
+      "textures": 1,
+      "heap": 39600000,
+      "sources": 4
+    },
+    {
+      "elapsed": 89118,
+      "mode": 0,
+      "frames": 2819,
+      "fps": 8.125507844240222,
+      "geometries": 12,
+      "textures": 1,
+      "heap": 39600000,
+      "sources": 4
+    },
+    {
+      "elapsed": 94152,
+      "mode": 0,
+      "frames": 2956,
+      "fps": 15,
+      "geometries": 12,
+      "textures": 1,
+      "heap": 39600000,
+      "sources": 4
+    },
+    {
+      "elapsed": 99162,
+      "mode": 0,
+      "frames": 3009,
+      "fps": 1.6903313049357718,
+      "geometries": 12,
+      "textures": 1,
+      "heap": 39600000,
+      "sources": 4
+    },
+    {
+      "elapsed": 105599,
+      "mode": 1,
+      "frames": 3152,
+      "fps": 31.47437788925008,
+      "geometries": 12,
+      "textures": 1,
+      "heap": 39600000,
+      "sources": 4
+    },
+    {
+      "elapsed": 110602,
+      "mode": 1,
+      "frames": 3278,
+      "fps": 22.389396381874015,
+      "geometries": 12,
+      "textures": 1,
+      "heap": 39600000,
+      "sources": 4
+    },
+    {
+      "elapsed": 115614,
+      "mode": 1,
+      "frames": 3418,
+      "fps": 41.31012097963954,
+      "geometries": 12,
+      "textures": 1,
+      "heap": 39600000,
+      "sources": 4
+    },
+    {
+      "elapsed": 121113,
+      "mode": 1,
+      "frames": 3471,
+      "fps": 6.250390649415498,
+      "geometries": 12,
+      "textures": 1,
+      "heap": 39600000,
+      "sources": 4
+    },
+    {
+      "elapsed": 126117,
+      "mode": 1,
+      "frames": 3586,
+      "fps": 24,
+      "geometries": 12,
+      "textures": 1,
+      "heap": 39600000,
+      "sources": 4
+    },
+    {
+      "elapsed": 131127,
+      "mode": 1,
+      "frames": 3693,
+      "fps": 9.999000099989946,
+      "geometries": 12,
+      "textures": 1,
+      "heap": 39600000,
+      "sources": 4
+    },
+    {
+      "elapsed": 137133,
+      "mode": 0,
+      "frames": 3886,
+      "fps": 24.591776509934945,
+      "geometries": 12,
+      "textures": 1,
+      "heap": 39600000,
+      "sources": 4
+    },
+    {
+      "elapsed": 142144,
+      "mode": 0,
+      "frames": 4008,
+      "fps": 13.770040326546908,
+      "geometries": 12,
+      "textures": 1,
+      "heap": 39600000,
+      "sources": 4
+    },
+    {
+      "elapsed": 147478,
+      "mode": 0,
+      "frames": 4119,
+      "fps": 2.325689566956609,
+      "geometries": 12,
+      "textures": 1,
+      "heap": 39600000,
+      "sources": 4
+    },
+    {
+      "elapsed": 152536,
+      "mode": 0,
+      "frames": 4244,
+      "fps": 8.853039543576832,
+      "geometries": 12,
+      "textures": 1,
+      "heap": 39600000,
+      "sources": 4
+    },
+    {
+      "elapsed": 157759,
+      "mode": 0,
+      "frames": 4391,
+      "fps": 38.363171355499595,
+      "geometries": 12,
+      "textures": 1,
+      "heap": 39600000,
+      "sources": 4
+    },
+    {
+      "elapsed": 163264,
+      "mode": 0,
+      "frames": 4501,
+      "fps": 3.380376912025724,
+      "geometries": 12,
+      "textures": 1,
+      "heap": 39600000,
+      "sources": 4
+    },
+    {
+      "elapsed": 171034,
+      "mode": 1,
+      "frames": 4615,
+      "fps": 22.62443438914015,
+      "geometries": 12,
+      "textures": 1,
+      "heap": 39600000,
+      "sources": 4
+    },
+    {
+      "elapsed": 176213,
+      "mode": 1,
+      "frames": 4772,
+      "fps": 26.129875157263438,
+      "geometries": 12,
+      "textures": 1,
+      "heap": 39600000,
+      "sources": 4
+    },
+    {
+      "elapsed": 181287,
+      "mode": 1,
+      "frames": 4903,
+      "fps": 25.16210200329072,
+      "geometries": 12,
+      "textures": 1,
+      "heap": 39600000,
+      "sources": 4
+    }
+  ],
+  "errors": []
+}
