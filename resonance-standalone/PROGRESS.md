@@ -60,6 +60,12 @@ main·기존 React 앱·Production·Notion·Figma 변경 및 Computer Use 금지
 - 다음 시작점: 같은 검증 모드에서 전체 반복 윤곽을 유지하면서 넓은 구간의 선별 접선 진행 차이로 자연스러운 교차를 검토한다. 전체 경로를 선별 회전한 실패 후보를 반복하지 말 것. 간격 조절만으로 직조 결 성공이라 판정하지 말 것. 단색 비교 후 개인차/합성과 변경 해시의 장시간 검증 진행. 실제 사람 보컬·실기기 GPU·청취 및 최종 시각 승인은 여전히 미검증.
 - main/기존 React 앱/Production/Notion/Figma 변경 없음. Computer Use 사용 없음. 전체 목표 미완료.
 
+### 굴곡별 간격 보정본 저장·Preview
+
+- 구현/근거 10개 파일을 `0bdcaacdeeef5b6bd18dcd8475f77d5a2c0d05a9`에 저장. 업로드 Git blob 10개 전부 로컬 일치, expected HEAD로 feature만 fast-forward.
+- 해당 커밋 전용 Preview READY·HTTP 200 확인: https://ieum-resonance-preview-i1imcpg77-junes-lie.vercel.app/?contourStudy=1 . 원격 브라우저 기능 검사 또는 전체 응답 해시 일치로 주장하지 않는다.
+- 이번 로컬 QA 종료. 전체 완료 및 기본 모드 채택 아님. 다음 시작점은 위 단색의 평행한 내부 선과 직조 결 차이 개선.
+
 ## 2026-10-19 23:30 KST 재개 — 미커밋 검증본 회수 및 지속 QA
 
 - 원격 HEAD `89d3455f1e672d91d1e7a2f6c1057bca73ff06f9`와 PROGRESS 전체 확인. 직전 작업 사본의 미커밋 검증본을 별도 작업 사본에 보존하여 회수했다. 원본 사본 파일은 수정하지 않았다. 진행 중 개발/QA 프로세스는 없었으며 원본 파일 수정 시각과 원격 HEAD가 유지됨을 재확인했다. 기반 독립본/AGENTS의 모든 Git blob은 원격 tree와 일치했다. 과거 recovery-polish는 이미 적용된 작업이므로 재실행하지 않았다.
