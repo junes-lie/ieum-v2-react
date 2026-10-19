@@ -60,6 +60,12 @@ main·기존 React 앱·Production·Notion·Figma 변경 및 Computer Use 금지
 - **다음 시작점:** `qa/experiments/trace-coral-filaments.py`의 노랑 후보조차 검증 실패임을 먼저 확인한다. 픽셀 점수만 높이는 자동 경로는 교차에서 선을 바꿀 수 있으므로 전체 경로로 외삽하지 않는다. 보이는 선을 구간별로 수동 대응시키고, 각 교차 전후 접선/곡률의 연속성을 원본 오버레이로 확인해야 한다. 두 전체 후보에서 관찰/추정 구간이 구분되기 전에는 중간 선/입자/세 색 합성 후보를 만들지 않는다. 기존 same-ray 간격·접선 이동 계수 실험으로 되돌아가지 않는다.
 - 전체 목표 및 시각적 개선 채택 미완료. main/기존 React 앱/Production/Notion/Figma 수정과 Computer Use 사용 없음.
 
+### 추적 진단 저장·Preview 확인
+
+- 진단 코드·좌표·오버레이·검사 의미 정정 9개 파일을 `0a6f4b459280dffba3e8ca52028ad7ee188031ec`에 저장. 업로드 blob 9개 로컬 일치 및 expected HEAD 기반 feature fast-forward 확인.
+- 해당 commit Preview READY·HTTP 200·contourStudy 코드 포함 확인: https://ieum-resonance-preview-ahmsnrbnh-junes-lie.vercel.app/?contourStudy=1 . 실행 화면은 기존 검증본과 같다. 변경된 QA 진단 페이지는 repository의 `qa/index.html`에서만 제공된다. 현재 배포 output은 public이므로 `/qa/contour-model-audit.json`은 404이며 이를 공개된 진단 페이지로 안내하지 않는다.
+- 전체 완료와 시각적 개선 채택 없음. 다음 시작점은 위 개별 선 추적 실패 해결이다.
+
 ## 2026-10-20 01시 KST — 접선 진행 후보 기각 및 원인 진단
 
 - 시작 원격 `be2359519763625b710d4fcbc4da084a6227a802`. PROGRESS 전체와 AGENTS/Git 규칙을 읽었다. 별도 작업 사본의 추적 파일 88개가 원격 tree blob과 전부 일치했으며, 시작 시 진행 중 개발/QA 프로세스 없음. 이전 미커밋 사본은 수정하지 않았다. 복구는 완료된 작업이므로 재적용하지 않음.
