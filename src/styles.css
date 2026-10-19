@@ -282,3 +282,36 @@ dialog.confirm-modal .review-actions button{flex:1 1 120px;min-height:52px}
 .voice-preference-choices .preference-selected button{min-height:44px;max-width:100%;padding:8px 12px;background:var(--surface);border:1px solid var(--line-strong);border-radius:20px;overflow-wrap:anywhere;font-size:14px}
 @media(max-width:359px){.voice-preference-choices .preference-circle{font-size:.875rem;padding:10px}.voice-preference-choices .genre-circle:nth-child(even),.voice-preference-choices .preference-song:nth-child(even){margin-top:0}.voice-preference-choices .genre-circle{min-width:82%}}
 @media(prefers-reduced-motion:reduce){.voice-preference-choices .preference-circle{transition:none}}
+
+/* Shared typography and scrolling rules; home grouping stays local to Home. */
+html,body,.screen,.screen *{scrollbar-width:none}
+html::-webkit-scrollbar,body::-webkit-scrollbar,.screen::-webkit-scrollbar,.screen *::-webkit-scrollbar{display:none}
+.screen p:not(.kicker){line-height:1.4}
+.home-intro h1{font-size:32px;line-height:1.2;margin-bottom:12px}
+.home-intro .kicker{font-size:10px;margin-bottom:8px}
+.home-intro p:not(.kicker){margin-bottom:0}
+.home-intro .home-actions{margin-top:40px;gap:12px}
+.home-intro .home-actions .primary,.home-intro .home-actions .secondary{margin-top:0}
+.home-intro{padding:36px 0 48px}
+.home-screen .demo-record{width:90%;margin-top:48px}
+.home-screen .demo-count{border-left:0}
+.home-screen .content-section{padding:20px;margin:0;border:0;border-radius:10px;background:#1c1815}
+.home-screen .content-section+.content-section{margin-top:12px}
+.home-screen .section-head{align-items:flex-start;flex-wrap:wrap;gap:8px 12px;margin-bottom:16px}
+.home-screen .section-head h2{font:600 22px/1.2 var(--sans);letter-spacing:-.03em}
+.home-screen .section-head>span{font-size:10px;line-height:1.4;color:var(--secondary)}
+.home-screen .song-row,.home-screen .project-line,.home-screen .project-feature{border-bottom:0}
+.home-screen .song-row{column-gap:12px;padding:12px 0}
+.home-screen .song-row>span:nth-child(2){display:flex;flex-direction:column;gap:6px;min-width:0}
+.home-screen .song-row strong{font-size:14px;line-height:1.3}
+.home-screen .song-row small{font-size:11px;line-height:1.4;color:var(--secondary)}
+.home-screen .project-feature{grid-template-columns:72px minmax(0,1fr);gap:16px;padding:0 0 16px}
+.home-screen .project-feature .record{width:72px}
+.home-screen .project-feature strong{font-size:24px;line-height:1.2;margin:8px 0}
+.home-screen .project-feature em{line-height:1.4}
+.home-screen .project-line{height:auto;min-height:68px;display:grid;grid-template-columns:minmax(0,1fr);gap:6px;align-content:center;padding:12px 0}
+.home-screen .project-line span{font-size:14px;line-height:1.3}
+.home-screen .project-line small{font-size:10px;line-height:1.4;color:var(--secondary)}
+.home-screen .empty-proof{margin:0}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+

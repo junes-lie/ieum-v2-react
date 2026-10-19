@@ -412,7 +412,7 @@ function drawMaterial(canvas, rotation = 0) {
   vinyl.addColorStop(1, '#020202')
   ctx.fillStyle = vinyl
   ctx.fillRect(0, 0, pixels, pixels)
-  const reflectionAngle=-Math.PI*3/4
+  const reflectionAngle=-Math.PI*3/4+rotation
   const reflectionX=Math.cos(reflectionAngle)*radius,reflectionY=Math.sin(reflectionAngle)*radius
   const grooveSheen=ctx.createLinearGradient(center-reflectionX,center-reflectionY,center+reflectionX,center+reflectionY)
   grooveSheen.addColorStop(0,'rgba(205,187,162,.12)')
@@ -436,7 +436,7 @@ function drawMaterial(canvas, rotation = 0) {
   sheen.addColorStop(1, 'rgba(255,235,205,0)')
   ctx.fillStyle = sheen
   ctx.fillRect(0, 0, pixels, pixels)
-  // Match the fixed upper-left/lower-right light axis of the center label.
+  // Start on the label light axis; Home can rotate this surface beneath the voice field.
   const reflection = ctx.createConicGradient(reflectionAngle-Math.PI*2*.075,center,center)
   for(const [offset,alpha] of [[0,0],[.045,.04],[.075,.32],[.105,.07],[.15,0],[.50,0],[.545,.04],[.575,.12],[.605,.035],[.65,0],[1,0]]){
     reflection.addColorStop(offset,`rgba(239,229,214,${alpha})`)
@@ -473,7 +473,7 @@ function drawMaterial(canvas, rotation = 0) {
   ctx.restore()
 }
 
-export function createResonanceRenderer({ canvas, materialCanvas, slots, projectSeed, state, activePartIndex, levelRef, reducedMotion, aiFields = [], timeline = {}, voiceStyles = [] }) {
+export function createResonanceRenderer({ canvas, materialCanvas, slots, projectSeed, state, activePartIndex, levelRef, reducedMotion, aiFields = [], timeline = {}, voiceStyles = [], counterRotate = false }) {
   if(!Array.isArray(voiceStyles) || voiceStyles.length>4)throw new Error('At most four personal voice styles are supported')
   const preparedStyles=voiceStyles.map(voiceStyle)
   const gl = canvas.getContext('webgl', {
@@ -586,8 +586,10 @@ export function createResonanceRenderer({ canvas, materialCanvas, slots, project
     const flowTime=fixedTime?captureTime*motion:timeline.flowTime
     const rotation=fixedTime?captureTime*targetRate:timeline.rotation
     const bloom=reducedMotion || state!=='complete'?0:.035*Math.sin(Math.PI*Math.min(1,Math.max(0,(elapsed-timeline.completeStarted)/1.2)))
-    drawMaterial(materialCanvas,rotation)
-    canvas.dataset.rotation=String(rotation)
+    const voiceRotation=counterRotate?-rotation:rotation
+    drawMaterial(materialCanvas,counterRotate?rotation:0)
+    materialCanvas.dataset.rotation=String(counterRotate?rotation:0)
+    canvas.dataset.rotation=String(voiceRotation)
     canvas.dataset.angularRate=String(timeline.angularRate)
     canvas.dataset.bloom=String(bloom)
     gl.clearColor(0,0,0,0)
@@ -600,7 +602,7 @@ export function createResonanceRenderer({ canvas, materialCanvas, slots, project
     })
     gl.uniform1f(timeLocation, reducedMotion?0:elapsed)
     gl.uniform1f(flowTimeLocation,flowTime)
-    gl.uniform1f(rotationLocation,rotation)
+    gl.uniform1f(rotationLocation,voiceRotation)
     gl.uniform1f(bloomLocation,bloom)
     gl.uniform1f(levelLocation, Math.max(0, Math.min(1, levelRef.current || 0)))
     gl.uniform1f(ratioLocation,Math.min(window.devicePixelRatio||1,2))
@@ -702,3 +704,4 @@ export function createRecordingInflowRenderer({ canvas, partIndex, seed, levelRe
 }
 
 export { PALETTE, PATHS }
+

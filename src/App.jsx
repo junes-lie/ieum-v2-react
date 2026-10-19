@@ -462,7 +462,7 @@ void main(){
   </figure>
 }
 
-function ResonanceRecord({ active = [true, false, true, false], layers = [], parts = PARTS, tracks, projectId = PROJECT_ID, activePartIndex = 1, state = 'rest', level = 0, seed = PROJECT_SEED, label, compact = false, recordRef }) {
+function ResonanceRecord({ active = [true, false, true, false], layers = [], parts = PARTS, tracks, projectId = PROJECT_ID, activePartIndex = 1, state = 'rest', level = 0, seed = PROJECT_SEED, label, compact = false, recordRef, counterRotate = false }) {
   const materialRef = useRef(null)
   const particleRef = useRef(null)
   const recordTimelineRef = useRef({})
@@ -548,6 +548,7 @@ function ResonanceRecord({ active = [true, false, true, false], layers = [], par
         activePartIndex:recordingSlot,
         levelRef,
         reducedMotion,
+        counterRotate,
         timeline:recordTimelineRef.current,
         aiFields:partSlots.reduce((fields,slot,index)=>{fields[slot]=renderFields.find(field=>field.projectId===projectId && field.projectSeed===String(seed) && field.partId===parts[index].id);return fields},[]),
         voiceStyles:partSlots.reduce((styles,slot,index)=>{styles[slot]=selectedRender?.styles.find(item=>item.partId===parts[index].id)?.style || null;return styles},[])
@@ -558,7 +559,7 @@ function ResonanceRecord({ active = [true, false, true, false], layers = [], par
       setRendererError('WEBGL UNAVAILABLE')
     }
     return () => renderer?.dispose()
-  }, [slotSignature, recordingSlot, state, seed, projectId, partIds, fieldSignature, selectedRender])
+  }, [slotSignature, recordingSlot, state, seed, projectId, partIds, fieldSignature, selectedRender, counterRotate])
 
   const layerCount = layers.length ? layers.filter(Boolean).length : active.filter(Boolean).length
   return <figure className={`record ${compact ? 'record-compact' : ''}`} data-state={state} data-record-signature={projectRecordSignature(String(seed),layers)} data-resonance-engine="webgl-particles" aria-label={label || `공명 레코드, ${layerCount}개 Track 활성`}>
@@ -657,7 +658,7 @@ function Home({ mainProject = PROJECT, openSong, layers, projectTracks, profile,
           <div className="home-actions"><button className="primary" data-action="open-parts" onClick={() => {const target=document.getElementById("recruiting-projects");target?.scrollIntoView({behavior:"smooth",block:"start"});target?.focus({preventScroll:true})}}>OPEN Part 찾기 <Icon name="search"/></button><button className="secondary" data-action="create-project" onClick={openCreateProject}>새 프로젝트 만들기</button></div>
         </div>
         <div className="demo-record">
-          <ResonanceRecord recordRef={mainProject.voiceRecordRef} projectId={mainProject.id} parts={mainProject.parts} layers={layers} compact seed={mainProject.seed} label={`A Thousand Years, 네 파트 중 ${submitted}개 Track 제출 완료`}/>
+          <ResonanceRecord counterRotate recordRef={mainProject.voiceRecordRef} projectId={mainProject.id} parts={mainProject.parts} layers={layers} compact seed={mainProject.seed} label={`A Thousand Years, 네 파트 중 ${submitted}개 Track 제출 완료`}/>
           <span className="demo-count">{String(submitted).padStart(2,'0')}/04 <small>TRACKS</small></span>
         </div>
       </section>
@@ -668,7 +669,7 @@ function Home({ mainProject = PROJECT, openSong, layers, projectTracks, profile,
       <section className="content-section" id="recruiting-projects" tabIndex={-1}>
         <div className="section-head"><h2>파트 모집 중</h2><span>{2+Number(mainRecruiting)+createdRecruiting.length} projects</span></div>
         {mainRecruiting && <button className="project-feature" onClick={() => openSong(SONG_ID)}>
-          <ResonanceRecord recordRef={mainProject.voiceRecordRef} projectId={mainProject.id} parts={mainProject.parts} layers={layers} compact seed={mainProject.seed} />
+          <ResonanceRecord counterRotate recordRef={mainProject.voiceRecordRef} projectId={mainProject.id} parts={mainProject.parts} layers={layers} compact seed={mainProject.seed} />
           <span><small>{String(submitted).padStart(2,'0')}/04 · OPEN</small><strong>A Thousand Years</strong><em>{demoCount}개 출처 표시 시연 Track · {openCount} Parts OPEN</em></span>
         </button>}
         <button className="project-line" onClick={() => openSong('city-of-stars')}><span>City of Stars · Night Duet</span><small>01/02 · Vocal B OPEN</small></button>
@@ -2047,3 +2048,4 @@ export default function App() {
 }
 
 export { Workspace, Recorder, Complete, Detail, PersonalArea, Home }
+
