@@ -14,6 +14,19 @@ assert.deepEqual(geometry.visible,['A']);assert.equal(geometry.particles,false);
 await page.click('#raised');await page.evaluate(()=>{const v=ieumDebug.view;v.transitionAt=performance.now()-450;v.update(0,false);v.transition=false});await capture('transition-half');
 await page.click('#raised');await page.waitForFunction(()=>ieumDebug.view.morph>.999);await capture('spatial');
 await page.click('#flat');await page.waitForFunction(()=>ieumDebug.view.morph<.001);
-await page.setViewportSize({width:390,height:844});await page.waitForFunction(()=>ieumDebug.view.renderer.domElement.width<800&&document.querySelector('#stage').clientWidth<500);await page.screenshot({clip:{x:0,y:0,width:1,height:1}});await capture('mobile-flat');
+// Use a fresh mobile viewport: resizing the desktop page can leave a stale
+// desktop bitmap in this Chromium build. Validate actual PNG dimensions.
+const mobile=await browser.newPage({viewport:{width:390,height:844}});
+try {
+ mobile.on('pageerror',e=>errors.push(e.message));
+ mobile.on('console',m=>{if(m.type()==='error')errors.push(m.text())});
+ await mobile.goto(page.url());await mobile.screenshot({clip:{x:0,y:0,width:1,height:1}});
+ await mobile.waitForFunction(()=>ieumDebug.view?.morph===0);
+ await mobile.click('[data-contours="0"]');
+ await mobile.locator('#stage canvas').screenshot({path:path.join(output,'mobile-flat.png')});
+ const png=fs.readFileSync(path.join(output,'mobile-flat.png'));
+ assert.ok(png.readUInt32BE(16)<=390,'Mobile capture must not reuse desktop bitmap');
+} finally {await mobile.close()}
+
 assert.equal(errors.length,0);const report={geometry,errors,sourceFidelityApproved:false,scope:'Blue two-component structural comparison. Captures require visual source comparison; no audio, particles, synthesis or long-run approval.'};fs.writeFileSync(path.join(output,'report.json'),JSON.stringify(report,null,2));console.log(JSON.stringify(report));
 }finally{clearInterval(pump);await page.close()}}finally{await browser.close()}})().catch(e=>{console.error(e);process.exitCode=1});
