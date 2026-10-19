@@ -267,3 +267,9 @@
 - 기존 122개/10분/모션 결과는 `qa/build-verification-fans-2026-10-19.json`의 c91dbd99… 빌드에만 해당. 이번 입자 변경에 전체 39개 및 10분/영상 검사를 재수행한 것으로 표현하지 않는다. qa/index.html 영상도 이전 빌드로 명시.
 - 다음 시작 지점: 곡선 후보 4개 기각 이유와 qa/visual-review.json 확인. 각진 구간에 일괄 사인 굽힘을 추가하지 말고 기존 접선/곡률과 수렴 위치 관계를 먼저 진단해 둥근 미세 고리만 개선. 현 입자 보정과 완료 기능 보존. 최종 시각 후보를 확보한 뒤 해당 해시로 10분/모션 증거 갱신.
 - 전체 목표 미완료. 둥근 내부 반복 고리, 실제 사람 보컬·동일인 다른 녹음, 실기기 GPU·청취 미검증. main/기존 앱/Production/Notion/Figma 수정 및 Computer Use 없음.
+
+### 원격 저장 및 Preview 검증
+
+- 16개 변경 파일을 `528bfe3482c8d44c01f304b7b763c3aa3af4aa0d`로 feature에 저장. 업로드 Git blob SHA 16개 모두 로컬과 일치, expected HEAD 기반 fast-forward 및 원격 HEAD 확인.
+- 전용 Preview의 commit 일치·READY·HTTP 200 확인: https://ieum-resonance-preview-diqihgsow-junes-lie.vercel.app/ . 응답은 로컬 HTML 전체 3,364,293자와 정확히 일치한 뒤 Vercel feedback script 163자가 추가됨. 응답 전체 해시 동일이나 원격 브라우저 기능 검증을 주장하지 않음.
+- 모든 이번 로컬 QA 프로세스 종료. 다음 작업은 위 미세 고리 진단이며 기존 10분/영상 회수는 반복하지 않는다. 전체 목표 미완료.
