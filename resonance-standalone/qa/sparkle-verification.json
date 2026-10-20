@@ -1,0 +1,38 @@
+{
+  "stats": [
+    {
+      "id": "A",
+      "sparkle": 1,
+      "shader": true,
+      "count": 978
+    },
+    {
+      "id": "B",
+      "sparkle": 1,
+      "shader": true,
+      "count": 950
+    },
+    {
+      "id": "C",
+      "sparkle": 1,
+      "shader": true,
+      "count": 863
+    }
+  ],
+  "errors": [],
+  "buildSHA256": "612675435ed6f1e0017b455191579df96e4c175662e44e099ad5f271d1a0ea51",
+  "date": "2026-10-20",
+  "environment": "Chromium 153 / SwiftShader; 390px DPR2 and 1100px DPR1; not physical iPhone",
+  "renderChecks": [
+    "2D/3D, particles ON/OFF at 390px DPR2 and 1100px DPR1 passed",
+    "Visual inspection: luminous centers with soft falloff; original curves and line brightness preserved"
+  ],
+  "temporalCheck": {
+    "method": "Only particle clock advanced; geometry and line clocks held constant",
+    "changedPixelsOver12": 5909,
+    "repeatT0ChangedPixels": 0,
+    "nearWhiteT0": 137,
+    "nearWhiteT2": 160
+  },
+  "limitation": "No new audio/long-session verification; physical iPhone and aesthetic acceptance pending"
+}

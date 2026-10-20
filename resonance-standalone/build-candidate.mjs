@@ -84,6 +84,14 @@ if(new URLSearchParams(location.search).get('composite')==='1'&&view){
  // Composite grains must remain discrete at mobile DPR, without the old 2D light boost.
  visual=visual.replace('const count=Math.round(1100+v.p.air*700)', "const fineComposite=new URLSearchParams(location.search).get('composite')==='1';const count=Math.round(fineComposite?1000-v.p.air*180:1100+v.p.air*700)");
  visual=visual.replace('flatSizes[i]=grain.size;flatAlpha[i]=grain.alpha;', 'flatSizes[i]=fineComposite?1.25+.65*rand(i+22)+.65*v.p.brightness*Math.pow(rand(i+22),4):grain.size;flatAlpha[i]=fineComposite?.55+.30*rand(i+73):grain.alpha;if(fineComposite){sizes[i]=flatSizes[i];alpha[i]=flatAlpha[i];}');
+ // Local light sprites: a narrow luminous core, faint falloff and asynchronous glints.
+ // Normal alpha blending bounds overlap; no bloom pass or global line brightening.
+ visual=visual.replace('uniforms:{uColor:uniforms.uColor,uOpacity:', 'uniforms:{uSparkle:{value:fineComposite?1:0},uTime:uniforms.uTime,uColor:uniforms.uColor,uOpacity:');
+ visual=visual.replaceAll('varying float vAlpha;', 'varying float vAlpha,vSpark;');
+ visual=visual.replace('uniform float uDpr,uMorph;', 'uniform float uDpr,uMorph,uTime,uSparkle;');
+ visual=visual.replace('gl_PointSize=mix(size,aSize,uMorph)*uDpr;', 'float seed=fract(aFlatAlpha*19.17+aFlatSize*7.13);vSpark=pow(.5+.5*sin(uTime*(.75+seed*.65)+seed*63.),14.);gl_PointSize=mix(size,aSize,uMorph)*uDpr*mix(1.,2.3+.45*vSpark,uSparkle);');
+ visual=visual.replace('uniform float uOpacity,uMorph;', 'uniform float uOpacity,uMorph,uSparkle;');
+ visual=visual.replace('gl_FragColor=vec4(uColor*mix(1.7,1.,uMorph),vAlpha*uOpacity*smoothstep(.5,.15,d));', `if(uSparkle>.5){float core=exp(-d*d*105.);float halo=exp(-d*d*23.)*(1.-smoothstep(.35,.5,d));float light=core*(.55+.9*vSpark)+halo*(.035+.15*vSpark);vec3 tint=mix(uColor,vec3(1.),core*(.18+.72*vSpark));gl_FragColor=vec4(tint*(1.+.35*vSpark),min(.92,vAlpha*uOpacity*light));}else{gl_FragColor=vec4(uColor*mix(1.7,1.,uMorph),vAlpha*uOpacity*smoothstep(.5,.15,d));}`);
  // Select a GLSL literal when the shader template is evaluated.
  visual=visual.replaceAll('uColor*mix(1.7,1.,uMorph)', "uColor*mix(${new URLSearchParams(location.search).get('composite')==='1'?'1.0':'1.7'},1.,uMorph)");
  visual=visual.replace('smoothstep(.5,.15,d)', '(1.-smoothstep(.23,.5,d))');
