@@ -10,19 +10,25 @@ export function audioHeightAt(wave,t){const x=((t/TAU)%1+1)%1*64,i=Math.floor(x)
 export function findPulseCenters(heightAt){const n=360,h=Array.from({length:n},(_,i)=>heightAt(i/n*TAU));const sm=h.map((_,i)=>{let v=0;for(let j=-8;j<=8;j++)v+=h[(i+j+n)%n];return v/17;});const peaks=sm.map((v,i)=>({v,i})).filter(({v,i})=>v>=sm[(i+n-1)%n]&&v>sm[(i+1)%n]).sort((a,b)=>b.v-a.v);const chosen=[];for(const peak of peaks){if(chosen.every(k=>Math.min(Math.abs(k-peak.i),n-Math.abs(k-peak.i))>32))chosen.push(peak.i);if(chosen.length===6)break;}return (chosen.length?chosen:[sm.indexOf(Math.max(...sm))]).sort((a,b)=>a-b).map(i=>i/n*TAU);}
 export function hopPulse(q){q=((q%1)+1)%1;const ease=x=>x*x*x*(x*(x*6-15)+10);if(q<.42)return ease(q/.42);if(q<.50)return 1;if(q<.98)return 1-ease((q-.50)/.48);return 0;}
 export function bendHeightAt(centers,levels,t){t=((t%TAU)+TAU)%TAU;let i=centers.length-1;for(let k=0;k<centers.length;k++)if(t>=centers[k])i=k;const j=(i+1)%centers.length,a=centers[i],b=centers[j]+(j===0?TAU:0),x=(t+(t<a?TAU:0)-a)/(b-a),u=x*x*(3-2*x);return levels[i]+(levels[j]-levels[i])*u;}
+// iOS9+ lifecycle/phase adapted from kopiro/siriwave (MIT); see siriwave-LICENSE.txt.
+export const SIRI_SPEED=.05;
+const siriRand=n=>{const x=Math.sin(n*127.1+311.7)*43758.5453;return x-Math.floor(x);};
+export function spawnSiriPartial(bend,part,generation,voicePhase){const key=bend*103+part*29+generation*997+voicePhase*11;return {phase:0,amplitude:0,age:0,lifetime:.5+1.5*siriRand(key+1),speed:.5+.5*siriRand(key+2),finalAmplitude:.3+.7*siriRand(key+3),offset:-3+6*siriRand(key+4),width:1+2*siriRand(key+5),verse:-1+2*siriRand(key+6),generation};}
+export function stepSiriPartial(p,dt){p.age+=dt;p.amplitude=Math.max(0,Math.min(p.finalAmplitude,p.amplitude+(p.age<=p.lifetime?1:-1)*.02*60*dt));p.phase=(p.phase+SIRI_SPEED*p.speed*60*dt)%TAU;const x=p.offset*.25/p.width,att=(4/(4+x*x))**4;return Math.abs(p.amplitude*Math.sin(p.verse*x-p.phase)*att);}
 export function updateWaveform(wave,data,referenceRms,dt,age,playing,energy=0,bands={},phase=0){
  const centers=wave.centers||[0,TAU/3,TAU*2/3];
- if(!playing||age<=.18){wave.drives=new Float64Array(centers.length);wave.levels=new Float64Array(centers.length);wave.cycles=null;wave.fill(heightEnvelope(0,age,playing));return wave;}
+ if(!playing||age<=.18){wave.drives=new Float64Array(centers.length);wave.levels=new Float64Array(centers.length);wave.siri=null;wave.fill(heightEnvelope(0,age,playing));return wave;}
  if(!dt)return wave;
  wave.drives??=new Float64Array(centers.length);wave.levels??=new Float64Array(centers.length);
- wave.cycles??=Float64Array.from(centers,(_,k)=>(k*.381966+phase/TAU)%1);
+ wave.siri??=centers.map((_,k)=>Array.from({length:2+Math.floor(siriRand(k+phase)*3)},(_,j)=>spawnSiriPartial(k,j,0,phase)));
  const u=Math.max(0,Math.min(1,(age-.18)/.35)),gate=u*u*(3-2*u);
  for(let k=0;k<centers.length;k++){
-  const band=[bands.low||0,bands.mid||0,bands.high||0][k%3],period=1.35+.17*((k*3)%5);
-  wave.cycles[k]=(wave.cycles[k]+dt*(.9+.2*band+.1*(bands.onset||0))/period)%1;
+  const parts=wave.siri[k];let sum=0;
+  for(let j=0;j<parts.length;j++){let p=parts[j];sum+=stepSiriPartial(p,dt);if(p.age>p.lifetime&&p.amplitude===0)parts[j]=spawnSiriPartial(k,j,p.generation+1,phase);}
   const activity=Math.max(0,Math.min(1,(energy-.008)/.16));
-  wave.drives[k]+=(activity-wave.drives[k])*(1-Math.exp(-dt*(activity>wave.drives[k]?16:6)));
-  wave.levels[k]=wave.drives[k]*gate*hopPulse(wave.cycles[k]);
+  wave.drives[k]+=(activity-wave.drives[k])*(1-Math.exp(-dt*(activity>wave.drives[k]?10:5)));
+  // Normalize the reference's low canvas amplitude to the existing high crest ceiling.
+  wave.levels[k]=wave.drives[k]*gate*Math.sin(Math.min(1,2*sum/parts.length)*Math.PI/2);
  }
  for(let i=0;i<64;i++)wave[i]=Math.max(0,Math.min(1,bendHeightAt(centers,wave.levels,i/64*TAU)));return wave;
 }

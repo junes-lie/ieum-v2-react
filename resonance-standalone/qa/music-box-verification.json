@@ -1,17 +1,17 @@
 {
   "checks": [
     {
-      "name": "all bends reach original ceiling at ordinary .3 audio; independent hops and silence decay",
-      "data": {
-        "peaks": [
-          0.9999999999999998,
-          0.9999999999999998,
-          0.9999999999999998
-        ]
-      }
+      "name": "SiriWave iOS9 source timing: speed .05 and amplitude .02 per 60Hz frame"
     },
     {
-      "name": "soft launch apex landing: zero seam velocity and bounded peak speed"
+      "name": "independent changing Siri lifecycles retain high ceiling, deterministic output and silence decay",
+      "data": {
+        "peaks": [
+          0.9999999999999997,
+          0.9999999999999997,
+          0.9999999999999997
+        ]
+      }
     },
     {
       "name": "390px actual GPU motion and sparkle attributes",
@@ -295,25 +295,25 @@
         {
           "energy": 0.25,
           "ys": [
-            0.06405246257781982,
-            0.2441163957118988,
-            0.09667176008224487
+            0.06439230591058731,
+            0.2452043890953064,
+            0.09804992377758026
           ]
         },
         {
           "energy": 0.6,
           "ys": [
-            0.12852230668067932,
-            0.5606793165206909,
-            0.20676946640014648
+            0.12933741509914398,
+            0.563290536403656,
+            0.21007956564426422
           ]
         },
         {
           "energy": 1,
           "ys": [
-            0.20219698548316956,
-            0.9224655032157898,
-            0.3325335383415222
+            0.20355455577373505,
+            0.9268174171447754,
+            0.33805519342422485
           ]
         }
       ]
@@ -322,10 +322,10 @@
       "name": "390px real audio increases motion and local sparkles",
       "data": {
         "sources": 4,
-        "play": 0.9044217125585453,
-        "energy": 0.3810339316956627,
-        "glintMax": 0.4159963130950928,
-        "waveSpread": 0.8043427661759779
+        "play": 0.9038401455907111,
+        "energy": 0.3764332698513424,
+        "glintMax": 0.41169583797454834,
+        "waveSpread": 0.1468077301979065
       }
     },
     {
@@ -634,25 +634,25 @@
         {
           "energy": 0.25,
           "ys": [
-            0.06482485681772232,
-            0.24639269709587097,
-            0.09962017089128494
+            0.0647464469075203,
+            0.24618977308273315,
+            0.09934720396995544
           ]
         },
         {
           "energy": 0.6,
           "ys": [
-            0.130374938249588,
-            0.5661424398422241,
-            0.21385109424591064
+            0.13018687069416046,
+            0.5656554102897644,
+            0.21319545805454254
           ]
         },
         {
           "energy": 1,
           "ys": [
-            0.20528259873390198,
-            0.9315706491470337,
-            0.34434664249420166
+            0.2049693614244461,
+            0.9307589530944824,
+            0.343252956867218
           ]
         }
       ]
@@ -661,10 +661,10 @@
       "name": "1100px real audio increases motion and local sparkles",
       "data": {
         "sources": 4,
-        "play": 0.906680754687999,
-        "energy": 0.37355121765976085,
-        "glintMax": 0.4065313935279846,
-        "waveSpread": 0.8019364717765711
+        "play": 0.9058195642990052,
+        "energy": 0.3886831910922453,
+        "glintMax": 0.41984689235687256,
+        "waveSpread": 0.1320917010307312
       }
     },
     {
@@ -694,7 +694,7 @@
     {
       "name": "10-second 4-track motion resource regression",
       "data": {
-        "frames": 915,
+        "frames": 805,
         "geometries": 12,
         "textures": 1,
         "sources": 4
@@ -704,18 +704,20 @@
   "errors": [],
   "samples": [
     {
-      "frames": 614,
+      "frames": 586,
       "geometries": 12,
       "textures": 1,
       "sources": 4
     },
     {
-      "frames": 915,
+      "frames": 805,
       "geometries": 12,
       "textures": 1,
       "sources": 4
     }
   ],
   "environment": "Chromium headless SwiftShader; emulated mobile and desktop",
-  "buildSHA256": "489f7d7e4df51862954d394f31d139a0a1da200bd5fe7eacfd6545df8064c65f"
+  "buildSHA256": "239f2004cbac24a5a046d8f46ca82c8ba9e9656d7b2557b221a3897428722f3e",
+  "publishedBuildSHA256": "39f9a0d61f039f8f0653b2a22e2a31a4236d062e5c8639dfe8a4f5304065eafd",
+  "postVerificationChange": "Only appended SiriWave MIT license to HTML third-party notices; runtime unchanged."
 }
