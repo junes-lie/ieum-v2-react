@@ -1,4 +1,5 @@
-const DB_NAME = 'ieum-v2-records'
+import {trackDatabaseName} from './demoSession.js'
+const DB_NAME = trackDatabaseName
 const DB_VERSION = 1
 const STORE = 'tracks'
 
@@ -168,3 +169,4 @@ export async function saveTracks(tracks) {
   }) } finally { db.close() }
   return tracks
 }
+

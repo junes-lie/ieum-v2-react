@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
+import {demoScenario,demoStorageKey,demoProfile} from './demoSession.js'
 import VoicePreferenceChoices, {preferenceValues} from './VoicePreferenceChoices.jsx'
 import Icon from './Icons.jsx'
 import {HomeView,PartModules,MonitoringModule,MyVoiceIcon,SongArtwork,TurntableFrame,recruitmentPreviewLayers} from './IntegratedViews.jsx'
@@ -48,12 +49,12 @@ import { loadAiVoiceFields } from './aiVoiceLayer.js'
 // Navigation hints are optional; a blocked cache must not block the app.
 function readNavigationHint(key, fallback, allowed) {
   try {
-    const value=sessionStorage.getItem(key)
+    const value=sessionStorage.getItem(demoStorageKey(key))
     return value && (!allowed || allowed.includes(value)) ? value : fallback
   } catch { return fallback }
 }
 function writeNavigationHint(key, value) {
-  try { sessionStorage.setItem(key,value) } catch { /* React keeps this session's selection. */ }
+  try { sessionStorage.setItem(demoStorageKey(key),value) } catch { /* React keeps this session's selection. */ }
 }
 
 function resolveVocalProfile(id){
@@ -100,7 +101,7 @@ const SONGS = [
 ]
 const TOTAL_PARTS = PARTS.length
 const INITIAL_DEMO_PARTS = new Set(['soprano','alto'])
-const APP_STATE_KEY = 'ieum-v2:user-state:v7'
+const APP_STATE_KEY = demoStorageKey('ieum-v2:user-state:v7')
 const PROFILE_PROJECT_ID = 'ieum-v2:voice-profile:v7'
 const RANGE_RECORD_ID = `${PROFILE_PROJECT_ID}:range`
 const SAMPLE_RECORD_ID = `${PROFILE_PROJECT_ID}:sample`
@@ -1575,8 +1576,8 @@ function PersonalArea({ openComplete, openMyVoice, back, mainProject = PROJECT, 
 
 export default function App() {
   const persisted = useRef(loadUserState()).current
-  const [screen,setScreen] = useState(()=>publicResultIdFromNavigation(window.history?.state,location.hash)?'complete':window.history?.state?.ieumScreen==='vocal-profile'?'vocal-profile':new URLSearchParams(location.search).get('design')==='figma'?'workspace':'home')
-  const [history,setHistory] = useState([])
+  const [screen,setScreen] = useState(()=>demoScenario?.screen || (publicResultIdFromNavigation(window.history?.state,location.hash)?'complete':window.history?.state?.ieumScreen==='vocal-profile'?'vocal-profile':new URLSearchParams(location.search).get('design')==='figma'?'workspace':'home'))
+  const [history,setHistory] = useState(()=>['workspace','record'].includes(demoScenario?.screen)?['projects']:[])
   const [voiceEditMode,setVoiceEditMode]=useState(null)
   const [voiceReturnScreen,setVoiceReturnScreen]=useState('detail')
   const [profile,setProfile] = useState(null)
@@ -1584,7 +1585,7 @@ export default function App() {
     const url=profile?.sampleUrl
     return () => { if(url)URL.revokeObjectURL(url) }
   },[profile?.sampleUrl])
-  const [joined,setJoined] = useState(Boolean(persisted.joined))
+  const [joined,setJoined] = useState(Boolean(persisted.joined || demoScenario?.joined))
   const [invited,setInvited] = useState(Boolean(persisted.invited))
   const [invitedVocalId,setInvitedVocalId] = useState(persisted.invitedVocalId || 'luna')
   const [candidateAccepted,setCandidateAccepted] = useState(Boolean(persisted.candidateAccepted))
@@ -1622,7 +1623,7 @@ export default function App() {
   const [selectedSongId,setSelectedSongId] = useState(SONG_ID)
   const [selectedProjectId,setSelectedProjectId] = useState(null)
   const [activeCreatedProjectId,setActiveCreatedProjectId] = useState(persisted.activeCreatedProjectId || null)
-  const [publicResultId,setPublicResultId]=useState(()=>publicResultIdFromNavigation(window.history?.state,location.hash))
+  const [publicResultId,setPublicResultId]=useState(()=>demoScenario?.id==='complete'?PUBLIC_COMPLETIONS[0].project.id:publicResultIdFromNavigation(window.history?.state,location.hash))
   const publicResult=PUBLIC_COMPLETIONS.find(entry=>entry.project.id===publicResultId)||null
   const [finderPartId,setFinderPartId] = useState('bass')
   const [finderPreferences,setFinderPreferences] = useState({})
@@ -1995,6 +1996,7 @@ export default function App() {
       const restoredSourceRevision=rangeRecord && sampleRecord ? await voiceSourceRevision(rangeRecord.sourceProvenance,sampleRecord.sourceProvenance) : null
       if(!active)return
       if (rangeRecord && sampleRecord) setProfile({name:'JISUN',voiceSourceRevision:restoredSourceRevision,voiceType:null,range:rangeRecord.range,rangeData:rangeRecord.rangeData,rangeProvenance:rangeRecord.sourceProvenance || null,sampleSong:sampleRecord.songLabel,roles:[],genres:[],taste:[],sampleUrl:restoredUrl(sampleRecord.blob),sampleDuration:sampleRecord.duration,sampleFeatures:sampleRecord.features,sampleProvenance:sampleRecord.sourceProvenance || null,identity:{status:'blocked',reason:'free-local-generative-model-not-connected'},...preferenceRecord?.preferences})
+      if (!(rangeRecord && sampleRecord) && demoScenario?.profile) setProfile(demoProfile())
       if (mixRecord) { setMix({...mixRecord,url:restoredUrl(mixRecord.blob)}); setMixStatus('complete'); setMixProgress(100) }
       const createdTrackEntries = await Promise.all(createdProjects.map(async project=>{
         const records = await loadProjectTracks(project.id)

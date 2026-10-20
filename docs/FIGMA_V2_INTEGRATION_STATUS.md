@@ -1,6 +1,33 @@
 # Figma V2 integration checkpoint · 2026-10-21
 
-## Current result
+## Presentation entrypoints · 2026-10-21
+
+- User asked to inspect implemented Workspace/Recording immediately and requested
+  a presentation menu outside the mobile frame, including profile-present/absent states.
+- Added `?demo=workspace`, `?demo=recording` and seven selectable scenarios:
+  first-visit, profile-ready, participate, workspace, recording, search, complete.
+  Desktop normal-app margin links open the menu; `?scene=<id>` opens only the app.
+- Reuses the same App/Workspace/Recorder, existing transport, recording and graphics.
+  No duplicate app, new product screens, join policy changes or standalone algorithm edits.
+- Demo data uses a separate IndexedDB name and scoped local/session storage keys.
+  Example profile is visibly labelled as a fixture, never saved as measured evidence.
+  Workspace/Recording seed assigned Tenor state; recording entry does not request mic.
+  Per-scene reset deletes only that scene's demo data. Normal data remains untouched.
+- Build and existing 13 Node suites passed. New Chromium QA passed all seven entries,
+  direct participation, actual fake-mic pause/resume/Review/submit, reset from 3 to 2
+  Tracks, Back, normal storage isolation, desktop rendering and 390/430px shell bounds.
+  Inspected actual Home/Workspace/Recording renders. Physical mic/audio quality is unverified.
+- Remote Figma connector successfully returned Workspace source structure; screenshot
+  download still returned HTML. No fresh pixel-fidelity acceptance is claimed. User's
+  Remote-connector authorization applies; Computer Use remains forbidden.
+- Recording's missing real song lyrics/backing remains an existing incomplete asset state.
+  Demo shortcuts address inspection/presentation; product onboarding remains unchanged.
+- Expected build assets: `index-ks1GZzzh.js`, `index-DHOX_ESZ.css`.
+  Git Integration deployment must be verified after main update. A preceding deployment
+  was rate-limited; do not claim these entrypoints are live without checking the served build.
+- This commit releases only `interactive-demo-entrypoints-e6c6de6fbc91`.
+
+## Previous checkpoint result
 
 - User authorized main integration and immediate verified Production deployments.
   This checkpoint adds continuous opaque Record motion to the previously deployed
