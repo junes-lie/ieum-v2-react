@@ -12,6 +12,23 @@
 - No main/Production changes, standalone Resonance merges or algorithm changes.
 - This is a functional integration checkpoint, **not final visual acceptance**.
 
+## Record above deck correction · 2026-10-21
+
+- User corrected the previous hole/underlay model. The fixed turntable is a
+  complete back layer (solid platter + retained hardware art, z=0); the live
+  Record is a separate foreground layer (z=1), below transport controls (z=2).
+- Removed circular overflow clipping from the live Record slot. During selection
+  the Record slides over the deck, not through an aperture; only the carousel
+  viewport clips at the screen edges. Housing remains the same stationary node.
+- Shared Home/Workspace TurntableFrame uses the corrected DOM/stacking order.
+  Existing artwork, graphic algorithm, record differences, button and transport
+  behavior are preserved.
+- Build and scoped Chromium checks passed at 390/430px: record z above deck,
+  opaque platter, visible overflow/no hole clip, stable housing after selection,
+  no page errors or horizontal overflow. Actual stage captures were inspected.
+  This narrow correction did not rerun the full microphone suite; its preceding
+  results remain recorded below. Preview verification follows code save.
+
 ## User carousel / original button correction · 2026-10-21
 
 - Resumed from remote `9d96b79`; acquired lock
@@ -149,7 +166,7 @@ final-Track-triggered Auto Mix. No static waveform substitutes for live input.
 | Home Hero | Supplied 1300×1209 artwork exported to 860×800 WebP; 430×400 full-bleed slot, editable top/bottom fades and copy. |
 | Song covers | Six original 512×512 genre artworks. Four mapped by existing Song IDs in `src/songArtwork.js`; illustrative rather than official release covers. |
 | Sleeves | Reuse mapped Song art in a 54×54 sleeve beside the live 56×56 record, inside 72×72. Both widths verified. |
-| Turntable housing | 900×900 alpha overlay separated with imagegen from the supplied combined artwork. Empty circular opening; existing live Record remains below. Home + Workspace integrated. |
+| Turntable deck | Fixed hardware art + solid platter behind the live foreground Record. No circular hole mask; shared Home/Workspace layer order. |
 | Personal knot images | Blue supplied knot used for decorative My Voice entry only. Other participants still use initials until verified person-owned identity resources are available. Never assign fixed art as a measured personal result. |
 | Complete 3D imagery | Existing completed Projects use the existing dynamic renderer. Independent 3D integration remains separately authorized work; do not add synthetic completions. |
 

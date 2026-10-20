@@ -36,6 +36,10 @@ try{
   await check('home');assert.equal(await page.locator('.v2-song-grid>button').count(),3)
   assert.equal(await page.locator('.v2-song-grid img').count(),3,'All recommended songs have local cover art')
   assert.ok(await page.locator('.v2-turntable-frame canvas').count()>0,'Housing retains the live project renderer')
+  const deckLayers=await page.locator('.v2-recruit-record .v2-turntable-frame').evaluate(n=>({recordZ:Number(getComputedStyle(n.querySelector('.v2-turntable-live-record')).zIndex),deckZ:Number(getComputedStyle(n.querySelector('.v2-turntable-housing')).zIndex),overflow:getComputedStyle(n.querySelector('.v2-turntable-live-record')).overflow,platter:getComputedStyle(n,'::before').backgroundColor}))
+  assert.ok(deckLayers.recordZ>deckLayers.deckZ,'The live Record sits above the turntable')
+  assert.equal(deckLayers.overflow,'visible','The deck never clips the sliding Record into a hole')
+  assert.equal(deckLayers.platter,'rgb(23, 21, 18)','Solid platter remains when the Record moves away')
   const artworkGeometry=await page.locator('.v2-project-thumbnail').evaluateAll(nodes=>nodes.map(node=>{
     const bounds=node.getBoundingClientRect(),record=node.querySelector('.v2-thumbnail-record').getBoundingClientRect(),sleeve=node.querySelector('.v2-thumbnail-sleeve').getBoundingClientRect()
     return {inside:[record,sleeve].every(r=>r.left>=bounds.left&&r.right<=bounds.right&&r.top>=bounds.top&&r.bottom<=bounds.bottom),recordWidth:record.width,sleeveWidth:sleeve.width}
