@@ -14,17 +14,54 @@ try {
  execFileSync('git',['apply',path.join(root,'qa/experiments/repetition-candidate/runtime.patch')],{cwd:tmp});
  await fs.copyFile(path.join(root,'qa/experiments/blue-repetition/referenceContours.js'),path.join(dir,'src/referenceContours.js'));
  await fs.copyFile(path.join(root,'qa/experiments/blue-repetition/ordered-path.js'),path.join(dir,'src/ordered-path.js'));
+ // Composite reuses the unchanged blue pair and each other voice's existing shape.
+ let profiles=await fs.readFile(path.join(dir,'src/profiles.js'),'utf8');
+ profiles=profiles.replace('export const planar=repetitionMode?referenceContour:baselinePlanar;', `
+const compositeMode=typeof location!=='undefined'&&new URLSearchParams(location.search).get('composite')==='1';
+export function planar(p,t,lane,out=[0,0,0]){
+ if(!repetitionMode)return baselinePlanar(p,t,lane,out);
+ if(!compositeMode||p.id==='A')return referenceContour(p,t,lane,out);
+ baselinePlanar(p,t,lane,out);
+ if(p.id==='B'||p.id==='C'){
+  const radius=Math.hypot(out[0],out[2]);
+  // Expand radial coverage about the record, retaining the original angular folds.
+  // Smooth bounds prevent clipping at the label and record edge.
+  const spread=p.id==='B'?1.55:1.65;
+  const raw=1.57+(radius-1.57)*spread;
+  const lower=raw-.72,inner=.72+.5*(lower+Math.sqrt(lower*lower+.001));
+  const upper=2.48-inner,r=2.48-.5*(upper+Math.sqrt(upper*upper+.001));
+  out[0]*=r/radius;out[2]*=r/radius;
+ }
+ return out;
+}`);
+ await fs.writeFile(path.join(dir,'src/profiles.js'),profiles);
  let app=await fs.readFile(path.join(dir,'src/app.js'),'utf8');
  app=app.replace("v.p.id==='B'","v.p.id==='A'").replace('CORAL · 전체 폐곡선 비교 · 가려진 연결은 추정','BLUE · 한 사람의 공통 형태 · 안팎 반복 비교');
  app=app.replace('view.layers.forEach(l=>l.uniforms.uContourView.value=value);','view.layers.forEach(l=>{l.uniforms.uContourView.value=value;l.uniforms.uLineScale.value=value?1.6:1.05;});');
  app=app.replace("[['한 겹',1],['두 겹',2],['여러 겹',0]]","[['바깥 한 경로',1],['바깥·안쪽 두 경로',2],['각 경로의 여러 선',0]]");
+ app += `
+if(new URLSearchParams(location.search).get('composite')==='1'&&view){
+ voices.forEach(v=>v.visible=true);view.selected=null;
+ $('#particles').disabled=false;$('#particles').checked=true;view.particles=true;
+ const bar=$('#repetition-controls');
+ bar.querySelector('[data-contours="0"]').click();
+ bar.querySelectorAll('[data-contours]').forEach(b=>b.hidden=true);
+ for(const [label,id] of [['세 색 합성','all'],['파랑','A'],['빨강 · 코랄','B'],['노랑 · 크림','C']]){
+  const b=document.createElement('button');b.textContent=label;b.dataset.color=id;
+  b.onclick=()=>{voices.forEach(v=>{v.visible=id==='all'||v.p.id===id;v.card.querySelector('.hide').setAttribute('aria-pressed',String(!v.visible));});view.selected=null;bar.querySelectorAll('[data-color]').forEach(x=>{x.classList.toggle('active',x===b);x.setAttribute('aria-pressed',String(x===b));});};bar.append(b);
+ }
+ bar.querySelector('[data-color="all"]').click();
+ $('#view-hint').textContent='파랑 두 경로 유지 · 코랄·크림 범위 확장 합성';
+ document.querySelector('aside').textContent='세 색 합성 · 파랑 두 경로 유지 · 빨강/노랑 범위 확장';
+}
+`;
  app += `\nif(new URLSearchParams(location.search).get('sourceFold')==='1'){document.querySelector('aside')?.insertAdjacentHTML('afterbegin','<strong>기각 비교: 세 묶음의 규칙성이 원본과 다름 · </strong>');}\n`;
  app += `\nif(new URLSearchParams(location.search).get('wideFold')==='1'){document.querySelector('aside')?.insertAdjacentHTML('afterbegin','<strong>기각 후보: 큰 굴곡 약화·작은 고리 발생 · </strong>');}\n`;
  app += `\nif(new URLSearchParams(location.search).get('orderedPath')==='1'){document.querySelector('aside')?.insertAdjacentHTML('afterbegin','<strong>기각: 추정 연결의 윤곽 단순화·선 밀집 · </strong>');}\n`;
  await fs.writeFile(path.join(dir,'src/app.js'),app);
  let visual=await fs.readFile(path.join(dir,'src/visuals.js'),'utf8');
  visual=visual.replace('if(uContourView>.5&&vLane>.001&&(uContourView<1.5||vLane<.999))discard;','if(uContourView>.5&&abs(vLane-6./23.)>.001&&(uContourView<1.5||abs(vLane-18./23.)>.001))discard;');
- visual=visual.replace('const h=xyz[1];planar(v.p,t,traceLane,xyz);xyz[1]=h;', 'record(v.p,t,(l%12)/11,0,0,1,xyz);const h=xyz[1];planar(v.p,t,traceLane,xyz);xyz[1]=h;');
+ visual=visual.replace('const h=xyz[1];planar(v.p,t,traceLane,xyz);xyz[1]=h;', "record(v.p,t,v.p.id==='A'?(l%12)/11:traceLane,0,0,1,xyz);const h=xyz[1];planar(v.p,t,traceLane,xyz);xyz[1]=h;");
  const localStrand='(mod(floor(aLane*23.+.5),12.)/11.)';
  visual=visual.replace('aLane*91.', 'VOICE_LOCAL*91.').replace('aLane*23.', 'VOICE_LOCAL*23.').replace('(aLane-.5)*4.', '(VOICE_LOCAL-.5)*4.').replaceAll('VOICE_LOCAL',localStrand);
  visual=visual.replace('vLane*3.', '(mod(floor(vLane*23.+.5),12.)/11.)*3.').replace('vLane*123.', '(mod(floor(vLane*23.+.5),12.)/11.)*123.');
