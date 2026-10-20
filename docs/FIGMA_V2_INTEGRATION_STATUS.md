@@ -11,7 +11,42 @@
 - No main/Production changes, standalone Resonance merges or algorithm changes.
 - This is a functional integration checkpoint, **not final visual acceptance**.
 
-## Latest verified screen refinement · 2026-10-21
+## User carousel / original button correction · 2026-10-21
+
+- Resumed from remote `9d96b79`; this run owns lock
+  `interactive-carousel-button-e6c6de6fbc91`. Expected-HEAD updates only.
+- Removed selection animation/key from the deck wrapper. The housing stays mounted
+  and stationary. Only the inner Record and neighbour Record layers slide in the
+  selected direction; their Canvas nodes are reused through repeated selection.
+  Reduced-motion preference skips the slide. Horizontal swipe suppresses a second
+  neighbour click and vertical movement does not select a Project.
+- Catalogue Projects without saved Track graphics now receive distinct, deterministic
+  illustrative resonance inputs for recruitment only. The existing renderer is
+  reused with the catalogue Part colors; these graphics do not represent measured
+  singers and never create/change submitted Tracks, Mixes or voice identities.
+  Actual submitted Track graphics/stored Record resources take precedence.
+  Created empty Projects keep their empty graphic.
+- Re-read Figma Project/Secondary/Default `1488:33657` and instance `1488:33867`
+  against the user's attached button reference. Exported its exact text-free surface
+  `1492:33965` through the Plugin API after temporary URL download returned blocked
+  HTML. Original rim/bevel/reflections/grain are preserved in local SVG. Fixed 24px
+  end slices preserve the capsule at 350/382px; label remains editable Pretendard
+  Regular 15/22, #F1E8D8. Button height 48px, radius 24px.
+- Build, all 13 maintained Node suites, and Chromium 390/430px integration passed.
+  Browser assertions verify distinct Record signatures, unchanged submitted count,
+  same housing DOM node/no ancestor transforms or animations during selection,
+  running inner Record slide, original SVG source and button geometry.
+  Existing Search/Back, My Voice, Mix transport and synthetic-mic
+  participation→Review→submit→Auto Mix→Completed all passed without page/console
+  errors or horizontal body overflow.
+- Compared actual button captures at both widths with original Figma and supplied
+  reference; Home side Records visibly carry different colored/shaped flows.
+  The base Resonance shader shape is still the existing renderer, not the separate
+  approved standalone knot algorithm.
+- Renderer blob remains `74d7559e8ca1c6ff2cd1aeb1c73b13fe2211ace6`.
+  No standalone/main/Production changes. Preview verification follows code save.
+
+## Previously verified screen refinement · 2026-10-21
 
 - Resumed from remote `0944b81`; acquired the existing shared lock atomically with
   owner `automation-figma-v2-20261020T195622Z-e6c6de6fbc91` and base SHA recorded.

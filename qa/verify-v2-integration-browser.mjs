@@ -28,6 +28,7 @@ try{
    assert.equal(geometry.body,width);assert.equal(geometry.screen,width)
    await page.locator('.screen').screenshot({path:`${output}/${screen}-${width}.png`})
    results.push({width,screen,geometry})
+   console.log('CHECK',width,screen)
   }
   await page.locator('.v2-recent').scrollIntoViewIfNeeded()
   await page.waitForFunction(()=>[...document.querySelectorAll('.v2-song-artwork img,.v2-hero-artwork,.v2-profile-icon img,.v2-turntable-housing')].every(img=>img.complete&&img.naturalWidth>0))
@@ -43,8 +44,23 @@ try{
   const selectedProject=()=>page.locator('.v2-recruit-record').getAttribute('data-project-id')
   const originalProject=await selectedProject(),originalTrackCount=await page.evaluate(()=>Object.keys(window.__IEUM_V2__.state.projectTracks).length)
   assert.equal(await page.locator('.v2-carousel-neighbor').count(),2)
+  const recordSignatures=await page.locator('.v2-turntable-stage .record').evaluateAll(nodes=>nodes.map(n=>n.dataset.recordSignature))
+  assert.equal(new Set(recordSignatures).size,3,'Previous, selected and next records have distinct project graphics')
+  await page.locator('.v2-project-action').evaluate(n=>n.scrollIntoView({block:'center'}))
+  const actionStyle=await page.locator('.v2-project-action').evaluate(n=>({height:n.offsetHeight,radius:getComputedStyle(n).borderRadius,font:getComputedStyle(n).fontSize,surface:getComputedStyle(n.firstElementChild).borderImageSource}))
+  assert.equal(actionStyle.height,48);assert.equal(actionStyle.radius,'24px');assert.equal(actionStyle.font,'15px')
+  assert.ok(actionStyle.surface.includes('/artwork/figma-project-button.svg'),'Button uses original exported Figma surface')
+  await page.locator('.v2-project-action').screenshot({path:`${output}/project-button-${width}.png`})
+  await page.evaluate(()=>{window.__housingBefore=document.querySelector('.v2-recruit-record .v2-turntable-housing');window.__housingBounds=window.__housingBefore.getBoundingClientRect().toJSON()})
   await page.locator('.v2-carousel-neighbor-next').click({position:{x:22,y:86}})
   assert.notEqual(await selectedProject(),originalProject,'Neighbour record selects a different actual Project')
+  const housing=await page.evaluate(()=>{
+    const img=document.querySelector('.v2-recruit-record .v2-turntable-housing')
+    const ancestors=[img,img.parentElement,img.parentElement.parentElement]
+    return {sameNode:img===window.__housingBefore,stable:img.getBoundingClientRect().x===window.__housingBounds.x,stationary:ancestors.every(n=>getComputedStyle(n).transform==='none'&&n.getAnimations().length===0),sliding:document.querySelector('.v2-recruit-record .v2-record-slide').getAnimations().length>0}
+  })
+  assert.ok(housing.sameNode&&housing.stable&&housing.stationary,'Turntable housing remains mounted and stationary during record selection')
+  assert.ok(housing.sliding,'Only the inner record runs the slide transition')
   await page.locator('.v2-carousel-neighbor-previous').press('Enter')
   assert.equal(await selectedProject(),originalProject,'Keyboard selection returns to the exact Project')
   const stage=await page.locator('.v2-turntable-stage').boundingBox()

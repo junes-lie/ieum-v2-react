@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import VoicePreferenceChoices, {preferenceValues} from './VoicePreferenceChoices.jsx'
 import Icon from './Icons.jsx'
-import {HomeView,PartModules,MonitoringModule,MyVoiceIcon,SongArtwork,TurntableFrame} from './IntegratedViews.jsx'
+import {HomeView,PartModules,MonitoringModule,MyVoiceIcon,SongArtwork,TurntableFrame,recruitmentPreviewLayers} from './IntegratedViews.jsx'
 import {discoveryProjects,matchesGenre} from './discovery.js'
 import { PITCH_ANALYSIS_VERSION } from './pitch.js'
 import { prepareVoiceRangeRecord, prepareVoiceSampleRecord, voiceSourceRevision } from './profileSource.js'
@@ -464,7 +464,7 @@ void main(){
   </figure>
 }
 
-function ResonanceRecord({ active = [true, false, true, false], layers = [], parts = PARTS, tracks, projectId = PROJECT_ID, activePartIndex = 1, state = 'rest', level = 0, seed = PROJECT_SEED, label, compact = false, recordRef, counterRotate = false }) {
+function ResonanceRecord({ active = [true, false, true, false], layers = [], parts = PARTS, tracks, projectId = PROJECT_ID, activePartIndex = 1, state = 'rest', level = 0, seed = PROJECT_SEED, label, compact = false, recordRef, counterRotate = false, cataloguePreview = false }) {
   const materialRef = useRef(null)
   const particleRef = useRef(null)
   const recordTimelineRef = useRef({})
@@ -501,7 +501,7 @@ function ResonanceRecord({ active = [true, false, true, false], layers = [], par
   useEffect(() => { levelRef.current = level }, [level])
 
   const numericSeed = typeof seed === 'number' ? seed : [...String(seed)].reduce((sum,char,index)=>sum+char.charCodeAt(0)*(index+17),0)
-  const partSlots = resolveRecordPartSlots(parts.map(part=>part.id),PARTS.map(part=>part.id))
+  const partSlots = resolveRecordPartSlots(parts.map(part=>cataloguePreview?(PARTS.find(palettePart=>palettePart.color===part.color)?.id||part.id):part.id),PARTS.map(part=>part.id))
   const recordingSlot = partSlots[activePartIndex] ?? partSlots[0]
   const slots = Array(4).fill(null)
   if (layers.length) layers.forEach((layer,index) => {
@@ -683,7 +683,12 @@ function SearchScreen({ openSong, openCreatedProject, openComplete, openMyVoice,
 
 function Home({ mainProject = PROJECT, openSong, openMyVoice, openSearch, layers, projectTracks, profile, mix, openCreateProject, openComplete, createdProjects = [], createdProjectTracks = {}, createdMixes = {}, openCreatedProject, joined = false, joinedPart = USER_PART_ID, candidateAccepted = false }) {
   const entries=discoveryProjects({songs:SONGS,mainProject,mainTracks:projectTracks,mainMix:mix,createdProjects,createdTracks:createdProjectTracks,createdMixes,joined,joinedPart,candidateAccepted})
-  return <HomeView header={<TopBar action={<MyVoiceIcon/>} actionLabel="마이보이스 열기" actionId="open-my-voice" onAction={openMyVoice}/>} entries={entries} songs={SONGS} openSong={openSong} openSearch={openSearch} openCreateProject={openCreateProject} openProject={entry=>entry.isCreated?openCreatedProject(entry.project.id):openComplete()} renderRecord={entry=><ResonanceRecord counterRotate compact recordRef={entry.project.voiceRecordRef} projectId={entry.project.id} parts={entry.project.parts} tracks={entry.tracks} layers={entry.project.parts.map(part=>entry.tracks[part.id]?.layer||null)} seed={entry.project.seed} label={`${entry.song.title}, ${entry.submitted}/${entry.partCount} Track 제출`}/>}/>
+  const renderRecord=(entry,{recruitment=false}={})=>{
+    const preview=recruitment&&!entry.isCreated&&!entry.project.voiceRecordRef&&!entry.submitted
+    const recordLayers=preview?recruitmentPreviewLayers(entry.project):entry.project.parts.map(part=>entry.tracks[part.id]?.layer||null)
+    return <div className="v2-project-record-graphic" data-graphic-source={preview?'catalogue-preview':'project-tracks'}><ResonanceRecord counterRotate compact cataloguePreview={preview} recordRef={entry.project.voiceRecordRef} projectId={entry.project.id} parts={entry.project.parts} tracks={entry.tracks} layers={recordLayers} seed={entry.project.seed} label={preview?`${entry.song.title}, 프로젝트 예시 공명`:`${entry.song.title}, ${entry.submitted}/${entry.partCount} Track 제출`}/></div>
+  }
+  return <HomeView header={<TopBar action={<MyVoiceIcon/>} actionLabel="마이보이스 열기" actionId="open-my-voice" onAction={openMyVoice}/>} entries={entries} songs={SONGS} openSong={openSong} openSearch={openSearch} openCreateProject={openCreateProject} openProject={entry=>entry.isCreated?openCreatedProject(entry.project.id):openComplete()} renderRecord={renderRecord}/>
 }
 
 function Detail({ go, back, song, profile, join, layers, projectTracks, songSaved, toggleSongSave, openVocalProfile, createdProjects, createdProjectTracks = {}, createdMixes = {}, onCreateProject, onOpenCreatedProject, openMainWorkspace, mainMix, mainKeyLocked = false, joined = false, joinedPart = USER_PART_ID, candidateAccepted = false, invitedPerson, initialProjectId, onSelectProject, detailContext }) {

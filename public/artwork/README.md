@@ -5,6 +5,7 @@
 - `cover-{pop,rnb,rock,electronic,folk,jazz}.webp`: original imagegen artwork, six separate genre treatments; existing composition retained and fictional titles removed with imagegen. WebP exports are resized for UI delivery. Not official recording artwork.
 
 - `turntable-housing.webp`: imagegen separated the user-supplied housing into an alpha overlay. Disc/label/knots are removed; the circular opening and exterior are transparent. Home and Workspace render the existing live record underneath.
+- `figma-project-button.svg`: exact SVG export of Figma surface `1492:33965` within Project/Secondary/Default `1488:33657` (382×48). Contains the original rim, bevel, directional reflections and grain, without text. CSS slices preserve the 24px circular ends at 350/382px; the label remains editable React text. Exported through the Figma Plugin API because the temporary asset download returned blocked HTML.
 
 The current catalogue retains its real Song IDs/titles/artists/genres. `src/songArtwork.js` explicitly binds four illustrative covers by Song ID; supplied `song.cover` has priority. Rock/electronic variants are retained for later catalogue artwork selection without inventing songs. Home recommendation, recent sleeve and Search share this mapping.
 
