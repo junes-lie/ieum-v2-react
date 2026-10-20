@@ -1,0 +1,119 @@
+{
+  "checks": [
+    {
+      "width": 1100,
+      "original": [
+        {
+          "id": "A",
+          "xz": "da60e9b5bf743b9dde9d9809ef78a365c2257302c46a235d7c37b3818cb5f70a",
+          "flat": "4372595978dc1d469e9a318ef74e994f0465fe95160af60b5b0cab41e6896801",
+          "minY": 0.0630631372332573,
+          "maxY": 1.182144284248352,
+          "sparkle": 1
+        },
+        {
+          "id": "B",
+          "xz": "4355cdc6e3c44b56816aad9a31a894d49802d7d366f93fcc2f63fb9f32bbe29f",
+          "flat": "20ac93c2b37b934441918a62a98e0eb1ac4283c13064f54afd32cfcd70e004f5",
+          "minY": 0.05119342356920242,
+          "maxY": 1.567520260810852,
+          "sparkle": 1
+        },
+        {
+          "id": "C",
+          "xz": "60a0f1147704aeffa36f8937403b6adeb7e5bceafaee912c3b6e38a965ca250f",
+          "flat": "b910e77717fcd368029f8840c37cf7e860c84b0dfc7730358c64be15c469caaa",
+          "minY": 0.052887916564941406,
+          "maxY": 1.6430217027664185,
+          "sparkle": 1
+        }
+      ],
+      "soft": [
+        {
+          "id": "A",
+          "xz": "da60e9b5bf743b9dde9d9809ef78a365c2257302c46a235d7c37b3818cb5f70a",
+          "flat": "4372595978dc1d469e9a318ef74e994f0465fe95160af60b5b0cab41e6896801",
+          "minY": 0.06330547481775284,
+          "maxY": 1.0495436191558838,
+          "sparkle": 1
+        },
+        {
+          "id": "B",
+          "xz": "4355cdc6e3c44b56816aad9a31a894d49802d7d366f93fcc2f63fb9f32bbe29f",
+          "flat": "20ac93c2b37b934441918a62a98e0eb1ac4283c13064f54afd32cfcd70e004f5",
+          "minY": 0.05119342729449272,
+          "maxY": 1.3222075700759888,
+          "sparkle": 1
+        },
+        {
+          "id": "C",
+          "xz": "60a0f1147704aeffa36f8937403b6adeb7e5bceafaee912c3b6e38a965ca250f",
+          "flat": "b910e77717fcd368029f8840c37cf7e860c84b0dfc7730358c64be15c469caaa",
+          "minY": 0.053335510194301605,
+          "maxY": 1.3613824844360352,
+          "sparkle": 1
+        }
+      ]
+    },
+    {
+      "width": 390,
+      "original": [
+        {
+          "id": "A",
+          "xz": "da60e9b5bf743b9dde9d9809ef78a365c2257302c46a235d7c37b3818cb5f70a",
+          "flat": "4372595978dc1d469e9a318ef74e994f0465fe95160af60b5b0cab41e6896801",
+          "minY": 0.0630631372332573,
+          "maxY": 1.182144284248352,
+          "sparkle": 1
+        },
+        {
+          "id": "B",
+          "xz": "4355cdc6e3c44b56816aad9a31a894d49802d7d366f93fcc2f63fb9f32bbe29f",
+          "flat": "20ac93c2b37b934441918a62a98e0eb1ac4283c13064f54afd32cfcd70e004f5",
+          "minY": 0.05119342356920242,
+          "maxY": 1.567520260810852,
+          "sparkle": 1
+        },
+        {
+          "id": "C",
+          "xz": "60a0f1147704aeffa36f8937403b6adeb7e5bceafaee912c3b6e38a965ca250f",
+          "flat": "b910e77717fcd368029f8840c37cf7e860c84b0dfc7730358c64be15c469caaa",
+          "minY": 0.052887916564941406,
+          "maxY": 1.6430217027664185,
+          "sparkle": 1
+        }
+      ],
+      "soft": [
+        {
+          "id": "A",
+          "xz": "da60e9b5bf743b9dde9d9809ef78a365c2257302c46a235d7c37b3818cb5f70a",
+          "flat": "4372595978dc1d469e9a318ef74e994f0465fe95160af60b5b0cab41e6896801",
+          "minY": 0.06330547481775284,
+          "maxY": 1.0495436191558838,
+          "sparkle": 1
+        },
+        {
+          "id": "B",
+          "xz": "4355cdc6e3c44b56816aad9a31a894d49802d7d366f93fcc2f63fb9f32bbe29f",
+          "flat": "20ac93c2b37b934441918a62a98e0eb1ac4283c13064f54afd32cfcd70e004f5",
+          "minY": 0.05119342729449272,
+          "maxY": 1.3222075700759888,
+          "sparkle": 1
+        },
+        {
+          "id": "C",
+          "xz": "60a0f1147704aeffa36f8937403b6adeb7e5bceafaee912c3b6e38a965ca250f",
+          "flat": "b910e77717fcd368029f8840c37cf7e860c84b0dfc7730358c64be15c469caaa",
+          "minY": 0.053335510194301605,
+          "maxY": 1.3613824844360352,
+          "sparkle": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "buildSHA256": "f91213ef472cda501ab73d481cacc4583532945d01a9635e4eaf4817cb749259",
+  "rollbackTarget": "2c52142 runtime build, with original high height as default",
+  "buildSourceComparison": "Exact match to 2c52142 build-candidate.mjs except default height selector",
+  "scope": "Rollback only; user-specified height-axis distribution from baseline 0 to current height is recorded, not newly implemented"
+}

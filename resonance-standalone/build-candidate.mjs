@@ -15,7 +15,6 @@ try {
  await fs.copyFile(path.join(root,'qa/experiments/blue-repetition/referenceContours.js'),path.join(dir,'src/referenceContours.js'));
  await fs.copyFile(path.join(root,'qa/experiments/blue-repetition/ordered-path.js'),path.join(dir,'src/ordered-path.js'));
  await fs.copyFile(path.join(root,'qa/experiments/music-box/motion.mjs'),path.join(dir,'src/music-box.mjs'));
- await fs.copyFile(path.join(root,'qa/experiments/music-box/spatial.js'),path.join(dir,'src/spatial.js'));
  // Composite uses one parent per voice in both planar and raised modes.
  let profiles=await fs.readFile(path.join(dir,'src/profiles.js'),'utf8');
  profiles=profiles.replace("export {referenceContourCount,referenceThetaStart} from './referenceContours.js';", "export {referenceThetaStart} from './referenceContours.js';export const referenceContourCount=24;");
@@ -33,7 +32,7 @@ export function planar(p,t,lane,out=[0,0,0]){
  return out;
 }`);
  // Optional comparison only: keep each voice's phase and distinct height character.
- profiles=profiles.replace('export function record(p,t,lane,energy=0,time=0,lift=1,out=[0,0,0]){', "const softHeight=typeof location!=='undefined'&&new URLSearchParams(location.search).get('composite')==='1'&&new URLSearchParams(location.search).get('heightStudy')!=='original';\nexport function record(p,t,lane,energy=0,time=0,lift=1,out=[0,0,0]){");
+ profiles=profiles.replace('export function record(p,t,lane,energy=0,time=0,lift=1,out=[0,0,0]){', "const softHeight=typeof location!=='undefined'&&new URLSearchParams(location.search).get('composite')==='1'&&new URLSearchParams(location.search).get('heightStudy')==='soft';\nexport function record(p,t,lane,energy=0,time=0,lift=1,out=[0,0,0]){");
  profiles=profiles.replace('2.5+p.pitch*3.5', '(softHeight?1.9+p.pitch*2.5:2.5+p.pitch*3.5)');
  profiles=profiles.replace('const y=.025+.5*(clearance+Math.sqrt(clearance*clearance+.004));', 'const originalY=.025+.5*(clearance+Math.sqrt(clearance*clearance+.004));const y=softHeight?originalY/(1+.18*Math.max(0,originalY-.45)):originalY;');
  await fs.writeFile(path.join(dir,'src/profiles.js'),profiles);
@@ -92,11 +91,8 @@ if(new URLSearchParams(location.search).get('composite')==='1'&&view){
  $('#stage').before(bar);
 }\n`;
  app += `\nif(new URLSearchParams(location.search).get('compareMotion')==='1'&&view){setMode(1);const bar=document.createElement('nav');bar.setAttribute('aria-label','3D 모션 비교');bar.style.cssText='display:flex;gap:12px;flex-wrap:wrap;margin:12px 0';for(const [label,value] of [['이전 모션','legacy'],['오르골 모션','box']]){const a=document.createElement('a'),url=new URL(location.href);url.searchParams.set('motionStudy',value);url.searchParams.set('heightStudy','soft');a.href=url.href;a.textContent=label;a.style.cssText='padding:10px 14px;border:1px solid #6c655b;border-radius:6px;color:#ece6dc';if((new URLSearchParams(location.search).get('motionStudy')||'box')===value){a.style.background='#ece6dc';a.style.color='#15110e';a.setAttribute('aria-current','page');}bar.append(a);}$('#stage').before(bar);}\n`;
- app += `\nif(new URLSearchParams(location.search).get('compareSpatial')==='1'&&view){setMode(1);const bar=document.createElement('nav');bar.setAttribute('aria-label','3D 구조 비교');bar.style.cssText='display:flex;gap:12px;flex-wrap:wrap;margin:12px 0';for(const [label,value] of [['이전 B 구조','previous'],['3D 기준 반영','reference']]){const a=document.createElement('a'),url=new URL(location.href);url.searchParams.set('spatialStudy',value);url.searchParams.set('heightStudy','soft');a.href=url.href;a.textContent=label;a.style.cssText='padding:10px 14px;border:1px solid #6c655b;border-radius:6px;color:#ece6dc';if((new URLSearchParams(location.search).get('spatialStudy')||'reference')===value){a.style.background='#ece6dc';a.style.color='#15110e';a.setAttribute('aria-current','page');}bar.append(a);}$('#stage').before(bar);}\n`;
  await fs.writeFile(path.join(dir,'src/app.js'),app);
  let visual=await fs.readFile(path.join(dir,'src/visuals.js'),'utf8');
- visual="import {spatialPose} from './spatial.js';\nconst spatialQuery=new URLSearchParams(location.search);const spatialEnabled=spatialQuery.get('composite')==='1'&&spatialQuery.get('spatialStudy')!=='previous'&&(spatialQuery.get('compare3d')!=='1'||spatialQuery.get('spatialStudy')==='reference');\n"+visual;
- visual=visual.replace('if(repetitionMode){const h=xyz[1];planar(v.p,planarParticleT(v.p,t),rand(i+239),flat);xyz[0]=flat[0];xyz[2]=flat[2];xyz[1]=h;}', 'if(repetitionMode){if(spatialEnabled){const pt=planarParticleT(v.p,t),pl=rand(i+239);planar(v.p,pt,pl,flat);spatialPose(v.p,pt,pl,xyz);xyz[0]=flat[0]+(xyz[0]-flat[0])*this.morph;xyz[2]=flat[2]+(xyz[2]-flat[2])*this.morph;xyz[1]=.018+(xyz[1]-.018)*this.morph*this.height+(1-this.morph)*(flat[1]+.016);}else{const h=xyz[1];planar(v.p,planarParticleT(v.p,t),rand(i+239),flat);xyz[0]=flat[0];xyz[2]=flat[2];xyz[1]=h;}}');
  visual="import {motionParams,motionPulse,motionLift,motionGLSL} from './music-box.mjs';\nconst danceEnabled=new URLSearchParams(location.search).get('composite')==='1'&&new URLSearchParams(location.search).get('motionStudy')!=='legacy';\n"+visual;
  visual=visual.replace('vec3 deform(vec3 p,vec3 planarPoint){', '${motionGLSL}\nvec3 deform(vec3 p,vec3 planarPoint,float motionT){');
  visual=visual.replace('deform(aStart,aFlatStart)', 'deform(aStart,aFlatStart,aT)').replace('deform(aEnd,aFlatEnd)', 'deform(aEnd,aFlatEnd,aT+6.28318530718/360.)');
@@ -131,7 +127,7 @@ if(new URLSearchParams(location.search).get('composite')==='1'&&view){
  visual=visual.replace('if(uContourView>.5&&vLane>.001&&(uContourView<1.5||vLane<.999))discard;', "if(uContourView>.5){if(uSingleLayer>.5){if(abs(vLane-12./23.)>.001)discard;}else if(abs(vLane-6./23.)>.001&&(uContourView<1.5||abs(vLane-18./23.)>.001))discard;}");
  visual=visual.replace('uMorph,uContourView;', 'uMorph,uContourView,uSingleLayer;');
  visual=visual.replace('const uniforms={', "const uniforms={uSingleLayer:{value:new URLSearchParams(location.search).get('composite')==='1'?1:0},");
- visual=visual.replace('const h=xyz[1];planar(v.p,t,traceLane,xyz);xyz[1]=h;', "const localLane=new URLSearchParams(location.search).get('composite')==='1'?traceLane:(l%12)/11;if(spatialEnabled){spatialPose(v.p,t,localLane,xyz);}else{record(v.p,t,localLane,0,0,1,xyz);const h=xyz[1];planar(v.p,t,traceLane,xyz);xyz[1]=h;}");
+ visual=visual.replace('const h=xyz[1];planar(v.p,t,traceLane,xyz);xyz[1]=h;', "const localLane=new URLSearchParams(location.search).get('composite')==='1'?traceLane:(l%12)/11;record(v.p,t,localLane,0,0,1,xyz);const h=xyz[1];planar(v.p,t,traceLane,xyz);xyz[1]=h;");
  visual=visual.replace('uDpr,uLineScale;', 'uDpr,uLineScale,uSingleLayer;');
  const localStrand='(uSingleLayer>.5?aLane:(mod(floor(aLane*23.+.5),12.)/11.))';
  visual=visual.replace('aLane*91.', 'VOICE_LOCAL*91.').replace('aLane*23.', 'VOICE_LOCAL*23.').replace('(aLane-.5)*4.', '(VOICE_LOCAL-.5)*4.').replaceAll('VOICE_LOCAL',localStrand);
