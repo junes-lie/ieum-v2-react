@@ -30,6 +30,10 @@ export function planar(p,t,lane,out=[0,0,0]){
  out[0]*=r/radius;out[2]*=r/radius;
  return out;
 }`);
+ // Optional comparison only: keep each voice's phase and distinct height character.
+ profiles=profiles.replace('export function record(p,t,lane,energy=0,time=0,lift=1,out=[0,0,0]){', "const softHeight=typeof location!=='undefined'&&new URLSearchParams(location.search).get('heightStudy')==='soft';\nexport function record(p,t,lane,energy=0,time=0,lift=1,out=[0,0,0]){");
+ profiles=profiles.replace('2.5+p.pitch*3.5', '(softHeight?1.9+p.pitch*2.5:2.5+p.pitch*3.5)');
+ profiles=profiles.replace('const y=.025+.5*(clearance+Math.sqrt(clearance*clearance+.004));', 'const originalY=.025+.5*(clearance+Math.sqrt(clearance*clearance+.004));const y=softHeight?originalY/(1+.18*Math.max(0,originalY-.45)):originalY;');
  await fs.writeFile(path.join(dir,'src/profiles.js'),profiles);
  if(process.env.IEUM_VALIDATE_GEOMETRY==='1'){
   const bundled=await build({entryPoints:[path.join(dir,'src/profiles.js')],bundle:true,format:'esm',platform:'node',write:false});
@@ -79,6 +83,12 @@ if(new URLSearchParams(location.search).get('composite')==='1'&&view){
  app += `\nif(new URLSearchParams(location.search).get('sourceFold')==='1'){document.querySelector('aside')?.insertAdjacentHTML('afterbegin','<strong>기각 비교: 세 묶음의 규칙성이 원본과 다름 · </strong>');}\n`;
  app += `\nif(new URLSearchParams(location.search).get('wideFold')==='1'){document.querySelector('aside')?.insertAdjacentHTML('afterbegin','<strong>기각 후보: 큰 굴곡 약화·작은 고리 발생 · </strong>');}\n`;
  app += `\nif(new URLSearchParams(location.search).get('orderedPath')==='1'){document.querySelector('aside')?.insertAdjacentHTML('afterbegin','<strong>기각: 추정 연결의 윤곽 단순화·선 밀집 · </strong>');}\n`;
+ app += `\nif(new URLSearchParams(location.search).get('compare3d')==='1'&&view){
+ setMode(1);
+ const bar=document.createElement('nav');bar.setAttribute('aria-label','3D 높이 비교');bar.style.cssText='display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:12px 0;color:#ece6dc';
+ for(const [label,value] of [['A · 기존 3D','original'],['B · 최고점·능선 조정','soft']]){const a=document.createElement('a'),url=new URL(location.href);url.searchParams.set('heightStudy',value);a.href=url.href;a.textContent=label;a.style.cssText='color:inherit;padding:10px 14px;border:1px solid #6c655b;border-radius:6px;text-decoration:none';if((new URLSearchParams(location.search).get('heightStudy')||'original')===value){a.style.background='#ece6dc';a.style.color='#15110e';a.setAttribute('aria-current','page');}bar.append(a);}
+ $('#stage').before(bar);
+}\n`;
  await fs.writeFile(path.join(dir,'src/app.js'),app);
  let visual=await fs.readFile(path.join(dir,'src/visuals.js'),'utf8');
  // Composite grains must remain discrete at mobile DPR, without the old 2D light boost.
