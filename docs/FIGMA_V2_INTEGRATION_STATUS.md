@@ -21,9 +21,16 @@
 - Existing Resonance renderer blob remains `74d7559e8ca1c6ff2cd1aeb1c73b13fe2211ace6`.
   No standalone branch, voice identities, lyrics/audio sources or product policy edits.
 - Expected runtime assets: `index-V2qVcNXp.js`, `index-D2p9E-Gp.css`.
-- Original URL: https://ieum-v2-react.vercel.app. Git Integration rate limit remains
-  recorded on main `f8a92df`; no new Production deployment exists as of this check.
-  Source changes must not be described as live until exact commit/served assets match.
+- Code commit: `caa0f30deadf30c66f516576fca0e14615e67427`, saved to integration and main
+  by expected-HEAD fast-forward. Own lock was released in that commit.
+- Original URL: https://ieum-v2-react.vercel.app returned HTTP 200 but still serves
+  `index-BmmlD67C.js` / `index-BqlZo9hY.css`, READY deployment
+  `dpl_5YYHsXvR2f2SNj2C5k83z2iLC4Ge` at `b57c1d4`.
+- Git Integration rejected `caa0f30` for original Production at 2026-10-20T22:07:09Z
+  with `Deployment rate limited — retry in 24 hours.` No new deployment was created.
+  The second connected project also failed at 22:07:13Z. Do not retrigger builds
+  with empty commits or present the Guide/continuous slide/demo menu as live.
+  Retry current verified main through Git Integration after the transient limit clears.
 - Remaining: verified per-person artwork, source lyrics/backing, independent 3D work,
   final visual review and physical microphone/earphone verification. Existing missing-source
   notices stay. Next resume: check current Production status, then unresolved source assets.
