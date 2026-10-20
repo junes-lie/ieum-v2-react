@@ -9,3 +9,21 @@ fetch('visible-blue-traces.json').then(r=>{if(!r.ok)throw Error('HTTP '+r.status
  select.value='10';select.onchange=draw;draw();
  button.onclick=()=>{const show=group.style.display==='none';group.style.display=show?'':'none';button.setAttribute('aria-pressed',String(show));button.textContent=show?'추적선 숨기기':'추적선 보기'};
 }).catch(e=>{info.textContent='추적 자료를 불러오지 못했습니다: '+e.message;button.disabled=true});
+
+// Show all immediate alternatives, including short edges omitted by the long-chain view.
+const junctionBox=document.createElement('section');
+junctionBox.innerHTML=`<h2>양끝의 짧은 갈림길</h2><p>세 임계값에서 같은 갈림길이 나오지만, 어느 가지도 8px 방향 측정 길이에 도달하지 못합니다. 아래쪽 두 가지는 약 1.5° 차이로 방향만으로 선택할 수 없습니다. 연결은 채택하지 않았습니다.</p><button id="junction-toggle" aria-pressed="true">갈림길 표시 숨기기</button><div id="junction-views"></div><p><a href="blue-junction-audit.json">모든 가지 좌표·임계값별 검사</a></p>`;
+document.querySelector('main').append(junctionBox);
+fetch('blue-junction-audit.json').then(r=>{if(!r.ok)throw Error('HTTP '+r.status);return r.json()}).then(data=>{
+ const result=data.results.find(r=>r.threshold===30);
+ result.endpoints.forEach(endpoint=>{
+  const [x,y]=endpoint.point, section=document.createElement('div');
+  const summary=endpoint.alternatives.map(a=>`${a.lengthPx}px / ${a.turnDegrees}° / 측정 길이 부족`).join(' · ');
+  section.innerHTML=`<h3>(${x}, ${y}) — 연결 미확정</h3><p>${summary}</p><svg viewBox="${x-15} ${y-15} 30 30" role="img" aria-label="갈림길 ${x}, ${y} 원본 확대"><image href="repetition-reference.png" width="1254" height="1254"/><g class="junction-overlay"></g></svg>`;
+  const overlay=section.querySelector('g');
+  endpoint.alternatives.forEach((branch,i)=>{const path=document.createElementNS('http://www.w3.org/2000/svg','path');path.setAttribute('d','M'+branch.points.map(p=>p.join(',')).join(' L'));path.style.cssText=`stroke:${i?'#ff9797':'#fff49a'};stroke-width:.18;stroke-dasharray:none`;overlay.append(path)});
+  junctionBox.querySelector('#junction-views').append(section);
+ });
+ const button=junctionBox.querySelector('button');
+ button.onclick=()=>{const show=button.getAttribute('aria-pressed')!=='true';junctionBox.querySelectorAll('.junction-overlay').forEach(g=>g.style.display=show?'':'none');button.setAttribute('aria-pressed',String(show));button.textContent=show?'갈림길 표시 숨기기':'갈림길 표시 보기'};
+}).catch(e=>{junctionBox.querySelector('#junction-views').textContent='검사 자료 읽기 실패: '+e.message});

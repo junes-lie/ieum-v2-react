@@ -35,7 +35,7 @@ def thin(mask):
             return a[1:-1,1:-1].astype(bool)
 
 
-def extract(rgb, threshold):
+def extract(rgb, threshold, min_points=25):
     r, g, b = rgb.astype(float).transpose(2,0,1)
     mask = (b-r > threshold) & (g-r > 20) & (b > 90)
     skeleton = thin(mask)
@@ -72,7 +72,7 @@ def extract(rgb, threshold):
                 visited.add(edge)
                 chain.append(follow)
                 previous,current = current,follow
-            if len(chain) >= 25 and all(2 < y < rgb.shape[0]-3 and 2 < x < rgb.shape[1]-3 for y,x in chain):
+            if len(chain) >= min_points and all(2 < y < rgb.shape[0]-3 and 2 < x < rgb.shape[1]-3 for y,x in chain):
                 chains.append({'points': [[int(x)+450,int(y)+65] for y,x in chain],
                                'endpointDegrees': [len(graph[start]),len(graph[current])],
                                'lengthPx': round(sum(np.hypot(b[0]-a[0],b[1]-a[1]) for a,b in zip(chain,chain[1:])),2)})
