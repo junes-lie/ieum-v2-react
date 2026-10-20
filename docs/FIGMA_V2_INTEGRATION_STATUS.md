@@ -12,6 +12,31 @@
 - No main/Production changes, standalone Resonance merges or algorithm changes.
 - This is a functional integration checkpoint, **not final visual acceptance**.
 
+## Independent completed-song catalogue · 2026-10-21
+
+- Corrected Home/Search completed discovery to accept an independent listening
+  catalogue instead of requiring this browser to finish a Project first.
+- Added three labelled IEUM Originals showcase entries using the existing,
+  hash-verified original audio excerpts already in Git/Production: 서로의 빛,
+  천천히 함께, 비가 그친 뒤 (16/19/18 seconds). These are explicitly examples,
+  not fabricated community members, submitted Tracks or completed user Mixes.
+- Home cards and Search open the exact existing 07 Complete view with native
+  audio playback. Save/reopen through Collection, Back context, reload and direct
+  share links retain the selected public result. These entries never join a
+  Project or change the current user's Tracks/Mix/My Projects.
+- Public examples have illustrative renderer input, and source/credits disclose
+  that they are presentation audio rather than actual user collaboration.
+  Real community result ingestion/backend remains outside this available dataset.
+- Build and all 13 maintained Node suites passed. Chromium 390/430px passed
+  public card→detail→audio currentTime advance→pause→save→Collection→reopen→reload,
+  Search 3 public results and 4 after the user's own Mix, and the full existing
+  synthetic-mic participation→Review→submit→Auto Mix→Completed path.
+  No page/console errors or horizontal body overflow.
+- The out-of-range participation correction was separately deployed to original
+  Production as `03018cd` before completing this catalogue work.
+- Updated the existing hourly integration automation's deployment destination and
+  direct-participation instructions; cadence/expiry and standalone protection stay.
+
 ## Direct participation and deployment decision · 2026-10-21
 
 - User explicitly authorized integrating the verified design into main and serving

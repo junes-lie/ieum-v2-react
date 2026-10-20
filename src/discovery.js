@@ -1,8 +1,8 @@
 import { submittedProjectTracks } from './projectModel.js'
 
 // Discovery reflects committed tracks and seats; inviting or saving is not submission.
-export function discoveryProjects({songs,mainProject,mainTracks={},mainMix,createdProjects=[],createdTracks={},createdMixes={},joined=false,joinedPart,candidateAccepted=false}) {
-  return [...songs.flatMap(song=>song.projects.map(project=>({song,project,isCreated:false}))),
+export function discoveryProjects({songs,mainProject,mainTracks={},mainMix,createdProjects=[],createdTracks={},createdMixes={},joined=false,joinedPart,candidateAccepted=false,publicResults=[]}) {
+  const entries=[...songs.flatMap(song=>song.projects.map(project=>({song,project,isCreated:false}))),
     ...createdProjects.map(project=>({song:songs.find(song=>song.id===project.songId)||{id:project.songId,title:project.songTitle||project.name,artist:'IEUM',genre:project.genre||''},project,isCreated:true}))]
     .map(entry=>{
       const isMain=entry.project.id===mainProject.id
@@ -22,6 +22,7 @@ export function discoveryProjects({songs,mainProject,mainTracks={},mainMix,creat
       const complete=partCount>0&&submitted.length===partCount&&Boolean(mix)
       return {...entry,project:{...project,parts},tracks,submitted:submitted.length,partCount,openParts,mix:complete?mix:null,complete}
     })
+  return [...publicResults,...entries]
 }
 
 export function matchesGenre(song,genre) {
