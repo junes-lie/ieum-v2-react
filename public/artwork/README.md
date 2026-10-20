@@ -1,5 +1,8 @@
 # Integration artwork
 
+- `guide-keyboard.svg`: exact 46×32 export of Figma `1448:32057` in Recording Monitoring / Guide `1466:32188`. Decorative keyboard for the real backing toggle; no audio or profile data is substituted.
+- `figma-toggle-{on,off}.svg`: exact 46×26 exports of IEUM/Current/Toggle variants `1238:2667` / `1238:2668`. Recording monitoring displays them at the original instance scale (33.12×18.72); native controlled checkboxes and full-card click targets remain functional. Plugin API exports were used because the temporary asset URL returned HTML.
+
 - `home-hero.webp`: user-supplied text-free line/particle illustration (`세 빛깔 실매듭의 비닐 궤적(2).png`). Promotional Home art only; never replaces live project/recording visuals.
 - `profile-knot.webp`: user-supplied blue knot (`청록빛 유동 매듭 추출본-2(1).png`), used as the approved decorative My Voice entry icon. It does not claim to be the current user’s measured/generated identity.
 - `cover-{pop,rnb,rock,electronic,folk,jazz}.webp`: original imagegen artwork, six separate genre treatments; existing composition retained and fictional titles removed with imagegen. WebP exports are resized for UI delivery. Not official recording artwork.

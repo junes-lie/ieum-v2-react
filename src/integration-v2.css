@@ -46,11 +46,14 @@
 .recording-v2-screen .recording-heading{border:0;width:100%;max-width:none;min-height:54px;margin:0 0 24px;padding:0 40px}
 .recording-v2-screen .recording-heading h1{font:500 18px/24px var(--font-interface);max-width:none}
 .recording-v2-screen .v2-monitoring{margin:0!important;padding:0!important;border:0;min-width:0}
-.recording-v2-screen .v2-monitoring label{justify-content:initial;border:1px solid #34302c;font-size:13px}
-.recording-v2-screen .v2-monitoring .v2-toggle{min-height:44px;height:44px;border:0;width:44px}
-.recording-v2-screen .v2-monitoring .v2-toggle i{width:32px;height:19px}
-.recording-v2-screen .v2-monitoring .v2-toggle i:after{margin:1px;width:15px;height:15px;left:auto;top:auto;position:static}
-.recording-v2-screen .v2-monitoring .v2-toggle input:checked+i:after{transform:translateX(12px)}
+.recording-v2-screen .v2-monitoring label{justify-content:initial;border:.6px solid #34302c;font-size:13px;width:85.2px;min-width:85.2px;padding:8px 0}
+.recording-v2-screen .v2-monitor-symbol{width:72px;flex-shrink:0}
+.recording-v2-screen .v2-monitor-symbol img{display:block;max-width:none}
+/* The entire 85×136 label toggles the native checkbox, including its keyboard artwork. */
+.recording-v2-screen .v2-monitoring .v2-toggle{min-height:32px;height:32px;border:0;width:84px;flex-shrink:0}
+.recording-v2-screen .v2-monitoring .v2-toggle i{width:33.12px;height:18.72px;border:0;border-radius:0;background:transparent url('/artwork/figma-toggle-off.svg') center/contain no-repeat}
+.recording-v2-screen .v2-monitoring .v2-toggle i:after{content:none}
+.recording-v2-screen .v2-monitoring .v2-toggle input:checked+i{background:transparent url('/artwork/figma-toggle-on.svg') center/contain no-repeat}
 .recording-v2-screen .recording-visual{width:calc(100% + 48px)!important;height:480px!important;margin:30px -24px 0!important;right:auto;top:auto;overflow:hidden;z-index:0}
 .recording-v2-screen .recording-visual .record{width:390px!important;height:390px!important;max-width:100%;transform:translateX(-50%)}
 .recording-v2-screen .recording-visual .record-inflow{width:100%!important;left:0;top:0;bottom:auto;height:220px;max-width:100%}

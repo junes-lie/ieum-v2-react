@@ -1,5 +1,33 @@
 # Figma V2 integration checkpoint · 2026-10-21
 
+## Recording Guide refinement · 2026-10-21
+
+- Resumed from integration `4c87db5`, main `f8a92df`; acquired shared lock
+  `automation-figma-integration-20261020T2157Z-e6c6de6fbc91` by expected-HEAD update.
+- Re-read current Notion Recording specification and Remote Figma Recording source,
+  full screenshot and Guide module. Temporary asset URL returned HTML; exact keyboard
+  and both original Toggle surfaces were exported through the Figma Plugin API.
+- Replaced the Guide headphones with the original 46×32 keyboard. Monitoring uses
+  original On/Off artwork at 33.12×18.72 and original card spacing/border. Native
+  controlled checkboxes, full-card pointer activation and keyboard operation remain.
+- Build and all 13 maintained Node suites passed. Chromium 390/430px verified
+  artwork decoding/geometry, both toggle states, artwork click, Space and no automatic
+  microphone activation. Inspected both actual renders against the original module.
+- Full maintained Chromium integration passed at 390/430px: opaque carousel/Canvas
+  continuity and fixed deck; public playback/save/reload; Search/Back; participation
+  → Workspace → synthetic-mic pause/resume → Review → submit → Auto Mix → Completed.
+  No page/console errors or body overflow. Physical mic/audio quality remains unverified.
+- This checkpoint releases only its recorded Guide-refinement lock.
+- Existing Resonance renderer blob remains `74d7559e8ca1c6ff2cd1aeb1c73b13fe2211ace6`.
+  No standalone branch, voice identities, lyrics/audio sources or product policy edits.
+- Expected runtime assets: `index-V2qVcNXp.js`, `index-D2p9E-Gp.css`.
+- Original URL: https://ieum-v2-react.vercel.app. Git Integration rate limit remains
+  recorded on main `f8a92df`; no new Production deployment exists as of this check.
+  Source changes must not be described as live until exact commit/served assets match.
+- Remaining: verified per-person artwork, source lyrics/backing, independent 3D work,
+  final visual review and physical microphone/earphone verification. Existing missing-source
+  notices stay. Next resume: check current Production status, then unresolved source assets.
+
 ## Presentation entrypoints · 2026-10-21
 
 - User asked to inspect implemented Workspace/Recording immediately and requested
