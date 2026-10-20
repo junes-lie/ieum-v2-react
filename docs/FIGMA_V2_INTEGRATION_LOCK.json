@@ -1,0 +1,8 @@
+{
+  "owner": "interactive-record-over-deck-e6c6de6fbc91",
+  "startedAt": "2026-10-20T20:38:32.613Z",
+  "baseSha": "673a27d3390749f635fe7353caf39f916676c08f",
+  "state": "working",
+  "scope": "Correct record-above-deck layering and remove circular hole clipping",
+  "release": "Only owner releases; other executions skip"
+}
