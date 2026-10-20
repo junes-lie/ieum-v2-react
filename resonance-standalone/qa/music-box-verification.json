@@ -24,7 +24,7 @@
       ]
     },
     {
-      "name": "full-play gain spans baseline zero to original ceiling without overshoot"
+      "name": "height equals audio energy; silence zero; no traveling wave"
     },
     {
       "name": "390px actual GPU motion and sparkle attributes",
@@ -71,22 +71,39 @@
       ]
     },
     {
-      "name": "390px actual particle positions traverse record surface to their ceiling",
+      "name": "390px actual particles rise proportionally from silence baseline",
       "data": [
         {
-          "id": "A",
-          "min": 0.018665481358766556,
-          "max": 0.27840590476989746
+          "energy": 0,
+          "ys": [
+            0.017999999225139618,
+            0.017999999225139618,
+            0.017999999225139618
+          ]
         },
         {
-          "id": "B",
-          "min": 0.02070612832903862,
-          "max": 0.8675142526626587
+          "energy": 0.25,
+          "ys": [
+            0.08310990035533905,
+            0.23065492510795593,
+            0.10112421214580536
+          ]
         },
         {
-          "id": "C",
-          "min": 0.018033338710665703,
-          "max": 0.3504256308078766
+          "energy": 0.6,
+          "ys": [
+            0.17425984144210815,
+            0.5283717513084412,
+            0.2174607813358307
+          ]
+        },
+        {
+          "energy": 1,
+          "ys": [
+            0.2784256339073181,
+            0.868619441986084,
+            0.3503628671169281
+          ]
         }
       ]
     },
@@ -94,9 +111,9 @@
       "name": "390px real audio increases motion and local sparkles",
       "data": {
         "sources": 4,
-        "play": 0.9030441927834808,
-        "energy": 0.3867841356954931,
-        "glintMax": 0.9069357514381409
+        "play": 0.9030441927834807,
+        "energy": 0.3796197503421702,
+        "glintMax": 0.4193895757198334
       }
     },
     {
@@ -168,22 +185,39 @@
       ]
     },
     {
-      "name": "1100px actual particle positions traverse record surface to their ceiling",
+      "name": "1100px actual particles rise proportionally from silence baseline",
       "data": [
         {
-          "id": "A",
-          "min": 0.018783656880259514,
-          "max": 0.28166359663009644
+          "energy": 0,
+          "ys": [
+            0.017999999225139618,
+            0.017999999225139618,
+            0.017999999225139618
+          ]
         },
         {
-          "id": "B",
-          "min": 0.021116331219673157,
-          "max": 0.8713005781173706
+          "energy": 0.25,
+          "ys": [
+            0.08383461833000183,
+            0.23154793679714203,
+            0.10342991352081299
+          ]
         },
         {
-          "id": "C",
-          "min": 0.01800752431154251,
-          "max": 0.36073222756385803
+          "energy": 0.6,
+          "ys": [
+            0.17599838972091675,
+            0.5305149555206299,
+            0.22300028800964355
+          ]
+        },
+        {
+          "energy": 1,
+          "ys": [
+            0.2813217341899872,
+            0.8721914291381836,
+            0.3596065044403076
+          ]
         }
       ]
     },
@@ -192,8 +226,8 @@
       "data": {
         "sources": 4,
         "play": 0.9030441927834808,
-        "energy": 0.37993588576938747,
-        "glintMax": 0.9069257378578186
+        "energy": 0.3813302004982602,
+        "glintMax": 0.41323697566986084
       }
     },
     {
@@ -223,7 +257,7 @@
     {
       "name": "45-second 4-track motion resource regression",
       "data": {
-        "frames": 1548,
+        "frames": 1331,
         "geometries": 12,
         "textures": 1,
         "sources": 4
@@ -233,62 +267,60 @@
   "errors": [],
   "samples": [
     {
-      "frames": 504,
+      "frames": 398,
       "geometries": 12,
       "textures": 1,
       "sources": 4
     },
     {
-      "frames": 644,
+      "frames": 559,
       "geometries": 12,
       "textures": 1,
       "sources": 4
     },
     {
-      "frames": 940,
+      "frames": 803,
       "geometries": 12,
       "textures": 1,
       "sources": 4
     },
     {
-      "frames": 1028,
+      "frames": 885,
       "geometries": 12,
       "textures": 1,
       "sources": 4
     },
     {
-      "frames": 1033,
+      "frames": 1150,
       "geometries": 12,
       "textures": 1,
       "sources": 4
     },
     {
-      "frames": 1296,
+      "frames": 1246,
       "geometries": 12,
       "textures": 1,
       "sources": 4
     },
     {
-      "frames": 1472,
+      "frames": 1331,
       "geometries": 12,
       "textures": 1,
       "sources": 4
     },
     {
-      "frames": 1510,
+      "frames": 1331,
       "geometries": 12,
       "textures": 1,
       "sources": 4
     },
     {
-      "frames": 1548,
+      "frames": 1331,
       "geometries": 12,
       "textures": 1,
       "sources": 4
     }
   ],
   "environment": "Chromium headless SwiftShader; emulated mobile and desktop",
-  "buildSHA256": "83f81489112d5334223d3250f60199311b0af91c6a7392e55d387d37e9ce2c65",
-  "publishedBuildSHA256": "e3d9a7a71e0cf50a48e45cc805a73b90c4635b899d6f67d08659573d10b30a11",
-  "postVerificationUIChange": "Comparison link labels changed to existing wave / record to current height, preserving selected heightStudy. Motion code unchanged from tested bundle."
+  "buildSHA256": "48556c24f4f8721959134321804956f782d282f3879fa7a2edeabfb2d5fc3f31"
 }
