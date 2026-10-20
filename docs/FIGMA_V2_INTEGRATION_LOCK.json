@@ -1,0 +1,8 @@
+{
+  "owner": "continuous-record-slide-e6c6de6fbc91",
+  "startedAt": "2026-10-20T21:03:34.922Z",
+  "baseSha": "b57c1d47a57433d3e031625b3494255b82ce5ab0",
+  "state": "working",
+  "scope": "Remove record fade and implement continuous carousel; verify Workspace/Recording navigation and deploy original Production",
+  "release": "Only owner releases; other runs skip"
+}
