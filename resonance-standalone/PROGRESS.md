@@ -50,6 +50,15 @@
 - 재사용 QA: `qa/composite.cjs`. Chromium 1100px/390px에서 합성·단색 선택, 2D/중간/3D 캡처와 콘솔 확인. 파랑 평면 기하가 단독 모드와 합성 모드에서 완전히 동일한지 검사한다.
 - 실제 캡처에서 세 색 겹침과 범위 확대를 확인했다. 기준 이미지 완전 일치·최종 시각 승인은 주장하지 않는다. 실제 음성 파일/장시간 안정성은 이번 변경의 검증 범위가 아니다.
 
+## 실행 환경 차단 — 2026-10-20 15:07 KST
+
+- 원격 HEAD `f86393c7405e1244d1e5461df94162c2a9bb02cd` 및 이 문서 전체 확인. 종료 직전에도 HEAD 동일. 기존 세 색 합성본과 파랑 두 경로를 보존했으며 runtime 수정·복구·시각 개선 없음.
+- 새 실행 환경에 저장소 checkout이 없고 Git clone은 인증 정보 부재(`could not read Username`)로 실패. GitHub 커넥터로 소스와 현재 합성 HTML blob을 읽는 것은 가능했다.
+- 실제 브라우저 QA 차단: Playwright는 있으나 Chromium 실행 파일 없음. 공식 `playwright install chromium`도 반복 다운로드 후 ZIP 오류(`End of central directory record signature not found`)로 최종 실패. 따라서 렌더 비교·회귀·오디오·장시간 검증을 수행했다고 주장하지 않는다.
+- 기존 Preview `https://ieum-resonance-preview-3mpd81jmb-junes-lie.vercel.app/repetition-candidate.html?repetition=1&composite=1`에 HTTP 요청 시 Vercel SSO로 302 응답. 인증된 실행 페이지 확인·새 Preview 배포는 하지 않았다.
+- 환경 차단 상태로 같은 작업을 반복하지 않도록 해당 자동 실행을 일시중지했다. 재개 조건: 실행 가능한 Chromium과 Preview 인증 접근 확보. Git 작업은 인증된 checkout 또는 GitHub 커넥터를 사용한다.
+- 다음 시작 지점은 아래와 동일하다. 현재 합성본에서 2–4명·재현성·오디오·2D↔3D 통합 검증을 이어가며, 픽셀 추적·새 형태 후보 탐색으로 돌아가지 않는다.
+
 ## 5. 다음 시작 지점 / 남은 조건
 
 1. 현재 세 색 합성본에서 이어간다. 파랑 두 경로를 다시 바꾸거나 픽셀 추적·후보 탐색으로 되돌아가지 않는다.
