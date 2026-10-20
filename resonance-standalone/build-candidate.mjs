@@ -81,6 +81,13 @@ if(new URLSearchParams(location.search).get('composite')==='1'&&view){
  app += `\nif(new URLSearchParams(location.search).get('orderedPath')==='1'){document.querySelector('aside')?.insertAdjacentHTML('afterbegin','<strong>기각: 추정 연결의 윤곽 단순화·선 밀집 · </strong>');}\n`;
  await fs.writeFile(path.join(dir,'src/app.js'),app);
  let visual=await fs.readFile(path.join(dir,'src/visuals.js'),'utf8');
+ // Composite grains must remain discrete at mobile DPR, without the old 2D light boost.
+ visual=visual.replace('const count=Math.round(1100+v.p.air*700)', "const fineComposite=new URLSearchParams(location.search).get('composite')==='1';const count=Math.round(fineComposite?1000-v.p.air*180:1100+v.p.air*700)");
+ visual=visual.replace('flatSizes[i]=grain.size;flatAlpha[i]=grain.alpha;', 'flatSizes[i]=fineComposite?.75+.65*rand(i+22)+.35*v.p.brightness*Math.pow(rand(i+22),4):grain.size;flatAlpha[i]=fineComposite?.30+.35*rand(i+73):grain.alpha;if(fineComposite){sizes[i]=flatSizes[i];alpha[i]=flatAlpha[i];}');
+ // Select a GLSL literal when the shader template is evaluated.
+ visual=visual.replaceAll('uColor*mix(1.7,1.,uMorph)', "uColor*mix(${new URLSearchParams(location.search).get('composite')==='1'?'1.0':'1.7'},1.,uMorph)");
+ visual=visual.replace('smoothstep(.5,.15,d)', '(1.-smoothstep(.15,.5,d))');
+ visual=visual.replace('(1-v.p.air*.05)*(focused?1:.12)', '(uniforms.uSingleLayer.value>.5?.70:1-v.p.air*.05)*(focused?1:.12)');
  // Narrow canvases need more camera clearance for the raised outer blue fold.
  visual=visual.replace('this.mode?3.4:8.4,this.mode?6.0:.001', 'this.mode?3.4*(this.stage.clientWidth<600?1.18:1):8.4,this.mode?6.0*(this.stage.clientWidth<600?1.18:1):.001');
  visual=visual.replace('if(uContourView>.5&&vLane>.001&&(uContourView<1.5||vLane<.999))discard;', "if(uContourView>.5){if(uSingleLayer>.5){if(abs(vLane-12./23.)>.001)discard;}else if(abs(vLane-6./23.)>.001&&(uContourView<1.5||abs(vLane-18./23.)>.001))discard;}");

@@ -13,7 +13,7 @@ function wav(){const sr=24000,n=sr*3,b=Buffer.alloc(44+n*2);b.write('RIFF');b.wr
  await new Promise(r=>server.listen(8775,'127.0.0.1',r));
  const browser=await chromium.launch({headless:true,executablePath:process.env.IEUM_CHROMIUM_PATH,args:['--no-sandbox','--use-angle=swiftshader','--enable-unsafe-swiftshader','--autoplay-policy=no-user-gesture-required']});
  let page,pump,busy=false;
- const capture=async name=>{await page.locator('#stage canvas').screenshot({path:path.join(out,name+'.png')});report.captures.push(name);};
+ const capture=async name=>{await page.locator('#stage canvas').scrollIntoViewIfNeeded();const clip=await page.locator('#stage canvas').boundingBox();await page.screenshot({path:path.join(out,name+'.png'),clip});report.captures.push(name);};
  const completeMode=async mode=>{await page.click(mode?'#raised':'#flat');await page.evaluate(()=>{const v=ieumDebug.view;v.transitionAt=performance.now()-1000;v.update(0,false);});};
  try{
   for(const width of (process.env.IEUM_FLOW_RESUME==='1'?[1100]:[390,1100])){

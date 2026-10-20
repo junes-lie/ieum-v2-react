@@ -68,13 +68,10 @@
       }
     },
     {
-      "name": "uploaded file drives its voice only"
+      "name": "uploaded file drives its voice and GPU deformation only"
     },
     {
       "name": "pause settles energy and releases audio source"
-    },
-    {
-      "name": "uploaded file drives its voice and GPU deformation only"
     },
     {
       "name": "four demo buffers populate actual FFT bands"
@@ -85,8 +82,8 @@
     {
       "name": "three-minute mode/playback resource soak",
       "detail": {
-        "elapsedMs": 180217,
-        "frames": 4546,
+        "elapsedMs": 183119,
+        "frames": 6784,
         "geometries": 12,
         "textures": 1,
         "sources": 4,
@@ -106,272 +103,272 @@
   ],
   "samples": [
     {
-      "elapsedMs": 5222,
-      "frames": 350,
+      "elapsedMs": 5095,
+      "frames": 2542,
       "geometries": 12,
       "textures": 1,
       "sources": 4,
       "playing": true
     },
     {
-      "elapsedMs": 10225,
-      "frames": 556,
+      "elapsedMs": 10100,
+      "frames": 2799,
       "geometries": 12,
       "textures": 1,
       "sources": 4,
       "playing": true
     },
     {
-      "elapsedMs": 15243,
-      "frames": 626,
+      "elapsedMs": 15117,
+      "frames": 2993,
       "geometries": 12,
       "textures": 1,
       "sources": 4,
       "playing": true
     },
     {
-      "elapsedMs": 20267,
-      "frames": 785,
+      "elapsedMs": 20124,
+      "frames": 3285,
       "geometries": 12,
       "textures": 1,
       "sources": 4,
       "playing": true
     },
     {
-      "elapsedMs": 26221,
-      "frames": 842,
+      "elapsedMs": 25350,
+      "frames": 3576,
       "geometries": 12,
       "textures": 1,
       "sources": 4,
       "playing": true
     },
     {
-      "elapsedMs": 31235,
-      "frames": 1067,
+      "elapsedMs": 31100,
+      "frames": 3736,
       "geometries": 12,
       "textures": 1,
       "sources": 4,
       "playing": true
     },
     {
-      "elapsedMs": 36253,
-      "frames": 1354,
+      "elapsedMs": 36222,
+      "frames": 3768,
       "geometries": 12,
       "textures": 1,
       "sources": 4,
       "playing": true
     },
     {
-      "elapsedMs": 41255,
-      "frames": 1544,
+      "elapsedMs": 41570,
+      "frames": 3848,
       "geometries": 12,
       "textures": 1,
       "sources": 4,
       "playing": true
     },
     {
-      "elapsedMs": 48889,
-      "frames": 1601,
+      "elapsedMs": 47355,
+      "frames": 3967,
       "geometries": 12,
       "textures": 1,
       "sources": 4,
       "playing": true
     },
     {
-      "elapsedMs": 53901,
-      "frames": 1728,
+      "elapsedMs": 52852,
+      "frames": 4059,
       "geometries": 12,
       "textures": 1,
       "sources": 4,
       "playing": true
     },
     {
-      "elapsedMs": 58904,
-      "frames": 1944,
+      "elapsedMs": 58477,
+      "frames": 4143,
       "geometries": 12,
       "textures": 1,
       "sources": 4,
       "playing": true
     },
     {
-      "elapsedMs": 63916,
-      "frames": 2147,
+      "elapsedMs": 63485,
+      "frames": 4281,
       "geometries": 12,
       "textures": 1,
       "sources": 4,
       "playing": true
     },
     {
-      "elapsedMs": 69823,
-      "frames": 2290,
+      "elapsedMs": 68943,
+      "frames": 4374,
       "geometries": 12,
       "textures": 1,
       "sources": 4,
       "playing": true
     },
     {
-      "elapsedMs": 76398,
-      "frames": 2310,
+      "elapsedMs": 73953,
+      "frames": 4516,
       "geometries": 12,
       "textures": 1,
       "sources": 4,
       "playing": true
     },
     {
-      "elapsedMs": 81402,
-      "frames": 2408,
+      "elapsedMs": 79064,
+      "frames": 4620,
       "geometries": 12,
       "textures": 1,
       "sources": 4,
       "playing": true
     },
     {
-      "elapsedMs": 86480,
-      "frames": 2460,
+      "elapsedMs": 84071,
+      "frames": 4737,
       "geometries": 12,
       "textures": 1,
       "sources": 4,
       "playing": true
     },
     {
-      "elapsedMs": 91713,
-      "frames": 2611,
+      "elapsedMs": 89343,
+      "frames": 4806,
       "geometries": 12,
       "textures": 1,
       "sources": 4,
       "playing": true
     },
     {
-      "elapsedMs": 96717,
-      "frames": 2775,
+      "elapsedMs": 94509,
+      "frames": 4915,
       "geometries": 12,
       "textures": 1,
       "sources": 4,
       "playing": true
     },
     {
-      "elapsedMs": 101719,
-      "frames": 2903,
+      "elapsedMs": 99637,
+      "frames": 4963,
       "geometries": 12,
       "textures": 1,
       "sources": 4,
       "playing": true
     },
     {
-      "elapsedMs": 106730,
-      "frames": 3116,
+      "elapsedMs": 104649,
+      "frames": 5045,
       "geometries": 12,
       "textures": 1,
       "sources": 4,
       "playing": true
     },
     {
-      "elapsedMs": 112005,
-      "frames": 3172,
+      "elapsedMs": 110269,
+      "frames": 5305,
       "geometries": 12,
       "textures": 1,
       "sources": 4,
       "playing": true
     },
     {
-      "elapsedMs": 117008,
-      "frames": 3216,
+      "elapsedMs": 115290,
+      "frames": 5444,
       "geometries": 12,
       "textures": 1,
       "sources": 4,
       "playing": true
     },
     {
-      "elapsedMs": 122019,
-      "frames": 3251,
+      "elapsedMs": 120469,
+      "frames": 5528,
       "geometries": 12,
       "textures": 1,
       "sources": 4,
       "playing": true
     },
     {
-      "elapsedMs": 127936,
-      "frames": 3375,
+      "elapsedMs": 125478,
+      "frames": 5617,
       "geometries": 12,
       "textures": 1,
       "sources": 4,
       "playing": true
     },
     {
-      "elapsedMs": 133068,
-      "frames": 3495,
+      "elapsedMs": 132875,
+      "frames": 5729,
       "geometries": 12,
       "textures": 1,
       "sources": 4,
       "playing": true
     },
     {
-      "elapsedMs": 138110,
-      "frames": 3594,
+      "elapsedMs": 137890,
+      "frames": 5895,
       "geometries": 12,
       "textures": 1,
       "sources": 4,
       "playing": true
     },
     {
-      "elapsedMs": 143116,
-      "frames": 3670,
+      "elapsedMs": 143109,
+      "frames": 6026,
       "geometries": 12,
       "textures": 1,
       "sources": 4,
       "playing": true
     },
     {
-      "elapsedMs": 148123,
-      "frames": 3810,
+      "elapsedMs": 148356,
+      "frames": 6118,
       "geometries": 12,
       "textures": 1,
       "sources": 4,
       "playing": true
     },
     {
-      "elapsedMs": 153374,
-      "frames": 4019,
+      "elapsedMs": 153598,
+      "frames": 6263,
       "geometries": 12,
       "textures": 1,
       "sources": 4,
       "playing": true
     },
     {
-      "elapsedMs": 158387,
-      "frames": 4272,
+      "elapsedMs": 158607,
+      "frames": 6441,
       "geometries": 12,
       "textures": 1,
       "sources": 4,
       "playing": true
     },
     {
-      "elapsedMs": 163389,
-      "frames": 4326,
+      "elapsedMs": 164242,
+      "frames": 6538,
       "geometries": 12,
       "textures": 1,
       "sources": 4,
       "playing": true
     },
     {
-      "elapsedMs": 168394,
-      "frames": 4412,
+      "elapsedMs": 169245,
+      "frames": 6614,
       "geometries": 12,
       "textures": 1,
       "sources": 4,
       "playing": true
     },
     {
-      "elapsedMs": 174794,
-      "frames": 4479,
+      "elapsedMs": 178117,
+      "frames": 6652,
       "geometries": 12,
       "textures": 1,
       "sources": 4,
       "playing": true
     },
     {
-      "elapsedMs": 180217,
-      "frames": 4546,
+      "elapsedMs": 183119,
+      "frames": 6784,
       "geometries": 12,
       "textures": 1,
       "sources": 4,
@@ -379,7 +376,14 @@
     }
   ],
   "environment": "Chromium headless / SwiftShader; emulated touch viewport, not physical iPhone or listening validation",
-  "buildSHA256": "07c51588f1295b7523e14ab632822ac3fa5b11cf37b401f02b5adb5c310448e0",
-  "date": "2026-10-20T09:14:57.544Z",
-  "harnessResumedAfterCorrection": true
+  "buildSHA256": "a54174b8d278b528494895c4f4925de3006d801c6bd5d949f17e6c9704143937",
+  "date": "2026-10-20T09:41:26.633Z",
+  "visualComparison": {
+    "viewport": 390,
+    "dpr": 2,
+    "beforeNearWhitePixels": 6216,
+    "afterNearWhitePixels": 0,
+    "threshold": "all RGB >220",
+    "judgment": "Large bright beads removed; fine lines separate at crossings; aesthetic completion and physical iPhone Safari unverified"
+  }
 }
