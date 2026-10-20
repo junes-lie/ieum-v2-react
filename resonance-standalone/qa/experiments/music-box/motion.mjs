@@ -14,7 +14,9 @@ export function bendHeightAt(centers,levels,t){t=((t%TAU)+TAU)%TAU;let i=centers
 export const SIRI_SPEED=.05;
 const siriRand=n=>{const x=Math.sin(n*127.1+311.7)*43758.5453;return x-Math.floor(x);};
 export function spawnSiriPartial(bend,part,generation,voicePhase){const key=bend*103+part*29+generation*997+voicePhase*11;return {phase:0,amplitude:0,age:0,lifetime:.5+1.5*siriRand(key+1),speed:.5+.5*siriRand(key+2),finalAmplitude:.3+.7*siriRand(key+3),offset:-3+6*siriRand(key+4),width:1+2*siriRand(key+5),verse:-1+2*siriRand(key+6),generation};}
-export function stepSiriPartial(p,dt){p.age+=dt;p.amplitude=Math.max(0,Math.min(p.finalAmplitude,p.amplitude+(p.age<=p.lifetime?1:-1)*.02*60*dt));p.phase=(p.phase+SIRI_SPEED*p.speed*60*dt)%TAU;const x=p.offset*.25/p.width,att=(4/(4+x*x))**4;return Math.abs(p.amplitude*Math.sin(p.verse*x-p.phase)*att);}
+const smoother=x=>{x=Math.max(0,Math.min(1,x));return x*x*x*(x*(x*6-15)+10);};
+export function softSiriAbs(x){const e=.06;return (Math.sqrt(x*x+e*e)-e)/(Math.sqrt(1+e*e)-e);}
+export function stepSiriPartial(p,dt){p.age+=dt;const ramp=p.finalAmplitude/(.02*60);p.amplitude=p.finalAmplitude*smoother(p.age/ramp)*(1-smoother((p.age-p.lifetime)/ramp));p.phase=(p.phase+SIRI_SPEED*p.speed*60*dt)%TAU;const x=p.offset*.25/p.width,att=(4/(4+x*x))**4;return p.amplitude*softSiriAbs(Math.sin(p.verse*x-p.phase))*att;}
 export function updateWaveform(wave,data,referenceRms,dt,age,playing,energy=0,bands={},phase=0){
  const centers=wave.centers||[0,TAU/3,TAU*2/3];
  if(!playing||age<=.18){wave.drives=new Float64Array(centers.length);wave.levels=new Float64Array(centers.length);wave.siri=null;wave.fill(heightEnvelope(0,age,playing));return wave;}

@@ -33,6 +33,8 @@
     "2\u20134 partials per existing bend, closed curve geometry preserved",
     "local offset range compressed .25 so existing crest remains visible",
     "height normalized to existing crest ceiling instead of low flat canvas amplitude",
-    "actual track energy controls activity; original rest and playback reset retained"
+    "actual track energy controls activity; original rest and playback reset retained",
+    "2026-10-21: linear amplitude reversal replaced with quintic lifecycle easing, keeping source-derived ramp duration",
+    "2026-10-21: absolute-sine cusp rounded with normalized sqrt(sin\u00b2+.06\u00b2) response; phase speed .05 unchanged"
   ]
 }
