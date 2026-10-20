@@ -4,14 +4,45 @@
 
 - Branch: `feature/figma-v2-integration`, based on `main` at `a20cf97`.
 - Resumed from `e386dda`, preserving prior typography and Search/navigation work.
-- Latest code: `24af29a` (transparent hardware + real Current Mix transport),
-  following `cf8a003` (Hero, profile button, six genre covers and shared Song artwork).
+- Latest code: `6b43672` (Home neighbour records, Recording alignment/readout),
+  preserving `24af29a` hardware/transport and `cf8a003` shared artwork.
 - Prior functional integration `1902972` is preserved. GitHub connector saved
   reviewed files on the existing remote tree with expected-HEAD checks; no force updates.
 - No main/Production changes, standalone Resonance merges or algorithm changes.
 - This is a functional integration checkpoint, **not final visual acceptance**.
 
-## Latest verified asset / transport checkpoint
+## Latest verified screen refinement · 2026-10-21
+
+- Resumed from remote `0944b81`; acquired the existing shared lock atomically with
+  owner `automation-figma-v2-20261020T195622Z-e6c6de6fbc91` and base SHA recorded.
+  Rechecked remote HEAD/ownership before saving; expected-HEAD fast-forward only.
+- Used a fresh temporary checkout subset verified against the remote Git blob
+  hashes. Previous local files were not trusted as current source; only matching
+  bytes were reused. No user files were deleted or overwritten.
+- Re-read current Notion Design System/screen specification and Figma Home,
+  Recording, carousel/monitoring/lyrics/instrument child contexts + screenshots.
+- Home now shows the actual previous/next Project records beside the fixed deck,
+  at Figma's 172px/255px sizes. Click, keyboard and existing swipe update the same
+  selected Project/info/action. Empty project records remain empty; no fabricated
+  submitted voices or catalogue identities were introduced.
+- Recording places the existing live Record below the lyrics with a large lower
+  crop. Actual input Canvas remains live and feeds toward that Record. Compact
+  state/time/MIC/quality share one readout; duplicate input-meter graph removed.
+  Stop now uses the existing Font Awesome icon in the correct cream color.
+- Build, 13 maintained Node suites and 390/430px browser integration passed.
+  Added checks for neighbour pointer/keyboard/swipe, unchanged submitted count,
+  Ready/REC/Paused readouts, single live-input Canvas and lower Record crop.
+  Existing full synthetic-mic Review/submit/Auto Mix/Completed and transport checks
+  passed at both widths; no page/console errors or horizontal body overflow.
+- Compared rendered Home/Recording/Review at both widths with Figma. Per-person
+  initials, Guide headphones rather than the keyboard asset, the current renderer's
+  shape/low-level stream brightness and missing real Song sources remain visible
+  differences. No final visual or physical-device acceptance is claimed.
+- Resonance renderer blob remains `74d7559e8ca1c6ff2cd1aeb1c73b13fe2211ace6`;
+  no algorithm/standalone/main/Production changes. Only this run's lock is removed
+  with the final checkpoint commit.
+
+## Previously verified asset / transport checkpoint
 
 - Acquired `docs/FIGMA_V2_INTEGRATION_LOCK.json` atomically before editing. Other
   executions must skip while this file exists; only its recorded owner releases it.
@@ -116,33 +147,27 @@ React integration. `public/artwork/README.md` records sources and use boundaries
 
 ## Preview verification — latest code
 
-- URL: https://ieum-v2-react-fv2vbksiy-junes-lie.vercel.app
-- Deployment: `dpl_CQj5PBuKb8EF4p927FCgzChEYXKQ`, READY, Preview (`target: null`),
-  exact code SHA `24af29a37810c45b4b8a6d2a9d52445eec39009f` confirmed.
-- No deployment appeared for the Git-data ref update after checking deployments
-  and commit statuses. Created a Preview from the saved Git branch through the
-  Vercel connector; no local-only or Production deployment was performed.
-- Vercel Authentication protection remains enabled. Existing connector access was
-  used privately for testing; ordinary URL requires authorized Vercel access.
-- Authenticated HTTP 200; deployed JS `index-D9aq7jma.js` and CSS
-  `index-Dwz_qnsu.css` match the locally tested build.
-- Actual deployed browser smoke passed at 430px and 390px: all visible artwork
-  decoded, no horizontal overflow. All nine deployed WebP files returned 200 and
-  matched local SHA-256 byte hashes, including the two retained genre variants.
-- Remote Search→Ocean result→Detail→Back restored query; My Voice→Back restored
-  Search. No page errors. Initial direct browser access returned EMPTY_RESPONSE;
-  the existing environment proxy enabled the authenticated browser checks.
-- Full microphone/Auto Mix and new turntable audio advance/pause were tested
-  locally at both widths with Chromium synthetic microphone/isolated demo Tracks.
-  Remote smoke does not claim a second full microphone/Auto Mix run.
+- URL: https://ieum-v2-react-ehyqizyd9-junes-lie.vercel.app
+- Deployment: `dpl_E3Fe7aYahWbdEmyM4db5oDR32tqG`, READY, Git Integration,
+  Preview (`target: null`), exact SHA `6b436727ed3759db8a71d63b335196a127d1e806`.
+- Vercel Authentication remains enabled. Authenticated HTTP 200; deployed
+  `index-BESXWyAI.js` and `index-taFOI5E7.css` match the tested production build.
+- Static artwork is unchanged from the previous verified asset checkpoint.
+- Remote Chromium smoke passed at 390/430px: artwork decoded, no horizontal
+  overflow or page/console errors; neighbour pointer/keyboard selected exact
+  Projects; Search→Ocean→Detail→Back and My Voice→Back preserved the query.
+- Full microphone/Auto Mix tests were local with Chromium synthetic input and
+  isolated demo Tracks. Remote smoke is not a physical-mic or live-backend test.
 
 ## Next checkpoint
 
-1. Compare remaining Home carousel neighbour records, Part/monitoring identity
-   slots and Recording graphic alignment with current Figma; preserve working
-   interactions and use only valid person-owned identities for participant art.
-2. Review the new static/dynamic composite visually. Existing Resonance shape and
-   completed 3D fidelity remain separate; do not merge/change standalone algorithms.
-3. Validate physical microphone/earphones and obtain required music/lyric sources
-   before declaring the presentation app fully complete. Keep honest missing-source
-   messages and preserve failed recording/submission recovery.
+1. Remaining visual differences: monitoring/Part identity slots need verified
+   person-owned resources; Guide keyboard needs the actual local asset. Do not
+   assign the decorative profile image as someone's measured voice result.
+2. Existing Resonance shape, stream fidelity/brightness and completed 3D remain
+   separate from this placement pass. Preserve algorithms; do not merge the
+   standalone branch. Final visual review is still open.
+3. Validate physical microphones/earphones and supply the actual Song backing/
+   lyrics before declaring the presentation app fully complete. Keep missing-source
+   notices and failed recording/submission recovery. Do not repeat completed
+   carousel/readout integration without evidence of a regression.
