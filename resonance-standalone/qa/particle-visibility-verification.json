@@ -1,0 +1,166 @@
+{
+  "errors": [],
+  "checks": [
+    {
+      "width": 390,
+      "mode": 0,
+      "stats": [
+        {
+          "id": "A",
+          "count": 978,
+          "minSize": 1.2501730918884277,
+          "maxSize": 2.0426788330078125,
+          "minAlpha": 0.550079882144928,
+          "maxAlpha": 0.8499211668968201,
+          "lineOpacity": 0.7
+        },
+        {
+          "id": "B",
+          "count": 950,
+          "minSize": 1.2501730918884277,
+          "maxSize": 2.4517486095428467,
+          "minAlpha": 0.550079882144928,
+          "maxAlpha": 0.8499211668968201,
+          "lineOpacity": 0.7
+        },
+        {
+          "id": "C",
+          "count": 863,
+          "minSize": 1.2501730918884277,
+          "maxSize": 2.1725423336029053,
+          "minAlpha": 0.550079882144928,
+          "maxAlpha": 0.8499211668968201,
+          "lineOpacity": 0.7
+        }
+      ]
+    },
+    {
+      "width": 390,
+      "mode": 1,
+      "stats": [
+        {
+          "id": "A",
+          "count": 978,
+          "minSize": 1.2501730918884277,
+          "maxSize": 2.0426788330078125,
+          "minAlpha": 0.550079882144928,
+          "maxAlpha": 0.8499211668968201,
+          "lineOpacity": 0.7
+        },
+        {
+          "id": "B",
+          "count": 950,
+          "minSize": 1.2501730918884277,
+          "maxSize": 2.4517486095428467,
+          "minAlpha": 0.550079882144928,
+          "maxAlpha": 0.8499211668968201,
+          "lineOpacity": 0.7
+        },
+        {
+          "id": "C",
+          "count": 863,
+          "minSize": 1.2501730918884277,
+          "maxSize": 2.1725423336029053,
+          "minAlpha": 0.550079882144928,
+          "maxAlpha": 0.8499211668968201,
+          "lineOpacity": 0.7
+        }
+      ]
+    },
+    {
+      "width": 1100,
+      "mode": 0,
+      "stats": [
+        {
+          "id": "A",
+          "count": 978,
+          "minSize": 1.2501730918884277,
+          "maxSize": 2.0426788330078125,
+          "minAlpha": 0.550079882144928,
+          "maxAlpha": 0.8499211668968201,
+          "lineOpacity": 0.7
+        },
+        {
+          "id": "B",
+          "count": 950,
+          "minSize": 1.2501730918884277,
+          "maxSize": 2.4517486095428467,
+          "minAlpha": 0.550079882144928,
+          "maxAlpha": 0.8499211668968201,
+          "lineOpacity": 0.7
+        },
+        {
+          "id": "C",
+          "count": 863,
+          "minSize": 1.2501730918884277,
+          "maxSize": 2.1725423336029053,
+          "minAlpha": 0.550079882144928,
+          "maxAlpha": 0.8499211668968201,
+          "lineOpacity": 0.7
+        }
+      ]
+    },
+    {
+      "width": 1100,
+      "mode": 1,
+      "stats": [
+        {
+          "id": "A",
+          "count": 978,
+          "minSize": 1.2501730918884277,
+          "maxSize": 2.0426788330078125,
+          "minAlpha": 0.550079882144928,
+          "maxAlpha": 0.8499211668968201,
+          "lineOpacity": 0.7
+        },
+        {
+          "id": "B",
+          "count": 950,
+          "minSize": 1.2501730918884277,
+          "maxSize": 2.4517486095428467,
+          "minAlpha": 0.550079882144928,
+          "maxAlpha": 0.8499211668968201,
+          "lineOpacity": 0.7
+        },
+        {
+          "id": "C",
+          "count": 863,
+          "minSize": 1.2501730918884277,
+          "maxSize": 2.1725423336029053,
+          "minAlpha": 0.550079882144928,
+          "maxAlpha": 0.8499211668968201,
+          "lineOpacity": 0.7
+        }
+      ]
+    }
+  ],
+  "date": "2026-10-20",
+  "environment": "Chromium 153 / SwiftShader; emulated 390px DPR2 and desktop 1100px DPR1; not physical iPhone",
+  "visualReview": "Inspected 2D and 3D captures; discrete grains visible; no former bright white clumps",
+  "renderComparison": [
+    {
+      "width": 390,
+      "mode": 0,
+      "particlePixelsDeltaOver12": 14779,
+      "nearWhitePixels": 0
+    },
+    {
+      "width": 390,
+      "mode": 1,
+      "particlePixelsDeltaOver12": 7291,
+      "nearWhitePixels": 0
+    },
+    {
+      "width": 1100,
+      "mode": 0,
+      "particlePixelsDeltaOver12": 7769,
+      "nearWhitePixels": 0
+    },
+    {
+      "width": 1100,
+      "mode": 1,
+      "particlePixelsDeltaOver12": 5272,
+      "nearWhitePixels": 0
+    }
+  ]
+}
