@@ -75,3 +75,13 @@ was performed. The existing >500 kB bundle warning remains.
   results above remain historical results, not newly executed checks.
 - Next implementation point remains Phase 1 common components, followed by Home,
   once the exact original Figma assets can be downloaded and verified.
+
+## 2026-10-21 · Search/navigation implementation
+
+Figma asset-download failure is not a global React blocker. Figma returned Hero asset references; this execution container cannot resolve www.figma.com. Design-context access itself succeeded.
+
+- src/App.jsx: BottomNavigation now Home/Search/Projects/Collection; Home and Search top-right profile entry to My Voice; dedicated Search screen with three result tabs, query, part/genre/range filters, sorting, results and empty state.
+- src/design-system-v2.css: scoped Search styling. Initial functional implementation, not yet pixel-verified. Search thumbnails remain semantic placeholders pending original Figma media.
+- Commits: dfea907 (navigation/search), c1ef909 (search styling).
+- Vercel ieum-v2-react Preview for c1ef909 reports READY: https://ieum-v2-react-ko5z19dzx-junes-lie.vercel.app . READY is not browser-interaction or microphone QA. Separate ieum-resonance-preview deployment errors do not establish failure of this UI build.
+- Next: real-browser Search interaction QA; original image delivery; Home, Workspace and Recording Figma implementation; visual comparisons. Preserve main, Production and the independent Resonance branch.
