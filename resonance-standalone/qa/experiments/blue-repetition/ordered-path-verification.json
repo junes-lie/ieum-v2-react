@@ -1,0 +1,37 @@
+{
+  "geometry": {
+    "visible": [
+      "A"
+    ],
+    "layers": [
+      {
+        "drift": 0,
+        "minR": 0.7713937319757,
+        "sharedHeightDrift": 0
+      },
+      {
+        "drift": 0,
+        "minR": 0.7713937274702944,
+        "sharedHeightDrift": 0
+      },
+      {
+        "drift": 0,
+        "minR": 0.7713937352219076,
+        "sharedHeightDrift": 0
+      },
+      {
+        "drift": 0,
+        "minR": 0.7713937808588551,
+        "sharedHeightDrift": 0
+      }
+    ],
+    "particles": false
+  },
+  "errors": [],
+  "sourceFidelityApproved": false,
+  "scope": "Blue two-component structural comparison. Captures require visual source comparison; no audio, particles, synthesis or long-run approval.",
+  "query": "?repetition=1&orderedPath=1",
+  "visualDecision": "rejected: inferred remainder simplifies the silhouette and multiple lines form a narrow band",
+  "sourceTrace": "upper connections are hypotheses; remaining nine segments inferred, not recovered",
+  "mobileWidth": 366
+}
