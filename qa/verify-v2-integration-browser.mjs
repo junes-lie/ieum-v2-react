@@ -29,7 +29,16 @@ try{
    await page.locator('.screen').screenshot({path:`${output}/${screen}-${width}.png`})
    results.push({width,screen,geometry})
   }
+  await page.locator('.v2-recent').scrollIntoViewIfNeeded()
+  await page.waitForFunction(()=>[...document.querySelectorAll('.v2-song-artwork img,.v2-hero-artwork,.v2-profile-icon img')].every(img=>img.complete&&img.naturalWidth>0))
+  await page.evaluate(()=>scrollTo(0,0))
   await check('home');assert.equal(await page.locator('.v2-song-grid>button').count(),3)
+  assert.equal(await page.locator('.v2-song-grid img').count(),3,'All recommended songs have local cover art')
+  const artworkGeometry=await page.locator('.v2-project-thumbnail').evaluateAll(nodes=>nodes.map(node=>{
+    const bounds=node.getBoundingClientRect(),record=node.querySelector('.v2-thumbnail-record').getBoundingClientRect(),sleeve=node.querySelector('.v2-thumbnail-sleeve').getBoundingClientRect()
+    return {inside:[record,sleeve].every(r=>r.left>=bounds.left&&r.right<=bounds.right&&r.top>=bounds.top&&r.bottom<=bounds.bottom),recordWidth:record.width,sleeveWidth:sleeve.width}
+  }))
+  assert.ok(artworkGeometry.every(item=>item.inside&&item.recordWidth===56&&item.sleeveWidth===54),'Sleeve and live record remain within each 72px thumbnail')
   const first=await page.locator('.v2-recruit-info h3').textContent()
   await page.getByRole('button',{name:'다음 모집 프로젝트',exact:true}).click();assert.notEqual(await page.locator('.v2-recruit-info h3').textContent()+await page.locator('.v2-recruit-info p').textContent(),first+'OPEN · Tenor · Bass 2명 참여')
   await page.locator('[data-nav="search"]').click();await page.waitForSelector('[data-screen-id="01S"]');await check('search')

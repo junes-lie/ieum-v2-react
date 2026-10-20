@@ -1,5 +1,15 @@
 import React, {useRef,useState} from 'react'
 import Icon from './Icons.jsx'
+import {songArtwork} from './songArtwork.js'
+
+export function MyVoiceIcon() {
+  return <span className="v2-profile-icon" aria-hidden="true"><img src="/artwork/profile-knot.webp" alt="" width="26" height="26"/></span>
+}
+
+export function SongArtwork({song,className=''}) {
+  const src=songArtwork(song)
+  return <span className={`v2-song-artwork ${className}`} aria-hidden="true">{src?<img src={src} alt="" loading="lazy" decoding="async" width="256" height="256"/>:<span>{song.title}</span>}</span>
+}
 
 export function SectionHeading({title,action,onAction}) {
   return <div className="v2-section-heading"><h2>{title}</h2>{onAction&&<button onClick={onAction}>{action||'전체 보기'} <span aria-hidden="true">→</span></button>}</div>
@@ -32,7 +42,7 @@ export function HomeView({header,entries,songs,renderRecord,openSong,openProject
   const change=delta=>setIndex(current=>(current+delta+recruiting.length)%Math.max(1,recruiting.length))
   const open=entry=>entry.complete?openProject(entry):openSong(entry.song.id,entry.project.id)
   return <div className="screen figma-v2 home-v2-screen" data-screen-id="01">
-    <section className="v2-hero">{header}<div className="v2-hero-copy"><h1>다른 목소리,<br/>하나의 노래.</h1><p>함께 부를 곡을 고르고,<br/>당신의 목소리를 더해보세요.</p></div><div className="v2-hero-record">{entries[0]&&renderRecord(entries[0])}</div></section>
+    <section className="v2-hero"><img className="v2-hero-artwork" src="/artwork/home-hero.webp" width="1300" height="1209" alt="" fetchPriority="high"/>{header}<div className="v2-hero-copy"><h1>다른 목소리,<br/>하나의 노래.</h1><p>함께 부를 곡을 고르고,<br/>당신의 목소리를 더해보세요.</p></div></section>
     <main>
       <section className="v2-recruitment" id="recruiting-projects" tabIndex={-1}>
         <SectionHeading title="파트 모집 중" onAction={()=>openSearch('projects')}/><p className="v2-section-note">내 음역과 취향에 맞는 프로젝트</p>
@@ -41,8 +51,8 @@ export function HomeView({header,entries,songs,renderRecord,openSong,openProject
             <div className="v2-recruit-record" key={selected.project.id}>{renderRecord(selected)}</div>
           </div><div className="v2-recruit-info"><h3>{selected.song.title}</h3><p>OPEN · {selected.openParts.map(part=>part.name).join(' · ')} <span>{selected.partCount-selected.openParts.length}명 참여</span></p></div><button className="primary v2-project-action" data-action="open-parts" onClick={()=>open(selected)}>프로젝트 보기 <span aria-hidden="true">→</span></button></>:<p className="empty-proof">현재 모집 중인 프로젝트가 없어요.</p>}
       </section>
-      <section className="v2-recommended"><SectionHeading title="어떤 곡으로 시작할까요" onAction={()=>openSearch('songs')}/><div className="v2-song-grid">{songs.slice(0,3).map(song=><button className="v2-song-card" key={song.id} onClick={()=>openSong(song.id)}><span className="v2-cover-slot" aria-hidden="true">{song.cover?<img src={song.cover} alt=""/>:<span>{song.title}</span>}</span><strong>{song.title}</strong><small>{song.artist}</small><small>프로젝트 {entries.filter(entry=>entry.song.id===song.id).length}</small></button>)}</div></section>
-      <section className="v2-recent"><SectionHeading title="최근 열린 프로젝트"/><div className="v2-project-rows">{[...entries.filter(entry=>entry.isCreated),...entries.filter(entry=>!entry.isCreated)].slice(0,3).map(entry=><button className="v2-project-row" data-project-id={entry.project.id} key={entry.project.id} onClick={()=>open(entry)}><div className="v2-project-thumbnail">{renderRecord(entry)}</div><span><strong>{entry.song.title}</strong><small>{entry.song.artist}</small><small>{entry.partCount-entry.openParts.length}명 참여 · {entry.submitted}/{entry.partCount} 제출</small></span><span className="v2-open-roles"><small>{entry.complete?'COMPLETE':'OPEN'}</small>{entry.complete?'완성곡':entry.openParts.map(part=>part.name).join(' · ')||'녹음 중'}</span></button>)}</div></section>
+      <section className="v2-recommended"><SectionHeading title="어떤 곡으로 시작할까요" onAction={()=>openSearch('songs')}/><div className="v2-song-grid">{songs.slice(0,3).map(song=><button className="v2-song-card" key={song.id} onClick={()=>openSong(song.id)}><SongArtwork song={song} className="v2-cover-slot"/><strong>{song.title}</strong><small>{song.artist}</small><small>프로젝트 {entries.filter(entry=>entry.song.id===song.id).length}</small></button>)}</div></section>
+      <section className="v2-recent"><SectionHeading title="최근 열린 프로젝트"/><div className="v2-project-rows">{[...entries.filter(entry=>entry.isCreated),...entries.filter(entry=>!entry.isCreated)].slice(0,3).map(entry=><button className="v2-project-row" data-project-id={entry.project.id} key={entry.project.id} onClick={()=>open(entry)}><div className="v2-project-thumbnail"><div className="v2-thumbnail-record">{renderRecord(entry)}</div><SongArtwork song={entry.song} className="v2-thumbnail-sleeve"/></div><span><strong>{entry.song.title}</strong><small>{entry.song.artist}</small><small>{entry.partCount-entry.openParts.length}명 참여 · {entry.submitted}/{entry.partCount} 제출</small></span><span className="v2-open-roles"><small>{entry.complete?'COMPLETE':'OPEN'}</small>{entry.complete?'완성곡':entry.openParts.map(part=>part.name).join(' · ')||'녹음 중'}</span></button>)}</div></section>
       <section className="v2-completed"><SectionHeading title="완성곡 둘러보기" onAction={()=>openSearch('completed')}/><div className="v2-completed-carousel">{completed.length?completed.map(entry=><button className="v2-completed-card" key={entry.project.id} onClick={()=>openProject(entry)}><div>{renderRecord(entry)}</div><span><small>완성곡</small><strong>{entry.song.title}</strong><small>{entry.partCount}명의 목소리</small><span className="v2-listen"><Icon name="play" size={14}/> 완성곡 듣기</span></span></button>):<p className="empty-proof">아직 완성한 곡이 없어요. 마지막 Track 제출 후 완성곡을 들을 수 있어요.</p>}</div></section>
       <button className="secondary v2-create-project" data-action="create-project" onClick={openCreateProject}><Icon name="plus" size={16}/>새 프로젝트 만들기</button>
     </main>

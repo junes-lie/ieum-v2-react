@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import VoicePreferenceChoices, {preferenceValues} from './VoicePreferenceChoices.jsx'
 import Icon from './Icons.jsx'
-import {HomeView,PartModules,MonitoringModule} from './IntegratedViews.jsx'
+import {HomeView,PartModules,MonitoringModule,MyVoiceIcon,SongArtwork} from './IntegratedViews.jsx'
 import {discoveryProjects,matchesGenre} from './discovery.js'
 import { PITCH_ANALYSIS_VERSION } from './pitch.js'
 import { prepareVoiceRangeRecord, prepareVoiceSampleRecord, voiceSourceRevision } from './profileSource.js'
@@ -653,7 +653,7 @@ function SearchScreen({ openSong, openCreatedProject, openComplete, openMyVoice,
   const addedAt=item=>Date.parse(item.project?.createdAt||item.addedAt||'')||0
   const ordered=sort!=='추천순'?[...items].sort((a,b)=>addedAt(b)-addedAt(a)):items
   return <div className="screen figma-v2 search-v2-screen" data-screen-id="01S">
-    <TopBar title="검색" action={<Icon name="user" size={20}/>} actionLabel="마이보이스 열기" actionId="open-my-voice" onAction={openMyVoice}/>
+    <TopBar title="검색" action={<MyVoiceIcon/>} actionLabel="마이보이스 열기" actionId="open-my-voice" onAction={openMyVoice}/>
     <main>
       <label className="search-v2-input"><Icon name="search" size={20}/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="곡, 아티스트, 프로젝트 검색" aria-label="곡, 아티스트, 프로젝트 검색"/>{query&&<button aria-label="검색어 지우기" onClick={()=>setQuery('')}>×</button>}</label>
       <div className="search-v2-tabs" role="tablist" aria-label="검색 결과 유형">
@@ -672,7 +672,7 @@ function SearchScreen({ openSong, openCreatedProject, openComplete, openMyVoice,
       <div className="search-v2-results">{ordered.length?ordered.map((item,index)=>{
         const song=tab==='songs'?item:item.song,project=tab==='songs'?null:item.project
         return <button className="search-v2-result" key={project?.id||song.id||index} onClick={()=>tab==='completed'?(item.isCreated?openCreatedProject(project.id):openComplete()):openSong(song.id,project?.id||null)}>
-          <span className="search-v2-record" aria-hidden="true">{song.title}</span>
+          <SongArtwork className="search-v2-record" song={song}/>
           <span><strong>{song.title}</strong><small>{song.artist}{project?' · '+(project.name||'프로젝트'):''}</small><em>{tab==='projects'?`OPEN · ${item.openParts.map(part=>part.name).join(' · ')}`:tab==='completed'?'완성곡':'곡 상세 보기'}</em></span>
           <span aria-hidden="true">→</span>
         </button>
@@ -683,7 +683,7 @@ function SearchScreen({ openSong, openCreatedProject, openComplete, openMyVoice,
 
 function Home({ mainProject = PROJECT, openSong, openMyVoice, openSearch, layers, projectTracks, profile, mix, openCreateProject, openComplete, createdProjects = [], createdProjectTracks = {}, createdMixes = {}, openCreatedProject, joined = false, joinedPart = USER_PART_ID, candidateAccepted = false }) {
   const entries=discoveryProjects({songs:SONGS,mainProject,mainTracks:projectTracks,mainMix:mix,createdProjects,createdTracks:createdProjectTracks,createdMixes,joined,joinedPart,candidateAccepted})
-  return <HomeView header={<TopBar action={<Icon name="user" size={20}/>} actionLabel="마이보이스 열기" actionId="open-my-voice" onAction={openMyVoice}/>} entries={entries} songs={SONGS} openSong={openSong} openSearch={openSearch} openCreateProject={openCreateProject} openProject={entry=>entry.isCreated?openCreatedProject(entry.project.id):openComplete()} renderRecord={entry=><ResonanceRecord counterRotate compact recordRef={entry.project.voiceRecordRef} projectId={entry.project.id} parts={entry.project.parts} tracks={entry.tracks} layers={entry.project.parts.map(part=>entry.tracks[part.id]?.layer||null)} seed={entry.project.seed} label={`${entry.song.title}, ${entry.submitted}/${entry.partCount} Track 제출`}/>}/>
+  return <HomeView header={<TopBar action={<MyVoiceIcon/>} actionLabel="마이보이스 열기" actionId="open-my-voice" onAction={openMyVoice}/>} entries={entries} songs={SONGS} openSong={openSong} openSearch={openSearch} openCreateProject={openCreateProject} openProject={entry=>entry.isCreated?openCreatedProject(entry.project.id):openComplete()} renderRecord={entry=><ResonanceRecord counterRotate compact recordRef={entry.project.voiceRecordRef} projectId={entry.project.id} parts={entry.project.parts} tracks={entry.tracks} layers={entry.project.parts.map(part=>entry.tracks[part.id]?.layer||null)} seed={entry.project.seed} label={`${entry.song.title}, ${entry.submitted}/${entry.partCount} Track 제출`}/>}/>
 }
 
 function Detail({ go, back, song, profile, join, layers, projectTracks, songSaved, toggleSongSave, openVocalProfile, createdProjects, createdProjectTracks = {}, createdMixes = {}, onCreateProject, onOpenCreatedProject, openMainWorkspace, mainMix, mainKeyLocked = false, joined = false, joinedPart = USER_PART_ID, candidateAccepted = false, invitedPerson, initialProjectId, onSelectProject, detailContext }) {
