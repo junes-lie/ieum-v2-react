@@ -12,6 +12,23 @@
 - No main/Production changes, standalone Resonance merges or algorithm changes.
 - This is a functional integration checkpoint, **not final visual acceptance**.
 
+## Direct participation and deployment decision · 2026-10-21
+
+- User explicitly authorized integrating the verified design into main and serving
+  all subsequent verified corrections from https://ieum-v2-react.vercel.app.
+  This supersedes the earlier Preview-only/main-protection instruction for this task.
+- User explicitly requires direct participation even outside the registered Part
+  range. Removed the range-based disabled attribute AND the action-handler range
+  rejection. Keep the registered profile, actual seat/Track ownership and repeated
+  request protections. Multiple-project participation is not a prohibited policy.
+- Range comparison remains advisory. Current Notion PRD and Screen Spec were
+  updated accordingly; candidate ranking is not changed by this direct-entry fix.
+- Existing range gate dates to 2026-10-07 23:40 KST, commit 48f8aaf; it was not
+  introduced by the design integration.
+- Build and real Chromium 390/430px passed with registered C4-D4 against Tenor
+  C3-G4: button enabled, action reaches Workspace and no submitted Track is added.
+- Public completion discovery correction continues in the same run.
+
 ## Record above deck correction · 2026-10-21
 
 - User corrected the previous hole/underlay model. The fixed turntable is a
