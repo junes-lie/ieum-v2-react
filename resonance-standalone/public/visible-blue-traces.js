@@ -44,3 +44,18 @@ fetch('blue-cluster-audit.json').then(r=>{if(!r.ok)throw Error('HTTP '+r.status)
  select.onchange=draw;draw();
  clusterBox.querySelector('button').onclick=e=>{const show=e.target.getAttribute('aria-pressed')!=='true';group.style.display=show?'':'none';e.target.setAttribute('aria-pressed',String(show));e.target.textContent=show?'영역 표시 숨기기':'영역 표시 보기'};
 }).catch(e=>{clusterBox.querySelector('#cluster-summary').textContent='영역 자료 읽기 실패: '+e.message});
+
+// Observed open arcs versus the actual unchanged runtime parent family.
+const parentBox=document.createElement('section');
+parentBox.id='parent-comparison';
+parentBox.innerHTML='<h2>현재 부모 경로와 관측 구간 비교</h2><p>원본의 열린 구간 8개를 현재 실행 기하와 대조합니다. 크림색은 관측 픽셀, 코랄색은 가장 가까운 후보 선입니다. 같은 선의 연결을 확인했다는 뜻은 아닙니다. 가려진 구간과 전체 윤곽은 점수에서 제외합니다.</p><label>관측 구간 <select id="parent-arc"></select></label><button id="parent-toggle" aria-pressed="true">후보 표시 숨기기</button><p id="parent-summary"></p><svg viewBox="515 135 130 85" role="img" aria-label="관측 구간과 현재 후보의 위치 및 방향 차이"><image href="repetition-reference.png" width="1254" height="1254"/><g id="parent-observed"></g><g id="parent-candidate"></g></svg><p>위치 RMS는 원본 1254px 기준입니다. 방향 오차는 선의 앞뒤를 구분하지 않는 0–90°입니다. 관측점마다 후보의 가장 가까운 점을 사용하므로 낮은 수치도 연속 연결의 증거가 아닙니다.</p><a href="blue-parent-comparison.json">비교 좌표와 측정값</a>';
+document.querySelector('main').prepend(parentBox);
+fetch('blue-parent-comparison.json').then(r=>{if(!r.ok)throw Error('HTTP '+r.status);return r.json()}).then(data=>{
+ const select=parentBox.querySelector('select');
+ data.results.forEach(r=>{const o=document.createElement('option');o.value=r.id;o.textContent=`${r.id} · 길이 ${r.lengthPx}px`;select.append(o)});
+ function draw(){const r=data.results.find(r=>r.id===Number(select.value));
+  for(const [id,points,color] of [['parent-observed',r.observed,'#fff1be'],['parent-candidate',r.nearestCandidate,'#f18c76']]){const g=document.getElementById(id);g.replaceChildren();const p=document.createElementNS('http://www.w3.org/2000/svg','path');p.setAttribute('d','M'+points.map(p=>p.join(',')).join(' L'));p.style.cssText=`fill:none;stroke:${color};stroke-width:.65;stroke-dasharray:none`;g.append(p)}
+  document.getElementById('parent-summary').textContent=`후보 선 ${r.strand+1} · 위치 RMS ${r.rmsPx}px · 최대 ${r.maxPx}px · 평균 방향 오차 ${r.meanTangentErrorDegrees}° · 동일 선 미확정`;
+ }
+ select.onchange=draw;draw();parentBox.querySelector('button').onclick=e=>{const show=e.target.getAttribute('aria-pressed')!=='true';document.getElementById('parent-candidate').style.display=show?'':'none';e.target.setAttribute('aria-pressed',String(show));e.target.textContent=show?'후보 표시 숨기기':'후보 표시 보기'};
+}).catch(e=>document.getElementById('parent-summary').textContent='비교 자료 읽기 실패: '+e.message);
