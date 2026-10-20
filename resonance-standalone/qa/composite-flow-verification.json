@@ -1,0 +1,385 @@
+{
+  "checks": [
+    {
+      "name": "390px 2D line bounds",
+      "detail": {
+        "minX": -0.6285967745896724,
+        "maxX": 0.7476509962798242,
+        "minY": -0.6085052838625529,
+        "maxY": 0.6079912783273852
+      }
+    },
+    {
+      "name": "390px 3D line bounds",
+      "detail": {
+        "minX": -0.70596979075383,
+        "maxX": 0.8578070577639987,
+        "minY": -0.3458440874716172,
+        "maxY": 0.49419349055570555
+      }
+    },
+    {
+      "name": "390px no horizontal overflow"
+    },
+    {
+      "name": "390px 2–4 participants preserve profiles"
+    },
+    {
+      "name": "390px color controls with touch"
+    },
+    {
+      "name": "390px particle toggle"
+    },
+    {
+      "name": "1100px 2D line bounds",
+      "detail": {
+        "minX": -0.4149297775571074,
+        "maxX": 0.49351615235258006,
+        "minY": -0.7719134162971497,
+        "maxY": 0.7712613796112421
+      }
+    },
+    {
+      "name": "1100px 3D line bounds",
+      "detail": {
+        "minX": -0.5642038989684041,
+        "maxX": 0.6847735074376532,
+        "minY": -0.5359093770326935,
+        "maxY": 0.7309371903712885
+      }
+    },
+    {
+      "name": "1100px no horizontal overflow"
+    },
+    {
+      "name": "1100px 2–4 participants preserve profiles"
+    },
+    {
+      "name": "1100px color controls with mouse"
+    },
+    {
+      "name": "1100px particle toggle"
+    },
+    {
+      "name": "WAV upload decode and pitch analysis",
+      "detail": {
+        "pitch": 220,
+        "seconds": 3
+      }
+    },
+    {
+      "name": "uploaded file drives its voice only"
+    },
+    {
+      "name": "pause settles energy and releases audio source"
+    },
+    {
+      "name": "uploaded file drives its voice and GPU deformation only"
+    },
+    {
+      "name": "four demo buffers populate actual FFT bands"
+    },
+    {
+      "name": "repeated playback releases sources"
+    },
+    {
+      "name": "three-minute mode/playback resource soak",
+      "detail": {
+        "elapsedMs": 180217,
+        "frames": 4546,
+        "geometries": 12,
+        "textures": 1,
+        "sources": 4,
+        "playing": true
+      }
+    },
+    {
+      "name": "no JavaScript or WebGL console errors"
+    }
+  ],
+  "errors": [],
+  "captures": [
+    "390-flat",
+    "390-raised",
+    "1100-flat",
+    "1100-raised"
+  ],
+  "samples": [
+    {
+      "elapsedMs": 5222,
+      "frames": 350,
+      "geometries": 12,
+      "textures": 1,
+      "sources": 4,
+      "playing": true
+    },
+    {
+      "elapsedMs": 10225,
+      "frames": 556,
+      "geometries": 12,
+      "textures": 1,
+      "sources": 4,
+      "playing": true
+    },
+    {
+      "elapsedMs": 15243,
+      "frames": 626,
+      "geometries": 12,
+      "textures": 1,
+      "sources": 4,
+      "playing": true
+    },
+    {
+      "elapsedMs": 20267,
+      "frames": 785,
+      "geometries": 12,
+      "textures": 1,
+      "sources": 4,
+      "playing": true
+    },
+    {
+      "elapsedMs": 26221,
+      "frames": 842,
+      "geometries": 12,
+      "textures": 1,
+      "sources": 4,
+      "playing": true
+    },
+    {
+      "elapsedMs": 31235,
+      "frames": 1067,
+      "geometries": 12,
+      "textures": 1,
+      "sources": 4,
+      "playing": true
+    },
+    {
+      "elapsedMs": 36253,
+      "frames": 1354,
+      "geometries": 12,
+      "textures": 1,
+      "sources": 4,
+      "playing": true
+    },
+    {
+      "elapsedMs": 41255,
+      "frames": 1544,
+      "geometries": 12,
+      "textures": 1,
+      "sources": 4,
+      "playing": true
+    },
+    {
+      "elapsedMs": 48889,
+      "frames": 1601,
+      "geometries": 12,
+      "textures": 1,
+      "sources": 4,
+      "playing": true
+    },
+    {
+      "elapsedMs": 53901,
+      "frames": 1728,
+      "geometries": 12,
+      "textures": 1,
+      "sources": 4,
+      "playing": true
+    },
+    {
+      "elapsedMs": 58904,
+      "frames": 1944,
+      "geometries": 12,
+      "textures": 1,
+      "sources": 4,
+      "playing": true
+    },
+    {
+      "elapsedMs": 63916,
+      "frames": 2147,
+      "geometries": 12,
+      "textures": 1,
+      "sources": 4,
+      "playing": true
+    },
+    {
+      "elapsedMs": 69823,
+      "frames": 2290,
+      "geometries": 12,
+      "textures": 1,
+      "sources": 4,
+      "playing": true
+    },
+    {
+      "elapsedMs": 76398,
+      "frames": 2310,
+      "geometries": 12,
+      "textures": 1,
+      "sources": 4,
+      "playing": true
+    },
+    {
+      "elapsedMs": 81402,
+      "frames": 2408,
+      "geometries": 12,
+      "textures": 1,
+      "sources": 4,
+      "playing": true
+    },
+    {
+      "elapsedMs": 86480,
+      "frames": 2460,
+      "geometries": 12,
+      "textures": 1,
+      "sources": 4,
+      "playing": true
+    },
+    {
+      "elapsedMs": 91713,
+      "frames": 2611,
+      "geometries": 12,
+      "textures": 1,
+      "sources": 4,
+      "playing": true
+    },
+    {
+      "elapsedMs": 96717,
+      "frames": 2775,
+      "geometries": 12,
+      "textures": 1,
+      "sources": 4,
+      "playing": true
+    },
+    {
+      "elapsedMs": 101719,
+      "frames": 2903,
+      "geometries": 12,
+      "textures": 1,
+      "sources": 4,
+      "playing": true
+    },
+    {
+      "elapsedMs": 106730,
+      "frames": 3116,
+      "geometries": 12,
+      "textures": 1,
+      "sources": 4,
+      "playing": true
+    },
+    {
+      "elapsedMs": 112005,
+      "frames": 3172,
+      "geometries": 12,
+      "textures": 1,
+      "sources": 4,
+      "playing": true
+    },
+    {
+      "elapsedMs": 117008,
+      "frames": 3216,
+      "geometries": 12,
+      "textures": 1,
+      "sources": 4,
+      "playing": true
+    },
+    {
+      "elapsedMs": 122019,
+      "frames": 3251,
+      "geometries": 12,
+      "textures": 1,
+      "sources": 4,
+      "playing": true
+    },
+    {
+      "elapsedMs": 127936,
+      "frames": 3375,
+      "geometries": 12,
+      "textures": 1,
+      "sources": 4,
+      "playing": true
+    },
+    {
+      "elapsedMs": 133068,
+      "frames": 3495,
+      "geometries": 12,
+      "textures": 1,
+      "sources": 4,
+      "playing": true
+    },
+    {
+      "elapsedMs": 138110,
+      "frames": 3594,
+      "geometries": 12,
+      "textures": 1,
+      "sources": 4,
+      "playing": true
+    },
+    {
+      "elapsedMs": 143116,
+      "frames": 3670,
+      "geometries": 12,
+      "textures": 1,
+      "sources": 4,
+      "playing": true
+    },
+    {
+      "elapsedMs": 148123,
+      "frames": 3810,
+      "geometries": 12,
+      "textures": 1,
+      "sources": 4,
+      "playing": true
+    },
+    {
+      "elapsedMs": 153374,
+      "frames": 4019,
+      "geometries": 12,
+      "textures": 1,
+      "sources": 4,
+      "playing": true
+    },
+    {
+      "elapsedMs": 158387,
+      "frames": 4272,
+      "geometries": 12,
+      "textures": 1,
+      "sources": 4,
+      "playing": true
+    },
+    {
+      "elapsedMs": 163389,
+      "frames": 4326,
+      "geometries": 12,
+      "textures": 1,
+      "sources": 4,
+      "playing": true
+    },
+    {
+      "elapsedMs": 168394,
+      "frames": 4412,
+      "geometries": 12,
+      "textures": 1,
+      "sources": 4,
+      "playing": true
+    },
+    {
+      "elapsedMs": 174794,
+      "frames": 4479,
+      "geometries": 12,
+      "textures": 1,
+      "sources": 4,
+      "playing": true
+    },
+    {
+      "elapsedMs": 180217,
+      "frames": 4546,
+      "geometries": 12,
+      "textures": 1,
+      "sources": 4,
+      "playing": true
+    }
+  ],
+  "environment": "Chromium headless / SwiftShader; emulated touch viewport, not physical iPhone or listening validation",
+  "buildSHA256": "07c51588f1295b7523e14ab632822ac3fa5b11cf37b401f02b5adb5c310448e0",
+  "date": "2026-10-20T09:14:57.544Z",
+  "harnessResumedAfterCorrection": true
+}

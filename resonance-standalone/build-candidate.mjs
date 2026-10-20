@@ -81,6 +81,8 @@ if(new URLSearchParams(location.search).get('composite')==='1'&&view){
  app += `\nif(new URLSearchParams(location.search).get('orderedPath')==='1'){document.querySelector('aside')?.insertAdjacentHTML('afterbegin','<strong>기각: 추정 연결의 윤곽 단순화·선 밀집 · </strong>');}\n`;
  await fs.writeFile(path.join(dir,'src/app.js'),app);
  let visual=await fs.readFile(path.join(dir,'src/visuals.js'),'utf8');
+ // Narrow canvases need more camera clearance for the raised outer blue fold.
+ visual=visual.replace('this.mode?3.4:8.4,this.mode?6.0:.001', 'this.mode?3.4*(this.stage.clientWidth<600?1.18:1):8.4,this.mode?6.0*(this.stage.clientWidth<600?1.18:1):.001');
  visual=visual.replace('if(uContourView>.5&&vLane>.001&&(uContourView<1.5||vLane<.999))discard;', "if(uContourView>.5){if(uSingleLayer>.5){if(abs(vLane-12./23.)>.001)discard;}else if(abs(vLane-6./23.)>.001&&(uContourView<1.5||abs(vLane-18./23.)>.001))discard;}");
  visual=visual.replace('uMorph,uContourView;', 'uMorph,uContourView,uSingleLayer;');
  visual=visual.replace('const uniforms={uLineScale:', "const uniforms={uSingleLayer:{value:new URLSearchParams(location.search).get('composite')==='1'?1:0},uLineScale:");
