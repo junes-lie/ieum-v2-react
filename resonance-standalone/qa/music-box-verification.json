@@ -71,9 +71,9 @@
       "name": "390px real audio increases motion and local sparkles",
       "data": {
         "sources": 4,
-        "play": 0.9029957027583768,
-        "energy": 0.39251452331039033,
-        "glintMax": 0.9068308472633362
+        "play": 0.9030441927834808,
+        "energy": 0.38678078093373053,
+        "glintMax": 0.9069358706474304
       }
     },
     {
@@ -149,8 +149,8 @@
       "data": {
         "sources": 4,
         "play": 0.9030441927834808,
-        "energy": 0.38557074042511646,
-        "glintMax": 0.9068138003349304
+        "energy": 0.3737417165302678,
+        "glintMax": 0.9069342017173767
       }
     },
     {
@@ -180,7 +180,7 @@
     {
       "name": "45-second 4-track motion resource regression",
       "data": {
-        "frames": 1806,
+        "frames": 1903,
         "geometries": 12,
         "textures": 1,
         "sources": 4
@@ -190,62 +190,60 @@
   "errors": [],
   "samples": [
     {
-      "frames": 578,
+      "frames": 555,
       "geometries": 12,
       "textures": 1,
       "sources": 4
     },
     {
-      "frames": 836,
+      "frames": 786,
       "geometries": 12,
       "textures": 1,
       "sources": 4
     },
     {
-      "frames": 1053,
+      "frames": 1017,
       "geometries": 12,
       "textures": 1,
       "sources": 4
     },
     {
-      "frames": 1309,
+      "frames": 1223,
       "geometries": 12,
       "textures": 1,
       "sources": 4
     },
     {
-      "frames": 1434,
+      "frames": 1402,
       "geometries": 12,
       "textures": 1,
       "sources": 4
     },
     {
-      "frames": 1481,
+      "frames": 1455,
       "geometries": 12,
       "textures": 1,
       "sources": 4
     },
     {
-      "frames": 1581,
+      "frames": 1596,
       "geometries": 12,
       "textures": 1,
       "sources": 4
     },
     {
-      "frames": 1689,
+      "frames": 1735,
       "geometries": 12,
       "textures": 1,
       "sources": 4
     },
     {
-      "frames": 1806,
+      "frames": 1903,
       "geometries": 12,
       "textures": 1,
       "sources": 4
     }
   ],
   "environment": "Chromium headless SwiftShader; emulated mobile and desktop",
-  "buildSHA256": "fb5e7862fff1cfdab7595b430595e272255570dac3dda746891ed75eb7a56bab",
-  "date": "2026-10-20",
-  "visualReview": "Inspected mobile and desktop playback captures. Corrected endpoint lift sampling to keep moving segments continuous. Aesthetic acceptance pending."
+  "buildSHA256": "fa3c41c0212198283e50e5db45a4760c5d1542dcd6845cffcb3ea456a0c1b154"
 }

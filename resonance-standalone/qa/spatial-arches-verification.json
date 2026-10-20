@@ -1,0 +1,156 @@
+{
+  "checks": [
+    {
+      "width": 1100,
+      "previous": [
+        {
+          "id": "A",
+          "closure": 0,
+          "halfMinRadius": 1.3099876408952928,
+          "lanes": 24,
+          "xz": "da60e9b5bf743b9dde9d9809ef78a365c2257302c46a235d7c37b3818cb5f70a",
+          "flat": "4372595978dc1d469e9a318ef74e994f0465fe95160af60b5b0cab41e6896801",
+          "minY": 0.06330547481775284,
+          "maxY": 1.0495436191558838,
+          "sparkle": 1
+        },
+        {
+          "id": "B",
+          "closure": 0,
+          "halfMinRadius": 1.0003767593592758,
+          "lanes": 24,
+          "xz": "4355cdc6e3c44b56816aad9a31a894d49802d7d366f93fcc2f63fb9f32bbe29f",
+          "flat": "20ac93c2b37b934441918a62a98e0eb1ac4283c13064f54afd32cfcd70e004f5",
+          "minY": 0.05119342729449272,
+          "maxY": 1.3222075700759888,
+          "sparkle": 1
+        },
+        {
+          "id": "C",
+          "closure": 0,
+          "halfMinRadius": 0.7380026959931799,
+          "lanes": 24,
+          "xz": "60a0f1147704aeffa36f8937403b6adeb7e5bceafaee912c3b6e38a965ca250f",
+          "flat": "b910e77717fcd368029f8840c37cf7e860c84b0dfc7730358c64be15c469caaa",
+          "minY": 0.053335510194301605,
+          "maxY": 1.3613824844360352,
+          "sparkle": 1
+        }
+      ],
+      "reference": [
+        {
+          "id": "A",
+          "closure": 0,
+          "halfMinRadius": 1.338730316543304,
+          "lanes": 24,
+          "xz": "20e82bfeb17a7b9f929cedb4699a045543db5508ea9fefad84126c9c5b216fb1",
+          "flat": "4372595978dc1d469e9a318ef74e994f0465fe95160af60b5b0cab41e6896801",
+          "minY": 0.04411200061440468,
+          "maxY": 1.2869045734405518,
+          "sparkle": 1
+        },
+        {
+          "id": "B",
+          "closure": 0,
+          "halfMinRadius": 1.1478821110140323,
+          "lanes": 24,
+          "xz": "fa9c8ec93001a8a35adabd56e61316e9131aaa3477ce7f468e7642450162c0bd",
+          "flat": "20ac93c2b37b934441918a62a98e0eb1ac4283c13064f54afd32cfcd70e004f5",
+          "minY": 0.04759683087468147,
+          "maxY": 1.5037598609924316,
+          "sparkle": 1
+        },
+        {
+          "id": "C",
+          "closure": 0,
+          "halfMinRadius": 0.9326654420990798,
+          "lanes": 24,
+          "xz": "7dd9a504e7234b41b20c0b24ee5e77b69e257bfcf3dd1dfec065fada3b1b42f7",
+          "flat": "b910e77717fcd368029f8840c37cf7e860c84b0dfc7730358c64be15c469caaa",
+          "minY": 0.027736954391002655,
+          "maxY": 1.6334835290908813,
+          "sparkle": 1
+        }
+      ]
+    },
+    {
+      "width": 390,
+      "previous": [
+        {
+          "id": "A",
+          "closure": 0,
+          "halfMinRadius": 1.3099876408952928,
+          "lanes": 24,
+          "xz": "da60e9b5bf743b9dde9d9809ef78a365c2257302c46a235d7c37b3818cb5f70a",
+          "flat": "4372595978dc1d469e9a318ef74e994f0465fe95160af60b5b0cab41e6896801",
+          "minY": 0.06330547481775284,
+          "maxY": 1.0495436191558838,
+          "sparkle": 1
+        },
+        {
+          "id": "B",
+          "closure": 0,
+          "halfMinRadius": 1.0003767593592758,
+          "lanes": 24,
+          "xz": "4355cdc6e3c44b56816aad9a31a894d49802d7d366f93fcc2f63fb9f32bbe29f",
+          "flat": "20ac93c2b37b934441918a62a98e0eb1ac4283c13064f54afd32cfcd70e004f5",
+          "minY": 0.05119342729449272,
+          "maxY": 1.3222075700759888,
+          "sparkle": 1
+        },
+        {
+          "id": "C",
+          "closure": 0,
+          "halfMinRadius": 0.7380026959931799,
+          "lanes": 24,
+          "xz": "60a0f1147704aeffa36f8937403b6adeb7e5bceafaee912c3b6e38a965ca250f",
+          "flat": "b910e77717fcd368029f8840c37cf7e860c84b0dfc7730358c64be15c469caaa",
+          "minY": 0.053335510194301605,
+          "maxY": 1.3613824844360352,
+          "sparkle": 1
+        }
+      ],
+      "reference": [
+        {
+          "id": "A",
+          "closure": 0,
+          "halfMinRadius": 1.338730316543304,
+          "lanes": 24,
+          "xz": "20e82bfeb17a7b9f929cedb4699a045543db5508ea9fefad84126c9c5b216fb1",
+          "flat": "4372595978dc1d469e9a318ef74e994f0465fe95160af60b5b0cab41e6896801",
+          "minY": 0.04411200061440468,
+          "maxY": 1.2869045734405518,
+          "sparkle": 1
+        },
+        {
+          "id": "B",
+          "closure": 0,
+          "halfMinRadius": 1.1478821110140323,
+          "lanes": 24,
+          "xz": "fa9c8ec93001a8a35adabd56e61316e9131aaa3477ce7f468e7642450162c0bd",
+          "flat": "20ac93c2b37b934441918a62a98e0eb1ac4283c13064f54afd32cfcd70e004f5",
+          "minY": 0.04759683087468147,
+          "maxY": 1.5037598609924316,
+          "sparkle": 1
+        },
+        {
+          "id": "C",
+          "closure": 0,
+          "halfMinRadius": 0.9326654420990798,
+          "lanes": 24,
+          "xz": "7dd9a504e7234b41b20c0b24ee5e77b69e257bfcf3dd1dfec065fada3b1b42f7",
+          "flat": "b910e77717fcd368029f8840c37cf7e860c84b0dfc7730358c64be15c469caaa",
+          "minY": 0.027736954391002655,
+          "maxY": 1.6334835290908813,
+          "sparkle": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "buildSHA256": "6576d736ef5f9e5048f29471894f04664df1ba77732c9d03bc96e14b061e1432",
+  "date": "2026-10-20",
+  "environment": "Chromium 153 SwiftShader; 1100px DPR1 and 390px DPR2 emulation, not physical iPhone",
+  "visualReview": "Compared approved-reference.jpg with actual previous/reference renders. New structure has rounded high arches, tilted cross-sections, changing strand spacing/width and voice-specific ripples. User aesthetic acceptance remains pending.",
+  "transitionCapture": "390-transition.png: half morph checked at 0.5, no origin collapse"
+}
