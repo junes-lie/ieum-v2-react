@@ -21,17 +21,16 @@ const compositeMode=typeof location!=='undefined'&&new URLSearchParams(location.
 export function planar(p,t,lane,out=[0,0,0]){
  if(!repetitionMode)return baselinePlanar(p,t,lane,out);
  if(!compositeMode||p.id==='A')return referenceContour(p,t,lane,out);
- baselinePlanar(p,t,lane,out);
  if(p.id==='B'||p.id==='C'){
+  const index=Math.round(Math.max(0,Math.min(1,lane))*23);
+  const repetition=index<12?0:1,strand=index%12;
+  // One parent family per voice; the inner repetition shares its complete folds.
+  baselinePlanar(p,t,strand/11,out);
   const radius=Math.hypot(out[0],out[2]);
-  // Expand radial coverage about the record, retaining the original angular folds.
-  // Smooth bounds prevent clipping at the label and record edge.
-  const spread=p.id==='B'?1.55:1.65;
-  const raw=1.57+(radius-1.57)*spread;
-  const lower=raw-.72,inner=.72+.5*(lower+Math.sqrt(lower*lower+.001));
-  const upper=2.48-inner,r=2.48-.5*(upper+Math.sqrt(upper*upper+.001));
+  const outer=1.98+(radius-1.57)*.60;
+  const r=outer-repetition*(p.id==='B'?.78:.72);
   out[0]*=r/radius;out[2]*=r/radius;
- }
+ }else baselinePlanar(p,t,lane,out);
  return out;
 }`);
  await fs.writeFile(path.join(dir,'src/profiles.js'),profiles);
@@ -42,17 +41,16 @@ export function planar(p,t,lane,out=[0,0,0]){
  app += `
 if(new URLSearchParams(location.search).get('composite')==='1'&&view){
  voices.forEach(v=>v.visible=true);view.selected=null;
- $('#particles').disabled=false;$('#particles').checked=true;view.particles=true;
+ $('#particles').disabled=false;$('#particles').checked=false;view.particles=false;
  const bar=$('#repetition-controls');
- bar.querySelector('[data-contours="0"]').click();
- bar.querySelectorAll('[data-contours]').forEach(b=>b.hidden=true);
+ bar.querySelector('[data-contours="2"]').click();
  for(const [label,id] of [['세 색 합성','all'],['파랑','A'],['빨강 · 코랄','B'],['노랑 · 크림','C']]){
   const b=document.createElement('button');b.textContent=label;b.dataset.color=id;
   b.onclick=()=>{voices.forEach(v=>{v.visible=id==='all'||v.p.id===id;v.card.querySelector('.hide').setAttribute('aria-pressed',String(!v.visible));});view.selected=null;bar.querySelectorAll('[data-color]').forEach(x=>{x.classList.toggle('active',x===b);x.setAttribute('aria-pressed',String(x===b));});};bar.append(b);
  }
  bar.querySelector('[data-color="all"]').click();
- $('#view-hint').textContent='파랑 두 경로 유지 · 코랄·크림 범위 확장 합성';
- document.querySelector('aside').textContent='세 색 합성 · 파랑 두 경로 유지 · 빨강/노랑 범위 확장';
+ $('#view-hint').textContent='세 색 × 바깥·안쪽 두 폐곡선';
+ document.querySelector('aside').textContent='파랑·빨강·노랑 · 각 색의 같은 굴곡을 안팎 두 폐곡선으로 반복';
 }
 `;
  app += `\nif(new URLSearchParams(location.search).get('sourceFold')==='1'){document.querySelector('aside')?.insertAdjacentHTML('afterbegin','<strong>기각 비교: 세 묶음의 규칙성이 원본과 다름 · </strong>');}\n`;
@@ -61,7 +59,7 @@ if(new URLSearchParams(location.search).get('composite')==='1'&&view){
  await fs.writeFile(path.join(dir,'src/app.js'),app);
  let visual=await fs.readFile(path.join(dir,'src/visuals.js'),'utf8');
  visual=visual.replace('if(uContourView>.5&&vLane>.001&&(uContourView<1.5||vLane<.999))discard;','if(uContourView>.5&&abs(vLane-6./23.)>.001&&(uContourView<1.5||abs(vLane-18./23.)>.001))discard;');
- visual=visual.replace('const h=xyz[1];planar(v.p,t,traceLane,xyz);xyz[1]=h;', "record(v.p,t,v.p.id==='A'?(l%12)/11:traceLane,0,0,1,xyz);const h=xyz[1];planar(v.p,t,traceLane,xyz);xyz[1]=h;");
+ visual=visual.replace('const h=xyz[1];planar(v.p,t,traceLane,xyz);xyz[1]=h;', "record(v.p,t,(l%12)/11,0,0,1,xyz);const h=xyz[1];planar(v.p,t,traceLane,xyz);xyz[1]=h;");
  const localStrand='(mod(floor(aLane*23.+.5),12.)/11.)';
  visual=visual.replace('aLane*91.', 'VOICE_LOCAL*91.').replace('aLane*23.', 'VOICE_LOCAL*23.').replace('(aLane-.5)*4.', '(VOICE_LOCAL-.5)*4.').replaceAll('VOICE_LOCAL',localStrand);
  visual=visual.replace('vLane*3.', '(mod(floor(vLane*23.+.5),12.)/11.)*3.').replace('vLane*123.', '(mod(floor(vLane*23.+.5),12.)/11.)*123.');
