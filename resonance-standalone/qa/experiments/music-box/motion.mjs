@@ -8,7 +8,7 @@ export function heightEnvelope(energy,age,playing){if(!playing)return 1;if(age<=
 export function audioHeightAt(wave,t){const x=((t/TAU)%1+1)%1*64,i=Math.floor(x);return wave[i]*(1-x+i)+wave[(i+1)%64]*(x-i);}
 // Find broad existing height crests; pulse centers never travel around the curve.
 export function findPulseCenters(heightAt){const n=360,h=Array.from({length:n},(_,i)=>heightAt(i/n*TAU));const sm=h.map((_,i)=>{let v=0;for(let j=-8;j<=8;j++)v+=h[(i+j+n)%n];return v/17;});const peaks=sm.map((v,i)=>({v,i})).filter(({v,i})=>v>=sm[(i+n-1)%n]&&v>sm[(i+1)%n]).sort((a,b)=>b.v-a.v);const chosen=[];for(const peak of peaks){if(chosen.every(k=>Math.min(Math.abs(k-peak.i),n-Math.abs(k-peak.i))>32))chosen.push(peak.i);if(chosen.length===6)break;}return (chosen.length?chosen:[sm.indexOf(Math.max(...sm))]).sort((a,b)=>a-b).map(i=>i/n*TAU);}
-export function hopPulse(q){q=((q%1)+1)%1;if(q<.27){const x=q/.27;return 1-(1-x)**3;}if(q<.45)return 1;if(q<.90){const x=(q-.45)/.45;return 1-x*x*(3-2*x);}return 0;}
+export function hopPulse(q){q=((q%1)+1)%1;const ease=x=>x*x*x*(x*(x*6-15)+10);if(q<.42)return ease(q/.42);if(q<.50)return 1;if(q<.98)return 1-ease((q-.50)/.48);return 0;}
 export function bendHeightAt(centers,levels,t){t=((t%TAU)+TAU)%TAU;let i=centers.length-1;for(let k=0;k<centers.length;k++)if(t>=centers[k])i=k;const j=(i+1)%centers.length,a=centers[i],b=centers[j]+(j===0?TAU:0),x=(t+(t<a?TAU:0)-a)/(b-a),u=x*x*(3-2*x);return levels[i]+(levels[j]-levels[i])*u;}
 export function updateWaveform(wave,data,referenceRms,dt,age,playing,energy=0,bands={},phase=0){
  const centers=wave.centers||[0,TAU/3,TAU*2/3];
