@@ -4,9 +4,9 @@
 
 - Branch: `feature/figma-v2-integration`, based on `main` at `a20cf97`.
 - Resumed from `e386dda`, preserving prior typography and Search/navigation work.
-- Latest code: `1378d69` (stationary deck, distinct recruitment Record art and
-  original Figma Project button), preserving `6b43672` Recording, `24af29a`
-  hardware/transport and `cf8a003` shared artwork.
+- Latest code: `9cd0a35` (Record above fixed turntable, no aperture clip), preserving
+  `1378d69` distinct recruitment Record art/original Figma button, `6b43672`
+  Recording, `24af29a` transport and `cf8a003` shared artwork.
 - Prior functional integration `1902972` is preserved. GitHub connector saved
   reviewed files on the existing remote tree with expected-HEAD checks; no force updates.
 - No main/Production changes, standalone Resonance merges or algorithm changes.
@@ -27,7 +27,8 @@
   opaque platter, visible overflow/no hole clip, stable housing after selection,
   no page errors or horizontal overflow. Actual stage captures were inspected.
   This narrow correction did not rerun the full microphone suite; its preceding
-  results remain recorded below. Preview verification follows code save.
+  results remain recorded below. Preview verification passed below. This run's
+  `interactive-record-over-deck-e6c6de6fbc91` lock is released with this checkpoint.
 
 ## User carousel / original button correction · 2026-10-21
 
@@ -201,21 +202,16 @@ React integration. `public/artwork/README.md` records sources and use boundaries
 
 ## Preview verification — latest code
 
-- URL: https://ieum-v2-react-pfm9r11rl-junes-lie.vercel.app
-- Deployment: `dpl_38i8rzscqvhf3QzaWU3XLQFKR7H1`, READY, Git Integration,
-  Preview (`target: null`), exact SHA `1378d69b9d2c8e105e983591ea93c3f9cdf93024`.
-- Vercel Authentication remains enabled. Connector-authenticated HTTP 200;
-  deployed JS `index-CKvVWtYq.js` matches the locally tested production build.
-- Actual remote Chromium checks passed at 390/430px: three distinct Record
-  signatures; 48px/24px-radius/15px-text original-surface button; original
-  `figma-project-button.svg` HTTP 200 with exact local SHA-256 bytes.
-- At each width, six successive selections wrap to the original Project while
-  preserving the very same housing and particle Canvas nodes. Project action
-  opens Detail and Back returns Home. No horizontal overflow or page errors.
-- Local integration additionally verified no housing/ancestor transforms or
-  animations while the inner Record slide runs, neighbour keyboard/swipe, Search,
-  My Voice and complete synthetic-microphone/Review/submit/Auto Mix flow.
-  Remote smoke is not a second physical-mic, multi-user backend or full audio QA.
+- URL: https://ieum-v2-react-gt3hp94sd-junes-lie.vercel.app
+- Deployment: `dpl_CyMcZfbeQXPZstCT3ryDa7Mk1332`, READY, Git Integration,
+  Preview (`target: null`), exact SHA `9cd0a3520e63bb9e972844633ba3a105639e7936`.
+- Vercel Authentication remains enabled. Actual remote Chromium at 390/430px
+  confirmed Record z above turntable, solid platter, no aperture overflow clip,
+  same stationary housing after selection and no horizontal overflow.
+- Served JS `index-JupQ3Ztx.js` matches the tested local production build.
+- Prior full synthetic-microphone/Review/submit/Auto Mix and original button
+  verification remain recorded in the preceding checkpoint; this layer-only
+  change ran scoped local/deployed browser checks, not another full microphone run.
 
 ## Next checkpoint
 
