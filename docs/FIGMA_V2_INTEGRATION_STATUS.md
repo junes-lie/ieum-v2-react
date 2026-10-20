@@ -4,11 +4,42 @@
 
 - Branch: `feature/figma-v2-integration`, based on `main` at `a20cf97`.
 - Resumed from `e386dda`, preserving prior typography and Search/navigation work.
-- Code commit: `1902972` — Home/Workspace/Recording React structures, scoped V2
-  styles, Search data/history fixes and maintained QA. GitHub connector saved the
-  exact reviewed files on top of the existing remote tree, without force updates.
+- Latest code: `24af29a` (transparent hardware + real Current Mix transport),
+  following `cf8a003` (Hero, profile button, six genre covers and shared Song artwork).
+- Prior functional integration `1902972` is preserved. GitHub connector saved
+  reviewed files on the existing remote tree with expected-HEAD checks; no force updates.
 - No main/Production changes, standalone Resonance merges or algorithm changes.
 - This is a functional integration checkpoint, **not final visual acceptance**.
+
+## Latest verified asset / transport checkpoint
+
+- Acquired `docs/FIGMA_V2_INTEGRATION_LOCK.json` atomically before editing. Other
+  executions must skip while this file exists; only its recorded owner releases it.
+  This run releases its own lock atomically with the final checkpoint commit.
+- Supplied text-free Hero is a promotional illustration; copy/header/fades remain
+  editable React/CSS. The rounded, bordered My Voice icon uses the supplied blue
+  knot as decorative entry art, not a claimed measured identity for the user.
+- Six original genre artworks were made text-free with imagegen and exported to
+  WebP. Four existing Song IDs map explicitly to four illustrative covers; real
+  titles/artists/genres are unchanged. Rock/electronic variants remain available
+  without creating fictitious songs. Home covers, recent sleeves and Search use
+  the same mapping; an explicit `song.cover` takes precedence.
+- Recent thumbnails contain a 54px sleeve + 56px live record within 72px bounds.
+- Separated the supplied turntable into an alpha hardware overlay: its record
+  opening is transparent. Home/Workspace retain the existing live renderer below.
+  The Workspace turntable button controls the existing CurrentMixPanel/Player
+  audio element, including individual-track listening and pause/resume. Timeline
+  seeking remains in the same Player; a duplicate transport button is hidden.
+- Build, all 13 maintained Node suites, and the updated browser suite passed.
+  At both 390px and 430px, checked image decoding, thumbnail containment, live
+  canvas under the housing, actual audio currentTime advance/pause, Search return,
+  and full synthetic-microphone participation→Review→submit→Auto Mix→Completed.
+  No page/console errors or horizontal overflow. Physical microphones/earphones
+  and live multi-user collaboration are still unverified.
+- No Resonance algorithm or standalone branch changes. The existing dynamic
+  renderer still differs visually from the approved knots; it is not represented
+  as final visual acceptance. Hardware separation preserves the supplied design
+  but needs the user's final visual review.
 
 ## Sources and scope
 
@@ -26,9 +57,9 @@
 
 | Category | Implemented/preserved | Remaining |
 | --- | --- | --- |
-| React/CSS | Five Home sections; recruiting carousel controls/swipe; three-column songs; project rows; horizontal completed cards; scoped typography/surfaces/buttons; 4-tab illuminated navigation; Part playback/toggles/actions; monitoring modules; instrument controls | Final visual refinement after static artwork; exact hardware surface rendering |
+| React/CSS | Five Home sections; carousel controls/swipe; three-column covers; sleeve/record rows; horizontal completed cards; scoped tokens/buttons; 4-tab navigation; Part playback/toggles/actions; monitoring; actual Workspace turntable transport | Final visual refinement, remaining carousel/monitoring graphic fidelity |
 | Dynamic code graphics | Existing Resonance renderer, live recording input renderer, rotation/state changes, measured level callbacks, existing audio/preview/final mixing | Existing renderer differs from the approved knot design; independent renderer integration is a separate task |
-| Static images | Existing repository navigation/control assets and locally bundled fonts reused; no temporary Figma URLs shipped | Hero, actual Song covers/sleeves, original turntable housing and personal knot artwork listed below |
+| Static images | Supplied Hero/profile icon, six text-free covers, shared sleeves/Search art, alpha turntable housing; existing controls/fonts reused | Verified per-person identities and finished 3D imagery; final visual review |
 
 Search now uses actual saved Track/Mix state rather than a stale COMPLETE label.
 Assigned seats are excluded from recruitment. Korean genre filters match stored
@@ -43,20 +74,20 @@ with the horizontal Part modules. Recording retains microphone acquisition,
 pause/resume, Review, draft restoration, submission, failure preservation and
 final-Track-triggered Auto Mix. No static waveform substitutes for live input.
 
-## Static asset work — independent of code progress
+## Static assets — current state
 
-| Asset | Intended slot and production conditions |
+| Asset | Current state / remaining work |
 | --- | --- |
-| Home hero | 430×400 composition, export at 2×; warm #15110E edges; separate blue/coral/ivory line/particle voices feeding the vinyl; no baked text, buttons or bottom fade. Existing dynamic Record is shown until supplied; it is not claimed to match this composition. |
-| Song covers | One square cover per actual catalogue Song; recommended slots 119×119 at 430px, 3 columns; source at least 2×. Bind by Song ID and verify usage rights. Current catalogue has A Thousand Years/Ocean Eyes/Love Poem/City of Stars, not Figma's sample titles. Title-based slots remain until covers exist; don't invent completion/artist data. |
-| Sleeves | Use the same Song cover; 54×54 sleeve plus 56×56 project Record inside the 72×72 thumbnail, with no clipping. Do not confuse Song cover identity with Project Record. |
-| Turntable housing | Home 255×255 stage and Workspace 370×388 stage. Supply dark charcoal base/platter/arm as separable artwork with transparent Record opening. Keep live Record, Play, seek and actions as React/Canvas layers. Current stage uses the existing live Record without a fabricated housing. |
-| Personal knot images | Transparent per-person images in 48×48 Workspace / 53×40 monitoring slots. Use verified personal results when available. Until supplied, initials/names identify people; these are not claimed to be generated voice knots. |
-| Complete 3D imagery | 212×196 artwork inside 368×196 Home card; dynamic standalone 3D integration remains separate. Current saved completed Projects use the existing renderer. No synthetic completed songs are added. |
+| Home Hero | Supplied 1300×1209 artwork exported to 860×800 WebP; 430×400 full-bleed slot, editable top/bottom fades and copy. |
+| Song covers | Six original 512×512 genre artworks. Four mapped by existing Song IDs in `src/songArtwork.js`; illustrative rather than official release covers. |
+| Sleeves | Reuse mapped Song art in a 54×54 sleeve beside the live 56×56 record, inside 72×72. Both widths verified. |
+| Turntable housing | 900×900 alpha overlay separated with imagegen from the supplied combined artwork. Empty circular opening; existing live Record remains below. Home + Workspace integrated. |
+| Personal knot images | Blue supplied knot used for decorative My Voice entry only. Other participants still use initials until verified person-owned identity resources are available. Never assign fixed art as a measured personal result. |
+| Complete 3D imagery | Existing completed Projects use the existing dynamic renderer. Independent 3D integration remains separately authorized work; do not add synthetic completions. |
 
-Original Figma asset downloads returned Site Unavailable HTML in this environment.
-This blocks exact static artwork matching only. It does not block React structure,
-interaction, existing dynamic graphics or QA. No fake SVG/CSS knot replacement.
+Original Figma asset URLs were blocked. Supplied local assets now cover Hero,
+covers/sleeves/profile entry and hardware. This is not a reason to stop remaining
+React integration. `public/artwork/README.md` records sources and use boundaries.
 
 ## Verification
 
@@ -75,33 +106,43 @@ interaction, existing dynamic graphics or QA. No fake SVG/CSS knot replacement.
 - Browser QA used isolated broad-range profile and received demo-Track fixtures
   plus Chromium synthetic microphone. It does not prove physical microphone,
   audible quality, actual singer cooperation or a live multi-user backend.
-- Screenshots were compared with the Figma layout references. Static artwork,
-  individual knots, the old renderer's shape and long real Song titles remain
-  visible differences. Long content remains scrollable instead of clipped.
+- Screenshots were compared with Figma and the supplied source artwork. Hero,
+  covers/sleeves and hardware now render from local assets. Participant initials,
+  the old renderer's shape and long real Song titles remain visible differences.
+  Long content remains scrollable instead of clipped.
 - Existing main demo has no registered actual Song lyrics/backing. Its honest
   missing-source notice is retained. Production-ready music/lyrics licensing,
   real-device microphone/earphone testing and final visual acceptance remain open.
 
-## Preview verification
+## Preview verification — latest code
 
-- URL: https://ieum-v2-react-h2wpl2173-junes-lie.vercel.app
-- Vercel deployment: `dpl_81qMMYkNNFFg6ErWSUrHvrbNGLqZ`, Git Integration,
-  Preview (`target: null`), READY; exact code SHA
-  `1902972965ca91606a30c08aae952f653d8b11f9` confirmed.
-- Protected by Vercel Authentication. Used the Vercel connector's existing
-  temporary access link for testing; no protection setting was disabled.
-- Authenticated HTTP 200. Deployed JS `index-CzOSuM59.js` and CSS
-  `index-BZbUx0bh.css` match the locally built filenames.
-- Actual Preview Chromium smoke passed: Home/3 recommended Song cards → Search
-  query/results → exact Detail → Back restores query → My Voice → Back restores
-  Search. No page errors. Normal URL requires access to the Vercel project.
-- The full synthetic-microphone flow above was tested locally at both widths;
-  Preview smoke does not claim a second full microphone/Auto Mix run remotely.
+- URL: https://ieum-v2-react-fv2vbksiy-junes-lie.vercel.app
+- Deployment: `dpl_CQj5PBuKb8EF4p927FCgzChEYXKQ`, READY, Preview (`target: null`),
+  exact code SHA `24af29a37810c45b4b8a6d2a9d52445eec39009f` confirmed.
+- No deployment appeared for the Git-data ref update after checking deployments
+  and commit statuses. Created a Preview from the saved Git branch through the
+  Vercel connector; no local-only or Production deployment was performed.
+- Vercel Authentication protection remains enabled. Existing connector access was
+  used privately for testing; ordinary URL requires authorized Vercel access.
+- Authenticated HTTP 200; deployed JS `index-D9aq7jma.js` and CSS
+  `index-Dwz_qnsu.css` match the locally tested build.
+- Actual deployed browser smoke passed at 430px and 390px: all visible artwork
+  decoded, no horizontal overflow. All nine deployed WebP files returned 200 and
+  matched local SHA-256 byte hashes, including the two retained genre variants.
+- Remote Search→Ocean result→Detail→Back restored query; My Voice→Back restored
+  Search. No page errors. Initial direct browser access returned EMPTY_RESPONSE;
+  the existing environment proxy enabled the authenticated browser checks.
+- Full microphone/Auto Mix and new turntable audio advance/pause were tested
+  locally at both widths with Chromium synthetic microphone/isolated demo Tracks.
+  Remote smoke does not claim a second full microphone/Auto Mix run.
 
 ## Next checkpoint
 
-1. Produce/deliver the static assets above without stopping code work.
-2. Refine remaining visual differences against Figma, then repeat relevant visual
-   checks; integrate the separate Resonance result only in a separately authorized task.
-3. Validate actual microphone/earphones and obtain the needed music/lyric sources
-   before calling the presentation app fully complete.
+1. Compare remaining Home carousel neighbour records, Part/monitoring identity
+   slots and Recording graphic alignment with current Figma; preserve working
+   interactions and use only valid person-owned identities for participant art.
+2. Review the new static/dynamic composite visually. Existing Resonance shape and
+   completed 3D fidelity remain separate; do not merge/change standalone algorithms.
+3. Validate physical microphone/earphones and obtain required music/lyric sources
+   before declaring the presentation app fully complete. Keep honest missing-source
+   messages and preserve failed recording/submission recovery.
