@@ -125,3 +125,31 @@
 .recording-v2-screen .recording-visual .record{width:640px!important;height:640px!important;max-width:none;top:300px;opacity:1}
 .recording-v2-screen .recording-visual .record-inflow{height:320px;top:0}
 @media(max-width:429px){.v2-turntable-stage{width:calc(100% + 40px);margin-inline:-20px}}
+
+/* Search 1375:21544: retain dynamic artwork/data and existing navigation. */
+.search-v2-screen .topbar{height:74px;padding:4px 24px 0;grid-template-columns:minmax(0,1fr) 44px}
+.search-v2-screen .topbar .wordmark{display:none}
+.search-v2-screen .topbar-center{font:500 24px/30px var(--font-interface);letter-spacing:-.12px;justify-self:start;color:#ece6dc}
+.search-v2-screen>main{padding-top:0}
+.search-v2-screen .search-v2-input{height:48px;gap:10px;border-color:#34302c}
+.search-v2-screen .search-v2-input input{font:400 13px/19px var(--font-interface)}
+.search-v2-tabs{border:0}
+.search-v2-tabs button{height:44px;padding:11px 2px 12px;font:400 13px/19px var(--font-interface)}
+.search-v2-tabs button.active{font-weight:400}
+.search-v2-controls{margin:15px 0;min-height:44px}
+.search-v2-controls button,.search-v2-controls select{position:relative;isolation:isolate;min-height:44px;border:0;border-radius:18px;background:transparent;padding:0 13px;font:500 12px/16px var(--font-interface);white-space:nowrap}
+.search-v2-controls button{display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.search-v2-controls button::before,.search-v2-sort::before{background:#1c1815;box-shadow:inset 0 0 0 1px #34302c}
+.search-v2-controls button::before,.search-v2-sort::before{content:"";position:absolute;inset:5px 0;border-radius:18px;z-index:-1}
+.search-v2-controls button.active::before{box-shadow:inset 0 0 0 1px #ece6dc}
+.search-v2-sort{position:relative;isolation:isolate;margin-left:auto;display:block;height:44px}
+.search-v2-controls .search-v2-sort select{height:44px;min-height:44px;background:transparent;box-shadow:none;margin:0;max-width:140px}
+.search-v2-controls select:focus{outline:2px solid #ece6dc;outline-offset:2px}
+.search-v2-screen p.search-v2-summary{margin:15px 0 20px;font:500 12px/16px var(--font-interface)}
+.search-v2-screen .search-v2-result{gap:16px;min-height:129px;padding:18px 0;border:0;align-items:center}
+.search-v2-screen .v2-song-artwork.search-v2-record{flex:0 0 92px;width:92px;height:92px;border-radius:3px}
+.search-v2-result strong{font:600 18px/24px var(--font-interface);letter-spacing:-.09px;overflow-wrap:anywhere}
+.search-v2-result small{font:400 13px/19px var(--font-interface)}
+.search-v2-result em{font:500 12px/16px var(--font-interface);color:#ece6dc;font-style:normal}
+.search-v2-result-action{font:500 12px/16px var(--font-interface);color:#918a80}
+@media(max-width:429px){.search-v2-screen .topbar{padding-inline:20px}}

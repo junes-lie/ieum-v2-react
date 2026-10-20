@@ -659,11 +659,11 @@ function SearchScreen({ openSong, openCreatedProject, openComplete, openMyVoice,
     <main>
       <label className="search-v2-input"><Icon name="search" size={20}/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="곡, 아티스트, 프로젝트 검색" aria-label="곡, 아티스트, 프로젝트 검색"/>{query&&<button aria-label="검색어 지우기" onClick={()=>setQuery('')}>×</button>}</label>
       <div className="search-v2-tabs" role="tablist" aria-label="검색 결과 유형">
-        {[['projects','모집 프로젝트'],['songs','곡'],['completed','완성곡']].map(([id,name])=><button key={id} role="tab" aria-selected={tab===id} className={tab===id?'active':''} onClick={()=>{setTab(id);setGenre('전체');setPart('전체');setFitOnly(false);setSort('추천순');setShowFilters(false)}}>{name}</button>)}
+        {[['songs','곡'],['projects','모집 프로젝트'],['completed','완성곡']].map(([id,name])=><button key={id} role="tab" aria-selected={tab===id} className={tab===id?'active':''} onClick={()=>{setTab(id);setGenre('전체');setPart('전체');setFitOnly(false);setSort('추천순');setShowFilters(false)}}>{name}</button>)}
       </div>
       <div className="search-v2-controls">
-        {tab==='projects'?<><button aria-pressed={fitOnly} className={fitOnly?'active':''} onClick={()=>setFitOnly(v=>!v)}>내 음역에 맞는 Part</button><button onClick={()=>setShowFilters(v=>!v)} aria-expanded={showFilters}>필터</button></>:<button onClick={()=>setShowFilters(v=>!v)} aria-expanded={showFilters}>장르 · {genre}</button>}
-        <select aria-label="결과 정렬" value={sort} onChange={e=>setSort(e.target.value)}><option>추천순</option><option>{tab==='projects'?'최근 열린 순':'최근 추가된 순'}</option></select>
+        {tab==='projects'?<><button aria-pressed={fitOnly} className={fitOnly?'active':''} onClick={()=>setFitOnly(v=>!v)}>내 음역에 맞는 Part</button><button onClick={()=>setShowFilters(v=>!v)} aria-expanded={showFilters}>필터 <Icon name="sliders" size={12}/></button></>:<button onClick={()=>setShowFilters(v=>!v)} aria-expanded={showFilters}>장르 · {genre}</button>}
+        <label className="search-v2-sort"><select aria-label="결과 정렬" value={sort} onChange={e=>setSort(e.target.value)}><option>추천순</option><option>{tab==='projects'?'최근 열린 순':'최근 추가된 순'}</option></select></label>
       </div>
       {showFilters&&<div className="search-v2-filter-panel">
         {tab==='projects'&&<fieldset><legend>모집 파트</legend>{['전체','Soprano','Alto','Tenor','Bass'].map(value=><button key={value} aria-pressed={part===value} onClick={()=>setPart(value)}>{value}</button>)}</fieldset>}
@@ -675,8 +675,7 @@ function SearchScreen({ openSong, openCreatedProject, openComplete, openMyVoice,
         const song=tab==='songs'?item:item.song,project=tab==='songs'?null:item.project
         return <button className="search-v2-result" key={project?.id||song.id||index} onClick={()=>tab==='completed'?(item.publicExample?openComplete(project.id):item.isCreated?openCreatedProject(project.id):openComplete()):openSong(song.id,project?.id||null)}>
           <SongArtwork className="search-v2-record" song={song}/>
-          <span><strong>{song.title}</strong><small>{song.artist}{project?' · '+(project.name||'프로젝트'):''}</small><em>{tab==='projects'?`OPEN · ${item.openParts.map(part=>part.name).join(' · ')}`:tab==='completed'?'완성곡':'곡 상세 보기'}</em></span>
-          <span aria-hidden="true">→</span>
+          <span className="search-v2-result-copy"><strong>{song.title}</strong><small>{tab==='projects'?`${project.parts.filter(part=>part.participantId||part.participant).length}명 참여 · ${item.partCount}파트`:item.publicExample?'IEUM Originals · 시연 음원':song.artist}</small><em>{tab==='projects'?`OPEN · ${item.openParts.map(part=>part.name).join(' · ')}`:tab==='completed'?'완성곡':song.genre}</em><span className="search-v2-result-action">{tab==='projects'?'프로젝트 확인':tab==='completed'?'완성곡 듣기':'곡 상세 보기'} <span aria-hidden="true">→</span></span></span>
         </button>
       }):<div className="search-v2-empty"><p>검색 결과가 없어요. 검색어나 필터를 변경해 보세요.</p><button onClick={()=>{setQuery('');setGenre('전체');setPart('전체');setFitOnly(false)}}>검색 조건 초기화</button></div>}</div>
     </main>
