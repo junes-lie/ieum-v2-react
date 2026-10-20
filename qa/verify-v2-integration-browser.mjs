@@ -30,10 +30,11 @@ try{
    results.push({width,screen,geometry})
   }
   await page.locator('.v2-recent').scrollIntoViewIfNeeded()
-  await page.waitForFunction(()=>[...document.querySelectorAll('.v2-song-artwork img,.v2-hero-artwork,.v2-profile-icon img')].every(img=>img.complete&&img.naturalWidth>0))
+  await page.waitForFunction(()=>[...document.querySelectorAll('.v2-song-artwork img,.v2-hero-artwork,.v2-profile-icon img,.v2-turntable-housing')].every(img=>img.complete&&img.naturalWidth>0))
   await page.evaluate(()=>scrollTo(0,0))
   await check('home');assert.equal(await page.locator('.v2-song-grid>button').count(),3)
   assert.equal(await page.locator('.v2-song-grid img').count(),3,'All recommended songs have local cover art')
+  assert.ok(await page.locator('.v2-turntable-frame canvas').count()>0,'Housing retains the live project renderer')
   const artworkGeometry=await page.locator('.v2-project-thumbnail').evaluateAll(nodes=>nodes.map(node=>{
     const bounds=node.getBoundingClientRect(),record=node.querySelector('.v2-thumbnail-record').getBoundingClientRect(),sleeve=node.querySelector('.v2-thumbnail-sleeve').getBoundingClientRect()
     return {inside:[record,sleeve].every(r=>r.left>=bounds.left&&r.right<=bounds.right&&r.top>=bounds.top&&r.bottom<=bounds.bottom),recordWidth:record.width,sleeveWidth:sleeve.width}
@@ -64,6 +65,10 @@ try{
   await check('workspace');assert.equal(await page.locator('.v2-part-module').count(),4)
   const inclusion=page.getByRole('checkbox',{name:'Soprano 현재 Mix 포함',exact:true});const checked=await inclusion.isChecked();await inclusion.click();assert.notEqual(await inclusion.isChecked(),checked);await inclusion.click()
   await page.getByRole('button',{name:'Soprano Track 재생',exact:true}).click();await page.waitForSelector('.listening-context');await page.getByRole('button',{name:'현재 Mix로',exact:true}).click()
+  const turntablePlay=page.locator('[data-action="turntable-play"]')
+  await turntablePlay.click();await page.waitForFunction(()=>document.querySelector('.workspace-v2-screen audio')?.currentTime>.1)
+  assert.equal(await turntablePlay.getAttribute('aria-label'),'현재 듣기 일시정지')
+  await turntablePlay.click();await page.waitForFunction(()=>document.querySelector('.workspace-v2-screen audio')?.paused)
   await page.locator('[data-action="record-part"]').click();await page.waitForSelector('.recording-v2-screen');await check('recording')
   assert.equal(await page.locator('.bottom-nav').count(),0)
   const guide=page.getByRole('checkbox',{name:'Guide 반주',exact:true});await guide.focus();await page.keyboard.press('Space');assert.equal(await guide.isChecked(),false)

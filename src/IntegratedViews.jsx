@@ -11,6 +11,10 @@ export function SongArtwork({song,className=''}) {
   return <span className={`v2-song-artwork ${className}`} aria-hidden="true">{src?<img src={src} alt="" loading="lazy" decoding="async" width="256" height="256"/>:<span>{song.title}</span>}</span>
 }
 
+export function TurntableFrame({children,playing,onPlay,canPlay}) {
+  return <div className="v2-turntable-frame"><div className="v2-turntable-live-record">{children}</div><img className="v2-turntable-housing" src="/artwork/turntable-housing.webp" width="900" height="900" alt="" decoding="async"/>{onPlay&&<button className="v2-turntable-play" data-action="turntable-play" disabled={!canPlay} onClick={onPlay} aria-label={playing?'현재 듣기 일시정지':'현재 듣기 재생'}><Icon name={playing?'pause':'play'} size={18}/></button>}</div>
+}
+
 export function SectionHeading({title,action,onAction}) {
   return <div className="v2-section-heading"><h2>{title}</h2>{onAction&&<button onClick={onAction}>{action||'전체 보기'} <span aria-hidden="true">→</span></button>}</div>
 }
@@ -48,7 +52,7 @@ export function HomeView({header,entries,songs,renderRecord,openSong,openProject
         <SectionHeading title="파트 모집 중" onAction={()=>openSearch('projects')}/><p className="v2-section-note">내 음역과 취향에 맞는 프로젝트</p>
         {selected?<><div className="v2-carousel-nav"><button aria-label="이전 모집 프로젝트" disabled={recruiting.length<2} onClick={()=>change(-1)}>‹</button><span aria-live="polite">{String(Math.min(index,recruiting.length-1)+1).padStart(2,'0')} / {String(recruiting.length).padStart(2,'0')}</span><button aria-label="다음 모집 프로젝트" disabled={recruiting.length<2} onClick={()=>change(1)}>›</button></div>
           <div className="v2-turntable-stage" onPointerDown={event=>{pointer.current=event.clientX}} onPointerUp={event=>{if(pointer.current!==null&&Math.abs(event.clientX-pointer.current)>45)change(event.clientX<pointer.current?1:-1);pointer.current=null}} onPointerCancel={()=>{pointer.current=null}}>
-            <div className="v2-recruit-record" key={selected.project.id}>{renderRecord(selected)}</div>
+            <div className="v2-recruit-record" key={selected.project.id}><TurntableFrame>{renderRecord(selected)}</TurntableFrame></div>
           </div><div className="v2-recruit-info"><h3>{selected.song.title}</h3><p>OPEN · {selected.openParts.map(part=>part.name).join(' · ')} <span>{selected.partCount-selected.openParts.length}명 참여</span></p></div><button className="primary v2-project-action" data-action="open-parts" onClick={()=>open(selected)}>프로젝트 보기 <span aria-hidden="true">→</span></button></>:<p className="empty-proof">현재 모집 중인 프로젝트가 없어요.</p>}
       </section>
       <section className="v2-recommended"><SectionHeading title="어떤 곡으로 시작할까요" onAction={()=>openSearch('songs')}/><div className="v2-song-grid">{songs.slice(0,3).map(song=><button className="v2-song-card" key={song.id} onClick={()=>openSong(song.id)}><SongArtwork song={song} className="v2-cover-slot"/><strong>{song.title}</strong><small>{song.artist}</small><small>프로젝트 {entries.filter(entry=>entry.song.id===song.id).length}</small></button>)}</div></section>
