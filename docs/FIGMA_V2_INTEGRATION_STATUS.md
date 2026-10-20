@@ -3,14 +3,44 @@
 ## Current result
 
 - User authorized main integration and immediate verified Production deployments.
-  Main and feature/figma-v2-integration share runtime code `b3069a31fe929ead330e0b9b4fcf98a5308c93b5`.
+  This checkpoint adds continuous opaque Record motion to the previously deployed
+  `b3069a3` runtime and `b57c1d4` Production verification checkpoint.
 - Original application: https://ieum-v2-react.vercel.app.
 - Includes the previously verified carousel/Figma button, foreground Record over
   fixed turntable, range-independent direct participation and independent
   completed-song listening catalogue.
 - Expected-HEAD fast-forward updates only. No standalone Resonance branch or
   renderer algorithm changes. This is not final visual/physical-device acceptance.
-- This checkpoint releases only the public-results-production-e6c6de6fbc91 lock.
+- This checkpoint releases only the continuous-record-slide-e6c6de6fbc91 lock.
+
+## Continuous Record slide and navigation verification · 2026-10-21
+
+- User rejected the added fade. Removed opacity animation completely. The same
+  previous/next Record DOM and live Canvas now travel into the center while the
+  outgoing center travels to the opposite side; graphics are not replaced before
+  animating. The fixed housing/platter remain mounted behind the moving records.
+- Five stable virtual positions include two offscreen entries for a seamless
+  bounded carousel. First/last wrap uses the same continuous motion. Interrupted
+  animation reads its current rendered transform before retargeting.
+- Retained the existing 255px deck, 172px neighbour records, platter geometry,
+  original Figma button, pointer/keyboard/swipe selection and graphic sources.
+  Reduced motion updates directly without a slide.
+- Verified existing in-app routes: Home Project button → Detail → OPEN Tenor →
+  participation → Workspace; bottom Projects → resume → Workspace; own Part
+  recording button → Recording. No manual URL entry is required.
+- Build, all 13 maintained Node suites and updated Chromium integration at
+  390/430px passed. Checks cover Canvas/DOM continuity, no opacity keyframes,
+  stationary housing, settled sizes, wrap, rapid reversal, reduced motion,
+  unchanged submitted Track count and actual navigation.
+- Existing public playback/save/reload, Search/Back and synthetic-mic
+  recording/pause/resume/Review/submit/Auto Mix/Completed regression passed.
+  These tests do not claim physical microphone/audio quality or real collaboration.
+- Desktop Figma MCP on 127.0.0.1:3845 was unavailable. No new design source or
+  acceptance is claimed; this correction follows the user's explicit no-fade
+  request and preserves the previously verified design geometry.
+- Production verification is pending the main update for this checkpoint.
+  Expected runtime asset: `index-DM_WfwEP.js`, CSS `index-DgFztpDg.css`.
+  Verify the original stable URL and these navigation paths after deployment.
 
 ## Independent completed-song catalogue · 2026-10-21
 
@@ -248,7 +278,7 @@ React integration. `public/artwork/README.md` records sources and use boundaries
   missing-source notice is retained. Production-ready music/lyrics licensing,
   real-device microphone/earphone testing and final visual acceptance remain open.
 
-## Original Production verification — latest runtime
+## Original Production verification — previous runtime
 
 - URL: https://ieum-v2-react.vercel.app.
 - Deployment: `dpl_Et9Ra7VpMuyGi3RK6hrt7yh9Xm4R`, READY, Git Integration,

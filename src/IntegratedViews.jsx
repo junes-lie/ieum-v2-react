@@ -1,4 +1,4 @@
-import React, {useEffect,useRef,useState} from 'react'
+import React, {useEffect,useLayoutEffect,useRef,useState} from 'react'
 import Icon from './Icons.jsx'
 import {songArtwork} from './songArtwork.js'
 
@@ -19,16 +19,25 @@ export function ProjectActionButton({onClick}) {
   return <button className="primary v2-project-action" data-action="open-parts" data-figma-node="1488:33657" onClick={onClick}><span className="v2-project-action-surface" aria-hidden="true"/><span className="v2-project-action-label">프로젝트 보기 →</span></button>
 }
 
-function RecordSlide({projectId,direction,children}) {
+function RecordSlide({projectId,slot,children}) {
   const ref=useRef(null)
-  const mounted=useRef(false)
-  useEffect(()=>{
-    if(!mounted.current){mounted.current=true;return}
-    if(!direction||window.matchMedia('(prefers-reduced-motion: reduce)').matches)return
-    const animation=ref.current.animate([{transform:`translateX(${direction*172}px)`,opacity:.25},{transform:'translateX(0)',opacity:1}],{duration:380,easing:'cubic-bezier(.22,.61,.36,1)'})
-    return()=>animation.cancel()
-  },[projectId,direction])
-  return <div className="v2-record-slide" ref={ref}>{children}</div>
+  const animation=useRef(null)
+  const positioned=useRef(false)
+  useLayoutEffect(()=>{
+    // The fixed 255px deck's platter is 74.8%, offset 8.2% / 10.6%.
+    // Keep the 172px side records at their existing Figma positions.
+    const target=slot===0?'translate(0px, 0px) scale(1)':`translate(${slot*230+11.22}px, 5.055px) scale(${172/(255*.748)})`
+    const node=ref.current
+    const from=positioned.current?window.getComputedStyle(node).transform:target
+    animation.current?.cancel()
+    node.style.transform=target
+    if(positioned.current&&typeof node.animate==='function'&&!window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+      animation.current=node.animate([{transform:from},{transform:target}],{duration:380,easing:'cubic-bezier(.22,.61,.36,1)'})
+    }
+    positioned.current=true
+  },[slot])
+  useEffect(()=>()=>animation.current?.cancel(),[])
+  return <div className="v2-record-slide v2-carousel-record" data-project-id={projectId} data-slot={slot} ref={ref}>{children}</div>
 }
 
 // Catalogue art is illustrative, never a measured identity or a submitted Track.
@@ -73,24 +82,31 @@ export function HomeView({header,entries,songs,renderRecord,openSong,openProject
   const completed=entries.filter(entry=>entry.complete)
   const [index,setIndex]=useState(0)
   const [direction,setDirection]=useState(0)
-  const selectedIndex=Math.min(index,Math.max(0,recruiting.length-1))
+  const selectedIndex=recruiting.length?((index%recruiting.length)+recruiting.length)%recruiting.length:0
   const selected=recruiting[selectedIndex]
   const previous=recruiting[(selectedIndex-1+recruiting.length)%recruiting.length]
   const next=recruiting[(selectedIndex+1)%recruiting.length]
   const pointer=useRef(null)
   const swiped=useRef(false)
-  const change=delta=>{setDirection(delta);setIndex(current=>(Math.min(current,Math.max(0,recruiting.length-1))+delta+recruiting.length)%Math.max(1,recruiting.length))}
+  const change=delta=>{setDirection(delta);setIndex(current=>current+delta)}
+  // Stable virtual positions retain each live Canvas as it travels between slots.
+  // The outer two records enter/leave beyond the clipped carousel viewport.
+  const slides=selected?Array.from({length:recruiting.length>1?5:1},(_,offset)=>{
+    const slot=recruiting.length>1?offset-2:0
+    const position=index+slot
+    return {slot,position,entry:recruiting[((position%recruiting.length)+recruiting.length)%recruiting.length]}
+  }):[]
   const open=entry=>entry.complete?openProject(entry):openSong(entry.song.id,entry.project.id)
   return <div className="screen figma-v2 home-v2-screen" data-screen-id="01">
     <section className="v2-hero"><img className="v2-hero-artwork" src="/artwork/home-hero.webp" width="1300" height="1209" alt="" fetchPriority="high"/>{header}<div className="v2-hero-copy"><h1>다른 목소리,<br/>하나의 노래.</h1><p>함께 부를 곡을 고르고,<br/>당신의 목소리를 더해보세요.</p></div></section>
     <main>
       <section className="v2-recruitment" id="recruiting-projects" tabIndex={-1}>
         <SectionHeading title="파트 모집 중" onAction={()=>openSearch('projects')}/><p className="v2-section-note">내 음역과 취향에 맞는 프로젝트</p>
-        {selected?<><div className="v2-carousel-nav"><button aria-label="이전 모집 프로젝트" disabled={recruiting.length<2} onClick={()=>change(-1)}>‹</button><span aria-live="polite">{String(Math.min(index,recruiting.length-1)+1).padStart(2,'0')} / {String(recruiting.length).padStart(2,'0')}</span><button aria-label="다음 모집 프로젝트" disabled={recruiting.length<2} onClick={()=>change(1)}>›</button></div>
+        {selected?<><div className="v2-carousel-nav"><button aria-label="이전 모집 프로젝트" disabled={recruiting.length<2} onClick={()=>change(-1)}>‹</button><span aria-live="polite">{String(selectedIndex+1).padStart(2,'0')} / {String(recruiting.length).padStart(2,'0')}</span><button aria-label="다음 모집 프로젝트" disabled={recruiting.length<2} onClick={()=>change(1)}>›</button></div>
           <div className="v2-turntable-stage" role="group" aria-label="모집 프로젝트 레코드 탐색" data-direction={direction} onPointerDown={event=>{pointer.current={x:event.clientX,y:event.clientY};swiped.current=false}} onPointerUp={event=>{if(pointer.current){const dx=event.clientX-pointer.current.x,dy=event.clientY-pointer.current.y;if(Math.abs(dx)>45&&Math.abs(dx)>Math.abs(dy)){swiped.current=true;change(dx<0?1:-1)}}pointer.current=null}} onPointerCancel={()=>{pointer.current=null;swiped.current=false}} onClickCapture={event=>{if(swiped.current){event.preventDefault();event.stopPropagation();swiped.current=false}}}>
-            {recruiting.length>1&&<button className="v2-carousel-neighbor v2-carousel-neighbor-previous" aria-label={`이전 프로젝트 선택: ${previous.song.title}`} onClick={()=>change(-1)}><RecordSlide projectId={previous.project.id} direction={direction}>{renderRecord(previous,{recruitment:true})}</RecordSlide></button>}
-            <div className="v2-recruit-record" data-project-id={selected.project.id}><TurntableFrame><RecordSlide projectId={selected.project.id} direction={direction}>{renderRecord(selected,{recruitment:true})}</RecordSlide></TurntableFrame></div>
-            {recruiting.length>1&&<button className="v2-carousel-neighbor v2-carousel-neighbor-next" aria-label={`다음 프로젝트 선택: ${next.song.title}`} onClick={()=>change(1)}><RecordSlide projectId={next.project.id} direction={direction}>{renderRecord(next,{recruitment:true})}</RecordSlide></button>}
+            {recruiting.length>1&&<button className="v2-carousel-neighbor v2-carousel-neighbor-previous" aria-label={`이전 프로젝트 선택: ${previous.song.title}`} onClick={()=>change(-1)}/>}
+            <div className="v2-recruit-record" data-project-id={selected.project.id}><TurntableFrame>{slides.map(({slot,position,entry})=><RecordSlide key={position} projectId={entry.project.id} slot={slot}>{renderRecord(entry,{recruitment:true})}</RecordSlide>)}</TurntableFrame></div>
+            {recruiting.length>1&&<button className="v2-carousel-neighbor v2-carousel-neighbor-next" aria-label={`다음 프로젝트 선택: ${next.song.title}`} onClick={()=>change(1)}/>}
           </div><div className="v2-recruit-info"><h3>{selected.song.title}</h3><p>OPEN · {selected.openParts.map(part=>part.name).join(' · ')} <span>{selected.partCount-selected.openParts.length}명 참여</span></p></div><ProjectActionButton onClick={()=>open(selected)}/></>:<p className="empty-proof">현재 모집 중인 프로젝트가 없어요.</p>}
       </section>
       <section className="v2-recommended"><SectionHeading title="어떤 곡으로 시작할까요" onAction={()=>openSearch('songs')}/><div className="v2-song-grid">{songs.slice(0,3).map(song=><button className="v2-song-card" key={song.id} onClick={()=>openSong(song.id)}><SongArtwork song={song} className="v2-cover-slot"/><strong>{song.title}</strong><small>{song.artist}</small><small>프로젝트 {entries.filter(entry=>entry.song.id===song.id).length}</small></button>)}</div></section>

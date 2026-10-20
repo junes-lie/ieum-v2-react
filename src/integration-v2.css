@@ -103,12 +103,13 @@
 
 /* Figma's 255px fixed deck and 172px neighbouring project records. */
 .v2-turntable-stage{position:relative;width:calc(100% + 48px);margin-inline:-24px;overflow:hidden}
-.v2-carousel-neighbor{position:absolute;top:41.5px;width:172px;height:172px;padding:0;border:0;border-radius:50%;background:none;color:inherit}
+.v2-carousel-neighbor{position:absolute;top:41.5px;width:172px;height:172px;padding:0;border:0;border-radius:50%;background:none;color:inherit;z-index:2}
 .v2-carousel-neighbor-previous{right:calc(50% + 144px)}
 .v2-carousel-neighbor-next{left:calc(50% + 144px)}
 .v2-carousel-neighbor>span,.v2-carousel-neighbor .record{display:block;width:172px;height:172px;margin:0;filter:none}
 .v2-carousel-neighbor:focus-visible{outline:2px solid #ece6dc;outline-offset:-3px}
 .v2-project-record-graphic,.v2-record-slide{width:100%;height:100%}
+.v2-carousel-record{position:absolute;inset:0;transform-origin:center;pointer-events:none}
 
 /* Keep one live-input graphic, with compact numeric readouts above the controls. */
 .recording-v2-screen .v2-instrument-readout{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;min-height:18px}
