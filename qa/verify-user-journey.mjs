@@ -24,6 +24,7 @@ window.HTMLMediaElement.prototype.pause=()=>{}
 globalThis.fetch=async url=>{assert.equal(url,'/demo-stems/manifest.json','Existing submitted Tracks must prevent loading replacement demo audio');return {ok:true,json:async()=>({tracks:[{partId:'soprano',file:'/demo-stems/soprano.wav'},{partId:'alto',file:'/demo-stems/alto.wav'}]})}}
 const appTemp=new URL('../src/.qa-user-journey-app.mjs',import.meta.url)
 const iconsTemp=new URL('../src/.qa-user-journey-icons.mjs',import.meta.url)
+const viewsTemp=new URL('../src/.qa-user-journey-views.mjs',import.meta.url)
 const preferencesTemp=new URL('../src/.qa-user-journey-preferences.mjs',import.meta.url)
 const projectId='ieum-thousand-years-v7',seed='ieum:thousand-years:original-c:0048',profileId='ieum-v2:voice-profile:v7'
 const blob=new Blob(['isolated synthetic recording bytes'],{type:'audio/wav'})
@@ -49,10 +50,11 @@ try{
  await writeFile(iconsTemp,(await transformWithOxc(icons,'Icons.jsx',{jsx:{runtime:'classic'}})).code)
  const preferences=await readFile(new URL('../src/VoicePreferenceChoices.jsx',import.meta.url),'utf8')
  await writeFile(preferencesTemp,(await transformWithOxc(preferences,'VoicePreferenceChoices.jsx',{jsx:{runtime:'classic'}})).code.replace('./Icons.jsx','./.qa-user-journey-icons.mjs'))
+ await writeFile(viewsTemp,(await transformWithOxc(await readFile(new URL('../src/IntegratedViews.jsx',import.meta.url),'utf8'),'IntegratedViews.jsx',{jsx:{runtime:'classic'}})).code.replace('./Icons.jsx','./.qa-user-journey-icons.mjs'))
  const recordingSource=source.replace('  requestMicrophone,','  requestMicrophone as realRequestMicrophone,').replace('  startRecording,','  startRecording as realStartRecording,').replace('loadProjectBacking, projectAudioReference','loadProjectBacking as realLoadProjectBacking, projectAudioReference')+
   '\nconst requestMicrophone=async()=>{};const loadProjectBacking=async()=>null;const startRecording=async options=>{globalThis.__qaRecordingOptions=options;};'
  const observedSource=recordingSource.replaceAll('onDraftChange?.(false)', 'globalThis.__qaDraftChanges.push(false); onDraftChange?.(false)')
- const code=(await transformWithOxc(observedSource,'App.jsx',{jsx:{runtime:'classic'}})).code.replace('./VoicePreferenceChoices.jsx','./.qa-user-journey-preferences.mjs').replace('./Icons.jsx','./.qa-user-journey-icons.mjs').replace("import { createRecordingInflowRenderer, createResonanceRenderer } from './resonanceWebGL.js'",'const createRecordingInflowRenderer=()=>()=>{}; const createResonanceRenderer=()=>({dispose(){}})')
+ const code=(await transformWithOxc(observedSource,'App.jsx',{jsx:{runtime:'classic'}})).code.replace('./IntegratedViews.jsx','./.qa-user-journey-views.mjs').replace('./VoicePreferenceChoices.jsx','./.qa-user-journey-preferences.mjs').replace('./Icons.jsx','./.qa-user-journey-icons.mjs').replace("import { createRecordingInflowRenderer, createResonanceRenderer } from './resonanceWebGL.js'",'const createRecordingInflowRenderer=()=>()=>{}; const createResonanceRenderer=()=>({dispose(){}})')
  await writeFile(appTemp,code.replace(/createResonanceRenderer\s*=\s*\(\)\s*=>\s*\(\{\s*dispose\(\)\s*\{\s*\}\s*\}\)/g, 'createResonanceRenderer=options=>{globalThis.__qaRecordCalls.push(options);return {dispose(){}}}')+'\nexport {ResonanceRecord};')
  const {default:App,ResonanceRecord,Recorder}=await import(appTemp.href)
  localStorage.setItem('ieum-v2:user-state:v7',JSON.stringify({joined:true,joinedPart:'tenor',invited:true,invitedVocalId:'luna',projectLikes:[{projectId}],songSaves:[{songId:'a-thousand-years'}],vocalSaves:[{vocalId:'luna'}]}))
@@ -140,16 +142,16 @@ try{
  await deleteRecordingDraft({userId:'jisun',projectId,partId:'tenor'})
  assert.equal(await loadTrack(draftId),null);assert.equal(Object.keys(state().projectTracks).length,3)
  check('Successful submission survives cleanup failure; original Track/draft preserved, no duplicate submission, cleanup retry leaves submitted count unchanged')
- await click('[data-nav="user"]');assert.equal(state().screen,'my');assert.ok(document.body.textContent.includes('QA personal sample'))
+ await click('[data-nav="home"]');await click('[data-action="open-my-voice"]');assert.equal(state().screen,'my');assert.ok(document.body.textContent.includes('QA personal sample'))
  await click('[data-nav="bookmark"]');assert.equal(state().screen,'collection');assert.ok(document.querySelector('[data-action="open-project-like"]'))
  await click('[data-action="open-project-like"]');assert.equal(state().screen,'workspace')
  const surface=document.querySelector('.screen');surface.scrollTop=233
- await click('[data-nav="user"]')
+ await click('[data-nav="home"]');await click('[data-action="open-my-voice"]')
  const restored={ieumScreen:'workspace',scrollTop:233}
  await act(async()=>window.dispatchEvent(new window.PopStateEvent('popstate',{state:restored})));await settle()
  assert.equal(state().screen,'workspace');assert.equal(document.querySelector('.screen').scrollTop,233)
  check('Core navigation keeps project context and popstate restores mobile frame scroll')
- const finderButton=Array.from(document.querySelectorAll('button')).find(button=>button.textContent==='다른 보컬 찾기')
+ const finderButton=Array.from(document.querySelectorAll('button')).find(button=>button.textContent==='보컬 찾기' && !button.disabled)
  assert.ok(finderButton)
  await act(async()=>finderButton.click());await settle()
  assert.equal(state().screen,'finder')
@@ -183,7 +185,7 @@ try{
  assert.equal(document.querySelector('.screen').scrollTop,121)
  await click('[data-action="collection-tab-vocals"]')
  assert.equal(document.querySelector('.screen').scrollTop,73)
- await click('[data-nav="user"]')
+ await click('[data-nav="home"]');await click('[data-action="open-my-voice"]')
  await click('[data-nav="bookmark"]')
  assert.equal(document.querySelector('[data-action="collection-tab-vocals"]').getAttribute('aria-selected'),'true')
  assert.equal(document.querySelector('.screen').scrollTop,73)
@@ -371,10 +373,10 @@ try{
   const originals=Object.values(supplied).map(item=>({item,index:item.partIndex,duration:item.duration,blob:item.blob,layer:item.layer}))
   root=createRoot(container)
   await act(async()=>root.render(React.createElement(Recorder,{go:()=>{},submit:async()=>{},partId:ownPart.id,project:recorderProject,parts:recorderParts,projectTracks:supplied,layers:recorderParts.map(part=>supplied[part.id].layer)})));await settle();await settle()
-  assert.equal(document.querySelectorAll('.guide-track-chips input').length,1,'Only another actual submitted Track is a recording Guide')
+  assert.equal(document.querySelectorAll('.v2-monitor-module:not(:first-child) input').length,1,'Only another actual submitted Track is a recording Guide')
   assert.ok(!container.textContent.includes('INVALID'))
   assert.ok(container.textContent.includes('00:18'),'Invalid input duration cannot extend recording')
-  const guideCheck=document.querySelector('.guide-track-chips input')
+  const guideCheck=document.querySelector('.v2-monitor-module:not(:first-child) input')
   await act(async()=>guideCheck.click());await settle()
   await click('[data-action="record-start"]')
   const options=globalThis.__qaRecordingOptions
@@ -406,7 +408,8 @@ try{
 }finally{
  console.error=originalError
  if(root)await act(async()=>root.unmount())
- await Promise.all([unlink(appTemp).catch(()=>{}),unlink(iconsTemp).catch(()=>{}),unlink(preferencesTemp).catch(()=>{})])
+ await Promise.all([unlink(appTemp).catch(()=>{}),unlink(iconsTemp).catch(()=>{}),unlink(preferencesTemp).catch(()=>{}),unlink(viewsTemp).catch(()=>{})])
  await clearProjectTracks(projectId);await clearProjectTracks(profileId)
  await window.happyDOM.close()
 }
+

@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import {discoveryProjects} from '../src/discovery.js'
 import {readFile,writeFile,unlink} from 'node:fs/promises'
 import {transformWithOxc} from 'vite'
 import React,{act} from 'react'
@@ -12,6 +13,7 @@ globalThis.location=window.location
 globalThis.localStorage={getItem:()=>null}
 const temp=new URL('../src/.qa-single-app-render.mjs',import.meta.url)
 const iconsTemp=new URL('../src/.qa-single-app-icons.mjs',import.meta.url)
+const viewsTemp=new URL('../src/.qa-single-app-views.mjs',import.meta.url)
 const preferencesTemp=new URL('../src/.qa-single-app-preferences.mjs',import.meta.url)
 const controlsTemp=new URL('../src/.qa-detail-listening.mjs',import.meta.url)
 try {
@@ -21,8 +23,9 @@ try {
   await writeFile(iconsTemp,iconsTransformed.code)
   const preferencesSource=await readFile(new URL('../src/VoicePreferenceChoices.jsx',import.meta.url),'utf8')
   await writeFile(preferencesTemp,(await transformWithOxc(preferencesSource,'VoicePreferenceChoices.jsx',{jsx:{runtime:'classic'}})).code.replace('./Icons.jsx','./.qa-single-app-icons.mjs'))
+ await writeFile(viewsTemp,(await transformWithOxc(await readFile(new URL('../src/IntegratedViews.jsx',import.meta.url),'utf8'),'IntegratedViews.jsx',{jsx:{runtime:'classic'}})).code.replace('./Icons.jsx','./.qa-single-app-icons.mjs'))
   const transformed=await transformWithOxc(source,'App.jsx',{jsx:{runtime:'classic'}})
-  await writeFile(temp,transformed.code.replace('./Icons.jsx','./.qa-single-app-icons.mjs').replace('./VoicePreferenceChoices.jsx','./.qa-single-app-preferences.mjs')+'\nexport {OtherVocalProfile as OtherVocalProfileQA,resolveVocalProfile,initialVocalProfileId}\n')
+  await writeFile(temp,transformed.code.replace('./IntegratedViews.jsx','./.qa-single-app-views.mjs').replace('./Icons.jsx','./.qa-single-app-icons.mjs').replace('./VoicePreferenceChoices.jsx','./.qa-single-app-preferences.mjs')+'\nexport {OtherVocalProfile as OtherVocalProfileQA,resolveVocalProfile,initialVocalProfileId}\n')
   const {default:App,Workspace,Recorder,Complete,Home,Detail,PersonalArea,OtherVocalProfileQA,resolveVocalProfile,initialVocalProfileId}=await import(temp.href)
   const noop=()=>{}
   assert.equal(initialVocalProfileId({ieumScreen:'vocal-profile',selectedVocalId:'min'}),'min','Reload retains the selected person')
@@ -70,44 +73,29 @@ try {
     createdProjects:[homeProject],createdProjectTracks:{}}
   const renderHome=extra=>renderToStaticMarkup(React.createElement(Home,{...homeProps,...extra}))
   const section=(html,title)=>html.slice(html.indexOf(`<h2>${title}</h2>`),html.indexOf('</section>',html.indexOf(`<h2>${title}</h2>`)))
-  const freshHome=renderHome()
-  assert.ok(section(freshHome,'파트 모집 중').includes('4 projects'))
-  assert.ok(section(freshHome,'파트 모집 중').includes('QA Created Trio'))
-  assert.ok(section(freshHome,'파트 모집 중').includes('00/03 · 2 Parts OPEN'))
-  assert.ok(section(freshHome,'최근 열린 프로젝트').includes('QA Created Trio'))
-  assert.ok(!section(freshHome,'완성된 곡').includes('QA Created Trio'))
   const fullTracks=Object.fromEntries(homeProject.parts.map(part=>[part.id,{id:`${homeProject.id}:${part.id}`,projectId:homeProject.id,partId:part.id,
     kind:'project-track',submissionStatus:'success',blob:new Blob(['saved original'],{type:'audio/wav'})}]))
-  const waitingMix=renderHome({createdProjectTracks:{[homeProject.id]:fullTracks}})
-  assert.ok(!section(waitingMix,'파트 모집 중').includes('QA Created Trio'))
-  assert.ok(section(waitingMix,'최근 열린 프로젝트').includes('03/03 · MIXING'))
-  assert.ok(!section(waitingMix,'완성된 곡').includes('QA Created Trio'))
-  const mixedHome=renderHome({createdProjectTracks:{[homeProject.id]:fullTracks},createdMixes:{[homeProject.id]:{url:'blob:qa-home-mix',duration:12}}})
-  assert.ok(section(mixedHome,'완성된 곡').includes('QA Created Trio'))
-  assert.ok(section(mixedHome,'완성된 곡').includes('03/03 · COMPLETE'))
-  assert.ok(!section(mixedHome,'파트 모집 중').includes('QA Created Trio'))
+  const readDiscovery=extra=>discoveryProjects({songs:[{...song,id:homeProject.songId,projects:[]}],mainProject:{id:'other-main'},createdProjects:[homeProject],...extra})[0]
+  assert.equal(readDiscovery().openParts.length,2)
+  assert.equal(readDiscovery().complete,false)
+  assert.equal(readDiscovery({createdTracks:{[homeProject.id]:fullTracks}}).submitted,3)
+  assert.equal(readDiscovery({createdTracks:{[homeProject.id]:fullTracks}}).complete,false)
+  assert.equal(readDiscovery({createdTracks:{[homeProject.id]:fullTracks},createdMixes:{[homeProject.id]:{url:'blob:mix'}}}).complete,true)
   const reviewOnly={...fullTracks.harmony,kind:'temporary-recording',submissionStatus:'review'}
-  const reviewHome=renderHome({createdProjectTracks:{[homeProject.id]:{harmony:reviewOnly}}})
-  assert.ok(section(reviewHome,'파트 모집 중').includes('00/03 · 2 Parts OPEN'))
-  assert.ok(!section(renderHome({createdMixes:{[homeProject.id]:{url:'blob:stale'}}}),'완성된 곡').includes('QA Created Trio'))
-  assert.ok(!section(renderHome({createdProjects:[{...homeProject,status:'COMPLETE'}]}),'최근 열린 프로젝트').includes('COMPLETE'),'Persisted display labels cannot replace a saved Mix')
-  const occupiedMain=renderHome({joined:true,joinedPart:'tenor',candidateAccepted:true})
-  assert.ok(!section(occupiedMain,'파트 모집 중').includes('A Thousand Years'))
-  assert.ok(section(occupiedMain,'파트 모집 중').includes('3 projects'))
-  const invitationOnly=renderHome({createdProjects:[{...homeProject,parts:homeProject.parts.map(part=>part.id==='harmony'?{...part,invitations:[{status:'sent'}]}:part)}]})
-  assert.ok(section(invitationOnly,'파트 모집 중').includes('00/03 · 2 Parts OPEN'))
+  assert.equal(readDiscovery({createdTracks:{[homeProject.id]:{harmony:reviewOnly}}}).submitted,0)
+  assert.equal(readDiscovery({createdMixes:{[homeProject.id]:{url:'blob:stale'}}}).complete,false)
   const opened=[],buttons=[],originalCreateElement=React.createElement
   try{
     React.createElement=(type,props,...children)=>{
       if(type==='button' && props?.['data-project-id']===homeProject.id)buttons.push(props)
       return originalCreateElement(type,props,...children)
     }
-    renderHome({openSong:(songId,id)=>opened.push({songId,id}),openCreatedProject:()=>assert.fail('Recruiting/recent Project must open the existing Detail first')})
+    renderHome({openSong:(songId,id)=>opened.push({songId,id}),openCreatedProject:()=>assert.fail('Recruiting Project must open Detail')})
   }finally{React.createElement=originalCreateElement}
-  assert.equal(buttons.length,2,'Created Project appears in recruiting and recent lists')
-  for(const button of buttons)button.onClick()
-  assert.deepEqual(opened,[{songId:homeProject.songId,id:homeProject.id},{songId:homeProject.songId,id:homeProject.id}],'Both actual handlers select the same Song/Project in existing Detail')
-  console.log('PASS Home rendered local discovery: created Project recruiting/recent/completed lists, real saved Track counts, assigned seats not OPEN, Review/invites do not submit, Mix success plus all Tracks required. Node render, not physical/visual/browser navigation acceptance.')
+  assert.equal(buttons.length,1,'Created Project appears in recent rows; carousel exposes one project at a time')
+  buttons[0].onClick()
+  assert.deepEqual(opened,[{songId:homeProject.songId,id:homeProject.id}])
+  console.log('PASS Discovery uses committed Track/Mix state; Review and stale Mix excluded; actual recent-row callback opens the exact Song/Project')
   for(const count of [2,3,4]){
     const workspaceProject={...homeProject,id:'qa-workspace-'+count,parts:Array.from({length:count},(_,index)=>({id:'ws-'+index,name:'Part '+index,
       participantId:index?'person-'+index:'jisun',participant:index?'Person '+index:'나',status:'submitted'})),partCount:count,totalParts:count}
@@ -127,7 +115,7 @@ try {
         return originalCreateElement(type,props,...children)
       }
       const stale=renderWorkspace({projectTracks:invalid,layers:workspaceProject.parts.map(()=>review.layer),mix:{url:'blob:stale'},mixStatus:'processing',hasDraft:true})
-      assert.ok(stale.includes('0/'+count+' Tracks'),'Review/stale Part labels cannot create Workspace submissions')
+      assert.ok(stale.includes('0/'+count+' 제출됨'),'Review/stale Part labels cannot create Workspace submissions')
       assert.ok(stale.includes('녹음 이어서 확인하기'),'Own unsubmitted Part remains available for Review')
       assert.ok(!stale.includes('완성곡 듣기') && !stale.includes('곡을 완성하고 있어요.'))
       assert.deepEqual(recordInputs[0].tracks,{})
@@ -135,12 +123,12 @@ try {
       assert.equal(mixInputs[0].mix,null)
       assert.deepEqual(mixInputs[0].projectTracks,{})
       const partial=renderWorkspace({projectTracks:{'ws-0':finals['ws-0']},mix:{url:'blob:stale'},mixStatus:'processing'})
-      assert.ok(partial.includes('1/'+count+' Tracks'))
-      assert.ok(partial.includes('현재 Mix 듣기') && !partial.includes('완성곡 듣기'))
+      assert.ok(partial.includes('1/'+count+' 제출됨'))
+      assert.ok(partial.includes('현재 Mix') && !partial.includes('완성곡 듣기'))
       assert.ok(!partial.includes('곡을 완성하고 있어요.'))
-      assert.ok(renderWorkspace({projectTracks:finals,mixStatus:'processing'}).includes('Auto Mix 확인'))
+      assert.ok(renderWorkspace({projectTracks:finals,mixStatus:'processing'}).includes('곡을 완성하고 있어요.'))
       const completed=renderWorkspace({projectTracks:finals,mix:{url:'blob:confirmed'},mixStatus:'success'})
-      assert.ok(completed.includes(count+'/'+count+' Tracks') && completed.includes('완성곡 듣기'))
+      assert.ok(completed.includes(count+'/'+count+' 제출됨') && completed.includes('완성곡 듣기'))
       actions.find(button=>button['data-action']==='open-complete').onClick()
       assert.deepEqual(destinations,['complete'])
       assert.equal(invalid['ws-0'],review,'Rendering does not mutate Review/original records')
@@ -258,7 +246,7 @@ try {
   personalFilter='all'
   const started={createdProjects:[{...homeProject,status:'RECORDING'}]}
   assert.ok(renderPersonal('collection',started).includes('RECORDING · 0/3'),'Recording starts before the first submission')
-  assert.ok(section(renderHome(started),'최근 열린 프로젝트').includes('00/03 · RECORDING'))
+  assert.ok(section(renderHome(started),'최근 열린 프로젝트').includes('0/3 제출'))
   assert.ok(renderDetail(started).includes('00/03 · RECORDING'))
   const collectionRecords=[]
   try{
@@ -280,7 +268,7 @@ try {
     const dynamicProject={id:`qa-project-${count}`,seed:`qa-seed-${count}`,parts:dynamicParts,totalParts:count,partCount:count,key:'F minor'}
     const dynamicHomeProject={...dynamicProject,title:`HOME ${count}`,name:`${count} voices`,songId:'ocean-eyes',status:'RECRUITING'}
     const dynamicHome=renderHome({createdProjects:[dynamicHomeProject]})
-    assert.ok(section(dynamicHome,'파트 모집 중').includes(`00/0${count} · ${count-1} Parts OPEN`))
+    assert.ok(section(dynamicHome,'최근 열린 프로젝트').includes(`0/${count} 제출`))
     const dynamicDetail=renderDetail({createdProjects:[dynamicHomeProject],initialProjectId:dynamicHomeProject.id})
     assert.ok(dynamicDetail.includes(`00/0${count} · RECRUITING`))
     for(const part of dynamicParts)assert.ok(dynamicDetail.includes(`data-part="${part.id}"`),'Detail retains the actual dynamic Part IDs')
@@ -308,7 +296,7 @@ try {
   const controlsSource=source.replace(/import \{ createRecordingInflowRenderer, createResonanceRenderer \} from ['"]\.\/resonanceWebGL\.js['"]/,'const createRecordingInflowRenderer=()=>()=>{}; const createResonanceRenderer=()=>({dispose(){}})')
     .replace('  createPreviewMix,','  createPreviewMix as unusedPreviewMix,')
     + '\nconst createPreviewMix=async options=>{globalThis.__qaDetailPreviewCalls.push(options);return {url:"blob:qa-detail-preview",duration:12}};'
-  await writeFile(controlsTemp,(await transformWithOxc(controlsSource,'App.jsx',{jsx:{runtime:'classic'}})).code.replace('./Icons.jsx','./.qa-single-app-icons.mjs').replace('./VoicePreferenceChoices.jsx','./.qa-single-app-preferences.mjs'))
+  await writeFile(controlsTemp,(await transformWithOxc(controlsSource,'App.jsx',{jsx:{runtime:'classic'}})).code.replace('./IntegratedViews.jsx','./.qa-single-app-views.mjs').replace('./Icons.jsx','./.qa-single-app-icons.mjs').replace('./VoicePreferenceChoices.jsx','./.qa-single-app-preferences.mjs'))
   const dom=new Window({url:'http://localhost/'})
   for(const key of ['window','document','navigator','location','localStorage','sessionStorage','HTMLElement','Event','Image','ResizeObserver'])Object.defineProperty(globalThis,key,{value:key==='window'?dom:dom[key],configurable:true,writable:true})
   globalThis.IS_REACT_ACT_ENVIRONMENT=true
@@ -351,4 +339,5 @@ try {
     assert.deepEqual(await Promise.all(Object.values(controlTracks).map(track=>track.blob.text())),beforeOriginals)
     console.log('PASS Detail isolated Node controls/effects: individual URL, selected Mix inputs, zero-selection disabled, Project switch pauses old media, original Blobs unchanged. Preview DSP/media hardware/GPU are not verified here.')
   }finally{await act(async()=>root.unmount());await dom.happyDOM.close()}
-} finally { await Promise.all([unlink(temp).catch(()=>{}),unlink(iconsTemp).catch(()=>{}),unlink(preferencesTemp).catch(()=>{}),unlink(controlsTemp).catch(()=>{})]) }
+} finally { await Promise.all([unlink(temp).catch(()=>{}),unlink(iconsTemp).catch(()=>{}),unlink(preferencesTemp).catch(()=>{}),unlink(viewsTemp).catch(()=>{}),unlink(controlsTemp).catch(()=>{})]) }
+

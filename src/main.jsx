@@ -3,5 +3,6 @@ import { createRoot } from 'react-dom/client'
 import App from './App.jsx'
 import './styles.css'
 import './design-system-v2.css'
+import './integration-v2.css'
 
 createRoot(document.getElementById('root')).render(<App />)
