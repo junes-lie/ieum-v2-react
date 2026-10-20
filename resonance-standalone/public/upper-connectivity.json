@@ -1,0 +1,118 @@
+{
+  "status": "unverified-connectivity",
+  "segments": [
+    {
+      "from": [
+        425,
+        165
+      ],
+      "c1": [
+        485,
+        112
+      ],
+      "c2": [
+        558,
+        100
+      ],
+      "to": [
+        625,
+        210
+      ],
+      "observed": false,
+      "bluePixelSupportWithin2px": 0.9311,
+      "maxBluePixelDistance": 4.47
+    },
+    {
+      "from": [
+        625,
+        210
+      ],
+      "c1": [
+        635,
+        165
+      ],
+      "c2": [
+        650,
+        75
+      ],
+      "to": [
+        610,
+        77
+      ],
+      "observed": false,
+      "bluePixelSupportWithin2px": 0.8482,
+      "maxBluePixelDistance": 3.0
+    },
+    {
+      "from": [
+        610,
+        77
+      ],
+      "c1": [
+        540,
+        78
+      ],
+      "c2": [
+        530,
+        125
+      ],
+      "to": [
+        625,
+        210
+      ],
+      "observed": false,
+      "bluePixelSupportWithin2px": 0.8262,
+      "maxBluePixelDistance": 7.28
+    },
+    {
+      "from": [
+        625,
+        210
+      ],
+      "c1": [
+        685,
+        135
+      ],
+      "c2": [
+        750,
+        120
+      ],
+      "to": [
+        820,
+        165
+      ],
+      "observed": false,
+      "bluePixelSupportWithin2px": 0.9211,
+      "maxBluePixelDistance": 4.0
+    }
+  ],
+  "joins": [
+    {
+      "afterSegment": 1,
+      "point": [
+        625,
+        210
+      ],
+      "turnDegrees": 136.1259781491328
+    },
+    {
+      "afterSegment": 2,
+      "point": [
+        610,
+        77
+      ],
+      "turnDegrees": 2.0439497644231013
+    },
+    {
+      "afterSegment": 3,
+      "point": [
+        625,
+        210
+      ],
+      "turnDegrees": 93.16036162604567
+    }
+  ],
+  "reason": "Position continuity does not establish filament identity. Two visits to [625,210] have abrupt tangent reversals; do not use these joins as observed evidence.",
+  "sourceSHA256": "be889493982f41b186426f42266b8107bdaa8b1c072f943fb0232502edc32e4b",
+  "pixelCaveat": "Blue proximity is necessary local evidence, not sufficient filament continuity; crossing and occlusion remain ambiguous."
+}

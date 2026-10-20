@@ -3,10 +3,10 @@
 // this is NOT an exact filament reconstruction or an approved replacement.
 export const sourceCenter=[625,617];
 export const orderedSegments=[
- {from:[425,165],c1:[485,112],c2:[558,100],to:[625,210],observed:true},
- {from:[625,210],c1:[635,165],c2:[650,75],to:[610,77],observed:true},
- {from:[610,77],c1:[540,78],c2:[530,125],to:[625,210],observed:true},
- {from:[625,210],c1:[685,135],c2:[750,120],to:[820,165],observed:true},
+ {from:[425,165],c1:[485,112],c2:[558,100],to:[625,210],observed:false, evidence:"unverified-upper-hypothesis"},
+ {from:[625,210],c1:[635,165],c2:[650,75],to:[610,77],observed:false, evidence:"unverified-upper-hypothesis"},
+ {from:[610,77],c1:[540,78],c2:[530,125],to:[625,210],observed:false, evidence:"unverified-upper-hypothesis"},
+ {from:[625,210],c1:[685,135],c2:[750,120],to:[820,165],observed:false, evidence:"unverified-upper-hypothesis"},
  {from:[820,165],c1:[898,220],c2:[890,300],to:[940,365],observed:false},
  {from:[940,365],c1:[1010,445],c2:[1012,505],to:[1030,560],observed:false},
  {from:[1030,560],c1:[1102,670],c2:[1140,780],to:[1080,860],observed:false},
