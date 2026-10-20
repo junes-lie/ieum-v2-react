@@ -23,8 +23,13 @@
 - Recording's missing real song lyrics/backing remains an existing incomplete asset state.
   Demo shortcuts address inspection/presentation; product onboarding remains unchanged.
 - Expected build assets: `index-ks1GZzzh.js`, `index-DHOX_ESZ.css`.
-  Git Integration deployment must be verified after main update. A preceding deployment
-  was rate-limited; do not claim these entrypoints are live without checking the served build.
+  Runtime commit: `f8a92dfaf2d77c66b740b38b19859e240b99227f`, saved to main and integration.
+  Git Integration rejected this commit for both connected projects with
+  `Deployment rate limited — retry in 24 hours.` No deployment was created.
+  Original URL still serves READY deployment `dpl_5YYHsXvR2f2SNj2C5k83z2iLC4Ge`
+  at `b57c1d4`. These new entrypoints are NOT live. Existing `?design=figma`
+  still opens Workspace in the previous runtime. Retry current verified main only
+  after the rate limit clears; do not create repeated deploy commits while limited.
 - This commit releases only `interactive-demo-entrypoints-e6c6de6fbc91`.
 
 ## Previous checkpoint result
