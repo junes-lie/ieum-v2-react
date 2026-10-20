@@ -11,3 +11,16 @@ The active Pretendard IEUM face uses the unmodified official variable WOFF2, loc
 - CSS weight range: 45–920, following the official README.
 
 Pretendard-Regular.ttf remains preserved as a previous source asset. It is a static weight-400 font and must not be declared as a variable weight range. Instrument Serif, Inter and JetBrains Mono files are unchanged.
+
+## Figma V2 typography · 2026-10-21
+
+The opt-in `.figma-v2` scope uses Pretendard for Korean/interface text,
+Montserrat for functional English labels and data, and Cormorant Garamond for
+large English expression titles. Legacy screen aliases remain unchanged.
+
+Unmodified variable fonts downloaded from the official Google Fonts repository:
+
+| Local file | Upstream source | SHA256 | License |
+| --- | --- | --- | --- |
+| Montserrat-Variable.ttf | https://raw.githubusercontent.com/google/fonts/main/ofl/montserrat/Montserrat%5Bwght%5D.ttf | 0f7b311b2f3279e4eef9b2f968bcdbab6e28f4daeb1f049f4f278a902bcd82f7 | Montserrat-OFL.txt |
+| CormorantGaramond-Variable.ttf | https://raw.githubusercontent.com/google/fonts/main/ofl/cormorantgaramond/CormorantGaramond%5Bwght%5D.ttf | b20b7d9626dd956b2c5e558692ad328b1f19e3275e2782db4fa07670d83f35e0 | CormorantGaramond-OFL.txt |

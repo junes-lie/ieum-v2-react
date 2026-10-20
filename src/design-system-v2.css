@@ -1,0 +1,111 @@
+@font-face {
+  font-family: 'Montserrat IEUM';
+  src: url('./assets/fonts/Montserrat-Variable.ttf') format('truetype');
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Cormorant Garamond IEUM';
+  src: url('./assets/fonts/CormorantGaramond-Variable.ttf') format('truetype');
+  font-weight: 300 700;
+  font-display: swap;
+}
+
+/* DESIGN_SYSTEM.md v2.0, 2026-10-21. Opt in as each screen is integrated;
+   legacy screens retain their existing styles and font aliases. */
+.figma-v2 {
+  color-scheme: dark;
+
+  --bg-canvas: #15110e;
+  --bg-elevated: #1c1815;
+  --bg-strong: #262220;
+  --bg-black: #000000;
+
+  --text-primary: #ece6dc;
+  --text-secondary: #918a80;
+  --text-tertiary: #69635d;
+
+  --line-default: #34302c;
+  --line-strong: #4b4540;
+
+  --voice-soprano: #3b82f6;
+  --voice-alto: #f16f61;
+  --voice-tenor: #d6b895;
+  --voice-bass: #2eb6ad;
+
+  --state-success: #79a987;
+  --state-warning: #c9a56a;
+  --state-danger: #d46b62;
+  --state-info: #7899be;
+
+  --font-expression-en: "Cormorant Garamond IEUM", Georgia, serif;
+  --font-interface: "Pretendard IEUM", system-ui, sans-serif;
+  --font-functional-en: "Montserrat IEUM", "Pretendard IEUM", sans-serif;
+  --font-body-en: var(--font-interface);
+  --font-data-en: var(--font-functional-en);
+  --font-data-kr: var(--font-interface);
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-15: 60px;
+  --space-16: 64px;
+
+  --type-eyebrow-size: 10px;
+  --type-main-heading-size: 32px;
+  /* 각 역할의 실제 font-size/line-height/tracking은 Typography 표 적용 */
+  --type-body-size: 15px;
+  --type-body-line: 22px;
+  --type-body-small-size: 13px;
+  --type-body-small-line: 19px;
+  --type-meta-size: 11px;
+  --type-meta-line: 16px;
+  --button-record-height: 52px;
+  --button-project-height: 48px;
+  --button-compact-width: 84px;
+  --button-compact-height: 40px;
+  --nav-height: 76px;
+  --nav-radius-top: 24px;
+  --nav-radius-bottom: 0px;
+  --gap-related-min: var(--space-3);
+  --gap-related-max: var(--space-4);
+  --gap-major-min: var(--space-10);
+  --gap-major-max: var(--space-15);
+  --gap-intro-action: var(--space-10);
+
+  --radius-xs: 3px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-full: 999px;
+
+  --ease-standard: cubic-bezier(.2, 0, 0, 1);
+  --ease-enter: cubic-bezier(0, 0, 0, 1);
+  --ease-exit: cubic-bezier(.3, 0, 1, 1);
+  --ease-resonance: cubic-bezier(.45, .05, .25, 1);
+}
+
+.figma-v2 {
+  --bg: var(--bg-canvas);
+  --surface: var(--bg-elevated);
+  --primary: var(--text-primary);
+  --secondary: var(--text-secondary);
+  --tertiary: var(--text-tertiary);
+  --line: var(--line-default);
+  --sans: var(--font-interface);
+  --serif: var(--font-expression-en);
+  --mono: var(--font-functional-en);
+  font-family: var(--font-interface);
+  background: var(--bg-canvas);
+  color: var(--text-primary);
+}
+.figma-v2 .type-expression { font-family: var(--font-expression-en); }
+.figma-v2 .type-functional { font-family: var(--font-functional-en); }
+.figma-v2 .app-scroll-region { scrollbar-width: none; }
+.figma-v2 .app-scroll-region::-webkit-scrollbar { display: none; }
