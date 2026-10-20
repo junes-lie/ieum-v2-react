@@ -96,3 +96,23 @@
 .v2-workspace-stage>.v2-turntable-frame{max-width:370px}
 .v2-turntable-play{position:absolute;z-index:2;right:8%;bottom:11%;width:44px;height:44px;display:grid;place-items:center;border:1px solid #a49372;border-radius:50%;background:linear-gradient(135deg,#3b3426,#191714 60%,#504531);color:#ece6dc;box-shadow:inset 0 1px 1px #fff2}
 .workspace-v2-screen .figma-player{grid-template-columns:minmax(0,1fr)}
+
+/* Figma's 255px fixed deck and 172px neighbouring project records. */
+.v2-turntable-stage{position:relative;width:calc(100% + 48px);margin-inline:-24px;overflow:hidden}
+.v2-carousel-neighbor{position:absolute;top:41.5px;width:172px;height:172px;padding:0;border:0;border-radius:50%;background:none;color:inherit}
+.v2-carousel-neighbor-previous{right:calc(50% + 144px)}
+.v2-carousel-neighbor-next{left:calc(50% + 144px)}
+.v2-carousel-neighbor>span,.v2-carousel-neighbor .record{display:block;width:172px;height:172px;margin:0;filter:none}
+.v2-carousel-neighbor:focus-visible{outline:2px solid #ece6dc;outline-offset:-3px}
+
+/* Keep one live-input graphic, with compact numeric readouts above the controls. */
+.recording-v2-screen .v2-instrument-readout{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;min-height:18px}
+.recording-v2-screen .v2-instrument-readout .v2-recording-time{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.recording-v2-screen .v2-instrument-readout .meter-row{margin:0;min-height:16px;gap:6px}
+.v2-recording-indicator{display:block;width:7px;height:7px;flex-shrink:0;border-radius:50%;background:#918a80}
+.v2-recording-time[data-state="recording"] .v2-recording-indicator{background:#d46b62}
+.recording-v2-screen .v2-input-clipping{color:#d46b62}
+.recording-v2-screen .recording-visual{height:600px!important}
+.recording-v2-screen .recording-visual .record{width:640px!important;height:640px!important;max-width:none;top:300px;opacity:1}
+.recording-v2-screen .recording-visual .record-inflow{height:320px;top:0}
+@media(max-width:429px){.v2-turntable-stage{width:calc(100% + 40px);margin-inline:-20px}}

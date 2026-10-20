@@ -41,9 +41,12 @@ export function HomeView({header,entries,songs,renderRecord,openSong,openProject
   const recruiting=entries.filter(entry=>!entry.complete&&entry.openParts.length)
   const completed=entries.filter(entry=>entry.complete)
   const [index,setIndex]=useState(0)
-  const selected=recruiting[Math.min(index,Math.max(0,recruiting.length-1))]
+  const selectedIndex=Math.min(index,Math.max(0,recruiting.length-1))
+  const selected=recruiting[selectedIndex]
+  const previous=recruiting[(selectedIndex-1+recruiting.length)%recruiting.length]
+  const next=recruiting[(selectedIndex+1)%recruiting.length]
   const pointer=useRef(null)
-  const change=delta=>setIndex(current=>(current+delta+recruiting.length)%Math.max(1,recruiting.length))
+  const change=delta=>setIndex(current=>(Math.min(current,Math.max(0,recruiting.length-1))+delta+recruiting.length)%Math.max(1,recruiting.length))
   const open=entry=>entry.complete?openProject(entry):openSong(entry.song.id,entry.project.id)
   return <div className="screen figma-v2 home-v2-screen" data-screen-id="01">
     <section className="v2-hero"><img className="v2-hero-artwork" src="/artwork/home-hero.webp" width="1300" height="1209" alt="" fetchPriority="high"/>{header}<div className="v2-hero-copy"><h1>다른 목소리,<br/>하나의 노래.</h1><p>함께 부를 곡을 고르고,<br/>당신의 목소리를 더해보세요.</p></div></section>
@@ -51,8 +54,10 @@ export function HomeView({header,entries,songs,renderRecord,openSong,openProject
       <section className="v2-recruitment" id="recruiting-projects" tabIndex={-1}>
         <SectionHeading title="파트 모집 중" onAction={()=>openSearch('projects')}/><p className="v2-section-note">내 음역과 취향에 맞는 프로젝트</p>
         {selected?<><div className="v2-carousel-nav"><button aria-label="이전 모집 프로젝트" disabled={recruiting.length<2} onClick={()=>change(-1)}>‹</button><span aria-live="polite">{String(Math.min(index,recruiting.length-1)+1).padStart(2,'0')} / {String(recruiting.length).padStart(2,'0')}</span><button aria-label="다음 모집 프로젝트" disabled={recruiting.length<2} onClick={()=>change(1)}>›</button></div>
-          <div className="v2-turntable-stage" onPointerDown={event=>{pointer.current=event.clientX}} onPointerUp={event=>{if(pointer.current!==null&&Math.abs(event.clientX-pointer.current)>45)change(event.clientX<pointer.current?1:-1);pointer.current=null}} onPointerCancel={()=>{pointer.current=null}}>
-            <div className="v2-recruit-record" key={selected.project.id}><TurntableFrame>{renderRecord(selected)}</TurntableFrame></div>
+          <div className="v2-turntable-stage" role="group" aria-label="모집 프로젝트 레코드 탐색" onPointerDown={event=>{pointer.current=event.clientX}} onPointerUp={event=>{if(pointer.current!==null&&Math.abs(event.clientX-pointer.current)>45)change(event.clientX<pointer.current?1:-1);pointer.current=null}} onPointerCancel={()=>{pointer.current=null}}>
+            {recruiting.length>1&&<button className="v2-carousel-neighbor v2-carousel-neighbor-previous" aria-label={`이전 프로젝트 선택: ${previous.song.title}`} onClick={()=>change(-1)}><span aria-hidden="true">{renderRecord(previous)}</span></button>}
+            <div className="v2-recruit-record" key={selected.project.id} data-project-id={selected.project.id}><TurntableFrame>{renderRecord(selected)}</TurntableFrame></div>
+            {recruiting.length>1&&<button className="v2-carousel-neighbor v2-carousel-neighbor-next" aria-label={`다음 프로젝트 선택: ${next.song.title}`} onClick={()=>change(1)}><span aria-hidden="true">{renderRecord(next)}</span></button>}
           </div><div className="v2-recruit-info"><h3>{selected.song.title}</h3><p>OPEN · {selected.openParts.map(part=>part.name).join(' · ')} <span>{selected.partCount-selected.openParts.length}명 참여</span></p></div><button className="primary v2-project-action" data-action="open-parts" onClick={()=>open(selected)}>프로젝트 보기 <span aria-hidden="true">→</span></button></>:<p className="empty-proof">현재 모집 중인 프로젝트가 없어요.</p>}
       </section>
       <section className="v2-recommended"><SectionHeading title="어떤 곡으로 시작할까요" onAction={()=>openSearch('songs')}/><div className="v2-song-grid">{songs.slice(0,3).map(song=><button className="v2-song-card" key={song.id} onClick={()=>openSong(song.id)}><SongArtwork song={song} className="v2-cover-slot"/><strong>{song.title}</strong><small>{song.artist}</small><small>프로젝트 {entries.filter(entry=>entry.song.id===song.id).length}</small></button>)}</div></section>
