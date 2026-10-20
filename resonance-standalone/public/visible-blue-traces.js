@@ -27,3 +27,20 @@ fetch('blue-junction-audit.json').then(r=>{if(!r.ok)throw Error('HTTP '+r.status
  const button=junctionBox.querySelector('button');
  button.onclick=()=>{const show=button.getAttribute('aria-pressed')!=='true';junctionBox.querySelectorAll('.junction-overlay').forEach(g=>g.style.display=show?'':'none');button.setAttribute('aria-pressed',String(show));button.textContent=show?'갈림길 표시 숨기기':'갈림길 표시 보기'};
 }).catch(e=>{junctionBox.querySelector('#junction-views').textContent='검사 자료 읽기 실패: '+e.message});
+
+// Compare the whole ambiguous cluster instead of selecting tiny branches.
+const clusterBox=document.createElement('section');
+clusterBox.innerHTML='<h2>밀집 영역 바깥의 긴 구간</h2><p>짧은 가지로 연결된 갈림점을 한 영역으로 묶었습니다. 임계값에 따라 영역이 달라지므로 내부 연결은 미확정입니다. 밝은 선은 세 조건에서 좌표가 같은 긴 구간이며, 같은 사람의 한 실선으로 연결됐다는 뜻은 아닙니다.</p><label>파랑 검출 임계값 <select id="cluster-threshold"><option>25</option><option selected>30</option><option>35</option></select></label><button id="cluster-toggle" aria-pressed="true">영역 표시 숨기기</button><p id="cluster-summary"></p><svg viewBox="515 135 195 90" role="img" aria-label="밀집 영역과 바깥 구간 비교"><image href="repetition-reference.png" width="1254" height="1254"/><g id="cluster-overlay"></g></svg><p>어두운 주황: 영역 내부 미확정 선 · 크림: 안정적인 8px 이상 방향 측정 구간 · 회색: 조건 의존/길이 부족. ROI 경계에서 잘린 구간은 추출되지 않아 전체 연결도를 의미하지 않습니다.</p><a href="blue-cluster-audit.json">영역별 좌표와 검증 결과</a>';
+document.querySelector('main').append(clusterBox);
+fetch('blue-cluster-audit.json').then(r=>{if(!r.ok)throw Error('HTTP '+r.status);return r.json()}).then(data=>{
+ const select=clusterBox.querySelector('select'), group=clusterBox.querySelector('g');
+ function draw(){
+  const r=data.results.find(r=>r.threshold===Number(select.value));group.replaceChildren();
+  const path=(points,color,width)=>{const p=document.createElementNS('http://www.w3.org/2000/svg','path');p.setAttribute('d','M'+points.map(p=>p.join(',')).join(' L'));p.style.cssText=`stroke:${color};stroke-width:${width};stroke-dasharray:none`;group.append(p)};
+  r.internal.forEach(points=>path(points,'#b77750',.3));
+  r.exits.forEach(e=>path(e.points,e.stableAcrossThresholds?'#fff1be':'#777777',e.stableAcrossThresholds?.55:.3));
+  clusterBox.querySelector('#cluster-summary').textContent=`갈림점 ${r.nodes.length}개 · 바깥 구간 ${r.exits.length}개 · 8px 방향 측정 가능 ${r.exits.filter(e=>e.has8pxBaseline).length}개 · 세 조건 공통 ${data.stableExitCount}개 · 연결 채택 0건`;
+ }
+ select.onchange=draw;draw();
+ clusterBox.querySelector('button').onclick=e=>{const show=e.target.getAttribute('aria-pressed')!=='true';group.style.display=show?'':'none';e.target.setAttribute('aria-pressed',String(show));e.target.textContent=show?'영역 표시 숨기기':'영역 표시 보기'};
+}).catch(e=>{clusterBox.querySelector('#cluster-summary').textContent='영역 자료 읽기 실패: '+e.message});
