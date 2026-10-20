@@ -1,638 +1,713 @@
 {
-  "fullLocalWaveRun": {
-    "checks": [
-      {
-        "name": "64 local time-domain RMS sections differ; stopped high then drop then signal"
-      },
-      {
-        "name": "390px actual GPU motion and sparkle attributes",
-        "data": [
-          {
-            "id": "A",
-            "dance": 1,
-            "params": [
-              1.9320000000000002,
-              0.1312,
-              0.35,
-              0.15839999999999999
-            ],
-            "shader": true,
-            "glints": 978,
-            "sparkle": 1
-          },
-          {
-            "id": "B",
-            "dance": 1,
-            "params": [
-              2.009,
-              0.2404,
-              2.65,
-              0.1296
-            ],
-            "shader": true,
-            "glints": 950,
-            "sparkle": 1
-          },
-          {
-            "id": "C",
-            "dance": 1,
-            "params": [
-              1.544,
-              0.1824,
-              5.25,
-              0.043199999999999995
-            ],
-            "shader": true,
-            "glints": 863,
-            "sparkle": 1
-          }
-        ]
-      },
-      {
-        "name": "390px actual particles rise proportionally from silence baseline",
-        "data": [
-          {
-            "energy": 0,
-            "ys": [
-              0.017999999225139618,
-              0.017999999225139618,
-              0.017999999225139618
-            ]
-          },
-          {
-            "energy": 0.25,
-            "ys": [
-              0.08308373391628265,
-              0.23062016069889069,
-              0.10103727877140045
-            ]
-          },
-          {
-            "energy": 0.6,
-            "ys": [
-              0.17419706284999847,
-              0.5282883644104004,
-              0.21725192666053772
-            ]
-          },
-          {
-            "energy": 1,
-            "ys": [
-              0.2783210575580597,
-              0.8684804439544678,
-              0.3500143587589264
-            ]
-          }
-        ]
-      },
-      {
-        "name": "390px real audio increases motion and local sparkles",
-        "data": {
-          "sources": 4,
-          "play": 0.9029957027583763,
-          "energy": 0.37207495588735795,
-          "glintMax": 0.4041627049446106,
-          "waveSpread": 0.261815145611763
-        }
-      },
-      {
-        "name": "390px pause eases motion and releases sources"
-      },
-      {
-        "name": "390px 2D has no raised motion",
-        "data": {
-          "glints": [
-            0,
-            0,
-            0,
-            0
+  "checks": [
+    {
+      "name": "pulsate envelope smooth bounded coherent rise and decay without micro jitter"
+    },
+    {
+      "name": "390px actual GPU motion and sparkle attributes",
+      "data": [
+        {
+          "id": "A",
+          "dance": 1,
+          "params": [
+            1.9320000000000002,
+            0.1312,
+            0.35,
+            0.15839999999999999
           ],
-          "morph": 0
+          "shader": true,
+          "glints": 978,
+          "sparkle": 1
+        },
+        {
+          "id": "B",
+          "dance": 1,
+          "params": [
+            2.009,
+            0.2404,
+            2.65,
+            0.1296
+          ],
+          "shader": true,
+          "glints": 950,
+          "sparkle": 1
+        },
+        {
+          "id": "C",
+          "dance": 1,
+          "params": [
+            1.544,
+            0.1824,
+            5.25,
+            0.043199999999999995
+          ],
+          "shader": true,
+          "glints": 863,
+          "sparkle": 1
         }
-      },
-      {
-        "name": "390px reduced-motion disables added lift",
-        "data": [
+      ]
+    },
+    {
+      "name": "actual renderer rest high -> falling -> guaranteed zero -> paused high",
+      "data": {
+        "rest": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "halfway": 0.5,
+        "floor": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
           0,
           0,
           0,
           0
+        ],
+        "paused": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
         ]
-      },
-      {
-        "name": "1100px actual GPU motion and sparkle attributes",
-        "data": [
-          {
-            "id": "A",
-            "dance": 1,
-            "params": [
-              1.9320000000000002,
-              0.1312,
-              0.35,
-              0.15839999999999999
-            ],
-            "shader": true,
-            "glints": 978,
-            "sparkle": 1
-          },
-          {
-            "id": "B",
-            "dance": 1,
-            "params": [
-              2.009,
-              0.2404,
-              2.65,
-              0.1296
-            ],
-            "shader": true,
-            "glints": 950,
-            "sparkle": 1
-          },
-          {
-            "id": "C",
-            "dance": 1,
-            "params": [
-              1.544,
-              0.1824,
-              5.25,
-              0.043199999999999995
-            ],
-            "shader": true,
-            "glints": 863,
-            "sparkle": 1
-          }
-        ]
-      },
-      {
-        "name": "1100px actual particles rise proportionally from silence baseline",
-        "data": [
-          {
-            "energy": 0,
-            "ys": [
-              0.017999999225139618,
-              0.017999999225139618,
-              0.017999999225139618
-            ]
-          },
-          {
-            "energy": 0.25,
-            "ys": [
-              0.08383484929800034,
-              0.23154820501804352,
-              0.10343065857887268
-            ]
-          },
-          {
-            "energy": 0.6,
-            "ys": [
-              0.17599894106388092,
-              0.5305156111717224,
-              0.223002091050148
-            ]
-          },
-          {
-            "energy": 1,
-            "ys": [
-              0.2813226282596588,
-              0.8721925020217896,
-              0.3596095144748688
-            ]
-          }
-        ]
-      },
-      {
-        "name": "1100px real audio increases motion and local sparkles",
-        "data": {
-          "sources": 4,
-          "play": 0.9029957027583768,
-          "energy": 0.3709062082501624,
-          "glintMax": 0.4036044776439667,
-          "waveSpread": 0.2737790644168854
-        }
-      },
-      {
-        "name": "1100px pause eases motion and releases sources"
-      },
-      {
-        "name": "1100px 2D has no raised motion",
-        "data": {
-          "glints": [
-            0,
-            0,
-            0,
-            0
-          ],
-          "morph": 0
-        }
-      },
-      {
-        "name": "1100px reduced-motion disables added lift",
-        "data": [
-          0,
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "45-second 4-track motion resource regression",
-        "data": {
-          "frames": 1448,
-          "geometries": 12,
-          "textures": 1,
-          "sources": 4
-        }
       }
-    ],
-    "errors": [],
-    "samples": [
-      {
-        "frames": 422,
-        "geometries": 12,
-        "textures": 1,
-        "sources": 4
-      },
-      {
-        "frames": 598,
-        "geometries": 12,
-        "textures": 1,
-        "sources": 4
-      },
-      {
-        "frames": 786,
-        "geometries": 12,
-        "textures": 1,
-        "sources": 4
-      },
-      {
-        "frames": 987,
-        "geometries": 12,
-        "textures": 1,
-        "sources": 4
-      },
-      {
-        "frames": 1233,
-        "geometries": 12,
-        "textures": 1,
-        "sources": 4
-      },
-      {
-        "frames": 1302,
-        "geometries": 12,
-        "textures": 1,
-        "sources": 4
-      },
-      {
-        "frames": 1306,
-        "geometries": 12,
-        "textures": 1,
-        "sources": 4
-      },
-      {
-        "frames": 1306,
-        "geometries": 12,
-        "textures": 1,
-        "sources": 4
-      },
-      {
-        "frames": 1448,
-        "geometries": 12,
-        "textures": 1,
-        "sources": 4
-      }
-    ],
-    "environment": "Chromium headless SwiftShader; emulated mobile and desktop",
-    "buildSHA256": "d9aab527261e7859a55e14804d50324d0753da3453a4baec6bcf18f6cd9f37f8"
-  },
-  "finalFloorTransitionRun": {
-    "checks": [
-      {
-        "name": "64 local time-domain RMS sections differ; stopped high then drop then signal"
-      },
-      {
-        "name": "390px actual GPU motion and sparkle attributes",
-        "data": [
-          {
-            "id": "A",
-            "dance": 1,
-            "params": [
-              1.9320000000000002,
-              0.1312,
-              0.35,
-              0.15839999999999999
-            ],
-            "shader": true,
-            "glints": 978,
-            "sparkle": 1
-          },
-          {
-            "id": "B",
-            "dance": 1,
-            "params": [
-              2.009,
-              0.2404,
-              2.65,
-              0.1296
-            ],
-            "shader": true,
-            "glints": 950,
-            "sparkle": 1
-          },
-          {
-            "id": "C",
-            "dance": 1,
-            "params": [
-              1.544,
-              0.1824,
-              5.25,
-              0.043199999999999995
-            ],
-            "shader": true,
-            "glints": 863,
-            "sparkle": 1
-          }
-        ]
-      },
-      {
-        "name": "actual renderer rest high -> falling -> guaranteed zero -> paused high",
-        "data": {
-          "rest": [
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1
-          ],
-          "halfway": 0.5,
-          "floor": [
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0
-          ],
-          "paused": [
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1
+    },
+    {
+      "name": "390px actual particles rise proportionally from silence baseline",
+      "data": [
+        {
+          "energy": 0,
+          "ys": [
+            0.017999999225139618,
+            0.017999999225139618,
+            0.017999999225139618
+          ]
+        },
+        {
+          "energy": 0.25,
+          "ys": [
+            0.08273252844810486,
+            0.2301303744316101,
+            0.09983081370592117
+          ]
+        },
+        {
+          "energy": 0.6,
+          "ys": [
+            0.17335458099842072,
+            0.5271128416061401,
+            0.2143532931804657
+          ]
+        },
+        {
+          "energy": 1,
+          "ys": [
+            0.27691763639450073,
+            0.8665212988853455,
+            0.3451772630214691
           ]
         }
-      },
-      {
-        "name": "390px actual particles rise proportionally from silence baseline",
-        "data": [
-          {
-            "energy": 0,
-            "ys": [
-              0.017999999225139618,
-              0.017999999225139618,
-              0.017999999225139618
-            ]
-          },
-          {
-            "energy": 0.25,
-            "ys": [
-              0.08342967927455902,
-              0.23106305301189423,
-              0.10215728729963303
-            ]
-          },
-          {
-            "energy": 0.6,
-            "ys": [
-              0.17502695322036743,
-              0.5293512344360352,
-              0.21994280815124512
-            ]
-          },
-          {
-            "energy": 1,
-            "ys": [
-              0.2797034978866577,
-              0.8702518939971924,
-              0.35450461506843567
-            ]
-          }
-        ]
-      },
-      {
-        "name": "390px real audio increases motion and local sparkles",
-        "data": {
-          "sources": 4,
-          "play": 0.9046798925590466,
-          "energy": 0.3790793258886595,
-          "glintMax": 0.4200473129749298,
-          "waveSpread": 0.35812923312187195
-        }
-      },
-      {
-        "name": "390px pause eases motion and releases sources"
-      },
-      {
-        "name": "390px 2D has no raised motion",
-        "data": {
-          "glints": [
-            0,
-            0,
-            0,
-            0
-          ],
-          "morph": 0
-        }
-      },
-      {
-        "name": "390px reduced-motion disables added lift",
-        "data": [
+      ]
+    },
+    {
+      "name": "390px real audio increases motion and local sparkles",
+      "data": {
+        "sources": 4,
+        "play": 0.9041636931029104,
+        "energy": 0.36531275694648196,
+        "glintMax": 0.40373048186302185,
+        "waveSpread": 0
+      }
+    },
+    {
+      "name": "390px pause eases motion and releases sources"
+    },
+    {
+      "name": "390px 2D has no raised motion",
+      "data": {
+        "glints": [
           0,
           0,
           0,
           0
+        ],
+        "morph": 0
+      }
+    },
+    {
+      "name": "390px reduced-motion disables added lift",
+      "data": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "1100px actual GPU motion and sparkle attributes",
+      "data": [
+        {
+          "id": "A",
+          "dance": 1,
+          "params": [
+            1.9320000000000002,
+            0.1312,
+            0.35,
+            0.15839999999999999
+          ],
+          "shader": true,
+          "glints": 978,
+          "sparkle": 1
+        },
+        {
+          "id": "B",
+          "dance": 1,
+          "params": [
+            2.009,
+            0.2404,
+            2.65,
+            0.1296
+          ],
+          "shader": true,
+          "glints": 950,
+          "sparkle": 1
+        },
+        {
+          "id": "C",
+          "dance": 1,
+          "params": [
+            1.544,
+            0.1824,
+            5.25,
+            0.043199999999999995
+          ],
+          "shader": true,
+          "glints": 863,
+          "sparkle": 1
+        }
+      ]
+    },
+    {
+      "name": "actual renderer rest high -> falling -> guaranteed zero -> paused high",
+      "data": {
+        "rest": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "halfway": 0.5,
+        "floor": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "paused": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
         ]
       }
-    ],
-    "errors": [],
-    "samples": [],
-    "environment": "Chromium headless SwiftShader; emulated mobile and desktop",
-    "buildSHA256": "92fdbb1066e12a396c17f2a207e5add6b8ba0bbf947c6f6e4711bea735751153"
-  },
-  "scopeNote": "Full desktop/mobile/audio/45s regression on first local-wave build; final addition guarantees a zero frame at playback reset and was separately verified on mobile with real renderer/audio. Physical Safari/human vocals not tested."
+    },
+    {
+      "name": "1100px actual particles rise proportionally from silence baseline",
+      "data": [
+        {
+          "energy": 0,
+          "ys": [
+            0.017999999225139618,
+            0.017999999225139618,
+            0.017999999225139618
+          ]
+        },
+        {
+          "energy": 0.25,
+          "ys": [
+            0.08338495343923569,
+            0.23100745677947998,
+            0.10201441496610641
+          ]
+        },
+        {
+          "energy": 0.6,
+          "ys": [
+            0.17491966485977173,
+            0.5292178392410278,
+            0.21959954500198364
+          ]
+        },
+        {
+          "energy": 1,
+          "ys": [
+            0.2795247733592987,
+            0.8700295686721802,
+            0.35393181443214417
+          ]
+        }
+      ]
+    },
+    {
+      "name": "1100px real audio increases motion and local sparkles",
+      "data": {
+        "sources": 4,
+        "play": 0.9065611325943745,
+        "energy": 0.39488937187882567,
+        "glintMax": 0.42813223600387573,
+        "waveSpread": 0
+      }
+    },
+    {
+      "name": "1100px pause eases motion and releases sources"
+    },
+    {
+      "name": "1100px 2D has no raised motion",
+      "data": {
+        "glints": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "morph": 0
+      }
+    },
+    {
+      "name": "1100px reduced-motion disables added lift",
+      "data": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "45-second 4-track motion resource regression",
+      "data": {
+        "frames": 1473,
+        "geometries": 12,
+        "textures": 1,
+        "sources": 4
+      }
+    }
+  ],
+  "errors": [],
+  "samples": [
+    {
+      "frames": 416,
+      "geometries": 12,
+      "textures": 1,
+      "sources": 4
+    },
+    {
+      "frames": 588,
+      "geometries": 12,
+      "textures": 1,
+      "sources": 4
+    },
+    {
+      "frames": 817,
+      "geometries": 12,
+      "textures": 1,
+      "sources": 4
+    },
+    {
+      "frames": 909,
+      "geometries": 12,
+      "textures": 1,
+      "sources": 4
+    },
+    {
+      "frames": 1162,
+      "geometries": 12,
+      "textures": 1,
+      "sources": 4
+    },
+    {
+      "frames": 1316,
+      "geometries": 12,
+      "textures": 1,
+      "sources": 4
+    },
+    {
+      "frames": 1360,
+      "geometries": 12,
+      "textures": 1,
+      "sources": 4
+    },
+    {
+      "frames": 1360,
+      "geometries": 12,
+      "textures": 1,
+      "sources": 4
+    },
+    {
+      "frames": 1473,
+      "geometries": 12,
+      "textures": 1,
+      "sources": 4
+    }
+  ],
+  "environment": "Chromium headless SwiftShader; emulated mobile and desktop",
+  "buildSHA256": "1db10d8c6b1159f7eb92e179a1e0680fcd52561fc52a60f3e8931abf0b653e17"
 }
