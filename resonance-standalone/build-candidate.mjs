@@ -16,21 +16,18 @@ try {
  await fs.copyFile(path.join(root,'qa/experiments/blue-repetition/ordered-path.js'),path.join(dir,'src/ordered-path.js'));
  // Composite uses one parent per voice in both planar and raised modes.
  let profiles=await fs.readFile(path.join(dir,'src/profiles.js'),'utf8');
- profiles=profiles.replace("export {referenceContourCount,referenceThetaStart} from './referenceContours.js';", "export {referenceThetaStart} from './referenceContours.js';export const referenceContourCount=typeof location!=='undefined'&&new URLSearchParams(location.search).get('composite')==='1'?12:24;");
+ profiles=profiles.replace("export {referenceContourCount,referenceThetaStart} from './referenceContours.js';", "export {referenceThetaStart} from './referenceContours.js';export const referenceContourCount=24;");
  profiles=profiles.replace('export const planar=repetitionMode?referenceContour:baselinePlanar;', `
 const compositeMode=typeof location!=='undefined'&&new URLSearchParams(location.search).get('composite')==='1';
 export function planar(p,t,lane,out=[0,0,0]){
  if(!repetitionMode)return baselinePlanar(p,t,lane,out);
  if(!compositeMode)return referenceContour(p,t,lane,out);
- if(p.id==='A')return referenceContour(p,t,Math.max(0,Math.min(1,lane))*11/23,out);
- if(p.id==='B'||p.id==='C'){
-  const strand=Math.round(Math.max(0,Math.min(1,lane))*11);
-  baselinePlanar(p,t,strand/11,out);
-  const radius=Math.hypot(out[0],out[2]);
-  const outer=1.98+(radius-1.57)*.60;
-  const r=outer;
-  out[0]*=r/radius;out[2]*=r/radius;
- }else baselinePlanar(p,t,lane,out);
+ // Restore the source version's nonuniform folds and fan convergence.
+ // Voice pitch shifts mean diameter; phase/brightness/air retain different bends.
+ baselinePlanar(p,t,lane,out);
+ const radius=Math.hypot(out[0],out[2]);
+ const r=Math.max(.66,radius+.40*(.5-p.pitch));
+ out[0]*=r/radius;out[2]*=r/radius;
  return out;
 }`);
  await fs.writeFile(path.join(dir,'src/profiles.js'),profiles);
@@ -40,18 +37,20 @@ export function planar(p,t,lane,out=[0,0,0]){
   try{
    globalThis.location=new URL('https://ieum.invalid/?repetition=1&composite=1');
    const model=await import('data:text/javascript;base64,'+Buffer.from(bundled.outputFiles[0].text).toString('base64'));
-   if(model.referenceContourCount!==12)throw Error('Expected one 12-strand layer');
+   if(model.referenceContourCount!==24)throw Error('Expected one 24-strand layer');
    const results=[];
    for(const p of model.defaults.slice(0,3)){
-    let minRadius=Infinity,maxRadius=0;
-    for(let strand=0;strand<12;strand++)for(let i=0;i<=720;i++){
-     const q=model.planar(p,i/720*Math.PI*2,strand/11),again=model.planar(p,i/720*Math.PI*2,strand/11);
+    let minRadius=Infinity,maxRadius=0,sumRadius=0;
+    for(let strand=0;strand<24;strand++)for(let i=0;i<=720;i++){
+     const q=model.planar(p,i/720*Math.PI*2,strand/23),again=model.planar(p,i/720*Math.PI*2,strand/23);
      if(!q.every((x,k)=>Number.isFinite(x)&&x===again[k]))throw Error('Non-deterministic or invalid path');
-     const r=Math.hypot(q[0],q[2]);minRadius=Math.min(minRadius,r);maxRadius=Math.max(maxRadius,r);
-     if(i===720&&q.some((x,k)=>Math.abs(x-model.planar(p,0,strand/11)[k])>1e-9))throw Error('Open path');
+     const r=Math.hypot(q[0],q[2]);minRadius=Math.min(minRadius,r);maxRadius=Math.max(maxRadius,r);sumRadius+=r;
+     if(i===720&&q.some((x,k)=>Math.abs(x-model.planar(p,0,strand/23)[k])>1e-9))throw Error('Open path');
     }
-    results.push({voice:p.id,strands:12,minRadius,maxRadius});
+    results.push({voice:p.id,strands:24,minRadius,maxRadius,meanRadius:sumRadius/(24*721)});
    }
+   if(results[0].meanRadius-results[2].meanRadius<.25)throw Error('Voice diameters too similar');
+   if(process.env.IEUM_QA_GEOMETRY_JSON){const curves=model.defaults.slice(0,3).map(p=>({id:p.id,color:p.color,lines:Array.from({length:24},(_,s)=>Array.from({length:721},(_,i)=>model.planar(p,i/720*Math.PI*2,s/23)))}));await fs.writeFile(process.env.IEUM_QA_GEOMETRY_JSON,JSON.stringify(curves));}
    console.log(JSON.stringify({singleLayerGeometry:results,closed:true,deterministic:true}));
   }finally{if(previousLocation===undefined)delete globalThis.location;else globalThis.location=previousLocation;}
  }
@@ -82,13 +81,14 @@ if(new URLSearchParams(location.search).get('composite')==='1'&&view){
  app += `\nif(new URLSearchParams(location.search).get('orderedPath')==='1'){document.querySelector('aside')?.insertAdjacentHTML('afterbegin','<strong>기각: 추정 연결의 윤곽 단순화·선 밀집 · </strong>');}\n`;
  await fs.writeFile(path.join(dir,'src/app.js'),app);
  let visual=await fs.readFile(path.join(dir,'src/visuals.js'),'utf8');
- visual=visual.replace('if(uContourView>.5&&vLane>.001&&(uContourView<1.5||vLane<.999))discard;', "if(uContourView>.5){if(uSingleLayer>.5){if(abs(vLane-6./11.)>.001)discard;}else if(abs(vLane-6./23.)>.001&&(uContourView<1.5||abs(vLane-18./23.)>.001))discard;}");
+ visual=visual.replace('if(uContourView>.5&&vLane>.001&&(uContourView<1.5||vLane<.999))discard;', "if(uContourView>.5){if(uSingleLayer>.5){if(abs(vLane-12./23.)>.001)discard;}else if(abs(vLane-6./23.)>.001&&(uContourView<1.5||abs(vLane-18./23.)>.001))discard;}");
  visual=visual.replace('uMorph,uContourView;', 'uMorph,uContourView,uSingleLayer;');
  visual=visual.replace('const uniforms={uLineScale:', "const uniforms={uSingleLayer:{value:new URLSearchParams(location.search).get('composite')==='1'?1:0},uLineScale:");
- visual=visual.replace('const h=xyz[1];planar(v.p,t,traceLane,xyz);xyz[1]=h;', "record(v.p,t,(l%12)/11,0,0,1,xyz);const h=xyz[1];planar(v.p,t,traceLane,xyz);xyz[1]=h;");
- const localStrand='(mod(floor(aLane*23.+.5),12.)/11.)';
+ visual=visual.replace('const h=xyz[1];planar(v.p,t,traceLane,xyz);xyz[1]=h;', "const localLane=new URLSearchParams(location.search).get('composite')==='1'?traceLane:(l%12)/11;record(v.p,t,localLane,0,0,1,xyz);const h=xyz[1];planar(v.p,t,traceLane,xyz);xyz[1]=h;");
+ visual=visual.replace('uDpr,uLineScale;', 'uDpr,uLineScale,uSingleLayer;');
+ const localStrand='(uSingleLayer>.5?aLane:(mod(floor(aLane*23.+.5),12.)/11.))';
  visual=visual.replace('aLane*91.', 'VOICE_LOCAL*91.').replace('aLane*23.', 'VOICE_LOCAL*23.').replace('(aLane-.5)*4.', '(VOICE_LOCAL-.5)*4.').replaceAll('VOICE_LOCAL',localStrand);
- visual=visual.replace('vLane*3.', '(mod(floor(vLane*23.+.5),12.)/11.)*3.').replace('vLane*123.', '(mod(floor(vLane*23.+.5),12.)/11.)*123.');
+ visual=visual.replace('vLane*3.', '(uSingleLayer>.5?vLane:(mod(floor(vLane*23.+.5),12.)/11.))*3.').replace('vLane*123.', '(uSingleLayer>.5?vLane:(mod(floor(vLane*23.+.5),12.)/11.))*123.');
  visual=visual.replace('CircleGeometry(.72,80)','CircleGeometry(.60,80)');
  await fs.writeFile(path.join(dir,'src/visuals.js'),visual);
  const result=await build({entryPoints:[path.join(dir,'src/app.js')],nodePaths:[path.join(root,'node_modules')],bundle:true,format:'iife',minify:true,write:false,legalComments:'inline'});
