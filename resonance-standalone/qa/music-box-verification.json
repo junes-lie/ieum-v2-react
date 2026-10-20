@@ -1,7 +1,7 @@
 {
   "checks": [
     {
-      "name": "pulsate envelope smooth bounded coherent rise and decay without micro jitter"
+      "name": "different broad bend pulses under constant audio; bounded smooth spatial/time transitions; silence decay"
     },
     {
       "name": "390px actual GPU motion and sparkle attributes",
@@ -17,7 +17,12 @@
           ],
           "shader": true,
           "glints": 978,
-          "sparkle": 1
+          "sparkle": 1,
+          "centers": [
+            0.41887902047863906,
+            2.076941809873252,
+            3.560471674068432
+          ]
         },
         {
           "id": "B",
@@ -30,7 +35,15 @@
           ],
           "shader": true,
           "glints": 950,
-          "sparkle": 1
+          "sparkle": 1,
+          "centers": [
+            0.6108652381980153,
+            2.373647782712288,
+            3.246312408709453,
+            4.136430327226561,
+            5.096361415823442,
+            5.98647933434055
+          ]
         },
         {
           "id": "C",
@@ -43,7 +56,14 @@
           ],
           "shader": true,
           "glints": 863,
-          "sparkle": 1
+          "sparkle": 1,
+          "centers": [
+            0.08726646259971647,
+            1.2566370614359172,
+            2.652900463031381,
+            3.8571776469074686,
+            5.1661745859032155
+          ]
         }
       ]
     },
@@ -265,25 +285,25 @@
         {
           "energy": 0.25,
           "ys": [
-            0.08273252844810486,
-            0.2301303744316101,
-            0.09983081370592117
+            0.08259516954421997,
+            0.2299262434244156,
+            0.09934157878160477
           ]
         },
         {
           "energy": 0.6,
           "ys": [
-            0.17335458099842072,
-            0.5271128416061401,
-            0.2143532931804657
+            0.17302507162094116,
+            0.5266229510307312,
+            0.2131778448820114
           ]
         },
         {
           "energy": 1,
           "ys": [
-            0.27691763639450073,
-            0.8665212988853455,
-            0.3451772630214691
+            0.27636879682540894,
+            0.8657047748565674,
+            0.3432157337665558
           ]
         }
       ]
@@ -292,10 +312,10 @@
       "name": "390px real audio increases motion and local sparkles",
       "data": {
         "sources": 4,
-        "play": 0.9041636931029104,
-        "energy": 0.36531275694648196,
-        "glintMax": 0.40373048186302185,
-        "waveSpread": 0
+        "play": 0.9129662315975962,
+        "energy": 0.40775606981668366,
+        "glintMax": 0.4411439895629883,
+        "waveSpread": 0.0592853082343936
       }
     },
     {
@@ -336,7 +356,12 @@
           ],
           "shader": true,
           "glints": 978,
-          "sparkle": 1
+          "sparkle": 1,
+          "centers": [
+            0.41887902047863906,
+            2.076941809873252,
+            3.560471674068432
+          ]
         },
         {
           "id": "B",
@@ -349,7 +374,15 @@
           ],
           "shader": true,
           "glints": 950,
-          "sparkle": 1
+          "sparkle": 1,
+          "centers": [
+            0.6108652381980153,
+            2.373647782712288,
+            3.246312408709453,
+            4.136430327226561,
+            5.096361415823442,
+            5.98647933434055
+          ]
         },
         {
           "id": "C",
@@ -362,7 +395,14 @@
           ],
           "shader": true,
           "glints": 863,
-          "sparkle": 1
+          "sparkle": 1,
+          "centers": [
+            0.08726646259971647,
+            1.2566370614359172,
+            2.652900463031381,
+            3.8571776469074686,
+            5.1661745859032155
+          ]
         }
       ]
     },
@@ -584,25 +624,25 @@
         {
           "energy": 0.25,
           "ys": [
-            0.08338495343923569,
-            0.23100745677947998,
-            0.10201441496610641
+            0.0833294466137886,
+            0.23093770444393158,
+            0.10183590650558472
           ]
         },
         {
           "energy": 0.6,
           "ys": [
-            0.17491966485977173,
-            0.5292178392410278,
-            0.21959954500198364
+            0.1747865080833435,
+            0.5290504693984985,
+            0.2191706746816635
           ]
         },
         {
           "energy": 1,
           "ys": [
-            0.2795247733592987,
-            0.8700295686721802,
-            0.35393181443214417
+            0.2793029546737671,
+            0.8697505593299866,
+            0.35321617126464844
           ]
         }
       ]
@@ -611,10 +651,10 @@
       "name": "1100px real audio increases motion and local sparkles",
       "data": {
         "sources": 4,
-        "play": 0.9065611325943745,
-        "energy": 0.39488937187882567,
-        "glintMax": 0.42813223600387573,
-        "waveSpread": 0
+        "play": 0.9076177195000769,
+        "energy": 0.3714508699163857,
+        "glintMax": 0.4045008420944214,
+        "waveSpread": 0.04362522391602397
       }
     },
     {
@@ -644,7 +684,7 @@
     {
       "name": "45-second 4-track motion resource regression",
       "data": {
-        "frames": 1473,
+        "frames": 1850,
         "geometries": 12,
         "textures": 1,
         "sources": 4
@@ -654,60 +694,60 @@
   "errors": [],
   "samples": [
     {
-      "frames": 416,
+      "frames": 589,
       "geometries": 12,
       "textures": 1,
       "sources": 4
     },
     {
-      "frames": 588,
+      "frames": 889,
       "geometries": 12,
       "textures": 1,
       "sources": 4
     },
     {
-      "frames": 817,
+      "frames": 1139,
       "geometries": 12,
       "textures": 1,
       "sources": 4
     },
     {
-      "frames": 909,
+      "frames": 1223,
       "geometries": 12,
       "textures": 1,
       "sources": 4
     },
     {
-      "frames": 1162,
+      "frames": 1322,
       "geometries": 12,
       "textures": 1,
       "sources": 4
     },
     {
-      "frames": 1316,
+      "frames": 1431,
       "geometries": 12,
       "textures": 1,
       "sources": 4
     },
     {
-      "frames": 1360,
+      "frames": 1584,
       "geometries": 12,
       "textures": 1,
       "sources": 4
     },
     {
-      "frames": 1360,
+      "frames": 1717,
       "geometries": 12,
       "textures": 1,
       "sources": 4
     },
     {
-      "frames": 1473,
+      "frames": 1850,
       "geometries": 12,
       "textures": 1,
       "sources": 4
     }
   ],
   "environment": "Chromium headless SwiftShader; emulated mobile and desktop",
-  "buildSHA256": "1db10d8c6b1159f7eb92e179a1e0680fcd52561fc52a60f3e8931abf0b653e17"
+  "buildSHA256": "7a63eef9702b7360c92c27d5d75a3580605dd5b56c1e78da5b67b741c7a02729"
 }

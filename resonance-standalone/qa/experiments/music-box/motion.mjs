@@ -6,14 +6,21 @@ export function motionLift(t,lane,time,p,play,energy,onset){return p[1]*(.16+pla
 export function motionGain(t,lane,time,p,play,energy,onset){return Math.max(0,Math.min(1,energy));}
 export function heightEnvelope(energy,age,playing){if(!playing)return 1;if(age<=.18)return Math.max(0,1-age/.18);return Math.max(0,Math.min(1,energy))*Math.min(1,(age-.18)/.16);}
 export function audioHeightAt(wave,t){const x=((t/TAU)%1+1)%1*64,i=Math.floor(x);return wave[i]*(1-x+i)+wave[(i+1)%64]*(x-i);}
-// Two cascaded envelopes soften syllables into a coherent pulsation; no waveform jitter.
-export function updateWaveform(wave,data,referenceRms,dt,age,playing,energy=0){
- if(!playing){wave.fill(1);wave.pulseDrive=0;return wave;}
- if(age<=.18){wave.pulseDrive=0;wave.fill(heightEnvelope(0,age,true));return wave;}
+// Find broad existing height crests; pulse centers never travel around the curve.
+export function findPulseCenters(heightAt){const n=360,h=Array.from({length:n},(_,i)=>heightAt(i/n*TAU));const sm=h.map((_,i)=>{let v=0;for(let j=-8;j<=8;j++)v+=h[(i+j+n)%n];return v/17;});const peaks=sm.map((v,i)=>({v,i})).filter(({v,i})=>v>=sm[(i+n-1)%n]&&v>sm[(i+1)%n]).sort((a,b)=>b.v-a.v);const chosen=[];for(const peak of peaks){if(chosen.every(k=>Math.min(Math.abs(k-peak.i),n-Math.abs(k-peak.i))>32))chosen.push(peak.i);if(chosen.length===6)break;}return (chosen.length?chosen:[sm.indexOf(Math.max(...sm))]).sort((a,b)=>a-b).map(i=>i/n*TAU);}
+export function updateWaveform(wave,data,referenceRms,dt,age,playing,energy=0,bands={},phase=0){
+ const centers=wave.centers||[0,TAU/3,TAU*2/3];
+ if(!playing||age<=.18){wave.drives=new Float64Array(centers.length);wave.levels=new Float64Array(centers.length);wave.fill(heightEnvelope(0,age,playing));return wave;}
+ wave.drives??=new Float64Array(centers.length);wave.levels??=new Float64Array(centers.length);
  const u=Math.max(0,Math.min(1,(age-.18)/.45)),gate=u*u*(3-2*u);
- const target=Math.pow(Math.max(0,Math.min(1,energy)),.72)*gate;
- let drive=wave.pulseDrive||0;drive+=(target-drive)*(1-Math.exp(-dt*(target>drive?7:4)));
- wave.pulseDrive=drive;const current=wave[0]+(drive-wave[0])*(1-Math.exp(-dt*9));wave.fill(Math.max(0,Math.min(1,current)));return wave;
+ for(let k=0;k<centers.length;k++){
+  const period=1.25+.19*((k*3)%5),pulse=.5-.5*Math.cos((age-.18)*TAU/period+k*2.399963+phase);
+  const band=[bands.low||0,bands.mid||0,bands.high||0][k%3];
+  const target=Math.pow(Math.max(0,Math.min(1,energy)),.72)*gate*(.10+.90*pulse)*(.72+.28*band);
+  wave.drives[k]+=(target-wave.drives[k])*(1-Math.exp(-dt*(target>wave.drives[k]?7:4)));
+  wave.levels[k]+=(wave.drives[k]-wave.levels[k])*(1-Math.exp(-dt*9));
+ }
+ for(let i=0;i<64;i++){let total=0,weight=0;for(let k=0;k<centers.length;k++){const w=Math.exp(5*(Math.cos(i/64*TAU-centers[k])-1));total+=w*wave.levels[k];weight+=w;}wave[i]=Math.max(0,Math.min(1,total/weight));}return wave;
 }
 
 export const motionGLSL=`
