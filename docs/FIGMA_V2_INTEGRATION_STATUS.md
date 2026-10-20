@@ -1,5 +1,40 @@
 # Figma V2 integration checkpoint · 2026-10-21
 
+## Search layout refinement · 2026-10-21
+
+- Code `eaef0ef0fab18b235223cbfa55076ece3f3ff411` is saved to integration; resumed from `d71c000`.
+  Expected-HEAD shared lock owner: `automation-figma-v2-20261020T2302Z-e6c6de6fbc91`.
+- Read current Notion Design System / Search screen specification and Remote Figma
+  Search source + screenshot, header/input/tabs/filters/result child contexts.
+- Matched Search header/input/tab/filter/summary spacing, 92px artwork, 18/24 titles,
+  129px borderless rows and 34px pill surfaces with 44px real control targets.
+  Tab order follows current Figma (Song / recruitment / completion). Existing
+  Song IDs/covers/routes remain; rows use actual assigned seats and labelled
+  presentation audio, with explicit existing detail/listening actions.
+- Build + all 13 maintained Node suites passed. New maintained
+  `qa/verify-v2-search-browser.mjs` passed Chromium 390/430px geometry, decoded
+  artwork, touch targets, exact detail Back, public-example labels and My Voice Back.
+  Actual renders inspected. Seven-scenario presentation/storage/reset suite passed.
+- Core Chromium replay passed 390/430px: public playback/save/reload, Search
+  filters/Back, participation, Workspace transport, fake-mic pause/resume, Review,
+  direct submit, final-Track Auto Mix and nonempty final Mix. Used reduced motion
+  for this replay. Normal-motion 390 carousel assertions passed before the slow
+  software-rendered full replay was stopped; no new complete 430 motion-suite
+  acceptance is claimed. No physical microphone or audible-quality claim.
+- Renderer remains `74d7559e8ca1c6ff2cd1aeb1c73b13fe2211ace6`.
+  Expected build: `index-CiMZyT6E.js` / `index-BowQL69Z.css`.
+- Production remains https://ieum-v2-react.vercel.app, HTTP 200, old
+  `index-BmmlD67C.js` / `index-BqlZo9hY.css`, READY `dpl_5YYHsXvR2f2SNj2C5k83z2iLC4Ge`
+  at `b57c1d4`. Recorded 22:07:09Z rate-limit failure / 24h retry window is
+  respected: no new deployment request or main update in this run.
+- Next: reproduce Search tab-specific filter/scroll retention against the latest
+  screen specification (current tab switches reset filters), then unresolved
+  verified personal artwork / lyrics / backing and physical-device preparation.
+  Preserve earlier unfinished visual/3D/backend items and existing demo isolation.
+  After the recorded retry window, recheck main, integrate verified branch without
+  force, and verify the original project/commit/assets before reporting deployed.
+- This checkpoint releases only this run's recorded lock.
+
 ## Recording Guide refinement · 2026-10-21
 
 - Resumed from integration `4c87db5`, main `f8a92df`; acquired shared lock
