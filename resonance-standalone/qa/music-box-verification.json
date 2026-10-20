@@ -24,6 +24,9 @@
       ]
     },
     {
+      "name": "full-play gain spans baseline zero to original ceiling without overshoot"
+    },
+    {
       "name": "390px actual GPU motion and sparkle attributes",
       "data": [
         {
@@ -68,12 +71,32 @@
       ]
     },
     {
+      "name": "390px actual particle positions traverse record surface to their ceiling",
+      "data": [
+        {
+          "id": "A",
+          "min": 0.018665481358766556,
+          "max": 0.27840590476989746
+        },
+        {
+          "id": "B",
+          "min": 0.02070612832903862,
+          "max": 0.8675142526626587
+        },
+        {
+          "id": "C",
+          "min": 0.018033338710665703,
+          "max": 0.3504256308078766
+        }
+      ]
+    },
+    {
       "name": "390px real audio increases motion and local sparkles",
       "data": {
         "sources": 4,
-        "play": 0.9029957027583768,
-        "energy": 0.39251452331039033,
-        "glintMax": 0.9068308472633362
+        "play": 0.9030441927834808,
+        "energy": 0.3867841356954931,
+        "glintMax": 0.9069357514381409
       }
     },
     {
@@ -145,12 +168,32 @@
       ]
     },
     {
+      "name": "1100px actual particle positions traverse record surface to their ceiling",
+      "data": [
+        {
+          "id": "A",
+          "min": 0.018783656880259514,
+          "max": 0.28166359663009644
+        },
+        {
+          "id": "B",
+          "min": 0.021116331219673157,
+          "max": 0.8713005781173706
+        },
+        {
+          "id": "C",
+          "min": 0.01800752431154251,
+          "max": 0.36073222756385803
+        }
+      ]
+    },
+    {
       "name": "1100px real audio increases motion and local sparkles",
       "data": {
         "sources": 4,
         "play": 0.9030441927834808,
-        "energy": 0.38557074042511646,
-        "glintMax": 0.9068138003349304
+        "energy": 0.37993588576938747,
+        "glintMax": 0.9069257378578186
       }
     },
     {
@@ -180,7 +223,7 @@
     {
       "name": "45-second 4-track motion resource regression",
       "data": {
-        "frames": 1806,
+        "frames": 1548,
         "geometries": 12,
         "textures": 1,
         "sources": 4
@@ -190,62 +233,62 @@
   "errors": [],
   "samples": [
     {
-      "frames": 578,
+      "frames": 504,
       "geometries": 12,
       "textures": 1,
       "sources": 4
     },
     {
-      "frames": 836,
+      "frames": 644,
       "geometries": 12,
       "textures": 1,
       "sources": 4
     },
     {
-      "frames": 1053,
+      "frames": 940,
       "geometries": 12,
       "textures": 1,
       "sources": 4
     },
     {
-      "frames": 1309,
+      "frames": 1028,
       "geometries": 12,
       "textures": 1,
       "sources": 4
     },
     {
-      "frames": 1434,
+      "frames": 1033,
       "geometries": 12,
       "textures": 1,
       "sources": 4
     },
     {
-      "frames": 1481,
+      "frames": 1296,
       "geometries": 12,
       "textures": 1,
       "sources": 4
     },
     {
-      "frames": 1581,
+      "frames": 1472,
       "geometries": 12,
       "textures": 1,
       "sources": 4
     },
     {
-      "frames": 1689,
+      "frames": 1510,
       "geometries": 12,
       "textures": 1,
       "sources": 4
     },
     {
-      "frames": 1806,
+      "frames": 1548,
       "geometries": 12,
       "textures": 1,
       "sources": 4
     }
   ],
   "environment": "Chromium headless SwiftShader; emulated mobile and desktop",
-  "buildSHA256": "fb5e7862fff1cfdab7595b430595e272255570dac3dda746891ed75eb7a56bab",
-  "date": "2026-10-20",
-  "visualReview": "Inspected mobile and desktop playback captures. Corrected endpoint lift sampling to keep moving segments continuous. Aesthetic acceptance pending."
+  "buildSHA256": "83f81489112d5334223d3250f60199311b0af91c6a7392e55d387d37e9ce2c65",
+  "publishedBuildSHA256": "e3d9a7a71e0cf50a48e45cc805a73b90c4635b899d6f67d08659573d10b30a11",
+  "postVerificationUIChange": "Comparison link labels changed to existing wave / record to current height, preserving selected heightStudy. Motion code unchanged from tested bundle."
 }
