@@ -4,8 +4,9 @@
 
 - Branch: `feature/figma-v2-integration`, based on `main` at `a20cf97`.
 - Resumed from `e386dda`, preserving prior typography and Search/navigation work.
-- Latest code: `6b43672` (Home neighbour records, Recording alignment/readout),
-  preserving `24af29a` hardware/transport and `cf8a003` shared artwork.
+- Latest code: `1378d69` (stationary deck, distinct recruitment Record art and
+  original Figma Project button), preserving `6b43672` Recording, `24af29a`
+  hardware/transport and `cf8a003` shared artwork.
 - Prior functional integration `1902972` is preserved. GitHub connector saved
   reviewed files on the existing remote tree with expected-HEAD checks; no force updates.
 - No main/Production changes, standalone Resonance merges or algorithm changes.
@@ -13,7 +14,7 @@
 
 ## User carousel / original button correction · 2026-10-21
 
-- Resumed from remote `9d96b79`; this run owns lock
+- Resumed from remote `9d96b79`; acquired lock
   `interactive-carousel-button-e6c6de6fbc91`. Expected-HEAD updates only.
 - Removed selection animation/key from the deck wrapper. The housing stays mounted
   and stationary. Only the inner Record and neighbour Record layers slide in the
@@ -44,7 +45,8 @@
   The base Resonance shader shape is still the existing renderer, not the separate
   approved standalone knot algorithm.
 - Renderer blob remains `74d7559e8ca1c6ff2cd1aeb1c73b13fe2211ace6`.
-  No standalone/main/Production changes. Preview verification follows code save.
+  No standalone/main/Production changes. Code `1378d69` and Preview verified below.
+  This run releases only its own lock atomically with this final checkpoint.
 
 ## Previously verified screen refinement · 2026-10-21
 
@@ -182,17 +184,21 @@ React integration. `public/artwork/README.md` records sources and use boundaries
 
 ## Preview verification — latest code
 
-- URL: https://ieum-v2-react-ehyqizyd9-junes-lie.vercel.app
-- Deployment: `dpl_E3Fe7aYahWbdEmyM4db5oDR32tqG`, READY, Git Integration,
-  Preview (`target: null`), exact SHA `6b436727ed3759db8a71d63b335196a127d1e806`.
-- Vercel Authentication remains enabled. Authenticated HTTP 200; deployed
-  `index-BESXWyAI.js` and `index-taFOI5E7.css` match the tested production build.
-- Static artwork is unchanged from the previous verified asset checkpoint.
-- Remote Chromium smoke passed at 390/430px: artwork decoded, no horizontal
-  overflow or page/console errors; neighbour pointer/keyboard selected exact
-  Projects; Search→Ocean→Detail→Back and My Voice→Back preserved the query.
-- Full microphone/Auto Mix tests were local with Chromium synthetic input and
-  isolated demo Tracks. Remote smoke is not a physical-mic or live-backend test.
+- URL: https://ieum-v2-react-pfm9r11rl-junes-lie.vercel.app
+- Deployment: `dpl_38i8rzscqvhf3QzaWU3XLQFKR7H1`, READY, Git Integration,
+  Preview (`target: null`), exact SHA `1378d69b9d2c8e105e983591ea93c3f9cdf93024`.
+- Vercel Authentication remains enabled. Connector-authenticated HTTP 200;
+  deployed JS `index-CKvVWtYq.js` matches the locally tested production build.
+- Actual remote Chromium checks passed at 390/430px: three distinct Record
+  signatures; 48px/24px-radius/15px-text original-surface button; original
+  `figma-project-button.svg` HTTP 200 with exact local SHA-256 bytes.
+- At each width, six successive selections wrap to the original Project while
+  preserving the very same housing and particle Canvas nodes. Project action
+  opens Detail and Back returns Home. No horizontal overflow or page errors.
+- Local integration additionally verified no housing/ancestor transforms or
+  animations while the inner Record slide runs, neighbour keyboard/swipe, Search,
+  My Voice and complete synthetic-microphone/Review/submit/Auto Mix flow.
+  Remote smoke is not a second physical-mic, multi-user backend or full audio QA.
 
 ## Next checkpoint
 
