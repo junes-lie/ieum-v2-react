@@ -5,6 +5,9 @@
 - User authorized main integration and immediate verified Production deployments.
   This checkpoint adds continuous opaque Record motion to the previously deployed
   `b3069a3` runtime and `b57c1d4` Production verification checkpoint.
+  Runtime correction commit: `80c723bfa7d091931154316d359deac28c95f4ba`.
+  **Production deployment blocked by Vercel rate limit; original URL still serves
+  the previous runtime. Do not report this correction as deployed.**
 - Original application: https://ieum-v2-react.vercel.app.
 - Includes the previously verified carousel/Figma button, foreground Record over
   fixed turntable, range-independent direct participation and independent
@@ -38,9 +41,17 @@
 - Desktop Figma MCP on 127.0.0.1:3845 was unavailable. No new design source or
   acceptance is claimed; this correction follows the user's explicit no-fade
   request and preserves the previously verified design geometry.
-- Production verification is pending the main update for this checkpoint.
-  Expected runtime asset: `index-DM_WfwEP.js`, CSS `index-DgFztpDg.css`.
-  Verify the original stable URL and these navigation paths after deployment.
+- Main update succeeded, but Vercel's Git Integration rejected both project
+  checks with `Deployment rate limited — retry in 24 hours.` at
+  2026-10-20T21:12:02Z. No new deployment was created. Source/build/browser QA are
+  complete; the original URL remains on `index-BmmlD67C.js`.
+- Expected new runtime asset: `index-DM_WfwEP.js`, CSS `index-DgFztpDg.css`.
+  Resume by checking the rate limit and deploying the current verified main SHA
+  through Git Integration after it clears, then verify the original stable URL,
+  continuous no-fade Record motion and Workspace/Recording navigation. Do not
+  repeatedly trigger builds while limited or upgrade the account without approval.
+- Prepared isolated Production QA remains temporary; it was not run against the
+  new runtime because no new Production deployment exists.
 
 ## Independent completed-song catalogue · 2026-10-21
 
