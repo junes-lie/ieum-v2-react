@@ -1,8 +1,0 @@
-{
-  "owner": "public-results-production-e6c6de6fbc91",
-  "startedAt": "2026-10-20T20:46:48.203Z",
-  "baseSha": "7b93474f4d4311db15dd585cea10ff795fb9b3b8",
-  "state": "working",
-  "scope": "Public completed-song discovery, participation explanation, user-authorized main integration and Production deployment",
-  "release": "Only owner releases; other runs skip"
-}

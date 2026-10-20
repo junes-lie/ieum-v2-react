@@ -2,15 +2,15 @@
 
 ## Current result
 
-- Branch: `feature/figma-v2-integration`, based on `main` at `a20cf97`.
-- Resumed from `e386dda`, preserving prior typography and Search/navigation work.
-- Latest code: `9cd0a35` (Record above fixed turntable, no aperture clip), preserving
-  `1378d69` distinct recruitment Record art/original Figma button, `6b43672`
-  Recording, `24af29a` transport and `cf8a003` shared artwork.
-- Prior functional integration `1902972` is preserved. GitHub connector saved
-  reviewed files on the existing remote tree with expected-HEAD checks; no force updates.
-- No main/Production changes, standalone Resonance merges or algorithm changes.
-- This is a functional integration checkpoint, **not final visual acceptance**.
+- User authorized main integration and immediate verified Production deployments.
+  Main and feature/figma-v2-integration share runtime code `b3069a31fe929ead330e0b9b4fcf98a5308c93b5`.
+- Original application: https://ieum-v2-react.vercel.app.
+- Includes the previously verified carousel/Figma button, foreground Record over
+  fixed turntable, range-independent direct participation and independent
+  completed-song listening catalogue.
+- Expected-HEAD fast-forward updates only. No standalone Resonance branch or
+  renderer algorithm changes. This is not final visual/physical-device acceptance.
+- This checkpoint releases only the public-results-production-e6c6de6fbc91 lock.
 
 ## Independent completed-song catalogue · 2026-10-21
 
@@ -26,7 +26,9 @@
   Project or change the current user's Tracks/Mix/My Projects.
 - Public examples have illustrative renderer input, and source/credits disclose
   that they are presentation audio rather than actual user collaboration.
-  Real community result ingestion/backend remains outside this available dataset.
+  Original Production /api/project-discovery returned HTTP 503 with
+  SERVICE_NOT_CONFIGURED. Real community result ingestion is not configured;
+  the three playable entries are explicitly disclosed examples.
 - Build and all 13 maintained Node suites passed. Chromium 390/430px passed
   public card→detail→audio currentTime advance→pause→save→Collection→reopen→reload,
   Search 3 public results and 4 after the user's own Mix, and the full existing
@@ -52,7 +54,9 @@
   introduced by the design integration.
 - Build and real Chromium 390/430px passed with registered C4-D4 against Tenor
   C3-G4: button enabled, action reaches Workspace and no submitted Track is added.
-- Public completion discovery correction continues in the same run.
+- Public completion discovery is deployed and verified below.
+- Repeated-request protection means preventing a repeated click from saving the
+  same operation twice; it is not a new restriction on joining multiple Projects.
 
 ## Record above deck correction · 2026-10-21
 
@@ -171,10 +175,12 @@
 
 ## Sources and scope
 
-- Read AGENTS.md and docs/GIT_WORKFLOW.md. User explicitly directs branch/Preview
-  work, and forbids making Figma image downloads a global prerequisite.
+- Read AGENTS.md and docs/GIT_WORKFLOW.md. Earlier branch/Preview-only scope was
+  superseded by the user's explicit original-Production integration decision.
+  Figma image downloads are not a global prerequisite.
 - Requested Notion DESIGN_SYSTEM, IA, PRD, flow and screen specification were read
-  through the Notion connector; no product documents were modified.
+  through the Notion connector. Current PRD and Screen Spec were updated for the
+  user's direct-participation decision and clarified repeated-request wording.
 - Figma full/child design contexts and screenshots: Home `1349:21126`, Workspace
   `1412:29502`, Recording `1459:31183`, Search section `1396:30802` and their
   relevant headings, cards, Part modules, monitoring, controls and navigation.
@@ -192,8 +198,8 @@
 Search now uses actual saved Track/Mix state rather than a stale COMPLETE label.
 Assigned seats are excluded from recruitment. Korean genre filters match stored
 English metadata. Search query/tab/genre/Part/range/sort survive detail Back.
-Completed results open the matching main or created Project; unavailable completed
-results remain empty. My Voice opens from the primary headers and Back restores
+Completed results open the matching public example, main or created Project;
+unavailable real community results are not fabricated. My Voice opens from the primary headers and Back restores
 the previous context. A recent-date sort uses actual available date metadata;
 undated catalogue entries keep stable order rather than fabricated timestamps.
 
@@ -242,18 +248,20 @@ React integration. `public/artwork/README.md` records sources and use boundaries
   missing-source notice is retained. Production-ready music/lyrics licensing,
   real-device microphone/earphone testing and final visual acceptance remain open.
 
-## Preview verification — latest code
+## Original Production verification — latest runtime
 
-- URL: https://ieum-v2-react-gt3hp94sd-junes-lie.vercel.app
-- Deployment: `dpl_CyMcZfbeQXPZstCT3ryDa7Mk1332`, READY, Git Integration,
-  Preview (`target: null`), exact SHA `9cd0a3520e63bb9e972844633ba3a105639e7936`.
-- Vercel Authentication remains enabled. Actual remote Chromium at 390/430px
-  confirmed Record z above turntable, solid platter, no aperture overflow clip,
-  same stationary housing after selection and no horizontal overflow.
-- Served JS `index-JupQ3Ztx.js` matches the tested local production build.
-- Prior full synthetic-microphone/Review/submit/Auto Mix and original button
-  verification remain recorded in the preceding checkpoint; this layer-only
-  change ran scoped local/deployed browser checks, not another full microphone run.
+- URL: https://ieum-v2-react.vercel.app.
+- Deployment: `dpl_Et9Ra7VpMuyGi3RK6hrt7yh9Xm4R`, READY, Git Integration,
+  Production, exact runtime SHA `b3069a31fe929ead330e0b9b4fcf98a5308c93b5`.
+- Actual remote Chromium at 390/430px confirmed three independent public examples,
+  exact Complete detail, actual audio currentTime advance/pause and reload.
+- Registered C4-D4 against Tenor C3-G4: enabled button and actual join to Workspace.
+  No page errors or horizontal overflow. Isolated test contexts only.
+- Served JS `index-BmmlD67C.js` matches the tested local production build.
+- Local build, all 13 maintained Node suites and full 390/430px browser integration
+  passed, including synthetic-mic recording/Review/submit/Auto Mix/Completed.
+- Public discovery endpoint is not configured (503 SERVICE_NOT_CONFIGURED).
+  Physical microphone, audible quality and real multi-user operation are unverified.
 
 ## Next checkpoint
 
@@ -267,3 +275,7 @@ React integration. `public/artwork/README.md` records sources and use boundaries
    lyrics before declaring the presentation app fully complete. Keep missing-source
    notices and failed recording/submission recovery. Do not repeat completed
    carousel/readout integration without evidence of a regression.
+
+4. Connect real public completed-result data and playable Mix resources when the
+   backend is configured. Keep IEUM Originals examples clearly labelled and
+   independent from personal participation, submitted Tracks and actual user Mixes.
