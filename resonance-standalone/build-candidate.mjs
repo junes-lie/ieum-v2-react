@@ -14,6 +14,7 @@ try {
  execFileSync('git',['apply',path.join(root,'qa/experiments/repetition-candidate/runtime.patch')],{cwd:tmp});
  await fs.copyFile(path.join(root,'qa/experiments/blue-repetition/referenceContours.js'),path.join(dir,'src/referenceContours.js'));
  await fs.copyFile(path.join(root,'qa/experiments/blue-repetition/ordered-path.js'),path.join(dir,'src/ordered-path.js'));
+ await fs.copyFile(path.join(root,'qa/experiments/music-box/motion.mjs'),path.join(dir,'src/music-box.mjs'));
  // Composite uses one parent per voice in both planar and raised modes.
  let profiles=await fs.readFile(path.join(dir,'src/profiles.js'),'utf8');
  profiles=profiles.replace("export {referenceContourCount,referenceThetaStart} from './referenceContours.js';", "export {referenceThetaStart} from './referenceContours.js';export const referenceContourCount=24;");
@@ -31,7 +32,7 @@ export function planar(p,t,lane,out=[0,0,0]){
  return out;
 }`);
  // Optional comparison only: keep each voice's phase and distinct height character.
- profiles=profiles.replace('export function record(p,t,lane,energy=0,time=0,lift=1,out=[0,0,0]){', "const softHeight=typeof location!=='undefined'&&new URLSearchParams(location.search).get('heightStudy')==='soft';\nexport function record(p,t,lane,energy=0,time=0,lift=1,out=[0,0,0]){");
+ profiles=profiles.replace('export function record(p,t,lane,energy=0,time=0,lift=1,out=[0,0,0]){', "const softHeight=typeof location!=='undefined'&&new URLSearchParams(location.search).get('composite')==='1'&&new URLSearchParams(location.search).get('heightStudy')!=='original';\nexport function record(p,t,lane,energy=0,time=0,lift=1,out=[0,0,0]){");
  profiles=profiles.replace('2.5+p.pitch*3.5', '(softHeight?1.9+p.pitch*2.5:2.5+p.pitch*3.5)');
  profiles=profiles.replace('const y=.025+.5*(clearance+Math.sqrt(clearance*clearance+.004));', 'const originalY=.025+.5*(clearance+Math.sqrt(clearance*clearance+.004));const y=softHeight?originalY/(1+.18*Math.max(0,originalY-.45)):originalY;');
  await fs.writeFile(path.join(dir,'src/profiles.js'),profiles);
@@ -83,14 +84,27 @@ if(new URLSearchParams(location.search).get('composite')==='1'&&view){
  app += `\nif(new URLSearchParams(location.search).get('sourceFold')==='1'){document.querySelector('aside')?.insertAdjacentHTML('afterbegin','<strong>기각 비교: 세 묶음의 규칙성이 원본과 다름 · </strong>');}\n`;
  app += `\nif(new URLSearchParams(location.search).get('wideFold')==='1'){document.querySelector('aside')?.insertAdjacentHTML('afterbegin','<strong>기각 후보: 큰 굴곡 약화·작은 고리 발생 · </strong>');}\n`;
  app += `\nif(new URLSearchParams(location.search).get('orderedPath')==='1'){document.querySelector('aside')?.insertAdjacentHTML('afterbegin','<strong>기각: 추정 연결의 윤곽 단순화·선 밀집 · </strong>');}\n`;
- app += `\nif(new URLSearchParams(location.search).get('compare3d')==='1'&&view){
+ app += `\nif(new URLSearchParams(location.search).get('compare3d')==='1'&&new URLSearchParams(location.search).get('compareMotion')!=='1'&&view){
  setMode(1);
  const bar=document.createElement('nav');bar.setAttribute('aria-label','3D 높이 비교');bar.style.cssText='display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:12px 0;color:#ece6dc';
  for(const [label,value] of [['A · 기존 3D','original'],['B · 최고점·능선 조정','soft']]){const a=document.createElement('a'),url=new URL(location.href);url.searchParams.set('heightStudy',value);a.href=url.href;a.textContent=label;a.style.cssText='color:inherit;padding:10px 14px;border:1px solid #6c655b;border-radius:6px;text-decoration:none';if((new URLSearchParams(location.search).get('heightStudy')||'original')===value){a.style.background='#ece6dc';a.style.color='#15110e';a.setAttribute('aria-current','page');}bar.append(a);}
  $('#stage').before(bar);
 }\n`;
+ app += `\nif(new URLSearchParams(location.search).get('compareMotion')==='1'&&view){setMode(1);const bar=document.createElement('nav');bar.setAttribute('aria-label','3D 모션 비교');bar.style.cssText='display:flex;gap:12px;flex-wrap:wrap;margin:12px 0';for(const [label,value] of [['이전 모션','legacy'],['오르골 모션','box']]){const a=document.createElement('a'),url=new URL(location.href);url.searchParams.set('motionStudy',value);url.searchParams.set('heightStudy','soft');a.href=url.href;a.textContent=label;a.style.cssText='padding:10px 14px;border:1px solid #6c655b;border-radius:6px;color:#ece6dc';if((new URLSearchParams(location.search).get('motionStudy')||'box')===value){a.style.background='#ece6dc';a.style.color='#15110e';a.setAttribute('aria-current','page');}bar.append(a);}$('#stage').before(bar);}\n`;
  await fs.writeFile(path.join(dir,'src/app.js'),app);
  let visual=await fs.readFile(path.join(dir,'src/visuals.js'),'utf8');
+ visual="import {motionParams,motionPulse,motionLift,motionGLSL} from './music-box.mjs';\nconst danceEnabled=new URLSearchParams(location.search).get('composite')==='1'&&new URLSearchParams(location.search).get('motionStudy')!=='legacy';\n"+visual;
+ visual=visual.replace('vec3 deform(vec3 p,vec3 planarPoint){', '${motionGLSL}\nvec3 deform(vec3 p,vec3 planarPoint,float motionT){');
+ visual=visual.replace('deform(aStart,aFlatStart)', 'deform(aStart,aFlatStart,aT)').replace('deform(aEnd,aFlatEnd)', 'deform(aEnd,aFlatEnd,aT+6.28318530718/360.)');
+ visual=visual.replace('return p;}','p.y+=uDanceOn*uLift*motionLift(motionT,aLane,uTime);return p;}');
+ visual=visual.replace('const uniforms={uLineScale:', 'const uniforms={uDance:{value:new THREE.Vector4(...motionParams(v.p))},uDanceOn:{value:danceEnabled?1:0},uPlay:{value:0},uLineScale:');
+ visual=visual.replace('this.time+=dt*this.speed;', 'this.time+=dt*this.speed;this.playMotion=(this.playMotion||0)+((playing&&!this.reduced&&this.speed?1:0)-(this.playMotion||0))*(1-Math.exp(-dt*5));');
+ visual=visual.replace('uniforms.uTime.value=this.time;', 'uniforms.uTime.value=this.time;uniforms.uPlay.value=this.playMotion||0;uniforms.uDanceOn.value=danceEnabled&&!this.reduced&&this.speed?1:0;');
+ visual=visual.replace('if(v.active===false)continue;', 'if(v.active===false)continue;const dance=motionParams(v.p);');
+ visual=visual.replace('const halo=Math.pow(rand(i+941),5);', 'const danceT=planarParticleT(v.p,t),danceLane=rand(i+239);if(uniforms.uDanceOn.value){xyz[1]+=this.morph*this.height*motionLift(danceT,danceLane,this.time,dance,uniforms.uPlay.value,e,b.w);}layer.glints[i]=uniforms.uDanceOn.value?this.morph*motionPulse(danceT,danceLane,this.time,dance)*uniforms.uPlay.value:0;const halo=Math.pow(rand(i+941),5);');
+ visual=visual.replace("const pg=new THREE.BufferGeometry();", "const glints=new Float32Array(count);const pg=new THREE.BufferGeometry();pg.setAttribute('aGlint',new THREE.BufferAttribute(glints,1).setUsage(THREE.DynamicDrawUsage));");
+ visual=visual.replace('return {v,line,points,uniforms,pos,count,', 'return {v,line,points,uniforms,pos,count,glints,');
+ visual=visual.replace('layer.points.geometry.attributes.position.needsUpdate=true;', 'layer.points.geometry.attributes.position.needsUpdate=true;layer.points.geometry.attributes.aGlint.needsUpdate=true;');
  // Composite grains must remain discrete at mobile DPR, without the old 2D light boost.
  visual=visual.replace('const count=Math.round(1100+v.p.air*700)', "const fineComposite=new URLSearchParams(location.search).get('composite')==='1';const count=Math.round(fineComposite?1000-v.p.air*180:1100+v.p.air*700)");
  visual=visual.replace('flatSizes[i]=grain.size;flatAlpha[i]=grain.alpha;', 'flatSizes[i]=fineComposite?1.25+.65*rand(i+22)+.65*v.p.brightness*Math.pow(rand(i+22),4):grain.size;flatAlpha[i]=fineComposite?.55+.30*rand(i+73):grain.alpha;if(fineComposite){sizes[i]=flatSizes[i];alpha[i]=flatAlpha[i];}');
@@ -99,7 +113,8 @@ if(new URLSearchParams(location.search).get('composite')==='1'&&view){
  visual=visual.replace('uniforms:{uColor:uniforms.uColor,uOpacity:', 'uniforms:{uSparkle:{value:fineComposite?1:0},uTime:uniforms.uTime,uColor:uniforms.uColor,uOpacity:');
  visual=visual.replaceAll('varying float vAlpha;', 'varying float vAlpha,vSpark;');
  visual=visual.replace('uniform float uDpr,uMorph;', 'uniform float uDpr,uMorph,uTime,uSparkle;');
- visual=visual.replace('gl_PointSize=mix(size,aSize,uMorph)*uDpr;', 'float seed=fract(aFlatAlpha*19.17+aFlatSize*7.13);vSpark=pow(.5+.5*sin(uTime*(.75+seed*.65)+seed*63.),14.);gl_PointSize=mix(size,aSize,uMorph)*uDpr*mix(1.,2.3+.45*vSpark,uSparkle);');
+ visual=visual.replace('attribute float aAlpha,aSize,aFlatSize,aFlatAlpha;', 'attribute float aAlpha,aSize,aFlatSize,aFlatAlpha,aGlint;');
+ visual=visual.replace('gl_PointSize=mix(size,aSize,uMorph)*uDpr;', 'float seed=fract(aFlatAlpha*19.17+aFlatSize*7.13);vSpark=max(pow(.5+.5*sin(uTime*(.75+seed*.65)+seed*63.),14.),aGlint*.90);gl_PointSize=mix(size,aSize,uMorph)*uDpr*mix(1.,2.3+.45*vSpark,uSparkle);');
  visual=visual.replace('uniform float uOpacity,uMorph;', 'uniform float uOpacity,uMorph,uSparkle;');
  visual=visual.replace('gl_FragColor=vec4(uColor*mix(1.7,1.,uMorph),vAlpha*uOpacity*smoothstep(.5,.15,d));', `if(uSparkle>.5){float core=exp(-d*d*105.);float halo=exp(-d*d*23.)*(1.-smoothstep(.35,.5,d));float light=core*(.55+.9*vSpark)+halo*(.035+.15*vSpark);vec3 tint=mix(uColor,vec3(1.),core*(.18+.72*vSpark));gl_FragColor=vec4(tint*(1.+.35*vSpark),min(.92,vAlpha*uOpacity*light));}else{gl_FragColor=vec4(uColor*mix(1.7,1.,uMorph),vAlpha*uOpacity*smoothstep(.5,.15,d));}`);
  // Select a GLSL literal when the shader template is evaluated.
@@ -111,7 +126,7 @@ if(new URLSearchParams(location.search).get('composite')==='1'&&view){
  visual=visual.replace('this.mode?3.4:8.4,this.mode?6.0:.001', 'this.mode?3.4*(this.stage.clientWidth<600?1.18:1):8.4,this.mode?6.0*(this.stage.clientWidth<600?1.18:1):.001');
  visual=visual.replace('if(uContourView>.5&&vLane>.001&&(uContourView<1.5||vLane<.999))discard;', "if(uContourView>.5){if(uSingleLayer>.5){if(abs(vLane-12./23.)>.001)discard;}else if(abs(vLane-6./23.)>.001&&(uContourView<1.5||abs(vLane-18./23.)>.001))discard;}");
  visual=visual.replace('uMorph,uContourView;', 'uMorph,uContourView,uSingleLayer;');
- visual=visual.replace('const uniforms={uLineScale:', "const uniforms={uSingleLayer:{value:new URLSearchParams(location.search).get('composite')==='1'?1:0},uLineScale:");
+ visual=visual.replace('const uniforms={', "const uniforms={uSingleLayer:{value:new URLSearchParams(location.search).get('composite')==='1'?1:0},");
  visual=visual.replace('const h=xyz[1];planar(v.p,t,traceLane,xyz);xyz[1]=h;', "const localLane=new URLSearchParams(location.search).get('composite')==='1'?traceLane:(l%12)/11;record(v.p,t,localLane,0,0,1,xyz);const h=xyz[1];planar(v.p,t,traceLane,xyz);xyz[1]=h;");
  visual=visual.replace('uDpr,uLineScale;', 'uDpr,uLineScale,uSingleLayer;');
  const localStrand='(uSingleLayer>.5?aLane:(mod(floor(aLane*23.+.5),12.)/11.))';

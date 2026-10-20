@@ -1,0 +1,251 @@
+{
+  "checks": [
+    {
+      "name": "deterministic bounded periodic local pulses",
+      "data": [
+        [
+          1.9320000000000002,
+          0.1312,
+          0.35,
+          0.15839999999999999
+        ],
+        [
+          2.009,
+          0.2404,
+          2.65,
+          0.1296
+        ],
+        [
+          1.544,
+          0.1824,
+          5.25,
+          0.043199999999999995
+        ]
+      ]
+    },
+    {
+      "name": "390px actual GPU motion and sparkle attributes",
+      "data": [
+        {
+          "id": "A",
+          "dance": 1,
+          "params": [
+            1.9320000000000002,
+            0.1312,
+            0.35,
+            0.15839999999999999
+          ],
+          "shader": true,
+          "glints": 978,
+          "sparkle": 1
+        },
+        {
+          "id": "B",
+          "dance": 1,
+          "params": [
+            2.009,
+            0.2404,
+            2.65,
+            0.1296
+          ],
+          "shader": true,
+          "glints": 950,
+          "sparkle": 1
+        },
+        {
+          "id": "C",
+          "dance": 1,
+          "params": [
+            1.544,
+            0.1824,
+            5.25,
+            0.043199999999999995
+          ],
+          "shader": true,
+          "glints": 863,
+          "sparkle": 1
+        }
+      ]
+    },
+    {
+      "name": "390px real audio increases motion and local sparkles",
+      "data": {
+        "sources": 4,
+        "play": 0.9029957027583768,
+        "energy": 0.39251452331039033,
+        "glintMax": 0.9068308472633362
+      }
+    },
+    {
+      "name": "390px pause eases motion and releases sources"
+    },
+    {
+      "name": "390px 2D has no raised motion",
+      "data": {
+        "glints": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "morph": 0
+      }
+    },
+    {
+      "name": "390px reduced-motion disables added lift",
+      "data": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "1100px actual GPU motion and sparkle attributes",
+      "data": [
+        {
+          "id": "A",
+          "dance": 1,
+          "params": [
+            1.9320000000000002,
+            0.1312,
+            0.35,
+            0.15839999999999999
+          ],
+          "shader": true,
+          "glints": 978,
+          "sparkle": 1
+        },
+        {
+          "id": "B",
+          "dance": 1,
+          "params": [
+            2.009,
+            0.2404,
+            2.65,
+            0.1296
+          ],
+          "shader": true,
+          "glints": 950,
+          "sparkle": 1
+        },
+        {
+          "id": "C",
+          "dance": 1,
+          "params": [
+            1.544,
+            0.1824,
+            5.25,
+            0.043199999999999995
+          ],
+          "shader": true,
+          "glints": 863,
+          "sparkle": 1
+        }
+      ]
+    },
+    {
+      "name": "1100px real audio increases motion and local sparkles",
+      "data": {
+        "sources": 4,
+        "play": 0.9030441927834808,
+        "energy": 0.38557074042511646,
+        "glintMax": 0.9068138003349304
+      }
+    },
+    {
+      "name": "1100px pause eases motion and releases sources"
+    },
+    {
+      "name": "1100px 2D has no raised motion",
+      "data": {
+        "glints": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "morph": 0
+      }
+    },
+    {
+      "name": "1100px reduced-motion disables added lift",
+      "data": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "45-second 4-track motion resource regression",
+      "data": {
+        "frames": 1806,
+        "geometries": 12,
+        "textures": 1,
+        "sources": 4
+      }
+    }
+  ],
+  "errors": [],
+  "samples": [
+    {
+      "frames": 578,
+      "geometries": 12,
+      "textures": 1,
+      "sources": 4
+    },
+    {
+      "frames": 836,
+      "geometries": 12,
+      "textures": 1,
+      "sources": 4
+    },
+    {
+      "frames": 1053,
+      "geometries": 12,
+      "textures": 1,
+      "sources": 4
+    },
+    {
+      "frames": 1309,
+      "geometries": 12,
+      "textures": 1,
+      "sources": 4
+    },
+    {
+      "frames": 1434,
+      "geometries": 12,
+      "textures": 1,
+      "sources": 4
+    },
+    {
+      "frames": 1481,
+      "geometries": 12,
+      "textures": 1,
+      "sources": 4
+    },
+    {
+      "frames": 1581,
+      "geometries": 12,
+      "textures": 1,
+      "sources": 4
+    },
+    {
+      "frames": 1689,
+      "geometries": 12,
+      "textures": 1,
+      "sources": 4
+    },
+    {
+      "frames": 1806,
+      "geometries": 12,
+      "textures": 1,
+      "sources": 4
+    }
+  ],
+  "environment": "Chromium headless SwiftShader; emulated mobile and desktop",
+  "buildSHA256": "fb5e7862fff1cfdab7595b430595e272255570dac3dda746891ed75eb7a56bab",
+  "date": "2026-10-20",
+  "visualReview": "Inspected mobile and desktop playback captures. Corrected endpoint lift sampling to keep moving segments continuous. Aesthetic acceptance pending."
+}
