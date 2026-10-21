@@ -1,0 +1,10 @@
+{
+  "home-active": "/artwork/nav-home-active.svg",
+  "home-inactive": "/artwork/nav-home-inactive.svg",
+  "search-active": "/artwork/nav-search-active.svg",
+  "search-inactive": "/artwork/nav-search-inactive.svg",
+  "projects-active": "/artwork/nav-projects-active.svg",
+  "projects-inactive": "/artwork/nav-projects-inactive.svg",
+  "collection-active": "/artwork/nav-collection-active.svg",
+  "collection-inactive": "/artwork/nav-collection-inactive.svg"
+}

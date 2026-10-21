@@ -1,3 +1,4 @@
+import navigationArtwork from './navigationArtwork.json' with { type: 'json' }
 import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import {demoScenario,demoStorageKey,demoProfile} from './demoSession.js'
 import VoicePreferenceChoices, {preferenceValues} from './VoicePreferenceChoices.jsx'
@@ -616,13 +617,13 @@ function PartRow({ part, order = 0, waveform = false, action, actionLabel, inclu
 
 function BottomNav({ current, go }) {
   const items = [
-    ['home','홈',null],
-    ['search','검색',null],
-    ['folder','프로젝트',current==='folder'?figmaAssets.imgIconTrackStack:figmaAssets.imgIconTrackStack1],
-    ['bookmark','컬렉션',figmaAssets.imgIconRecordCollection]
+    ['home','홈','home'],
+    ['search','검색','search'],
+    ['folder','프로젝트','projects'],
+    ['bookmark','컬렉션','collection']
   ]
   return <nav className="bottom-nav figma-v2" aria-label="주요 메뉴">
-    {items.map(([key,label,asset]) => <button key={key} data-nav={key} aria-current={current===key?'page':undefined} className={current===key?'active':''} onClick={()=>go(key)}>{asset?<img src={asset} alt="" width="20" height="20" aria-hidden="true"/>:<Icon name={key==='home'?'home':'search'} size={20}/>}<span>{label}</span></button>)}
+    {items.map(([key,label,asset]) => <button key={key} data-nav={key} aria-current={current===key?'page':undefined} className={current===key?'active':''} onClick={()=>go(key)}><img src={navigationArtwork[`${asset}-${current===key?'active':'inactive'}`]} alt="" width="20" height="20" aria-hidden="true"/><span>{label}</span></button>)}
   </nav>
 }
 

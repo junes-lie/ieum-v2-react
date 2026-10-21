@@ -1,5 +1,7 @@
 # Integration artwork
 
+- `nav-{home,search,projects,collection}-{active,inactive}.svg`: exact 20×20 icon exports from confirmed `IEUM/Current/BottomNavigation` variants `1241:2902`, `1241:3079`, `1241:2961`, `1241:3020`. Read-only export preserves the custom Home/Search/Track Stack/Record Collection paths and original cream/secondary strokes; no Figma node edits. All four native buttons retain their existing routes and editable Pretendard labels.
+
 - `figma-recording-surface-72.svg` / `figma-recording-surface-96.svg`: exact text-free original RecordingControl surfaces `1303:2929` (72×72) / `1303:3085` (96×96), exported through the read-only Figma Plugin API. Native dimensions are retained and uniformly scaled by 0.88 to 63.36 / 84.48px. Separate native controls keep the real start/restart/stop/pause/resume actions; labels and Font Awesome icons stay editable. No original Figma nodes were created or modified.
 
 - `figma-player-play-surface.svg`: exact text-free 48×48 Player surface `1317:3486`, exported read-only from Figma. Home completed cards scale the full native surface and separate 14.4px icon uniformly by 0.75 to the original 36px visual size. The existing whole-card button owns navigation and the accessible hit area; this artwork adds no simulated playback.
