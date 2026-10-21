@@ -1,5 +1,38 @@
 # Figma V2 integration checkpoint · 2026-10-21
 
+## Workspace original control surfaces · 2026-10-21
+
+- Code `832bad9bc01320c3e4eb207bc3c4431b062dc46b`; resumed from `5c91769`.
+  Acquired/rechecked the shared expected-HEAD lock; this checkpoint releases only
+  `automation-figma-v2-20261021T010246Z-e6c6de6fbc91`.
+- Read current Notion Design System and Figma Workspace/Part child contexts and
+  screenshots. Exported only original text-free RecordCompact, disabled VocalFinder
+  and Track PlayControl surfaces through the read-only Plugin API; source unchanged.
+- Connected exact 84×40 compact and 32×32 Track surfaces, original 14px icons,
+  12/16 compact labels, and already-connected Toggle artwork at 33.12×18.72.
+  Disabled labels remain full-opacity secondary text; only the original surface
+  carries 0.32 opacity. Existing availability/actions and native 44px targets remain.
+  Cards retain 99px minimum width: the Part row scrolls at 390px without body overflow.
+- Build and all 13 Node suites passed. New maintained Workspace browser QA passed
+  390/430px: decoded exact asset bytes, surface/control geometry, nonoverlapping
+  targets, disabled state, Space/click inclusion, actual Track playback and Record
+  entry with no automatic microphone activation. Actual renders inspected.
+- Core Chromium replay passed 390/430px with reduced motion and synthetic mic:
+  public playback/save/reload, Search filters/Back/My Voice, participation,
+  Workspace transport, pause/resume, Review, direct submit, final-Track Auto Mix
+  and nonempty completed Mix; no page/console errors. Physical mic/listening remain unverified.
+- Renderer remains `74d7559e8ca1c6ff2cd1aeb1c73b13fe2211ace6`.
+  Build assets: `index-jCmHpfwb.js` / `index-C4ZNvdEa.css`.
+- Original https://ieum-v2-react.vercel.app returns HTTP 200 with old
+  `index-BmmlD67C.js` / `index-BqlZo9hY.css`; Production remains READY `b57c1d4`.
+  Main stays `caa0f30`. No deployment request/main advance: recorded 24h wait
+  from 2026-10-20T22:07:09Z remains in effect; this code is integration-only.
+- Next: compare current confirmed Home/Workspace header, title and vertical spacing
+  against fresh Figma and fix remaining evidenced differences. Preserve unresolved
+  verified person-owned artwork, actual lyrics/backing, independent 3D, real community
+  results and physical-device/final visual checks. Recheck main and original-project
+  deployment after the recorded retry window before integrating the verified result.
+
 ## Search tab context repair · 2026-10-21
 
 - Code `b8e362ba07bb3c275339424b5e895283a6d5b0a8`; resumed from `175808e`.
