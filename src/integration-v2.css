@@ -137,6 +137,8 @@
 .search-v2-screen>main{padding-top:0}
 .search-v2-screen .search-v2-input{height:48px;gap:10px;border-color:#34302c}
 .search-v2-screen .search-v2-input input{font:400 13px/19px var(--font-interface)}
+.search-v2-screen .search-v2-input:focus-within{outline:2px solid var(--text-primary);outline-offset:2px}
+.search-v2-screen .search-v2-input button{display:inline-flex;align-items:center;justify-content:center;flex:0 0 44px;min-width:44px;padding:0}
 .search-v2-tabs{border:0}
 .search-v2-tabs button{height:auto;min-height:44px;padding:11px 2px 12px;font:400 13px/19px var(--font-interface)}
 .search-v2-tabs button.active{font-weight:400}

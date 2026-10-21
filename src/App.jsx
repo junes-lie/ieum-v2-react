@@ -629,6 +629,7 @@ function BottomNav({ current, go }) {
 
 
 function SearchScreen({ openSong, openCreatedProject, openComplete, openMyVoice, entries, context, profile }) {
+  const inputRef=useRef(null)
   const initial=context.current.byTab?.[context.current.tab] || context.current
   const [query,setQuery]=useState(()=>initial.query??'')
   const [tab,setTab]=useState(()=>context.current.tab??'projects')
@@ -683,7 +684,7 @@ function SearchScreen({ openSong, openCreatedProject, openComplete, openMyVoice,
   return <div className="screen figma-v2 search-v2-screen" data-screen-id="01S">
     <TopBar title="검색" action={<MyVoiceIcon/>} actionLabel="마이보이스 열기" actionId="open-my-voice" onAction={openMyVoice}/>
     <main>
-      <label className="search-v2-input"><Icon name="search" size={20}/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="곡, 아티스트, 프로젝트 검색" aria-label="곡, 아티스트, 프로젝트 검색"/>{query&&<button aria-label="검색어 지우기" onClick={()=>setQuery('')}>×</button>}</label>
+      <label className="search-v2-input"><Icon name="search" size={20}/><input ref={inputRef} value={query} onChange={e=>setQuery(e.target.value)} placeholder="곡, 아티스트, 프로젝트 검색" aria-label="곡, 아티스트, 프로젝트 검색"/>{query&&<button type="button" aria-label="검색어 지우기" onClick={()=>{setQuery('');inputRef.current?.focus()}}><Icon name="close" size={16}/></button>}</label>
       <div className="search-v2-tabs" role="tablist" aria-label="검색 결과 유형">
         {[['songs','곡'],['projects','모집 프로젝트'],['completed','완성곡']].map(([id,name])=><button key={id} role="tab" aria-selected={tab===id} className={tab===id?'active':''} onClick={()=>selectTab(id)}>{name}</button>)}
       </div>
