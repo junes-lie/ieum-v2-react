@@ -1,3 +1,44 @@
+## Current Gold First screen controls · 2026-10-21
+
+- Code `cc09abe108659d477f114c8dc2f51a266cc055b6`, resumed from fresh `289aadd`.
+  Expected-HEAD lock `automation-figma-v2-20261021T090020Z-e6c6de6fbc91`
+  was acquired/rechecked; this checkpoint releases only that owner.
+- Re-read current Notion DS/screen spec and Figma screen instances
+  `1488:33867` / `1432:40200`, screenshots and Default/Playing/Disabled variants.
+  Current confirmed instances now use Gold First Project `1583:54015` and Player
+  `1583:54325` / `1583:54487`; the older Notion DS still describes Smoky.
+  Applied this screen-specific visual change without editing either original source.
+- Connected exact text-free 382×48 / 48×48 original gold surfaces, preserving their
+  light, double rim and native dimensions. Project uses original Pretendard Medium
+  15/22 and black label; Player uses black Play/Pause. Existing native actions remain.
+  The 350px Project retains fixed 24px end caps. Home 36px completion controls stay
+  Smoky; zero-selection Player retains original Smoky Disabled with .38 opacity.
+  Previously connected assets remain available; no global button recoloring.
+- Build + all 13 maintained Node suites passed. Project-button and updated Workspace
+  timeline Chromium QA passed 390/430px: exact assets, native geometry/uncut edges,
+  label weight, actual click/Back, playback/pause, keyboard seek, disabled/re-enable,
+  unchanged Tracks and 2x text stress. Actual Project/Player renders match source.
+- Core reduced-motion Chromium replay passed 390/430px through public playback/save,
+  Search/My Voice/Back, participation, synthetic-mic pause/resume, Review, direct
+  submit, final-Track Auto Mix and nonempty completed Mix; no page/console errors.
+  Physical microphone/listening and native-device zoom remain unverified.
+- `npm run qa:capture`: all 14 entries × 390/430px captured (28 successes, 0 failures).
+  Standalone `index.html` and ZIP contain 56 PNGs/manifest and the explicit undeployed
+  revision `cc09abe108659d477f114c8dc2f51a266cc055b6`. Output:
+  `qa/captures/2026-10-21T09-07-50-813Z/`. Generated images are not committed.
+- App orchestration/renderer/audio/storage remain hash-identical; no standalone edit.
+  Build `index-DONnJNGC.js` / `index-CyMBskLg.css`.
+- Original https://ieum-v2-react.vercel.app still returns 200 with old
+  `index-BmmlD67C.js` / `index-BqlZo9hY.css`, READY Production `b57c1d4`.
+  Main remains `caa0f30`, standalone `3d82976`. No deployment request/main advance
+  before recorded retry `2026-10-21T22:07:09Z` (Oct 22 07:07 KST). Code is not live.
+- Next: check actual keyboard-focus scroll clearance above BottomNavigation on
+  Home/Search/Workspace at both widths, addressing only reproduced failures.
+  Preserve unresolved verified personal imagery, real lyrics/backing, independent
+  renderer/3D, real community results, final visual and physical-device verification.
+  After the retry window, recheck user's main changes before original-project
+  integration/deployment and verify exact READY commit, assets and original URL.
+
 ## Shared BottomNavigation refinement · 2026-10-21
 
 - Runtime code `4b0242d80052eaefd8674a12130cba160e19c2b0`; latest code/QA `92b492286d131248856d6b0f0cd07aa5e5b9cb59`.
