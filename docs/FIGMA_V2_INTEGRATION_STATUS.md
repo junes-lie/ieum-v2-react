@@ -1,3 +1,51 @@
+## Current Figma Project Detail and shared header · 2026-10-22
+
+- Runtime code `0ac2bc4effe0fdff7b61b1b8cd150bcdcae60998`; resumed from remote `7e59ebce9a3d97ac216b35d5152650d6205e51a1`.
+  User explicitly requested applying the current Figma edits including Detail.
+  Current Notion DS and screen spec read; Figma Detail `1713:43254` full context/
+  screenshot and current shared Header source read. Source documents were not edited.
+- Detail now implements full-width Song cover/title, same-song project carousel,
+  selected Project heading, 184px Record with compact live Mix/member/OPEN Part
+  controls, actual MIDI ranges on a common axis, harmony illustration/reasons,
+  and fixed participation action above the existing contextual navigation.
+  Song/Project/Part IDs, final Track lineage, save/create/profile actions and
+  explicit Workspace/Complete navigation remain real and unchanged.
+- Individual listening and selected-track preview reuse CurrentMixPanel's existing
+  audio state/DSP. Zero selected Tracks disables Mix; project change stops old
+  audio. Real range values are displayed; unfinished matching formulas never
+  produce fabricated 100/86/84/92/82%. Missing scores show preparation/information
+  state. Source harmony art is explicitly labelled illustrative, not measured.
+- Exported exact 382x130 `1713:43334` artwork with read-only Plugin API after
+  temporary download returned HTML. No Figma mutations. Existing data-driven
+  covers/Records and verified-person imagery restrictions remain.
+- Shared TopBar owns Recording title/subtitle at 72px minimum; Back x=12.
+  Recording title18/24 at y15, subtitle12/16 at y41; monitoring y104, lyrics
+  y284.8, native instrument y752 at both widths. Long/2x content grows the header.
+  Workspace EN36/40 and KR32/40 correction is preserved.
+- Final build `index-Br26W4_f.js` / `index-MCF6SG0i.css` passed; 13 maintained
+  Node suites passed, including actual Detail state/2–4 Part IDs and unchanged
+  source Blobs, single/combined listening, zero-selection disabled and old-audio
+  teardown. Updated only stale structural assertions for the new layout.
+- Chromium 390/430 Detail project switching/OPEN selection/direct join passed.
+  Full reduced-motion Search/My Voice/Back, synthetic mic pause/resume/Review/
+  submit/last-Track Auto Mix/nonempty Complete passed both widths.
+  Recording timed-text/missing-source, header/geometry, long/2x copy, pause/stop/
+  Review/Back passed both widths. Actual Detail/Recording renders inspected.
+  Browser font fallback was restored locally from the existing repository font;
+  no font source changed. No physical microphone/listening claim.
+- Production inspected: original project `prj_eowHNSo22vKNulK4a2LFYzQnAYj1`
+  still serves READY `b57c1d4`; main is `caa0f30`. This run is before the recorded
+  retry boundary `2026-10-21T22:07:09Z` (Oct22 07:07 KST). No deployment retry or
+  main update; code is not live at https://ieum-v2-react.vercel.app.
+- Next: apply remaining explicitly confirmed Figma screens (Finder implementation
+  source `1725:42795` was discovered, not implemented in this Detail pass).
+  Re-read current Recording comparison revisions before treating one as approved.
+  At allowed retry time fast-forward validated integration while preserving main
+  changes (current main is an ancestor); verify original-project deployment/URL.
+  Keep matching formulas, verified personal identities, real Song backing/lyrics,
+  separate Resonance/3D and physical-device acceptance open.
+- Releases only owner `manual-detail-20261022`.
+
 ## Workspace full-body implementation · 2026-10-22
 
 - Code `c12a9c773dee6ab16ef88a57ac3e5fb4020bbfa7`, fresh base `437948a`; current remote tree,
