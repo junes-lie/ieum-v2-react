@@ -1,3 +1,42 @@
+## Review/Submitting text reflow · 2026-10-21
+
+- Code `e96f41918466f9544d9ae0ee6bb6f0fc212e6645`, resumed from fresh `cd2c84b`.
+  Expected-HEAD lock `automation-figma-v2-20261021T105512Z-e6c6de6fbc91`
+  was acquired/rechecked; this checkpoint releases only that owner.
+- Read current Notion DS/06 specification and fresh Figma Review `1610:41661` /
+  Submitting `1610:41923` full contexts, screenshots and component descriptions.
+  Reproduced caption/time spilling outside the player and capsule-label clipping
+  with long copy and scoped 2x CSS text before changing code.
+- Scoped CSS now wraps caption/time and status, grows the player/panel naturally,
+  and stacks enlarged actions while keeping original 48px capsules/end caps,
+  static artwork and 44px native seek target. Normal 190px panel/58.429px player,
+  button dimensions and source positions are preserved (text rounding ≈0.016px).
+  App/audio/storage/renderer/demo/capture-helper sources are hash-identical.
+- Final build and 13 maintained Node suites passed. New maintained Review QA and
+  existing five-state Recorder QA passed Chromium 390/430px: containment/no text
+  overlap, seek below copy, readable labels, actual seek/play, retake cancellation,
+  Submitting disabled controls, failure/same-Take preservation, reload and retry.
+  Actual normal/enlarged renders inspected. Test-only long copy is not app data.
+- Full core reduced-motion Chromium replay passed both widths through playback/
+  saves/Search/My Voice/Back/participation/synthetic recording/direct submission/
+  final-Track Auto Mix/nonempty completed Mix, with no page/console errors.
+  Physical microphone/listening and native-device text zoom remain unverified.
+- `npm run qa:capture`: 14 entries × 390/430px, 28 successes/0 failures, output
+  `qa/captures/2026-10-21T11-03-26-935Z/`. Standalone HTML/ZIP labelled undeployed
+  `e96f419` includes 56 entry PNGs plus 10 normal/enlarged comparison PNGs.
+  Captures/results are excluded from Git. Build `index-D6J6PtKL.js` /
+  `index-Dw29milG.css`.
+- Original https://ieum-v2-react.vercel.app remains HTTP 200, old
+  `index-BmmlD67C.js` / `index-BqlZo9hY.css`, latest original-project READY
+  Production `b57c1d4`. Main `caa0f30` and standalone `3d82976` unchanged.
+  No deployment request/main advance before recorded `2026-10-21T22:07:09Z`
+  (Oct 22 07:07 KST); these changes are not live.
+- Next: verify Search result titles/summary/filter controls with long content and
+  2x text, preserving per-tab query/filter/scroll and exact-detail/My Voice Back.
+  Keep all earlier unresolved personal resources, real lyrics/backing, independent
+  renderer/3D, real community data and final/physical-device checks. After the retry
+  window, recheck user's main changes before original-project integration/deployment.
+
 ## Current five-state Recording instrument and focus clearance · 2026-10-21
 
 - Code `d92c8914e33cff91bc8a8dfdd6132479b75ce1b9`, resumed from fresh `ed14639`.
