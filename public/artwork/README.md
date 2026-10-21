@@ -1,5 +1,7 @@
 # Integration artwork
 
+- `figma-player-play-surface.svg`: exact text-free 48×48 Player surface `1317:3486`, exported read-only from Figma. Home completed cards scale the full native surface and separate 14.4px icon uniformly by 0.75 to the original 36px visual size. The existing whole-card button owns navigation and the accessible hit area; this artwork adds no simulated playback.
+
 - `figma-compact-button.svg`: exact text-free 84×40 surface export `1492:34269` from RecordCompact/Primary/Default `1488:33761`; circular ends, rim, grain and reflection are retained. Editable native button content stays separate inside an 84×44 target.
 - `figma-vocal-finder-disabled.svg`: exact 84×40 surface export `1495:34586`, including its original 0.32 surface opacity. The native button keeps the existing availability condition and full-opacity secondary label; the asset is not darkened a second time.
 - `figma-track-play-surface.svg`: exact text-free 32×32 surface `1317:3642` from Track PlayControl. Native 44×44 play target and Font Awesome icon keep the existing individual-listening action. Workspace inclusion controls reuse the already-connected original toggle artwork.

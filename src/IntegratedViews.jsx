@@ -77,7 +77,7 @@ export function MonitoringModule({title,role,checked,onChange,guide=false,color}
   return <label className="v2-monitor-module"><span className="v2-monitor-symbol" style={{color}} aria-hidden="true">{guide?<img src="/artwork/guide-keyboard.svg" alt="" width="46" height="32"/>:title.slice(0,1)}</span><span>{title}</span><small>{role}</small><span className="v2-toggle"><input type="checkbox" aria-label={guide?'Guide 반주':`${title} · ${role} 함께 듣기`} checked={checked} onChange={onChange}/><i/></span></label>
 }
 
-export function HomeView({header,entries,songs,renderRecord,openSong,openProject,openSearch,openCreateProject}) {
+export function HomeView({header,entries,songs,renderRecord,openSong,openProject,openSearch,openCreateProject,formatDuration}) {
   const recruiting=entries.filter(entry=>!entry.complete&&entry.openParts.length)
   const completed=entries.filter(entry=>entry.complete)
   const [index,setIndex]=useState(0)
@@ -109,9 +109,18 @@ export function HomeView({header,entries,songs,renderRecord,openSong,openProject
             {recruiting.length>1&&<button className="v2-carousel-neighbor v2-carousel-neighbor-next" aria-label={`다음 프로젝트 선택: ${next.song.title}`} onClick={()=>change(1)}/>}
           </div><div className="v2-recruit-info"><h3>{selected.song.title}</h3><p>OPEN · {selected.openParts.map(part=>part.name).join(' · ')} <span>{selected.partCount-selected.openParts.length}명 참여</span></p></div><ProjectActionButton onClick={()=>open(selected)}/></>:<p className="empty-proof">현재 모집 중인 프로젝트가 없어요.</p>}
       </section>
-      <section className="v2-recommended"><SectionHeading title="어떤 곡으로 시작할까요" onAction={()=>openSearch('songs')}/><div className="v2-song-grid">{songs.slice(0,3).map(song=><button className="v2-song-card" key={song.id} onClick={()=>openSong(song.id)}><SongArtwork song={song} className="v2-cover-slot"/><strong>{song.title}</strong><small>{song.artist}</small><small>프로젝트 {entries.filter(entry=>entry.song.id===song.id).length}</small></button>)}</div></section>
+      <section className="v2-recommended"><SectionHeading title="어떤 곡으로 시작할까요" onAction={()=>openSearch('songs')}/><div className="v2-song-grid">{songs.slice(0,3).map(song=><button className="v2-song-card" key={song.id} onClick={()=>openSong(song.id)}><SongArtwork song={song} className="v2-cover-slot"/><strong>{song.title}</strong><small>{song.artist}</small><small className="v2-song-count">프로젝트 {entries.filter(entry=>entry.song.id===song.id).length}</small></button>)}</div></section>
       <section className="v2-recent"><SectionHeading title="최근 열린 프로젝트"/><div className="v2-project-rows">{[...entries.filter(entry=>entry.isCreated),...entries.filter(entry=>!entry.isCreated&&!entry.publicExample)].slice(0,3).map(entry=><button className="v2-project-row" data-project-id={entry.project.id} key={entry.project.id} onClick={()=>open(entry)}><div className="v2-project-thumbnail"><div className="v2-thumbnail-record">{renderRecord(entry)}</div><SongArtwork song={entry.song} className="v2-thumbnail-sleeve"/></div><span><strong lang={/[가-힣]/.test(entry.song.title)?'ko':'en'}>{entry.song.title}</strong><small>{entry.song.artist}</small><small className="v2-project-count">{entry.partCount-entry.openParts.length}명 참여 · {entry.submitted}/{entry.partCount} 제출</small></span><span className="v2-open-roles"><small>{entry.complete?'COMPLETE':'OPEN'}</small>{entry.complete?'완성곡':entry.openParts.map(part=>part.name).join(' · ')||'녹음 중'}</span></button>)}</div></section>
-      <section className="v2-completed"><SectionHeading title="완성곡 둘러보기" onAction={()=>openSearch('completed')}/><div className="v2-completed-carousel">{completed.length?completed.map(entry=><button className="v2-completed-card" key={entry.project.id} onClick={()=>openProject(entry)}><div>{renderRecord(entry)}</div><span><small>완성곡</small><strong>{entry.song.title}</strong><small>{entry.publicExample?`시연 음원 · 00:${String(entry.mix.duration).padStart(2,'0')}`:`${entry.partCount}명의 목소리`}</small><span className="v2-listen"><Icon name="play" size={14}/> 완성곡 듣기</span></span></button>):<p className="empty-proof">아직 완성한 곡이 없어요. 마지막 Track 제출 후 완성곡을 들을 수 있어요.</p>}</div></section>
+      <section className="v2-completed"><SectionHeading title="완성곡 둘러보기" onAction={()=>openSearch('completed')}/><div className="v2-completed-carousel">{completed.length?completed.map(entry=>{
+        const duration=Number.isFinite(entry.mix?.duration)&&entry.mix.duration>0?formatDuration(entry.mix.duration):'—'
+        return <button className="v2-completed-card" key={entry.project.id} data-project-id={entry.project.id} onClick={()=>openProject(entry)}>
+          <div>{renderRecord(entry)}</div>
+          <span><small className="v2-completed-status">완성곡</small><strong lang={/[가-힣]/.test(entry.song.title)?'ko':'en'}>{entry.song.title}</strong>
+            <small className="v2-completed-meta">{entry.publicExample?'시연 음원':`${entry.partCount}명의 목소리`}</small><small className="v2-completed-duration">{duration}</small>
+            <span className="v2-listen"><span className="v2-listen-control" aria-hidden="true"><span className="v2-listen-surface"><img src="/artwork/figma-player-play-surface.svg" width="48" height="48" alt=""/><Icon name="play" size={14.4}/></span></span>완성곡 듣기</span>
+          </span>
+        </button>
+      }):<p className="empty-proof">아직 완성한 곡이 없어요. 마지막 Track 제출 후 완성곡을 들을 수 있어요.</p>}</div></section>
       <button className="secondary v2-create-project" data-action="create-project" onClick={openCreateProject}><Icon name="plus" size={16}/>새 프로젝트 만들기</button>
     </main>
   </div>
