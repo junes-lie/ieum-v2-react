@@ -1,3 +1,37 @@
+## Current Home rhythm and selected Song jacket · 2026-10-22
+
+- Code `2bf8c58c1d4a7210f4ef388974d4e4ec65f1c1e7`, resumed from fresh remote
+  `cf8f36f`. Read full checkpoint/rules and current Notion DS; current Home
+  Figma contexts/screenshots now specify 32px section starts and a 56px jacket.
+- Matched recruitment/recommendation/recent/completed section padding to current
+  source (32px starts, no stacked bottom padding; final section bottom 32px).
+  Existing heading-to-list gaps remain 20/16/20px. Recommendation uses source canvas.
+- Added the existing SongArtwork component beside recruitment identity, with
+  original 56px cover / 12px gap / 16px CTA gap. Uses the selected actual Song ID,
+  existing cover precedence and fallback; no sample Gravity identity or new artwork.
+  Text remains intrinsic-height, wraps with longer content and uses EN/KR Title.1.
+- Build passed (`index-BJPur86f.js` / `index-BcqKeXF-.css`); all 13 Node suites
+  passed. New Home browser QA passed 390/430px: geometry, six Project/Song cover
+  mappings, keyboard cycling, detail/Back, unchanged Tracks/participation and 2x CSS
+  text without clipping/overlap. Existing Home/Workspace heading QA passed both.
+- Core Chromium regression passed both widths with reduced motion and synthetic
+  microphone: public listening/save, Search/My Voice/Back, join, pause/resume,
+  Review/direct submit/final-Track Auto Mix/nonempty final Mix. Normal-motion
+  full replay stalled in software rendering and was stopped; no pass claimed.
+- `npm run qa:capture` captured 14 entries × both widths, 28 successes/0 failures,
+  56 entry PNGs; inspected actual Home renders. Delivered version-labelled
+  undeployed gallery/ZIP with six additional Home comparison/text PNGs. Artifacts
+  excluded from Git. No physical mic, listening quality or device zoom pass.
+- Original Production remains READY `b57c1d4`; main remains `caa0f30`.
+  No deployment/main advance before `2026-10-21T22:07:09Z` (Oct 22 07:07 KST).
+  These changes are not live at https://ieum-v2-react.vercel.app.
+- Next: compare newly revised confirmed Gold component sources (e.g. `1596:53321`
+  and `1596:53579`) with existing local surfaces before changing them. Follow newly
+  confirmed screen sources; do not redesign unfinished pages. Preserve previous
+  per-screen design, verified personal imagery, real lyrics/backing, independent
+  renderer/3D, backend and final visual/device checks. Recheck main at retry time.
+- This checkpoint releases only `automation-figma-v2-20261021T1802Z-e6c6de6fbc91`.
+
 ## Remove decorative dividers on all pages · 2026-10-22
 
 - User explicitly requested removal of all unnecessary separators. Read current
