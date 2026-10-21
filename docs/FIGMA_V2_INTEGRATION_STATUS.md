@@ -1,5 +1,33 @@
 # Figma V2 integration checkpoint · 2026-10-21
 
+## Recording heading/lyrics rhythm · 2026-10-21
+
+- Code `6bd205db1ed27c2b6b2065f7e5a0bab4c44e4bfc`, based on `f6040bd`; this checkpoint releases only
+  `automation-figma-v2-20261021T065546Z-e6c6de6fbc91` after expected-HEAD/owner checks.
+- Read current Notion DS/screen spec, fresh Figma identity `1459:31223`,
+  lyrics `1459:31266` contexts/screenshots and full Recording screenshot.
+- Corrected EN heading to Montserrat 18/24, KR fallback to Pretendard, metadata
+  to Pretendard 12/16 and centered max-280px identity. Removed Grid auto-stretch:
+  title y=26, monitoring y=104, lyrics y≈284.8 (browser border rounding), panel y=752.
+  Background no longer contributes to grid row sizing. Existing 24/32px lyric
+  hierarchy, graphics engine, real Song/Project/Part/Key and all actions remain.
+- Build + 13 Node suites passed. New Chromium copy-layout QA and existing
+  instrument QA passed 390/430px: source geometry, isolated timed-text fixture,
+  missing-source notice, long mixed-language/2x text reflow, actual synthetic
+  recording/pause/stop, Review/Back/re-entry persistence. Actual renders inspected.
+  Core reduced-motion replay also passed both widths through direct submission,
+  final-Track Auto Mix and nonempty completed Mix, Search/My Voice/Back/play/save.
+- No new lyrics/backing supplied: QA text is test-only and never added to catalogue.
+  Renderer/audio/storage/Guide/assets unchanged. Physical mic/listening, native-device
+  zoom, verified personal artwork, separate 3D/community integration and final visual
+  acceptance remain open. Build `index-BNFpUN1H.js` / `index-BSCNX0Q8.css`.
+- Production remains READY `b57c1d4`; https://ieum-v2-react.vercel.app returns 200,
+  old `index-BmmlD67C.js` / `index-BqlZo9hY.css`. Main `caa0f30` unchanged.
+  No deploy request during recorded wait through 2026-10-21T22:07:09Z; code is not live.
+- Next: compare shared BottomNavigation active/inactive surface, label typography
+  and geometry with its current Figma component at 390/430px; preserve all routes
+  and previously verified controls. Recheck main/Production after the retry window.
+
 ## Recording instrument/control alignment · 2026-10-21
 
 - Code `fa3e32a7cba690ca8ac8f8349907819794d41435`, based on `dd53a46`; expected-HEAD lock
