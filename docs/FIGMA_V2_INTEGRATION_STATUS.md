@@ -1,3 +1,57 @@
+## Original-main integration and Git build scope · 2026-10-22
+
+- Resumed from remote `f7a95e82a8e8ace7f6c55e126b821ce0694be195`; read this
+  full checkpoint, AGENTS and Git workflow. Reconstructed the fresh source using
+  current remote Git blob hashes; existing app files were accepted only on exact
+  hash matches. Expected-HEAD owner `automation-figma-v2-20261022T0702KST-e6c6de6fbc91`.
+- Current Notion DS/IA/PRD/flow/screen specification read through the connector.
+  Old Recording IDs `1732:43410` and `1459:31183` are no longer found. Atlas
+  `530:46` is accessible and now lists `1803:72333` (4화면); rediscover current
+  confirmed screen sources before further visual edits. No Figma/Notion mutation.
+- Original main `caa0f30` was an ancestor (78 commits behind, no divergent user
+  changes). Expected-HEAD fast-forward to verified `f7a95e8` succeeded after the
+  recorded 07:07 KST boundary. That already-seen SHA produced no new Production.
+- Actual deployment-config code `4b423ef5db871eb9d414fc94471d98d492d93611` adds
+  `ignoreCommand` and `scripts/vercel-ignore-build.mjs`. Compare with
+  VERCEL_GIT_PREVIOUS_SHA (last successful build), not HEAD^: pending runtime
+  changes still build when followed by checkpoint commits. Docs/QA/standalone-only
+  changes skip; missing history/first build/unknown paths continue conservatively.
+  Integration/main are skipped on the separately linked Resonance preview project;
+  its own feature/resonance-standalone branch remains unaffected.
+- Real temporary-Git-history QA passed: lock/QA-only skips, pending app + later
+  checkpoint builds, unknown config, deletion and rename into docs build, missing
+  base builds, original-project and independent-branch scope preserved.
+  Only vercel.json and the two maintained guard/QA scripts changed. No React,
+  design, assets, renderer, audio, recording, storage or standalone source changed.
+- Build passed with identical runtime `index-DoerSaPl.js` / `index-wDEeZvaL.css`;
+  installed packages match the remote lockfile. All 13 Node suites passed.
+  Chromium reduced-motion core passed 390/430: public play/save, Search/My Voice/
+  Back, direct join, Workspace transport, synthetic mic pause/resume, Review/direct
+  submit, final-Track Auto Mix and nonempty Complete; no final page/console errors.
+  Normal-motion replay stopped after native Chromium library failure, not a pass.
+- qa:capture: 14 screens × 390/430, 28 successes/0 failures, 56 PNGs, standalone
+  HTML/manifest and validated 58-entry ZIP delivered. Captured revision f7a95e8;
+  the later build-scope change produces byte-identical React bundles.
+  Physical microphone, audible quality, native-device zoom and real backend unverified.
+- Guard code saved to integration and main by expected-HEAD non-force updates.
+  Original Git Integration returned “Deployment rate limited — retry in 24 hours”
+  at `2026-10-21T22:14:11Z` (other linked project at :13). No same-run deploy retry,
+  local/manual Production deployment or build-trigger-only commit was issued.
+  Conservative next retry boundary: `2026-10-22T22:20:00Z` (Oct23 07:20 KST);
+  honor any later returned limit. Guard execution on Vercel remains unverified.
+- Original Production still READY `b57c1d4`, deployment
+  `dpl_5YYHsXvR2f2SNj2C5k83z2iLC4Ge`; actual
+  https://ieum-v2-react.vercel.app returns 200 and old
+  `index-BmmlD67C.js` / `index-BqlZo9hY.css`. Latest READY Preview
+  `bddbfc2` is not Production and is not presented as a live-main release.
+- Next: prioritize stabilization and presentation freeze on Oct23. Preserve all
+  prior unfinished source backing/lyrics, independent renderer/3D, real community
+  data and physical-device acceptance. Continue only evidenced confirmed-screen
+  differences; do not redesign unfinished pages. After the retry boundary, verify
+  original-project Git deployment, exact READY SHA/assets/URL and deployed core
+  flow; no repeated quota retries or docs-only build-trigger commits.
+  This checkpoint removes only the owner above from integration/main.
+
 ## Supplied identicons and regenerated Home hero · 2026-10-22
 
 - Runtime code `b3624d8845f921d74b1f2b67d5f3b15fa87accc1`, fresh remote base
