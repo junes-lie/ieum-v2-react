@@ -1,3 +1,48 @@
+## Shared design system across remaining screens · 2026-10-21
+
+- Code `287b2096c1b1c3f9063c7b553d65a0ea6f005d9e`, resumed from fresh remote
+  `a4d0e1b`. Acquired/rechecked expected-HEAD lock
+  `automation-figma-v2-20261021T140959Z-e6c6de6fbc91`; this checkpoint releases only that owner.
+- User's latest priority: apply the confirmed system to all remaining screens
+  while preserving their existing layout, content and functions. Read current
+  Notion DS/screen specification and fresh Figma common component metadata,
+  Gold Project / Like / Share high-fidelity contexts and screenshots.
+- Added scoped shared styles to Detail, Finder, Match/Profile, Complete,
+  My Projects, Collection, My Voice, Song Browser, Create Project and Voice Setup.
+  Connected existing Pretendard/Montserrat/Cormorant roles, canvas/surface/state
+  tokens, 20/24px insets, local native 48px Gold/Smoky capsule/player surfaces,
+  fields, tabs/chips and focus/disabled states. Actual Song identities stay intact.
+  Confirmed Home/Workspace/Recording/Search CSS and assets are unchanged.
+- Corrected reproduced Finder sort-word splitting, candidate-image/name overlap,
+  My Voice transport overflow and Korean empty-state fallback glyphs. Existing
+  page composition, circle-credit interactions, routes, storage/audio/renderer
+  and presentation-data isolation remain; no new layout or standalone merge.
+- Final build passed: `index-dTKMa5oC.js` / `index-DHjb02Ev.css`.
+  All 13 maintained Node suites passed. Full normal-motion Chromium integration
+  passed 390/430px, including fixed-deck/no-fade continuity, public play/save,
+  Search/My Voice/Back, participation, synthetic-mic pause/resume/Review/direct
+  submit, final-Track Auto Mix and nonempty completed Mix. No page/console errors.
+- New maintained `qa/verify-shared-system-browser.mjs` passed both widths:
+  46 screen/state checks, filters/reset, Match/Profile/Finder return, vocal save,
+  Collection tabs, My Voice preference cancel, Create stages/Back, no mic on entry,
+  control containment and CSS-enlarged text. Final rendered screens were inspected.
+  Optional legacy `qa:navigation` launcher is blocked by hard-coded Windows
+  Playwright/Edge paths; `qa:profile` was not started. No pass is claimed for them.
+- `npm run qa:capture`: `qa/captures/2026-10-21-shared-system-287b209/`,
+  14 entries × 390/430px, 28 successes/0 failures; 56 PNGs and standalone HTML/ZIP,
+  explicitly labelled undeployed code `287b209`. Captures/results excluded from Git.
+- Original https://ieum-v2-react.vercel.app returns HTTP 200 with old
+  `index-BmmlD67C.js` / `index-BqlZo9hY.css`; latest Production READY `b57c1d4`.
+  Main `caa0f30` / standalone `3d82976` unchanged. No deployment/main advance
+  before recorded retry `2026-10-21T22:07:09Z` (Oct 22 07:07 KST).
+- Next: retain this broad shared-system application as the baseline; inspect only
+  evidenced remaining source/state differences. After the retry window, recheck
+  user main changes, integrate the latest verified branch without force and
+  verify original-project READY commit/assets/URL. Preserve all prior unfinished
+  verified personal imagery, actual lyrics/backing, independent renderer/3D,
+  real community data and final visual/physical-device checks. Physical mic,
+  audible quality, native keyboard/device zoom and live backend are unverified.
+
 ## Search input focus / short viewport · 2026-10-21
 
 - Code `ef4f953717bbb460587cd7dfe6d7f9de288c3584`, resumed from fresh `abe12ee`.
