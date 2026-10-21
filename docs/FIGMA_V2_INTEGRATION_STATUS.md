@@ -1,5 +1,39 @@
 # Figma V2 integration checkpoint · 2026-10-21
 
+## Search tab context repair · 2026-10-21
+
+- Code `b8e362ba07bb3c275339424b5e895283a6d5b0a8`; resumed from `175808e`.
+  Acquired/rechecked the shared expected-HEAD lock; this checkpoint releases only
+  `automation-figma-v2-20261020T235508Z-e6c6de6fbc91`.
+- Current Notion 01S requires per-tab query/filter/scroll retention. Reproduced
+  the previous shared-query/reset-on-switch failure before editing. Read current
+  Figma Search tab source/screenshot; existing visual geometry is unchanged.
+- Each tab now retains its own query, genre, Part/range filter, sort and scroll.
+  Search snapshots survive detail/completed-result/My Voice Back and browser
+  history. Global Search resumes its tab; explicit Home shortcuts select the
+  requested tab without overwriting its preferences. Repeated active-tab taps
+  preserve the list position. No participation/Track/save changes.
+- Build and all 13 Node suites passed. Maintained Search geometry QA passed
+  390/430px. New `qa/verify-search-context-browser.mjs` passed 390/430px
+  window scrolling and 1100px desktop frame scrolling, independent settings,
+  Back/Forward, Home shortcuts and unchanged Tracks/participation/saves.
+- Core Chromium replay passed 390/430px with reduced motion and synthetic mic:
+  public playback/save/reload, Search filters/Back, participation, Workspace
+  playback, pause/resume, Review, submit, Auto Mix and nonempty final Mix.
+  Actual Search render inspected; physical microphone/listening remain unverified.
+- Renderer still `74d7559e8ca1c6ff2cd1aeb1c73b13fe2211ace6`.
+  Build assets: `index-nqWNKXIK.js` / `index-BowQL69Z.css`.
+- Original https://ieum-v2-react.vercel.app returns HTTP 200 and old
+  `index-BmmlD67C.js` / `index-BqlZo9hY.css`; latest Production remains READY
+  `b57c1d4`. Main stays `caa0f30`. No deployment request/main advance:
+  recorded 24h wait from 2026-10-20T22:07:09Z is respected.
+- Next: compare current Figma Workspace compact Record/VocalFinder/Track controls
+  with their runtime surfaces and fix verified differences. Keep unresolved
+  verified person-owned artwork, actual lyrics/backing, independent 3D, real
+  community results and physical-device/final visual checks open. Recheck main
+  and original-project deployment after the recorded retry window; never claim
+  these integration-only changes are live.
+
 ## Search layout refinement · 2026-10-21
 
 - Code `eaef0ef0fab18b235223cbfa55076ece3f3ff411` is saved to integration; resumed from `d71c000`.
@@ -409,7 +443,7 @@ React integration. `public/artwork/README.md` records sources and use boundaries
 ## Next checkpoint
 
 1. Remaining visual differences: monitoring/Part identity slots need verified
-   person-owned resources; Guide keyboard needs the actual local asset. Do not
+   person-owned resources. Guide keyboard and toggle assets are connected. Do not
    assign the decorative profile image as someone's measured voice result.
 2. Existing Resonance shape, stream fidelity/brightness and completed 3D remain
    separate from this placement pass. Preserve algorithms; do not merge the
