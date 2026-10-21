@@ -1,0 +1,7 @@
+{
+  "runId": "automation-figma-v2-20261021T080458Z-e6c6de6fbc91",
+  "startedAt": "2026-10-21T08:04:58Z",
+  "baseSha": "283f20efd7c726f46b561b86fb00e71a701f7e31",
+  "branch": "feature/figma-v2-integration",
+  "scope": "Confirmed BottomNavigation fidelity and browser/capture QA"
+}
