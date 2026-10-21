@@ -1052,7 +1052,7 @@ function Workspace({ go, project = PROJECT, song, isCreated = false, ownerPartId
     return {}
   }
   return <div className="screen figma-v2 workspace-screen workspace-v2-screen" data-screen-id="03">
-    <TopBar figmaHeader title="프로젝트 작업실" back={() => isCreated ? go('projects') : go('detail')} action={<img src={figmaAssets.imgFaFaHeart1} alt="" aria-hidden="true"/>} actionLabel={projectLiked?'프로젝트 Like 취소':'프로젝트 Like'} actionPressed={projectLiked} actionId="toggle-project-like" onAction={toggleProjectLike} />
+    <TopBar figmaHeader title="IEUM" back={() => isCreated ? go('projects') : go('detail')} action={<img src={figmaAssets.imgFaFaHeart1} alt="" aria-hidden="true"/>} actionLabel={projectLiked?'프로젝트 Like 취소':'프로젝트 Like'} actionPressed={projectLiked} actionId="toggle-project-like" onAction={toggleProjectLike} />
     <main>
       <div className="title-row"><div><h1>{song?.title || project.name}</h1><p className="workspace-project-name">{project.key || 'C major'} · {submitted}/{projectParts.length} 제출됨</p></div></div>
       {completionDelayed&&<section className="completion-delay-banner" role="status" data-state="completion-delayed"><strong>내 녹음을 이어갈 차례예요.</strong><p>마지막 유효 활동 후 7일이 지났습니다. 미완료된 내 Part를 제출하면 프로젝트가 다시 진행돼요.</p></section>}

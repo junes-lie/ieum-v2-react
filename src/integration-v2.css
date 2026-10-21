@@ -168,3 +168,20 @@
 .workspace-v2-screen .v2-toggle i{width:33.12px;height:18.72px;border:0;border-radius:0;background:transparent url('/artwork/figma-toggle-off.svg') center/contain no-repeat}
 .workspace-v2-screen .v2-toggle i:after{content:none}
 .workspace-v2-screen .v2-toggle input:checked+i{background:transparent url('/artwork/figma-toggle-on.svg') center/contain no-repeat}
+
+/* Current Home/Workspace typography and spacing, isolated from legacy screen rules. */
+.home-v2-screen .v2-hero-copy{margin-left:auto;width:max(176px,40.93%)}
+.home-v2-screen .v2-hero-copy h1{font-size:32px}
+.home-v2-screen .v2-hero-copy p{font-size:15px;line-height:22px}
+.v2-recruitment .v2-section-heading{position:relative;min-height:30px;padding-right:74px}
+.v2-recruitment .v2-section-heading h2{font-size:24px}
+.v2-recruitment .v2-section-heading button{position:absolute;right:0;top:-7px;height:44px}
+.home-v2-screen p.v2-section-note{margin-top:8px;line-height:19px}
+.v2-recruitment .v2-carousel-nav{height:35px;margin:16px 0}
+.home-v2-screen .v2-recruit-info{margin-top:0}
+.home-v2-screen .v2-recruit-info h3{font-size:36px;line-height:40px}
+.home-v2-screen .v2-recruit-info p{line-height:16px}
+.workspace-v2-screen .topbar{height:60px;min-height:60px;padding:0 16px;grid-template-columns:44px minmax(0,1fr) 44px;gap:10px}
+.workspace-v2-screen .topbar-center{text-align:center;font:400 15px/22px var(--font-interface)}
+.workspace-v2-screen .title-row{margin:1px 0 31px}
+.workspace-v2-screen p.workspace-project-name{line-height:16px;color:var(--text-secondary)}
