@@ -1,5 +1,36 @@
 # Figma V2 integration checkpoint · 2026-10-21
 
+## Home/Workspace heading rhythm · 2026-10-21
+
+- Code `6694335b0e4a03ae844f5abc79fb55666354962c`, based on `d798702`; shared expected-HEAD lock
+  `automation-figma-v2-20261021T020010Z-e6c6de6fbc91` is released by this checkpoint.
+- Read current Notion DS/screen specification and fresh Figma Home/Workspace,
+  header/copy/recruitment/Song identity child contexts and full screenshots.
+- Removed the legacy 88px/padded Workspace header override: current header is
+  60px, centered IEUM 15/22, Back 44px at y=8, identity begins y=61.
+  Metadata uses original secondary color and 16px line-height. Real long Song
+  titles wrap; actual Key/submitted count, Like and Back actions are preserved.
+- Home uses 32/40 Hero title and 15/22 copy within both widths. Recruitment
+  heading/description/navigation/stage now follow original vertical positions;
+  30px heading and 35px navigation retain separate 44px button targets.
+  Selected project title uses original 36/40. Existing image assets are reused.
+- Build + all 13 Node suites passed. Maintained new heading QA passed 390/430px
+  exact geometry, unclipped copy/two-line actual Song title, Like and navigation.
+  Inspected actual Home/Workspace renders. Core reduced-motion Chromium replay
+  passed both widths: playback/save/Search/My Voice/Back, participation,
+  synthetic-mic pause/resume/Review/direct submit/final-Track Auto Mix/nonempty Mix.
+  No console/page errors. Physical microphone/listening remains unverified.
+- Renderer unchanged `74d7559e8ca1c6ff2cd1aeb1c73b13fe2211ace6`.
+  Build: `index-BMTkIH10.js` / `index-CLBRgAIa.css`.
+- Production still READY `b57c1d4`; https://ieum-v2-react.vercel.app returns 200,
+  old `index-BmmlD67C.js` / `index-BqlZo9hY.css`. Main remains `caa0f30`.
+  No deploy request/main advance during the recorded 24h wait from
+  2026-10-20T22:07:09Z; these changes are not live.
+- Next: inspect existing 390px Hero artwork crop and remaining Home recent-card
+  typography against current source. Preserve unresolved person-owned artwork,
+  actual lyrics/backing, independent 3D/community integration and physical/final
+  visual checks. Recheck main/Production after the recorded retry window.
+
 ## Workspace original control surfaces · 2026-10-21
 
 - Code `832bad9bc01320c3e4eb207bc3c4431b062dc46b`; resumed from `5c91769`.
