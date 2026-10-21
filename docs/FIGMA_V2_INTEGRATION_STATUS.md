@@ -1,5 +1,39 @@
 # Figma V2 integration checkpoint · 2026-10-21
 
+## Home artwork and recent cards · 2026-10-21
+
+- Code `c99704111e533f210dd6ca2a4679a3fac12fc959`, based on `83601e5`; expected-HEAD lock
+  `automation-figma-v2-20261021T025912Z-e6c6de6fbc91` is released by this checkpoint.
+- Read current Notion DS and fresh Figma Home/Hero/recent-card EN/KR contexts
+  and screenshot. Reproduced 40px of extra horizontal Hero cropping at 390px,
+  and recent-title reduction to 14px (390) / 16px (430), versus source 18/24.
+- Reused the unchanged Hero at its original aspect ratio; 430px retains 430×400,
+  390px fits the complete width. Native bottom fade follows the scaled artwork;
+  copy remains editable and can wrap without clipping. Hero slot stays 400px.
+- Recent cards use original 18/24 EN/KR roles, 24/30 heading, 12px gaps,
+  secondary Meta sizing, 76px role column and natural height for long content.
+  Sleeve 54px border/radius and 56px live Record x=14 now match source.
+  Actual Song titles/IDs/artists/covers, Track graphics and actions are unchanged.
+- Build and all 13 Node suites passed. New maintained browser QA passed 390/430px
+  no extra Hero crop, artwork containment, card text geometry, exact detail/Back
+  and scoped 2x text-size stress without overlap/body overflow. This stress is
+  not native device text zoom. Existing heading/navigation QA also passed both.
+- Core reduced-motion Chromium replay passed both widths: public playback/save,
+  Search/My Voice/Back, participation, synthetic-mic pause/resume/Review/direct
+  submit/final-Track Auto Mix/nonempty completed Mix; no page/console errors.
+  Physical microphone/listening and complete visual acceptance remain open.
+- Hero blob unchanged `0b5ee388ac65c4f7b0ba99d75c02f986ad84c7e4`;
+  renderer unchanged `74d7559e8ca1c6ff2cd1aeb1c73b13fe2211ace6`.
+  Build: `index-BV-kh_3J.js` / `index-B4ckuCpt.css`.
+- Production still READY `b57c1d4`; https://ieum-v2-react.vercel.app returns 200
+  with old `index-BmmlD67C.js` / `index-BqlZo9hY.css`. Main remains `caa0f30`.
+  No deployment request/main advance during recorded 24h wait from
+  2026-10-20T22:07:09Z. This change is integration-only.
+- Next: compare remaining Home recommendation/completion-card typography and
+  spacing against current source. Preserve unresolved person-owned artwork,
+  real lyrics/backing, separate 3D/community integration and physical/final checks.
+  Recheck main/Production after the recorded retry window before integrating.
+
 ## Home/Workspace heading rhythm · 2026-10-21
 
 - Code `6694335b0e4a03ae844f5abc79fb55666354962c`, based on `d798702`; shared expected-HEAD lock
