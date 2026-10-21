@@ -264,3 +264,14 @@
 .recording-v2-screen .record-control button>.v2-recording-surface{position:absolute;left:50%;top:50%;max-width:none;transform:translate(-50%,-50%) scale(.88);pointer-events:none}
 .recording-v2-screen .record-control button>svg{position:relative;z-index:1;pointer-events:none}
 .recording-v2-screen .record-control button:focus-visible{outline:2px solid var(--text-primary);outline-offset:3px}
+
+/* Recording copy/layout · original identity 1459:31223 and lyrics 1459:31266. */
+.recording-v2-screen:not([data-recording-status="review"])>main{padding-top:2px!important;grid-template-rows:minmax(78px,auto) auto minmax(191.8px,auto) 42px minmax(230px,1fr) auto;align-content:start}
+.recording-v2-screen .recording-heading{display:flex;flex-direction:column;align-items:center;gap:2px;padding:0;min-width:0}
+.recording-v2-screen .recording-heading h1{width:100%;max-width:280px;margin:0;font:500 18px/24px var(--font-interface);overflow-wrap:anywhere}
+.recording-v2-screen .recording-heading h1[lang="en"]{font-family:var(--font-functional-en)}
+.recording-v2-screen .recording-heading p{width:100%;max-width:280px;margin:0;font:500 12px/16px var(--font-interface);color:var(--text-secondary);overflow-wrap:anywhere}
+.recording-v2-screen:not([data-recording-status="review"]) .v2-monitoring{align-self:start}
+.recording-v2-screen:not([data-recording-status="review"]) .lyrics{align-self:start;min-height:148px;margin-top:43.8px}
+
+.recording-v2-screen:not([data-recording-status="review"]) .recording-visual{position:absolute;align-self:start}
