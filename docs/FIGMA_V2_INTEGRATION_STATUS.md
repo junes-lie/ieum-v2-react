@@ -1,3 +1,45 @@
+## Shared BottomNavigation refinement · 2026-10-21
+
+- Runtime code `4b0242d80052eaefd8674a12130cba160e19c2b0`; latest code/QA `92b492286d131248856d6b0f0cd07aa5e5b9cb59`.
+  Resumed from fresh `283f20e`, preserving the user's capture helper and AGENTS rules.
+  Acquired/rechecked the existing expected-HEAD shared lock; this checkpoint releases
+  only `automation-figma-v2-20261021T080458Z-e6c6de6fbc91`.
+- Read current Notion Design System/screen specification and confirmed Figma
+  BottomNavigation `1241:3080` / Workspace instance `1471:32163`, including its
+  screenshot and four variants. Connected original 20px Home/Search/Projects/Collection
+  active/inactive icons; fixed the old inherited label font/tracking, 52px targets,
+  80×76 radial lighting and 40×1.5 top indicator. Existing four routes are unchanged.
+- Build and all 13 maintained Node suites passed. New maintained
+  `qa/verify-bottom-navigation-browser.mjs` passed 390/430px and 1100px frame:
+  four active states, asset decoding, exact geometry/typography, keyboard navigation,
+  My Voice Back, last Home CTA clearance and unchanged participation/Tracks.
+- Core Chromium replay passed 390/430px with reduced motion and synthetic mic:
+  public playback/save/reload, Search/Back, participation, Workspace playback,
+  pause/resume, Review, direct submit, final-Track Auto Mix and nonempty final Mix.
+  Seven-scene demo menu/reset/storage-isolation/Back regression also passed.
+  Physical microphone/listening remain unverified.
+- Fixed capture-only Chromium failure between viewport contexts by removing
+  `--single-process`. `npm run qa:capture` then captured all 14 entries at both
+  widths (28 successes, 0 failures; 56 full-content/viewport PNGs). Standalone
+  `index.html` and ZIP include actual revision `92b492286d131248856d6b0f0cd07aa5e5b9cb59`,
+  explicit undeployed label and manifest. Output:
+  `qa/captures/2026-10-21T08-18-27-603Z/`; generated images are not committed.
+  Inspected actual Home/Workspace/Recording/Search viewport renders.
+- Renderer/audio/storage and user's package/AGENTS changes remain hash-identical.
+  Build assets: `index-Dr9JzQ2z.js` / `index-BjEK6ONX.css`.
+- Original https://ieum-v2-react.vercel.app returns HTTP 200 with old
+  `index-BmmlD67C.js` / `index-BqlZo9hY.css`; original Production remains
+  READY `b57c1d4`. Main stays `caa0f30`; standalone stays `3d82976`.
+  No deployment request/main advance: retry after `2026-10-21T22:07:09Z`
+  (2026-10-22 07:07 KST). These changes are integration-only.
+- Next: use the current confirmed screens and captured renders to address any
+  evidenced long-content, focus/text-enlargement or safe-area mismatch without
+  repeating completed layout work or redesigning unconfirmed screens. Preserve
+  unresolved verified person-owned imagery, actual lyrics/backing, independent
+  renderer/3D, real community results, final visual and physical-device checks.
+  After the recorded retry time, recheck user's main changes and deploy only the
+  verified latest integration to the original project, then verify commit/assets/URL.
+
 # Figma V2 integration checkpoint · 2026-10-21
 
 ## User-visible screen capture delivery · 2026-10-21
