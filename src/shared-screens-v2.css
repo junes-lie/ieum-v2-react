@@ -116,7 +116,7 @@
   letter-spacing: 0;
   text-align: center;
   overflow-wrap: anywhere;
-  color: #000;
+  color: #3d3221;
 }
 .ds-v2-screen .secondary { color: #f1e8d8; font-weight: 400; }
 .ds-v2-screen .primary::before,
@@ -129,7 +129,7 @@
   border-style: solid;
   border-color: transparent;
   border-width: 0 24px;
-  border-image: url('/artwork/figma-project-gold-first.svg') 0 24 fill / 0 24px / 0 stretch;
+  border-image: url('/artwork/figma-project-gold-current.svg') 0 24 fill / 0 24px / 0 stretch;
 }
 .ds-v2-screen .secondary::before { border-image-source: url('/artwork/figma-project-button.svg'); }
 .ds-v2-screen .primary:active::before,

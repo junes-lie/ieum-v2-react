@@ -23,10 +23,10 @@ try{
   assert.equal(await button.evaluate(n=>{const r=n.getBoundingClientRect();return n.contains(document.elementFromPoint(r.x+r.width/2,r.y+r.height/2))}),true,'Project action is unobscured and receives pointer input')
   const geometry=await button.evaluate(n=>{const r=n.getBoundingClientRect(),s=getComputedStyle(n),surface=getComputedStyle(n.firstElementChild),label=n.lastElementChild.getBoundingClientRect();return {width:r.width,height:r.height,radius:s.borderRadius,font:s.fontFamily,size:s.fontSize,line:s.lineHeight,weight:s.fontWeight,color:s.color,surface:surface.borderImageSource,cap:surface.borderImageWidth,labelInside:label.left>=r.left&&label.right<=r.right&&label.top>=r.top&&label.bottom<=r.bottom,body:document.body.scrollWidth}})
   assert.equal(geometry.width,width===390?350:382);assert.equal(geometry.height,48);assert.equal(geometry.radius,'24px')
-  assert.ok(geometry.font.includes('Pretendard'));assert.equal(geometry.size,'15px');assert.equal(geometry.line,'22px');assert.equal(geometry.weight,'500');assert.equal(geometry.color,'rgb(0, 0, 0)')
-  assert.ok(geometry.surface.includes('/artwork/figma-project-gold-first.svg'));assert.deepEqual(geometry.cap.split(' ').map(parseFloat),[0,24]);assert.equal(geometry.labelInside,true);assert.equal(geometry.body,width)
-  const asset=await page.request.get(base+'/artwork/figma-project-gold-first.svg');assert.equal(asset.status(),200)
-  assert.deepEqual(await asset.body(),await readFile(new URL('../public/artwork/figma-project-gold-first.svg',import.meta.url)))
+  assert.ok(geometry.font.includes('Pretendard'));assert.equal(geometry.size,'15px');assert.equal(geometry.line,'22px');assert.equal(geometry.weight,'500');assert.equal(geometry.color,'rgb(61, 50, 33)')
+  assert.ok(geometry.surface.includes('/artwork/figma-project-gold-current.svg'));assert.deepEqual(geometry.cap.split(' ').map(parseFloat),[0,24]);assert.equal(geometry.labelInside,true);assert.equal(geometry.body,width)
+  const asset=await page.request.get(base+'/artwork/figma-project-gold-current.svg');assert.equal(asset.status(),200)
+  assert.deepEqual(await asset.body(),await readFile(new URL('../public/artwork/figma-project-gold-current.svg',import.meta.url)))
   assert.equal(await page.locator('.v2-listen-surface img').first().getAttribute('src'),'/artwork/figma-player-play-surface.svg','Home 36px listening controls retain confirmed Smoky source')
   const project=await page.locator('.v2-recruit-record').getAttribute('data-project-id')
   const tracks=await page.evaluate(()=>Object.keys(window.__IEUM_V2__.state.projectTracks).length)
@@ -44,5 +44,5 @@ try{
   assert.deepEqual(errors,[]);results.push({width,geometry});await context.close()
  }
  await writeFile(output+'/results.json',JSON.stringify(results,null,2))
- console.log('PASS Gold First project surface, Medium label, uncut 24px caps, exact Back and 2x label stress at 390/430px')
+ console.log('PASS Current Gold project surface, Medium label, uncut 24px caps, exact Back and 2x label stress at 390/430px')
 }finally{await browser.close();server?.kill()}

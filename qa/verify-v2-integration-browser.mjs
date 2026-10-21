@@ -53,7 +53,7 @@ try{
   await page.locator('.v2-project-action').evaluate(n=>n.scrollIntoView({block:'center'}))
   const actionStyle=await page.locator('.v2-project-action').evaluate(n=>({height:n.offsetHeight,radius:getComputedStyle(n).borderRadius,font:getComputedStyle(n).fontSize,surface:getComputedStyle(n.firstElementChild).borderImageSource}))
   assert.equal(actionStyle.height,48);assert.equal(actionStyle.radius,'24px');assert.equal(actionStyle.font,'15px')
-  assert.ok(actionStyle.surface.includes('/artwork/figma-project-gold-first.svg'),'Button uses original exported Figma surface')
+  assert.ok(actionStyle.surface.includes('/artwork/figma-project-gold-current.svg'),'Button uses original exported Figma surface')
   await page.locator('.v2-project-action').screenshot({path:`${output}/project-button-${width}.png`})
   await page.evaluate(()=>{window.__housingBefore=document.querySelector('.v2-recruit-record .v2-turntable-housing');window.__housingBounds=window.__housingBefore.getBoundingClientRect().toJSON();window.__incomingRecord=document.querySelector('.v2-carousel-record[data-slot="1"]');window.__incomingCanvas=window.__incomingRecord.querySelector('canvas');window.__outgoingCanvas=document.querySelector('.v2-carousel-record[data-slot="0"] canvas')})
   await page.locator('.v2-carousel-neighbor-next').click({position:{x:22,y:86}})
