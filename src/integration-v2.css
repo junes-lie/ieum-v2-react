@@ -185,3 +185,19 @@
 .workspace-v2-screen .topbar-center{text-align:center;font:400 15px/22px var(--font-interface)}
 .workspace-v2-screen .title-row{margin:1px 0 31px}
 .workspace-v2-screen p.workspace-project-name{line-height:16px;color:var(--text-secondary)}
+
+/* Preserve the approved Hero composition instead of cropping its narrow-screen edges. */
+.home-v2-screen .v2-hero{--hero-art-height:calc(min(100vw,430px)*40/43)}
+.home-v2-screen .v2-hero-artwork{height:auto;aspect-ratio:43/40;object-fit:contain;object-position:top left}
+.home-v2-screen .v2-hero-copy{width:40.93%}
+.home-v2-screen .v2-hero-copy p{white-space:normal}
+.home-v2-screen .v2-hero:after{height:calc(80px + max(0px,384px - var(--hero-art-height)));background:linear-gradient(180deg,transparent,rgba(21,17,14,.08) 32px,rgba(21,17,14,.68) 62.4px,#15110e 80px)}
+.home-v2-screen .v2-recent .v2-section-heading h2{font-size:24px}
+.home-v2-screen .v2-project-row{gap:12px}
+.home-v2-screen .v2-project-row strong{font:500 18px/24px var(--font-functional-en);letter-spacing:0}
+.home-v2-screen .v2-project-row strong:lang(ko){font-family:var(--font-interface);font-weight:600;letter-spacing:-.09px}
+.home-v2-screen .v2-project-row .v2-project-count{font-size:11px;line-height:16px}
+.home-v2-screen .v2-project-row .v2-open-roles{flex:0 0 76px;overflow-wrap:anywhere;letter-spacing:.24px}
+.home-v2-screen .v2-project-row .v2-open-roles small{font-size:11px;letter-spacing:.22px}
+.home-v2-screen .v2-thumbnail-record{left:14px}
+.home-v2-screen .v2-thumbnail-sleeve{border:.5px solid var(--line-default);border-radius:1.8px}
