@@ -1,3 +1,46 @@
+## Current confirmed Gold surfaces · 2026-10-22
+
+- Code `ff6525c53d2364b9ae6fe5ed93252d7ee3376c57`, resumed from fresh remote `674ab1f`.
+  Full checkpoint/AGENTS/Git rules read; source snapshot bytes checked against
+  the current remote Git tree. Expected-HEAD lock acquired/rechecked for
+  `automation-figma-v2-20261021T1857Z-e6c6de6fbc91`; this checkpoint releases only that owner.
+- Read current Notion DS/screen spec and high-fidelity Figma Gold Project
+  `1596:53321` / Player `1596:53579` contexts/screenshots. Read-only inspection
+  confirms Home `1488:33867` and Workspace `1432:40200` use these current variants.
+- Connected exact text-free source surfaces `1596:53327` (382×48) and
+  `1596:53584` (48×48): champagne palette, diagonal reflection, straight capsule
+  hairlines and concentric player machining. Preserved native sizes/24px capsule
+  caps, editable source-colored #3D3221 labels/icons, disabled Smoky controls,
+  playback/seek and existing shared primary-button use. Older artwork retained.
+  No Figma/Notion source, renderer, audio/storage/recording or standalone changes.
+- Build passed (`index-BPSXjJMV.js` / `index-CRtSivHd.css`); all 13 Node suites
+  passed. Project/Workspace browser QA passed 390/430px: original asset bytes,
+  geometry, actual click/Back/play/pause/keyboard seek, individual/Mix state,
+  disabled/re-enable and 2x CSS text. Shared-screen suite passed all 46 states.
+- Final reduced-motion Chromium regression passed both widths: public play/save,
+  Search/My Voice/Back, join, synthetic mic pause/resume/Review/direct submit,
+  final-Track Auto Mix and nonempty completed Mix; no final page/console errors.
+  Initial run logged one resource error; instrumented clean replay passed both.
+  Normal-motion full replay timed out in software-rendered capture; no normal-
+  motion pass claimed. Temporary capture workaround was not retained.
+- `npm run qa:capture`: 14 entries × two widths, 28 successes/0 failures,
+  56 entry PNGs. Actual Project button/Workspace stage renders inspected against
+  source. Version-labelled undeployed HTML/PNG ZIP delivered; no capture/results
+  committed. Physical mic, audible quality and device zoom remain unverified.
+- Production freshly checked: original project READY `b57c1d4`, main `caa0f30`.
+  No deployment/main advance before `2026-10-21T22:07:09Z` (07:07 KST).
+  Code is not live at https://ieum-v2-react.vercel.app.
+- Next priority remains per-screen design, not repeated common-style polish.
+  Fresh Atlas inspection found new Detail revision `1713:43254`, fixed-action
+  interaction frame `1707:42019`, Workspace revision `1555:39724` and full-body
+  implementation frame `1571:41074`. Check their current confirmed status and
+  latest user directions before implementing; do not treat old discovery IDs or
+  revision candidates as final approval. Remaining pages are not visually complete.
+  Preserve all prior unfinished verified personal imagery, real lyrics/backing,
+  renderer/3D, backend and final visual/device checks. Latest Notion matching-%
+  update explicitly says formulas/weights are unfinished: never invent scores.
+  Recheck user main changes at the allowed deployment time.
+
 ## Current Home rhythm and selected Song jacket · 2026-10-22
 
 - Code `2bf8c58c1d4a7210f4ef388974d4e4ec65f1c1e7`, resumed from fresh remote
