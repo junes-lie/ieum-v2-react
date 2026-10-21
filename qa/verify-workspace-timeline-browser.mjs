@@ -1,0 +1,89 @@
+import assert from 'node:assert/strict'
+import {createRequire} from 'node:module'
+import {spawn} from 'node:child_process'
+import {mkdir,readFile,writeFile} from 'node:fs/promises'
+const require=createRequire(import.meta.url)
+const {chromium}=require(process.env.PLAYWRIGHT_MODULE_PATH||'playwright')
+const base=process.env.IEUM_BASE_URL||'http://127.0.0.1:4198'
+let server
+if(!process.env.IEUM_BASE_URL){
+ server=spawn(process.execPath,['node_modules/vite/bin/vite.js','--host','127.0.0.1','--port','4198','--strictPort'],{stdio:['ignore','pipe','pipe']})
+ await new Promise((resolve,reject)=>{server.stdout.on('data',data=>{if(String(data).includes('Local:'))resolve()});server.on('error',reject);server.on('exit',code=>reject(Error('Vite exited '+code)))})
+}
+const output=process.env.IEUM_QA_OUTPUT||'/tmp/ieum-workspace-timeline'
+await mkdir(output,{recursive:true})
+const browser=await chromium.launch({headless:true,executablePath:process.env.CHROMIUM_EXECUTABLE_PATH||undefined,args:['--no-sandbox','--use-angle=swiftshader','--enable-unsafe-swiftshader']})
+const results=[]
+try{
+ for(const width of [390,430]){
+  const context=await browser.newContext({viewport:{width,height:932},locale:'ko-KR',reducedMotion:'reduce'})
+  const page=await context.newPage(),errors=[]
+  page.setDefaultTimeout(20000)
+  page.on('pageerror',error=>errors.push(error.message))
+  page.on('console',message=>{if(message.type()==='error')errors.push(message.text())})
+  await page.goto(base+'/?scene=workspace')
+  await page.waitForFunction(()=>window.__IEUM_V2__?.state?.screen==='workspace'&&Object.keys(window.__IEUM_V2__.state.projectTracks).length===2)
+  await page.waitForFunction(()=>document.querySelector('.workspace-v2-screen audio')?.duration>0)
+  await page.evaluate(()=>document.fonts.ready)
+  const geometry=await page.evaluate(()=>{
+   const box=n=>{const r=n.getBoundingClientRect();return {x:r.x,y:r.y,width:r.width,height:r.height}}
+   const button=document.querySelector('.v2-turntable-play'),mix=document.querySelector('.current-mix'),stage=document.querySelector('.v2-workspace-stage'),range=mix.querySelector('input'),clock=mix.querySelector('.player-split-clock')
+   return {button:box(button),surface:box(button.querySelector('img')),icon:box(button.querySelector('svg')),stage:box(stage),mix:box(mix),head:box(mix.querySelector('.current-mix-head')),range:box(range),clock:box(clock),font:getComputedStyle(clock).fontFamily,fontSize:getComputedStyle(clock).fontSize,lineHeight:getComputedStyle(clock).lineHeight,headingFont:getComputedStyle(mix.querySelector('strong')).fontSize,stream:window.__IEUM_V2__.audioRuntime.stream?.active||false,body:document.body.scrollWidth}
+  })
+  assert.deepEqual({width:geometry.button.width,height:geometry.button.height},{width:48,height:48})
+  assert.equal(geometry.surface.width,48);assert.equal(geometry.surface.height,48)
+  assert.ok(Math.abs(geometry.icon.width-14.4)<.02&&Math.abs(geometry.icon.height-14.4)<.02)
+  assert.equal(geometry.mix.width,Math.min(370,width-(width<=390?40:48)));assert.equal(geometry.stage.width,geometry.mix.width)
+  assert.equal(geometry.mix.height,72);assert.equal(geometry.head.height,28)
+  assert.equal(geometry.range.height,44);assert.equal(geometry.clock.height,16)
+  assert.equal(geometry.clock.y-geometry.mix.y,56)
+  assert.equal(geometry.mix.y-(geometry.stage.y+geometry.stage.height),11)
+  assert.equal(geometry.fontSize,'11px');assert.equal(geometry.lineHeight,'16px');assert.ok(geometry.font.includes('Montserrat'))
+  assert.equal(geometry.headingFont,'18px');assert.equal(geometry.body,width);assert.equal(geometry.stream,false)
+  assert.equal(await page.locator('.player-caption').count(),0)
+  const asset=await page.request.get(base+'/artwork/figma-player-play-surface.svg')
+  assert.equal(asset.status(),200);assert.deepEqual(await asset.body(),await readFile(new URL('../public/artwork/figma-player-play-surface.svg',import.meta.url)))
+  const button=page.locator('[data-action="turntable-play"]'),seek=page.getByRole('slider',{name:'재생 위치'})
+  await button.focus();await page.keyboard.press('Enter')
+  await page.waitForFunction(()=>document.querySelector('.workspace-v2-screen audio')?.currentTime>.15)
+  assert.equal(await button.getAttribute('aria-label'),'현재 듣기 일시정지')
+  await button.click();await page.waitForFunction(()=>document.querySelector('.workspace-v2-screen audio')?.paused)
+  await seek.focus();await page.keyboard.press('End')
+  await page.waitForFunction(()=>{const a=document.querySelector('.workspace-v2-screen audio');return a.currentTime>a.duration-.2})
+  assert.notEqual(await page.locator('.player-split-clock span').first().textContent(),'0:00')
+  await page.keyboard.press('Home');assert.equal(await seek.inputValue(),'0')
+  await page.keyboard.press('ArrowRight')
+  assert.ok(Number(await seek.inputValue())>0)
+  assert.ok((await seek.getAttribute('aria-valuetext')).includes(' / '))
+  await page.evaluate(()=>{document.activeElement?.blur();window.scrollTo(0,document.documentElement.scrollHeight)})
+  assert.equal(await page.evaluate(()=>document.querySelector('.current-mix').getBoundingClientRect().bottom<=document.querySelector('.bottom-nav').getBoundingClientRect().top),true,'Scrolling exposes the full timeline above navigation')
+  await page.locator('.current-mix').screenshot({path:`${output}/timeline-${width}.png`})
+  await page.locator('.v2-workspace-stage').screenshot({path:`${output}/stage-${width}.png`})
+  await page.getByRole('button',{name:'Soprano Track 재생',exact:true}).click()
+  await page.waitForFunction(()=>document.querySelector('.workspace-v2-screen audio')?.currentTime>.15)
+  assert.equal(await page.locator('.listening-context').count(),1)
+  await button.click();await page.waitForFunction(()=>document.querySelector('.workspace-v2-screen audio')?.paused)
+  await page.getByRole('button',{name:'현재 Mix로',exact:true}).click()
+  for(const name of ['Soprano','Alto'])await page.getByRole('checkbox',{name:name+' 현재 Mix 포함',exact:true}).uncheck()
+  await page.waitForFunction(()=>document.querySelector('.v2-turntable-play').disabled)
+  assert.equal(await seek.isDisabled(),true)
+  assert.equal(await button.evaluate(n=>getComputedStyle(n).opacity),'0.38')
+  assert.equal(await page.locator('.player-split-clock span').last().textContent(),'0:00')
+  assert.ok((await page.locator('.empty-proof').textContent()).includes('하나 이상'))
+  await page.getByRole('checkbox',{name:'Soprano 현재 Mix 포함',exact:true}).check()
+  await page.waitForFunction(()=>!document.querySelector('.v2-turntable-play').disabled)
+  assert.equal(await page.evaluate(()=>Object.keys(window.__IEUM_V2__.state.projectTracks).length),2)
+  await page.evaluate(()=>{const nodes=[...document.querySelectorAll('.workspace-v2-screen :is(p,strong,span,b,button)')].filter(n=>[...n.childNodes].some(c=>c.nodeType===Node.TEXT_NODE&&c.textContent.trim()));const sizes=nodes.map(n=>({n,size:parseFloat(getComputedStyle(n).fontSize),line:parseFloat(getComputedStyle(n).lineHeight)}));for(const {n,size,line} of sizes){n.style.setProperty('font-size',size*2+'px','important');if(Number.isFinite(line))n.style.setProperty('line-height',line*2+'px','important')}})
+  await seek.scrollIntoViewIfNeeded();await seek.focus();await page.keyboard.press('End')
+  assert.equal(await page.evaluate(()=>document.body.scrollWidth),width)
+  assert.ok(await seek.isVisible());assert.ok(await button.isEnabled())
+  assert.equal(await page.evaluate(()=>{const heading=document.querySelector('.current-mix-head').getBoundingClientRect(),clock=document.querySelector('.player-split-clock').getBoundingClientRect(),mix=document.querySelector('.current-mix').getBoundingClientRect();return heading.bottom<=clock.top&&clock.bottom<=mix.bottom}),true,'Enlarged text reflows without clipping clocks or overlapping the heading')
+  await page.evaluate(()=>{document.activeElement?.blur();window.scrollTo(0,document.documentElement.scrollHeight)})
+  assert.equal(await page.evaluate(()=>document.querySelector('.player-split-clock').getBoundingClientRect().bottom<=document.querySelector('.bottom-nav').getBoundingClientRect().top),true)
+  await page.locator('.current-mix').screenshot({path:`${output}/timeline-text-stress-${width}.png`})
+  assert.deepEqual(errors,[]);results.push({width,geometry,errors})
+  await context.close();console.log('PASS Workspace original Player surface, 72px split timeline, actual audio/keyboard seek, individual/Mix state and 200% text stress',width)
+ }
+ await writeFile(output+'/results.json',JSON.stringify(results,null,2))
+ console.log('Synthetic browser playback only; no physical microphone or listening-quality claim.')
+}catch(error){console.error(error);throw error}finally{await browser.close();server?.kill('SIGTERM')}
