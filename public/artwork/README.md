@@ -1,5 +1,7 @@
 # Integration artwork
 
+- `figma-recording-surface-72.svg` / `figma-recording-surface-96.svg`: exact text-free original RecordingControl surfaces `1303:2929` (72×72) / `1303:3085` (96×96), exported through the read-only Figma Plugin API. Native dimensions are retained and uniformly scaled by 0.88 to 63.36 / 84.48px. Separate native controls keep the real start/restart/stop/pause/resume actions; labels and Font Awesome icons stay editable. No original Figma nodes were created or modified.
+
 - `figma-player-play-surface.svg`: exact text-free 48×48 Player surface `1317:3486`, exported read-only from Figma. Home completed cards scale the full native surface and separate 14.4px icon uniformly by 0.75 to the original 36px visual size. The existing whole-card button owns navigation and the accessible hit area; this artwork adds no simulated playback.
 
 - `figma-compact-button.svg`: exact text-free 84×40 surface export `1492:34269` from RecordCompact/Primary/Default `1488:33761`; circular ends, rim, grain and reflection are retained. Editable native button content stays separate inside an 84×44 target.

@@ -4,7 +4,7 @@ import {
   faArrowLeft, faMagnifyingGlass, faPlay, faPause, faStop,
   faMicrophone, faPlus, faCheck, faShareNodes, faHouse,
   faFolderOpen, faUser, faSliders, faHeadphones, faXmark,
-  faArrowDownWideShort, faRotateLeft, faCircleInfo,
+  faArrowDownWideShort, faRotateLeft, faRotateRight, faCircleInfo,
   faHeart as solidHeart, faStar as solidStar, faBookmark as solidBookmark
 } from '@fortawesome/free-solid-svg-icons'
 import { faHeart, faStar, faBookmark } from '@fortawesome/free-regular-svg-icons'
@@ -33,6 +33,7 @@ export const FUNCTIONAL_ICONS = Object.freeze({
   close: faXmark,
   sort: faArrowDownWideShort,
   retry: faRotateLeft,
+  restart: faRotateRight,
   info: faCircleInfo
 })
 const SELECTED_ICONS = { heart: solidHeart, star: solidStar, bookmark: solidBookmark, collection: solidBookmark }

@@ -246,3 +246,21 @@
 .workspace-v2-screen .split-timeline .time-row .player-split-clock>span{font:inherit;color:inherit;letter-spacing:inherit}
 
 .workspace-v2-screen .v2-turntable-play:disabled{opacity:.38}
+
+/* Recording instrument · original 1478:32685 / RecordingControl 1239:2480. */
+.recording-v2-screen:not([data-recording-status="review"]) .v2-instrument{display:flex;flex-direction:column;gap:8px;padding:12px 20px 8px;border-width:.75px;overflow:visible}
+.recording-v2-screen .v2-instrument-readout{width:100%;max-width:310px;margin-inline:auto;gap:6px;min-height:18px;font:500 11px/16px var(--font-functional-en);letter-spacing:.22px}
+.recording-v2-screen .v2-instrument .v2-instrument-readout .v2-recording-time{margin:0;gap:6px}
+.recording-v2-screen .v2-instrument-readout :is(span,b){font:inherit;letter-spacing:inherit}
+.recording-v2-screen .v2-instrument-readout .v2-recording-time{color:var(--text-primary)}
+.recording-v2-screen .v2-instrument-readout .meter-row{color:var(--text-secondary)}
+.recording-v2-screen .recorder-controls{width:100%;max-width:310px;height:auto;min-height:111.76px;margin:0 auto;padding:0;gap:24px;align-items:flex-start;flex-shrink:0}
+.recording-v2-screen .record-control{width:63.36px;min-width:0;min-height:111.76px;padding-top:10.56px;gap:5.28px;flex-shrink:0}
+.recording-v2-screen .record-control:has(.record-btn){width:84.48px;padding-top:0;gap:7.04px}
+.recording-v2-screen .record-control>span{width:100%;text-align:center;overflow-wrap:anywhere;font:400 10.07px/14.714px var(--font-interface);color:#dcd2c0}
+.recording-v2-screen .record-control:has(.record-btn)>span{font-size:13.2px;line-height:19.36px}
+.recording-v2-screen .record-control .round-secondary,.recording-v2-screen .record-control .record-btn{position:relative;isolation:isolate;display:grid;place-items:center;width:63.36px;height:63.36px;min-width:0;margin:0;padding:0;border:0;background:none;box-shadow:none;color:var(--text-primary);flex-shrink:0}
+.recording-v2-screen .record-control .record-btn{width:84.48px;height:84.48px}
+.recording-v2-screen .record-control button>.v2-recording-surface{position:absolute;left:50%;top:50%;max-width:none;transform:translate(-50%,-50%) scale(.88);pointer-events:none}
+.recording-v2-screen .record-control button>svg{position:relative;z-index:1;pointer-events:none}
+.recording-v2-screen .record-control button:focus-visible{outline:2px solid var(--text-primary);outline-offset:3px}
