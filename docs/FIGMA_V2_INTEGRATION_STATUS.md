@@ -1,3 +1,33 @@
+## Remove decorative dividers on all pages · 2026-10-22
+
+- User explicitly requested removal of all unnecessary separators. Read current
+  Notion DESIGN_SYSTEM.md: section/row decoration is prohibited; native input,
+  selection, focus and control boundaries are retained. No source Notion/Figma edits.
+- Code `ced2a49c4de42d0f09c101b378e1f0d94e5f6f51`, based on remote `3eb6ff0ec17b3258c0c0808208bca9cadb1cc81e`.
+  Removed 75 legacy directional-border declarations across styles.css,
+  design-system-v2.css and demo-stage.css; hid demo-note horizontal rules.
+  Covers headers/navigation separators, sections, Part/list rows, Match analysis,
+  metadata, Collection, My Voice/Voice Setup, searches and presentation menus.
+  Existing spacing, content, actions, range endpoint markers, native player/seek
+  tracks, button artwork, fields, active states and focus indicators are preserved.
+- Build passed (`index-8jd78law.js` / `index-B2-fIgSN.css`); 13 Node suites passed.
+  Existing shared-screen Chromium QA passed 46 states at 390/430px, including
+  CSS text stress and navigation. Temporary computed-style audit confirmed no
+  section/row separators across those states; actual Detail/Match/Workspace/
+  Complete renders inspected. Source audit leaves only the functional range marker
+  among nonzero directional borders. Three CSS files only; runtime JS unchanged.
+- Synthetic-mic core regression passed 390/430px: playback/Search/Back,
+  join → Workspace → recording/pause/resume → Review → submit → Auto Mix →
+  nonempty completed Mix. This run used reduced motion and excluded unchanged
+  carousel-motion assertions after the normal-motion run stalled in software
+  rendering; no normal-motion or physical-device/audio-quality pass is claimed.
+- Latest code remains undeployed to https://ieum-v2-react.vercel.app.
+  Do not retry before recorded 2026-10-21T22:07:09Z (Oct 22 07:07 KST).
+  Next: include this verified code in the next permitted integration deployment;
+  do not restore decorative dividers or repeat unrelated polish. Prior remaining
+  per-screen design, real assets/backend and physical-device checks remain open.
+- This checkpoint releases only lock owner `interactive-remove-dividers-20261022`.
+
 ## Workspace title hierarchy correction · 2026-10-22
 
 - Code `07a10296c087b5ccb40eb2841576296494f96efa`, resumed from fresh remote `d3b3cdd330ea60677a0d43ee88f43a825acc6422`.
