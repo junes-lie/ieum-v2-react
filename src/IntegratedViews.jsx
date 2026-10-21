@@ -2,6 +2,18 @@ import React, {useEffect,useLayoutEffect,useRef,useState} from 'react'
 import Icon from './Icons.jsx'
 import {songArtwork} from './songArtwork.js'
 
+// Approved Figma display artwork; never persisted as a measured Voice Identity.
+const participantKnots = {
+  yoonseul: '/artwork/identicon-blue.png',
+  doyoon: '/artwork/identicon-coral.png',
+  jisun: '/artwork/identicon-cream.png'
+}
+
+export function ParticipantKnot({participantId,name}) {
+  const src=participantKnots[participantId]
+  return src?<img className="v2-participant-knot" data-artwork-kind="supplied-identicon" src={src} width="128" height="128" alt=""/>:name?.slice(0,1)
+}
+
 export function MyVoiceIcon() {
   return <span className="v2-profile-icon" aria-hidden="true"><img src="/artwork/profile-knot.webp" alt="" width="26" height="26"/></span>
 }
@@ -63,7 +75,7 @@ export function PartModules({parts,projectTracks,included,onToggle,onPlay,onPart
   return <div className="v2-part-modules" aria-label="파트별 참여 상태와 듣기">{parts.map((part,index)=>{
     const track=projectTracks[part.id],own=part.participantId===currentUserId
     const action=partAction?.(part)||{}
-    const identity=<><span className="v2-voice-slot" style={{color:part.color}} aria-hidden="true">{part.participant?part.participant.slice(0,1):<Icon name="plus" size={22}/>}</span><span className="v2-part-name-role"><strong>{own?'내 파트':part.participant||'OPEN'}</strong><span className="v2-part-role">{part.name}</span></span></>
+    const identity=<><span className="v2-voice-slot" style={{color:part.color}} aria-hidden="true">{part.participant?<ParticipantKnot participantId={part.participantId} name={part.participant}/>:<Icon name="plus" size={22}/>}</span><span className="v2-part-name-role"><strong>{own?'내 파트':part.participant||'OPEN'}</strong><span className="v2-part-role">{part.name}</span></span></>
     return <section className="v2-part-module" key={part.id} data-part={part.id}>
       {part.participantId&&!own?<button className="v2-part-identity v2-part-person" onClick={()=>onParticipant(part.participantId)} aria-label={part.participant+' 보컬 프로필'}>{identity}</button>:<div className="v2-part-identity">{identity}</div>}
       <div className="v2-part-channel"><small>{track?'제출됨':own?(hasDraft?'임시 보관':'녹음 대기'):part.invitationStatus==='sent'?'초대 대기':part.participant?'Track 대기':'모집 중'}</small>
@@ -72,8 +84,8 @@ export function PartModules({parts,projectTracks,included,onToggle,onPlay,onPart
   })}</div>
 }
 
-export function MonitoringModule({title,role,checked,onChange,guide=false,color}) {
-  return <label className="v2-monitor-module"><span className="v2-monitor-symbol" style={{color}} aria-hidden="true">{guide?<img src="/artwork/guide-keyboard.svg" alt="" width="46" height="32"/>:title.slice(0,1)}</span><span>{title}</span><small>{role}</small><span className="v2-toggle"><input type="checkbox" aria-label={guide?'Guide 반주':`${title} · ${role} 함께 듣기`} checked={checked} onChange={onChange}/><i/></span></label>
+export function MonitoringModule({title,participantId,role,checked,onChange,guide=false,color}) {
+  return <label className="v2-monitor-module"><span className="v2-monitor-symbol" style={{color}} aria-hidden="true">{guide?<img src="/artwork/guide-keyboard.svg" alt="" width="46" height="32"/>:<ParticipantKnot participantId={participantId} name={title}/>}</span><span>{title}</span><small>{role}</small><span className="v2-toggle"><input type="checkbox" aria-label={guide?'Guide 반주':`${title} · ${role} 함께 듣기`} checked={checked} onChange={onChange}/><i/></span></label>
 }
 
 export function HomeView({header,entries,songs,renderRecord,openSong,openProject,openSearch,openCreateProject,formatDuration}) {

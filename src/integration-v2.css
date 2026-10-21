@@ -44,6 +44,9 @@
 /* Constrain legacy screen rules to their old layout; V2 uses one explicit grid column. */
 .workspace-v2-screen .title-row{min-height:0!important}.workspace-v2-screen .title-row h1{max-width:none}
 .v2-voice-slot,.v2-monitor-symbol{font-family:var(--font-interface)}
+.v2-voice-slot .v2-participant-knot{display:block;width:72.444px;height:40px;object-fit:contain}
+.recording-v2-screen .v2-monitor-symbol .v2-participant-knot{width:53.333px;height:40px;object-fit:contain}
+.detail-v2-screen .detail-member-mark .v2-participant-knot{display:block;width:30px;height:30px;object-fit:contain}
 .recording-v2-screen .topbar{min-height:24px;height:24px;padding-top:0}
 .recording-v2-screen>main{grid-template-rows:auto auto 190px 42px 230px auto;min-height:calc(100dvh - 24px);width:100%;max-width:430px;padding-top:0!important}
 .recording-v2-screen>main>*{grid-column:1;min-width:0}
