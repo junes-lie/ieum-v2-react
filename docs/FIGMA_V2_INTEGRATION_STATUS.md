@@ -1,3 +1,41 @@
+## Search input focus / short viewport · 2026-10-21
+
+- Code `ef4f953717bbb460587cd7dfe6d7f9de288c3584`, resumed from fresh `abe12ee`.
+  Acquired/rechecked expected-HEAD shared lock
+  `automation-figma-v2-20261021T125800Z-e6c6de6fbc91`; this checkpoint releases only that owner.
+- Read full checkpoint/rules, current Notion DS/Search spec and fresh Figma
+  Search Input `1375:21551` high-fidelity context/screenshot. Fresh snapshot
+  reused only bytes matching current remote Git blob hashes.
+- Reproduced no input focus indicator and a 30×44px clear target at both widths.
+  Added scoped 2px field focus, 44×44px clear target, existing Font Awesome
+  close icon and input focus restoration after clearing. Default 48px field,
+  source surface/spacing, query/filter/tab/scroll logic and Song identities remain.
+- Build + all 13 Node suites passed. New maintained input browser QA passed
+  390/430px resized from 932px to 568/360px: actual typing, keyboard clear/focus
+  return, filters/Apply, native sort, result/detail Back and My Voice return.
+  Focused controls remain above fixed navigation; Tracks/join/saves stay unchanged.
+  Inspected actual field/filter renders. Viewport resizing is not native IME proof.
+- Existing Search geometry/2x CSS text QA passed 390/430px; independent tab
+  query/filter/sort/scroll and history/Home shortcut QA passed 390/430/1100px.
+  Full core reduced-motion Chromium replay passed 390/430px: playback/save,
+  Search/My Voice/Back, participation, synthetic mic pause/resume/Review/direct
+  submit, final-Track Auto Mix and nonempty completed Mix; no page/console errors.
+  Audio/storage/renderer/assets unchanged; physical mic/listening/device zoom unverified.
+- `npm run qa:capture`: `qa/captures/2026-10-21T13-06-57-163Z/`,
+  14 entries × both widths, 28 captured/0 failures. Undeployed-code HTML/ZIP
+  includes 56 entry PNGs plus 14 before/short-viewport input/filter/return captures.
+  Images/results excluded from Git. Build `index-D3TvKu1O.js` / `index-CrdW9p2N.css`.
+- Original https://ieum-v2-react.vercel.app returns 200 with old
+  `index-BmmlD67C.js` / `index-BqlZo9hY.css`; Production remains READY `b57c1d4`.
+  Main `caa0f30` / standalone `3d82976` unchanged. No deployment/main advance
+  before recorded retry time `2026-10-21T22:07:09Z` (Oct 22 07:07 KST).
+- Next: verify short-height Workspace/Recording/Review controls and recovery
+  against current confirmed source; preserve existing recording/Guide/storage.
+  All earlier unfinished verified personal imagery/lyrics/backing, independent
+  renderer/3D, community data and final physical/visual checks remain open.
+  After the retry window, recheck user's main changes before original-project
+  integration/deployment and verify exact READY commit, deployed assets and URL.
+
 ## Search text enlargement · 2026-10-21
 
 - Code `c011ccebfa5123a491cc7fdb8ef6b56fabe6ff82`, resumed from fresh `3f3e173`.
