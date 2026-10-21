@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react'
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import {demoScenario,demoStorageKey,demoProfile} from './demoSession.js'
 import VoicePreferenceChoices, {preferenceValues} from './VoicePreferenceChoices.jsx'
 import Icon from './Icons.jsx'
@@ -628,15 +628,40 @@ function BottomNav({ current, go }) {
 
 
 function SearchScreen({ openSong, openCreatedProject, openComplete, openMyVoice, entries, context, profile }) {
-  const [query,setQuery]=useState(()=>context.current.query??'')
+  const initial=context.current.byTab?.[context.current.tab] || context.current
+  const [query,setQuery]=useState(()=>initial.query??'')
   const [tab,setTab]=useState(()=>context.current.tab??'projects')
-  const [genre,setGenre]=useState(()=>context.current.genre??'전체')
-  const [part,setPart]=useState(()=>context.current.part??'전체')
-  const [fitOnly,setFitOnly]=useState(()=>context.current.fitOnly??false)
-  const [sort,setSort]=useState(()=>context.current.sort??'추천순')
+  const [genre,setGenre]=useState(()=>initial.genre??'전체')
+  const [part,setPart]=useState(()=>initial.part??'전체')
+  const [fitOnly,setFitOnly]=useState(()=>initial.fitOnly??false)
+  const [sort,setSort]=useState(()=>initial.sort??'추천순')
   const [showFilters,setShowFilters]=useState(false)
   const lower=query.trim().toLocaleLowerCase()
-  useEffect(()=>{context.current={query,tab,genre,part,fitOnly,sort}},[query,tab,genre,part,fitOnly,sort,context])
+  useLayoutEffect(()=>{
+    context.current={tab,byTab:{...context.current.byTab,[tab]:{...context.current.byTab?.[tab],query,genre,part,fitOnly,sort}}}
+  },[query,tab,genre,part,fitOnly,sort,context])
+  useLayoutEffect(()=>{
+    const surface=document.querySelector('.search-v2-screen')
+    const rememberScroll=()=>{
+      const value=context.current.byTab[tab]
+      if(value)value.scrollTop=surface?.scrollTop || window.scrollY
+    }
+    const frame=requestAnimationFrame(()=>{
+      const top=context.current.byTab[tab]?.scrollTop || 0
+      surface?.scrollTo({top,left:0,behavior:'instant'})
+      window.scrollTo({top,left:0,behavior:'instant'})
+      surface?.addEventListener('scroll',rememberScroll,{passive:true})
+      window.addEventListener('scroll',rememberScroll,{passive:true})
+    })
+    return()=>{cancelAnimationFrame(frame);surface?.removeEventListener('scroll',rememberScroll);window.removeEventListener('scroll',rememberScroll)}
+  },[tab,context])
+  const selectTab=id=>{
+    if(id===tab)return
+    context.current.byTab[tab]={query,genre,part,fitOnly,sort,scrollTop:document.querySelector('.screen')?.scrollTop || window.scrollY}
+    const next=context.current.byTab[id] || {}
+    setQuery(next.query??'');setGenre(next.genre??'전체');setPart(next.part??'전체')
+    setFitOnly(next.fitOnly??false);setSort(next.sort??'추천순');setShowFilters(false);setTab(id)
+  }
   const allProjects=entries
   const matches=(...values)=>!lower||values.some(value=>String(value||'').toLocaleLowerCase().includes(lower))
   const recruiting=allProjects.filter(({song,project,complete})=>{
@@ -659,7 +684,7 @@ function SearchScreen({ openSong, openCreatedProject, openComplete, openMyVoice,
     <main>
       <label className="search-v2-input"><Icon name="search" size={20}/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="곡, 아티스트, 프로젝트 검색" aria-label="곡, 아티스트, 프로젝트 검색"/>{query&&<button aria-label="검색어 지우기" onClick={()=>setQuery('')}>×</button>}</label>
       <div className="search-v2-tabs" role="tablist" aria-label="검색 결과 유형">
-        {[['songs','곡'],['projects','모집 프로젝트'],['completed','완성곡']].map(([id,name])=><button key={id} role="tab" aria-selected={tab===id} className={tab===id?'active':''} onClick={()=>{setTab(id);setGenre('전체');setPart('전체');setFitOnly(false);setSort('추천순');setShowFilters(false)}}>{name}</button>)}
+        {[['songs','곡'],['projects','모집 프로젝트'],['completed','완성곡']].map(([id,name])=><button key={id} role="tab" aria-selected={tab===id} className={tab===id?'active':''} onClick={()=>selectTab(id)}>{name}</button>)}
       </div>
       <div className="search-v2-controls">
         {tab==='projects'?<><button aria-pressed={fitOnly} className={fitOnly?'active':''} onClick={()=>setFitOnly(v=>!v)}>내 음역에 맞는 Part</button><button onClick={()=>setShowFilters(v=>!v)} aria-expanded={showFilters}>필터 <Icon name="sliders" size={12}/></button></>:<button onClick={()=>setShowFilters(v=>!v)} aria-expanded={showFilters}>장르 · {genre}</button>}
@@ -1626,7 +1651,7 @@ export default function App() {
   const publicResult=PUBLIC_COMPLETIONS.find(entry=>entry.project.id===publicResultId)||null
   const [finderPartId,setFinderPartId] = useState('bass')
   const [finderPreferences,setFinderPreferences] = useState({})
-  const searchContext=useRef({tab:'projects',query:'',genre:'전체',part:'전체',fitOnly:false,sort:'추천순'})
+  const searchContext=useRef({tab:'projects',byTab:{}})
   const collectionContext=useRef({tab:'projects',scrollByTab:{}})
   const detailContext=useRef({})
   const [createProjectSongId,setCreateProjectSongId] = useState(null)
@@ -1684,11 +1709,13 @@ export default function App() {
   const go = target => {
     const map = { home:'home', search:'search', folder:'projects', bookmark:'collection', user:'my' }
     const next = map[target] || target
+    if(next==='search' && screen==='search')return
     if(next==='voice'){setVoiceReturnScreen(screen);if(screen!=='my')setVoiceEditMode(null)}
     setHistory(h => [...h,screen])
     const scrollTop=document.querySelector('.screen')?.scrollTop || window.scrollY
     if(screen==='collection')collectionContext.current.scrollByTab[collectionContext.current.tab]=scrollTop
-    window.history.replaceState({ieumScreen:screen,selectedSongId,selectedProjectId,activeCreatedProjectId,finderPartId,selectedVocalId,selectedMatchVocalId,voiceEditMode,voiceReturnScreen,createProjectSongId,createDraftKey,publicResultId,scrollTop},'',`#${screen}`)
+    if(screen==='search')searchContext.current.byTab[searchContext.current.tab].scrollTop=scrollTop
+    window.history.replaceState({ieumScreen:screen,selectedSongId,selectedProjectId,activeCreatedProjectId,finderPartId,selectedVocalId,selectedMatchVocalId,voiceEditMode,voiceReturnScreen,createProjectSongId,createDraftKey,publicResultId,scrollTop,searchContext:screen==='search'?searchContext.current:undefined},'',`#${screen}`)
     window.history.pushState({ieumScreen:next},'',`#${next}`)
     setPublicResultId(null);setScreen(next); scrollToTop()
   }
@@ -1846,6 +1873,7 @@ export default function App() {
   useEffect(() => {
     const onPopState = event => {
       const next = event.state?.ieumScreen || window.location.hash.slice(1).split('?')[0] || 'home'
+      if(next==='search' && event.state?.searchContext)searchContext.current=event.state.searchContext
       if(event.state?.selectedSongId)setSelectedSongId(event.state.selectedSongId)
       if(event.state?.selectedProjectId!==undefined)setSelectedProjectId(event.state.selectedProjectId)
       if(event.state?.activeCreatedProjectId!==undefined)setActiveCreatedProjectId(event.state.activeCreatedProjectId)
