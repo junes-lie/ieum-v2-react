@@ -1,3 +1,38 @@
+## Workspace title hierarchy correction · 2026-10-22
+
+- Code `07a10296c087b5ccb40eb2841576296494f96efa`, resumed from fresh remote `d3b3cdd330ea60677a0d43ee88f43a825acc6422`.
+  Acquired/rechecked expected-HEAD lock `automation-figma-v2-20261021T145845Z-e6c6de6fbc91`;
+  this checkpoint releases only that owner.
+- Read full checkpoint/AGENTS/Git workflow, current Notion DS/screen specification
+  and fresh Figma Workspace identity context/screenshot. Original Figma still uses
+  Display/EN 56/60. Applied the user's subsequent oversized-title correction in React:
+  existing Title.1 EN 36/40 (Cormorant), KR 32/40 (Pretendard Medium, -1% tracking).
+  Source Figma/Notion were not edited. Real Song identity and metadata remain intact.
+- Existing heading Chromium QA passes 390/430: actual A Thousand Years now fits
+  one readable line; metadata/Part spacing, Like, Back and no automatic microphone
+  remain correct. Existing Workspace timeline QA passes both widths: actual audio,
+  play/pause, keyboard seek, selection and enlarged-text containment.
+- Build passed: `index-BAZRGY25.js` / `index-BM8vg5j2.css`; all 13 Node suites
+  passed. Full normal-motion Chromium integration passed 390/430, including fixed
+  deck/no-fade/Canvas continuity, public play/save, Search/My Voice/Back, synthetic
+  mic pause/resume/Review/direct submit/final-Track Auto Mix/nonempty final Mix.
+  Replaced two fixed 420ms QA waits with actual animation-completion waits after
+  reproducing software-rendering timing failure; assertions remain unchanged.
+- `npm run qa:capture`: 14 entries × both widths, 28 captured/0 failures,
+  56 PNGs; actual Workspace renders inspected. Version-labelled undeployed HTML/ZIP
+  delivered; captures/results excluded from Git. Physical mic/listening unverified.
+- Fresh Production remains READY `b57c1d4` on original
+  https://ieum-v2-react.vercel.app; main `caa0f30` unchanged. No deployment request
+  before recorded retry `2026-10-21T22:07:09Z` (Oct 22 07:07 KST).
+- Scope correction: remaining pages currently have shared styling only, not
+  completed per-screen design. Preserve their functions and do not report them
+  visually finished. Next: follow current confirmed screen sources and latest
+  user per-screen design direction; do not keep repeating low-impact polish as
+  whole-app design completion. Existing personal imagery, real lyrics/backing,
+  independent renderer/3D, public backend and final visual/device checks remain open.
+  After retry, recheck main changes and deploy only verified integration to the
+  original project, then verify exact READY commit/assets/URL.
+
 ## Shared design system across remaining screens · 2026-10-21
 
 - Code `287b2096c1b1c3f9063c7b553d65a0ea6f005d9e`, resumed from fresh remote
