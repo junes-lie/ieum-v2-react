@@ -1,5 +1,7 @@
 # Integration artwork
 
+- `figma-project-gold-first.svg` / `figma-player-gold-first.svg`: exact text-free Gold First surfaces `1583:54323` (382×48) / `1583:54485` (48×48), exported read-only from current confirmed Home Project `1583:54015` and Workspace Player `1583:54325` / Playing `1583:54487`. Preserve the original champagne gradient, double rim and light; native Play/Pause remains separate black Font Awesome artwork. Project label is Pretendard Medium 15/22. Existing Smoky assets remain for the original disabled Player (.38 opacity), Home 36px completion controls and other unchanged controls. No Figma nodes were modified.
+
 - `nav-{home,search,projects,collection}-{active,inactive}.svg`: exact 20×20 icon exports from confirmed `IEUM/Current/BottomNavigation` variants `1241:2902`, `1241:3079`, `1241:2961`, `1241:3020`. Read-only export preserves the custom Home/Search/Track Stack/Record Collection paths and original cream/secondary strokes; no Figma node edits. All four native buttons retain their existing routes and editable Pretendard labels.
 
 - `figma-recording-surface-72.svg` / `figma-recording-surface-96.svg`: exact text-free original RecordingControl surfaces `1303:2929` (72×72) / `1303:3085` (96×96), exported through the read-only Figma Plugin API. Native dimensions are retained and uniformly scaled by 0.88 to 63.36 / 84.48px. Separate native controls keep the real start/restart/stop/pause/resume actions; labels and Font Awesome icons stay editable. No original Figma nodes were created or modified.
