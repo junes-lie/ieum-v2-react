@@ -1,5 +1,10 @@
 # Integration artwork
 
+- `figma-compact-button.svg`: exact text-free 84×40 surface export `1492:34269` from RecordCompact/Primary/Default `1488:33761`; circular ends, rim, grain and reflection are retained. Editable native button content stays separate inside an 84×44 target.
+- `figma-vocal-finder-disabled.svg`: exact 84×40 surface export `1495:34586`, including its original 0.32 surface opacity. The native button keeps the existing availability condition and full-opacity secondary label; the asset is not darkened a second time.
+- `figma-track-play-surface.svg`: exact text-free 32×32 surface `1317:3642` from Track PlayControl. Native 44×44 play target and Font Awesome icon keep the existing individual-listening action. Workspace inclusion controls reuse the already-connected original toggle artwork.
+- These three exports used the read-only Figma Plugin API because temporary asset download returned HTML. No original Figma nodes were created or modified.
+
 - `guide-keyboard.svg`: exact 46×32 export of Figma `1448:32057` in Recording Monitoring / Guide `1466:32188`. Decorative keyboard for the real backing toggle; no audio or profile data is substituted.
 - `figma-toggle-{on,off}.svg`: exact 46×26 exports of IEUM/Current/Toggle variants `1238:2667` / `1238:2668`. Recording monitoring displays them at the original instance scale (33.12×18.72); native controlled checkboxes and full-card click targets remain functional. Plugin API exports were used because the temporary asset URL returned HTML.
 
