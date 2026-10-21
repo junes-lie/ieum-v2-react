@@ -1,3 +1,40 @@
+## Supplied identicons and regenerated Home hero · 2026-10-22
+
+- Runtime code `b3624d8845f921d74b1f2b67d5f3b15fa87accc1`, fresh remote base
+  `c8f50b2`; expected-HEAD owner `manual-identicons-hero-20261022-e6c6de6fbc91`.
+  The user explicitly requested the supplied knot images instead of 윤/도/J initials,
+  then requested the Home hero be regenerated from the same identicons.
+- Current Notion DS and Figma Recording/Workspace contexts + renders re-read.
+  Read exact original 128×128 blue/coral/cream PNG image-fill bytes from the
+  approved Workspace slots. No source mutations. Direct asset URL returned HTML;
+  read-only Plugin API export succeeded. Shared participant-ID mapping now renders
+  blue yoonseul, coral doyoon, cream jisun in Workspace, Recording and Detail.
+  OPEN remains vacant plus; names, profile entry, Track and Mix controls stay real.
+  No measured identity, source audio, Track/Mix or renderer data was replaced.
+- Built-in imagegen edited the existing hero using all three identicons as shape
+  references; regenerated distinct infinity / interwoven / folded-loop knots feed
+  into the original vinyl composition. Existing copy, art placement and 430×400
+  aspect ratio remain. Exact source/provenance and prompt are in artwork README.
+- Build passed: `index-DoerSaPl.js` / `index-wDEeZvaL.css`; all 13 maintained
+  Node suites passed. Focused Chromium 390/430px verified decoded exact images,
+  stable participant mapping, 40px slots, OPEN plus, functional Mix/Guide toggles,
+  Detail icons, Hero geometry, no page errors or body overflow. Actual renders read.
+  Full core flow also passed both widths: Search/My Voice/Back, join, Workspace,
+  synthetic mic pause/resume, Review/direct submit, final-Track Auto Mix/Complete.
+  Physical microphone and audible quality remain unverified.
+- `npm run qa:capture`: 14 screens × 390/430px, 28 succeeded / 0 failed; 56 PNGs,
+  version-labelled standalone `index.html`, manifest and validated ZIP delivered.
+  Temporary QA images/gallery are excluded from Git.
+- Fresh original Vercel project remains Production READY `b57c1d4`, main `caa0f30`;
+  actual original URL https://ieum-v2-react.vercel.app still serves that older code.
+  Before recorded retry boundary `2026-10-21T22:07:09Z` (Oct22 07:07 KST), no
+  deployment/main update or repeated limit retry attempted. This code is not live.
+- Next: after retry boundary, preserve/recheck remote main and deploy the latest
+  verified integration to the original project, verify READY SHA/assets/URL.
+  Keep unfinished non-approved screens, real lyrics/backing, independent renderer/3D,
+  backend/multi-user and physical-device acceptance open. Only this owner's lock
+  is released by the checkpoint.
+
 ## Confirmed Recording guide-vocal volume · 2026-10-22
 
 - Runtime code `a3e52f03d25250b652c4e3fafde4ceaf6f7d976f`, based on fresh remote
@@ -1203,7 +1240,7 @@ final-Track-triggered Auto Mix. No static waveform substitutes for live input.
 | Song covers | Six original 512×512 genre artworks. Four mapped by existing Song IDs in `src/songArtwork.js`; illustrative rather than official release covers. |
 | Sleeves | Reuse mapped Song art in a 54×54 sleeve beside the live 56×56 record, inside 72×72. Both widths verified. |
 | Turntable deck | Fixed hardware art + solid platter behind the live foreground Record. No circular hole mask; shared Home/Workspace layer order. |
-| Personal knot images | Blue supplied knot used for decorative My Voice entry only. Other participants still use initials until verified person-owned identity resources are available. Never assign fixed art as a measured personal result. |
+| Personal knot images | Supplied exact blue/coral/cream identicons connected by stable yoonseul/doyoon/jisun IDs in Workspace, Recording and Detail, per explicit user instruction. OPEN remains plus. Display art is separate from measured identity and Track/Record resources. |
 | Complete 3D imagery | Existing completed Projects use the existing dynamic renderer. Independent 3D integration remains separately authorized work; do not add synthetic completions. |
 
 Original Figma asset URLs were blocked. Supplied local assets now cover Hero,
@@ -1252,9 +1289,9 @@ React integration. `public/artwork/README.md` records sources and use boundaries
 
 ## Next checkpoint
 
-1. Remaining visual differences: monitoring/Part identity slots need verified
-   person-owned resources. Guide keyboard and toggle assets are connected. Do not
-   assign the decorative profile image as someone's measured voice result.
+1. Participant display artwork is now connected for the three supplied identicons.
+   Keep display assets separate from measured personal identity resources; verify
+   new actual identity results through their existing source/owner contract.
 2. Existing Resonance shape, stream fidelity/brightness and completed 3D remain
    separate from this placement pass. Preserve algorithms; do not merge the
    standalone branch. Final visual review is still open.
