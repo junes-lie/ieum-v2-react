@@ -1,3 +1,41 @@
+## Confirmed Recording guide-vocal volume · 2026-10-22
+
+- Runtime code `a3e52f03d25250b652c4e3fafde4ceaf6f7d976f`, based on fresh remote
+  `bb1ddf3f695a67463f73f9bde54381a23fa28a32`. Acquired and rechecked the
+  expected-HEAD lock `automation-figma-v2-20261022T0601KST-e6c6de6fbc91`;
+  this checkpoint releases only that owner.
+- Re-read full checkpoint/AGENTS/Git workflow, current Notion DS/IA/PRD/flow/
+  screen spec and fresh Figma Home `1349:21126`, Workspace `1571:41074`,
+  Recording/Search sections. Implemented the current Recording revision
+  `1732:43410` named `반주 기본 제공 / 가이드 보컬 볼륨`; comparison variants
+  remain untouched. Figma/Notion sources were not edited.
+- Added a real 0–100% guide-vocal volume control with the confirmed 50% default.
+  It scales only submitted vocal guide Tracks in Web Audio; the existing backing
+  default, toggles, timing, pause/resume and original recording Blob are preserved.
+  Zero volume schedules no silent guide Track. Older stored Takes normalize to 50%.
+- Matched the 350×237px elevated console, 259.2px status/slider/control grouping,
+  y=674.8 at 390/430px, 16px vertical grouping and exact exported metal thumb
+  `1732:43409`. At 390px the source console remains 350px and centered.
+- Final build passed: `index-C61xiw3E.js` / `index-DdwbKhLn.css`; all 13 maintained
+  Node suites passed, including actual gain scaling/default/mute/resume coverage.
+  Recording browser QA passed 390/430px: source header/monitor/lyrics/console
+  geometry, range interaction, long/2x text, synthetic mic pause/stop, Review/Back.
+  Full reduced-motion Chromium flow passed both widths: Home/Search/My Voice/Back,
+  join, Workspace playback, synthetic mic pause/resume, Review/direct submit,
+  last-Track Auto Mix and nonempty Complete. No physical mic or audible-quality claim.
+- `npm run qa:capture` produced a version-labelled standalone gallery for all 14
+  maintained screens at 390/430px: 28 captures succeeded, 0 failed, with 56 PNGs,
+  `manifest.json`, `index.html` and the review ZIP. Capture artifacts stay outside Git.
+- Fresh main remains `caa0f30`; original Production remains READY `b57c1d4` at
+  https://ieum-v2-react.vercel.app. This run is before the recorded retry boundary
+  `2026-10-21T22:07:09Z` (Oct 22 07:07 KST), so no deploy/main update was attempted.
+  Latest visible preview is older `4d08eba`; this code is not live.
+- Next: after 07:07 KST, recheck main and atomically integrate this verified branch
+  into main without force, then verify the original project READY commit/assets/URL.
+  Keep comparison Recording variants and unfinished Finder/Match/Complete redesigns
+  untouched until explicitly final. Real lyrics/backing, verified personal imagery,
+  backend/multi-user, independent renderer/3D and physical-device checks remain open.
+
 ## Current Figma Project Detail and shared header · 2026-10-22
 
 - Runtime code `0ac2bc4effe0fdff7b61b1b8cd150bcdcae60998`; resumed from remote `7e59ebce9a3d97ac216b35d5152650d6205e51a1`.
