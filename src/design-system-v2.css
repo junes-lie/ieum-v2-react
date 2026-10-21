@@ -12,8 +12,8 @@
   font-display: swap;
 }
 
-/* DESIGN_SYSTEM.md v2.0, 2026-10-21. Opt in as each screen is integrated;
-   legacy screens retain their existing styles and font aliases. */
+/* DESIGN_SYSTEM.md v2.0, 2026-10-21. Shared tokens for every app screen.
+   Confirmed screen placement stays in integration-v2.css. */
 .figma-v2 {
   color-scheme: dark;
 

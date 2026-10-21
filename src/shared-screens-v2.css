@@ -1,0 +1,240 @@
+/* Shared DESIGN_SYSTEM v2 roles only. Existing page composition and data stay
+   in App/styles; confirmed Home/Search/Workspace/Recording are not targeted. */
+.ds-v2-screen {
+  --serif: "Cormorant Garamond IEUM", "Pretendard IEUM", Georgia, serif;
+  --strong: var(--bg-strong);
+  --black: var(--bg-black);
+  --success: var(--state-success);
+  --warning: var(--state-warning);
+  --danger: var(--state-danger);
+  --info: var(--state-info);
+  --page-inset: 20px;
+  font: 400 15px/22px var(--font-interface);
+}
+.ds-v2-screen > main { padding-inline: var(--page-inset); }
+.ds-v2-screen .topbar { padding-inline: var(--page-inset); }
+.ds-v2-screen h1,
+.ds-v2-screen .setup-copy h1,
+.ds-v2-screen .result-block h1,
+.ds-v2-screen .measurement h1,
+.ds-v2-screen .sample-stage h1,
+.ds-v2-screen .sample-select-stage h1,
+.ds-v2-screen .voice-complete-stage h1,
+.ds-v2-screen .candidate-identity h1,
+.ds-v2-screen .complete-title h1 {
+  font: 500 32px/40px var(--font-interface);
+  letter-spacing: -.01em;
+  overflow-wrap: anywhere;
+}
+.ds-v2-screen [data-title-language="en"],
+.ds-v2-screen.simple-screen > main > h1 {
+  font: 400 36px/40px var(--font-expression-en);
+  letter-spacing: 0;
+}
+.ds-v2-screen h2,
+.ds-v2-screen .fit-panel h2,
+.ds-v2-screen .reason-block h2,
+.ds-v2-screen .compatibility h2 {
+  font: 500 24px/30px var(--font-interface);
+  letter-spacing: -.005em;
+}
+.ds-v2-screen p { font: 400 15px/22px var(--font-interface); }
+.ds-v2-screen .kicker {
+  font: 500 10px/16px var(--font-functional-en);
+  letter-spacing: .02em;
+}
+.ds-v2-screen .top-meta,
+.ds-v2-screen .section-head > span,
+.ds-v2-screen .row-state,
+.ds-v2-screen .song-index,
+.ds-v2-screen .collection-card-head > span {
+  font: 500 11px/16px var(--font-functional-en);
+  letter-spacing: .02em;
+}
+.ds-v2-screen .topbar-center { font: 500 12px/16px var(--font-functional-en); }
+.ds-v2-screen .complete-title > p,
+.ds-v2-screen .demo-disclosure,
+.ds-v2-screen .ai-boundary,
+.ds-v2-screen .permission-primer,
+.ds-v2-screen .permission-error span,
+.ds-v2-screen .finder-filters p,
+.ds-v2-screen .reason-block > small,
+.ds-v2-screen .compatibility > small,
+.ds-v2-screen .candidate-open em,
+.ds-v2-screen .candidate-open small,
+.ds-v2-screen .saved-card p,
+.ds-v2-screen .collection-copy p {
+  font: 400 13px/19px var(--font-interface);
+  letter-spacing: 0;
+}
+.ds-v2-screen .candidate-row strong,
+.ds-v2-screen .saved-card-title strong,
+.ds-v2-screen .collection-copy h2,
+.ds-v2-screen .song-browser-open strong,
+.ds-v2-screen .song-collection-row strong,
+.ds-v2-screen .vocal-collection-open strong {
+  font: 600 18px/24px var(--font-interface);
+  letter-spacing: -.005em;
+  overflow-wrap: anywhere;
+}
+.ds-v2-screen .row-main strong,
+.ds-v2-screen .row-track-play,
+.ds-v2-screen .range-line b,
+.ds-v2-screen .record-center-credits > span,
+.ds-v2-screen .record-center-credits > small,
+.ds-v2-screen .record-center-credits time,
+.ds-v2-screen .player-clock,
+.ds-v2-screen .time-row span {
+  font: 500 12px/16px var(--font-functional-en);
+  letter-spacing: .02em;
+}
+.ds-v2-screen .profile-facts span,
+.ds-v2-screen .profile-facts b,
+.ds-v2-screen .my-voice-details,
+.ds-v2-screen .reason-row,
+.ds-v2-screen .range-line span,
+.ds-v2-screen .row-participant,
+.ds-v2-screen .row-main span,
+.ds-v2-screen .row-action,
+.ds-v2-screen .film-note strong {
+  font: 400 13px/19px var(--font-interface);
+}
+/* Original local Figma surfaces. Fixed end slices preserve the capsule rim
+   while existing buttons grow to fit their text. No flattened screen assets. */
+.ds-v2-screen .primary,
+.ds-v2-screen .secondary {
+  position: relative;
+  isolation: isolate;
+  min-height: 48px;
+  height: auto;
+  padding: 12px 24px;
+  border: 0;
+  border-radius: 24px;
+  background: none;
+  box-shadow: none;
+  font: 500 15px/22px var(--font-interface);
+  letter-spacing: 0;
+  text-align: center;
+  overflow-wrap: anywhere;
+  color: #000;
+}
+.ds-v2-screen .secondary { color: #f1e8d8; font-weight: 400; }
+.ds-v2-screen .primary::before,
+.ds-v2-screen .secondary::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  border-style: solid;
+  border-color: transparent;
+  border-width: 0 24px;
+  border-image: url('/artwork/figma-project-gold-first.svg') 0 24 fill / 0 24px / 0 stretch;
+}
+.ds-v2-screen .secondary::before { border-image-source: url('/artwork/figma-project-button.svg'); }
+.ds-v2-screen .primary:active::before,
+.ds-v2-screen .secondary:active::before { filter: brightness(.88); }
+.ds-v2-screen .primary:disabled,
+.ds-v2-screen .secondary:disabled { opacity: .38; }
+.ds-v2-screen .primary:focus-visible,
+.ds-v2-screen .secondary:focus-visible,
+.ds-v2-screen select:focus-visible,
+.ds-v2-screen textarea:focus-visible { outline: 2px solid rgba(236,230,220,.72); outline-offset: 2px; }
+.ds-v2-screen .play-btn {
+  width: 48px;
+  height: 48px;
+  min-height: 48px;
+  flex-shrink: 0;
+  border: 0;
+  border-radius: 50%;
+  background: url('/artwork/figma-player-play-surface.svg') center / 48px 48px no-repeat;
+  box-shadow: none;
+  color: #f1e8d8;
+}
+.ds-v2-screen input:not([type="checkbox"]):not([type="range"]):not([type="radio"]),
+.ds-v2-screen select,
+.ds-v2-screen textarea {
+  min-height: 48px;
+  min-width: 0;
+  max-width: 100%;
+  padding: 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: 6px;
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  font: 400 15px/22px var(--font-interface);
+}
+.ds-v2-screen input::placeholder,
+.ds-v2-screen textarea::placeholder { color: var(--text-secondary); }
+.ds-v2-screen .object-tabs,
+.ds-v2-screen .sort-row { gap: 16px; }
+.ds-v2-screen .object-tabs button,
+.ds-v2-screen .sort-row button {
+  min-height: 44px;
+  height: auto;
+  padding-block: 12px;
+  font: 500 12px/16px var(--font-interface);
+}
+.ds-v2-screen .object-tabs button small { font: 500 11px/16px var(--font-functional-en); }
+.ds-v2-screen .finder-filters select { margin-left: auto; }
+.ds-v2-screen .finder-filters label { gap: 12px; flex-wrap: wrap; }
+.ds-v2-screen .project-carousel button {
+  background-color: var(--bg-elevated);
+  border-color: var(--line-default);
+  border-radius: 6px;
+  font: 400 13px/19px var(--font-interface);
+}
+.ds-v2-screen .project-carousel button.active { border-color: var(--text-primary); background-color: var(--bg-strong); }
+.ds-v2-screen .fit-panel { margin-inline: calc(-1 * var(--page-inset)); padding-inline: var(--page-inset); background: var(--bg-elevated); }
+.ds-v2-screen .saved-card,
+.ds-v2-screen .collection-card,
+.ds-v2-screen .profile-card,
+.ds-v2-screen .profile-preferences { background-color: var(--bg-elevated); border-radius: 6px; }
+.ds-v2-screen .reason-row,
+.ds-v2-screen .candidate-row,
+.ds-v2-screen .profile-facts > div,
+.ds-v2-screen .song-collection-row,
+.ds-v2-screen .vocal-collection-row { border-bottom: 0; }
+.ds-v2-screen .voice-dot { box-shadow: none; }
+.ds-v2-screen .film-note span,
+.ds-v2-screen .film-note small { font: 500 11px/16px var(--font-functional-en); letter-spacing: .02em; }
+.ds-v2-screen .complete-actions .secondary { min-height: 48px; gap: 8px; }
+.ds-v2-screen .complete-actions img { width: 18px; height: 18px; }
+.ds-v2-screen .complete-actions .primary { margin-top: 8px; }
+.ds-v2-screen .sort-row { overflow-x: auto; }
+.ds-v2-screen .sort-row button { flex: 0 0 auto; white-space: nowrap; }
+.ds-v2-screen .candidate-identity { grid-template-columns: 120px minmax(0,1fr); gap: 16px; }
+.ds-v2-screen .candidate-identity > * { min-width: 0; }
+.ds-v2-screen .candidate-identity .voice-identity { width: 120px; }
+.ds-v2-screen .voice-identity.pending { background: var(--bg-elevated); }
+.ds-v2-screen .candidate-row .voice-identity.pending strong { font: 500 11px/16px var(--font-interface); }
+.ds-v2-screen .candidate-row .voice-identity.pending :is(span,small) { position: absolute; width: 1px; height: 1px; clip-path: inset(50%); overflow: hidden; }
+.ds-v2-screen :is(.candidate-identity,.profile-card) .voice-identity.pending strong { font: 500 12px/16px var(--font-interface); }
+.ds-v2-screen :is(.candidate-identity,.profile-card) .voice-identity.pending :is(span,small) { position: absolute; width: 1px; height: 1px; clip-path: inset(50%); overflow: hidden; }
+.ds-v2-screen .profile-card { grid-template-columns: 112px minmax(0,1fr); gap: 16px; }
+.ds-v2-screen .profile-card .voice-identity { width: 112px; }
+.ds-v2-screen .profile-card .audio-player { grid-template-columns: 48px minmax(0,1fr); gap: 12px; }
+.ds-v2-screen .profile-card .time-row { grid-template-columns: minmax(0,1fr) auto; gap: 4px 8px; }
+.ds-v2-screen .profile-card .time-row input { grid-column: 1/-1; grid-row: 2; min-width: 0; margin: 0; }
+.ds-v2-screen .profile-card .time-row span { font: 500 11px/16px var(--font-functional-en); }
+.ds-v2-screen .profile-card h2 { font: 600 18px/24px var(--font-interface); letter-spacing: -.005em; }
+.ds-v2-screen .profile-card p { font: 400 13px/19px var(--font-interface); overflow-wrap: anywhere; }
+.ds-v2-screen .collection-empty strong { font: 600 18px/24px var(--font-interface); }
+.ds-v2-screen .sample-song-list button span { font: 600 18px/24px var(--font-interface); }
+.ds-v2-screen .sample-song-list button strong { font: 500 12px/16px var(--font-interface); }
+.ds-v2-screen .sample-song-list button small { font: 400 13px/19px var(--font-interface); }
+.ds-v2-screen .my-voice-details :is(span,b,button) { font: 400 13px/19px var(--font-interface); overflow-wrap: anywhere; }
+.ds-v2-screen .reason-row { gap: 12px; align-items: flex-start; }
+.ds-v2-screen .reason-row > * { min-width: 0; overflow-wrap: anywhere; }
+.ds-v2-screen .record-center-credits > div:not(:has(button)) { grid-template-columns: minmax(0,1fr); text-align: center; }
+.ds-v2-screen .record-center-credits > div > :is(strong,small) { font: 500 12px/16px var(--font-interface); }
+.ds-v2-screen :is(.choice-grid,.part-choice-grid) button { border-color: var(--line-default); border-radius: 6px; background: var(--bg-elevated); color: var(--text-primary); }
+.ds-v2-screen :is(.choice-grid,.part-choice-grid) button.active { background: var(--bg-strong); border-color: var(--text-primary); }
+.ds-v2-screen .choice-grid button { font: 500 22px/28px var(--font-functional-en); letter-spacing: -.02em; }
+.ds-v2-screen .choice-grid small,
+.ds-v2-screen .field-label { font: 500 12px/16px var(--font-functional-en); letter-spacing: .02em; }
+.ds-v2-screen .part-choice-grid span { font: 500 12px/16px var(--font-functional-en); }
+.ds-v2-screen .part-choice-grid small { font: 500 11px/16px var(--font-functional-en); }
+.ds-v2-screen .setup-copy > p:not(.kicker) { margin-bottom: 12px; }
+.ds-v2-screen .setup-copy > .primary { margin-top: 28px; }
+@media (min-width: 430px) { .ds-v2-screen { --page-inset: 24px; } }
