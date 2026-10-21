@@ -1,3 +1,42 @@
+## Search text enlargement · 2026-10-21
+
+- Code `c011ccebfa5123a491cc7fdb8ef6b56fabe6ff82`, resumed from fresh `3f3e173`.
+  Acquired/rechecked expected-HEAD lock `automation-figma-v2-20261021T120259Z-e6c6de6fbc91`;
+  this checkpoint releases only that owner.
+- Read current Notion DS/Search specification and fresh Figma section `1396:30802`,
+  Result row `1375:21370`, Filters `1375:21566` and Tabs `1375:21556`
+  high-fidelity child contexts/screenshots. Reconstructed the fresh source snapshot
+  using remote Git blob hashes after workspace maintenance; no old folder was trusted.
+- Reproduced 2x CSS text causing 480/484px body widths in 390/430px viewports,
+  clipped project-tab labels and truncated selected sort text. Four scoped CSS
+  changes let tabs grow, filters wrap and native sort use its intrinsic width.
+  Normal 44px tabs, 48px input, summary y=260, result y=296 and 92px artwork remain.
+  Actual Song IDs/titles/artists and all existing static artwork are unchanged.
+- Build + all 13 maintained Node suites passed. New maintained Search text QA
+  passes all three tabs at 390/430px: complete labels, controls inside the frame,
+  actual long Song titles/metadata inside rows, filter application, keyboard result
+  entry/Back and unchanged Tracks/participation/saves. Actual renders inspected.
+  Existing Search geometry QA passes both widths; independent query/filter/sort/
+  scroll, detail/public-result/My Voice Back and Home shortcut QA passes 390/430/1100px.
+- Full core reduced-motion Chromium replay passed 390/430px through playback/save,
+  Search/My Voice/Back, participation, synthetic mic pause/resume/Review/direct submit,
+  final-Track Auto Mix and nonempty completed Mix; no page/console errors.
+  App/audio/storage/renderer/capture-helper files remain hash-identical.
+  Physical mic/listening and native-device text zoom remain unverified.
+- `npm run qa:capture`: 14 entries × both widths, 28 successes/0 failures, output
+  `qa/captures/2026-10-21T12-16-54-630Z/`. Standalone HTML/ZIP labelled undeployed
+  `c011cce` contains 56 entry PNGs plus 12 before/after Search text captures.
+  Captures/results are not committed. Build `index-B2wSvfLx.js` / `index-zEUWBWI4.css`.
+- Original https://ieum-v2-react.vercel.app still returns 200 with old
+  `index-BmmlD67C.js` / `index-BqlZo9hY.css`; original-project Production remains
+  READY `b57c1d4`. Main `caa0f30` / standalone `3d82976` unchanged. No deployment
+  request/main advance before recorded `2026-10-21T22:07:09Z` (Oct 22 07:07 KST).
+- Next: verify Search input/filter/Back in shorter 390/430px viewports (keyboard-size
+  emulation, not a native IME claim). Preserve all earlier unfinished real personal
+  imagery/lyrics/backing, independent renderer/3D, community data and final physical/
+  visual checks. After the retry window, recheck user's main changes before original-
+  project integration/deployment and verify exact READY commit, assets and URL.
+
 ## Review/Submitting text reflow · 2026-10-21
 
 - Code `e96f41918466f9544d9ae0ee6bb6f0fc212e6645`, resumed from fresh `cd2c84b`.
