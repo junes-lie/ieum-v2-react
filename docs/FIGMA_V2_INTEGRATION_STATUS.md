@@ -1,3 +1,45 @@
+## Workspace full-body implementation · 2026-10-22
+
+- Code `c12a9c773dee6ab16ef88a57ac3e5fb4020bbfa7`, fresh base `437948a`; current remote tree,
+  full checkpoint, AGENTS (including new §7.1) and Git workflow read.
+- Current Notion DS/screen spec and Figma `1571:41074` full-body implementation
+  source/context/screenshot checked. Detail `1713:43254` remains a revision;
+  no candidate screen was silently treated as final approval.
+- Workspace now groups identity/name/role separately from status/actions. Existing
+  individual Track playback, profile entry, Finder and Mix toggles stay available.
+  Cards use 172px minimum to retain 44px controls; no fabricated personal imagery.
+- Moved own-Part recording to the source bottom panel, with one real recording/
+  draft-review action and exact 382×52 Gold surface `1596:53503` / 26px end caps.
+  Preserved user's EN 36/40 / KR 32/40 title correction, real Song/Part identity,
+  state-dependent availability and native navigation. Distinct 8/16/40px relations
+  are controlled by their respective groups, not one global gap.
+- Unified native Smoky 48px play/pause with seek/time below the unchanged fixed
+  deck/live Record. Button and seek centers align independently of the clock.
+  Transport is 92px including a 44px seek target and separate time row; empty Mix
+  is disabled. No renderer, audio/storage, demo data, policy or standalone edits.
+- Build `index-DqU9p3gq.js` / `index-DAqKpvWr.css` and all 13 Node suites passed.
+  Workspace controls/timeline at 390/430 passed: exact asset bytes/geometry,
+  no duplicate recording/transport, Track/Mix play/pause, native seek/toggle,
+  disabled/re-enable, 2x CSS text and no mic on Recording entry. Native Tab focus
+  clears fixed navigation at 390/430/1100, including the new recording panel.
+- Final reduced-motion Chromium core passed 390/430: Search/My Voice/Back,
+  public listening/save, join, synthetic mic pause/resume/Review/direct submit,
+  last-Track Auto Mix and nonempty completion; no final page/console errors.
+  Seven demo scenarios/reset/normal-data isolation/Back also passed with reduced
+  motion. Normal-motion capture run was stopped; no complete normal-motion pass.
+- Gallery: 14 entries × both widths, 28 successes/0 failures, 56 entry PNGs plus
+  focused checks, labelled undeployed `c12a9c7`. Actual controls/Workspace renders
+  inspected. HTML/PNG ZIP saved; captures/results not committed.
+- Original Production remains READY `b57c1d4`; main `caa0f30`.
+  No main/deploy retry before `2026-10-21T22:07:09Z` (07:07 KST).
+  Not live at https://ieum-v2-react.vercel.app. Physical mic/listening unverified.
+- Next: continue remaining per-screen design from newly confirmed sources; recheck
+  Detail/current Recording approval while source editing continues. Do not repeat
+  completed component polish or invent the unfinished matching-% formulas.
+  Keep prior personal imagery, real lyrics/backing, renderer/3D/backend and final
+  visual/device items open. At retry time preserve user's current main changes.
+- Releases only owner `automation-figma-v2-20261021T1955Z-e6c6de6fbc91`.
+
 ## Current confirmed Gold surfaces · 2026-10-22
 
 - Code `ff6525c53d2364b9ae6fe5ed93252d7ee3376c57`, resumed from fresh remote `674ab1f`.
