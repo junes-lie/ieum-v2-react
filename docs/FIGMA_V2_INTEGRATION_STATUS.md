@@ -1,5 +1,40 @@
 # Figma V2 integration checkpoint · 2026-10-21
 
+## Home recommendation/completion cards · 2026-10-21
+
+- Code `32b2a5981ef44c80a36393bb2a7bba565d412dcf`, based on `0c5ce63`; expected-HEAD lock
+  `automation-figma-v2-20261021T040013Z-e6c6de6fbc91` is released by this checkpoint.
+- Read current Notion DS and fresh Figma Home/recommendation/completion card
+  contexts and screenshot. Reproduced 44px heading rows instead of 30px,
+  14px excess card offsets, reduced mobile headings and missing Player surface.
+- Matched 24/30 headings, 74px recommendation and 78px completion-list offsets;
+  44px heading action targets remain. Recommendation count uses Meta 11/16;
+  existing three-column covers, real Song IDs/titles/artists are unchanged.
+- Completed cards use proportional artwork/detail columns, source gaps, status
+  capsule, EN/KR 18/24 titles and separate truthful byline/actual Mix duration.
+  Reuses existing fmt; unavailable duration is shown as —. Exported original
+  text-free 48px Player surface read-only and uniformly scales it/icon to 36px.
+  Existing whole-card native button owns detail navigation; no nested controls.
+- Build + all 13 Node suites passed. New maintained Chromium QA passed 390/430px:
+  geometry, decoded 36px surface/10.8px icon, exact labels/time, native click and
+  keyboard result selection, actual audio playback/pause, detail Back, completed
+  Search shortcut, unchanged Tracks and scoped 2x text-size stress. This is not
+  native-device text zoom. Actual recommendation/completion renders inspected.
+- Core reduced-motion replay passed both widths: public save/playback/Search/
+  My Voice/Back, participation, synthetic-mic pause/resume/Review/direct submit,
+  final-Track Auto Mix and nonempty Mix; no page/console errors.
+- Existing dynamic completed Record renderer remains, not final Figma 3D artwork;
+  no standalone/algorithm/data changes. Renderer `74d7559e8ca1c6ff2cd1aeb1c73b13fe2211ace6`.
+  Build `index-Iv76UDwX.js` / `index-BCp3EbB-.css`.
+- Production still READY `b57c1d4`; https://ieum-v2-react.vercel.app returns 200,
+  old `index-BmmlD67C.js` / `index-BqlZo9hY.css`. Main stays `caa0f30`.
+  No deploy request/main advance during recorded 24h wait from
+  2026-10-20T22:07:09Z; this change is integration-only.
+- Next: compare Workspace original Player and 370×72 Current Mix timeline,
+  reusing the now-local Player surface where appropriate. Keep verified personal
+  artwork, real lyrics/backing, separate 3D/community integration, physical mic/
+  listening and final visual acceptance open. Recheck main/Production after retry window.
+
 ## Home artwork and recent cards · 2026-10-21
 
 - Code `c99704111e533f210dd6ca2a4679a3fac12fc959`, based on `83601e5`; expected-HEAD lock
