@@ -1,3 +1,55 @@
+## Current five-state Recording instrument and focus clearance · 2026-10-21
+
+- Code `d92c8914e33cff91bc8a8dfdd6132479b75ce1b9`, resumed from fresh `ed14639`.
+  Acquired/rechecked the expected-HEAD shared lock; this checkpoint releases only
+  `automation-figma-v2-20261021T100037Z-e6c6de6fbc91`.
+- Re-read current Notion DS/screen specification and confirmed Figma Instrument set
+  `1478:33671`, Ready `1478:32684`, Recording `1478:32190`, Paused
+  `1478:33178`, Review `1610:41661` and Submitting `1610:41923`, with source
+  screenshots and current component descriptions. Applied the current five-state
+  design while preserving existing recording/submission policy and data.
+- Ready now shows the original red circle and grooved Gold Start. Recording/Paused
+  use left Smoky Restart, central Gold Pause/Resume and right Smoky Stop. Connected
+  the exact native 96px PNG face (Start/Pause/Resume exports are byte-identical),
+  original red icon, 149×48 Retake/Submit surfaces, 310×48 loading surface and Upload
+  icon; .88 scale, rims/reflections and existing side surfaces are preserved.
+- Review uses the approved compact 190px panel and original player surface with
+  actual Take duration/playback/44px seek target. Existing analysis warnings remain
+  below it. Submitting pauses playback, disables seek/play/submit and hides Retake.
+  Failure preserves the same Take and restores retry; existing submit ownership,
+  draft cleanup, Track storage and Auto Mix contracts remain intact.
+- Reproduced native Tab focus hiding the Home project CTA behind fixed navigation
+  (390px bottom 915 vs footer top 856). Added scroll-padding only; normal layout
+  dimensions are unchanged. Maintained focus QA passes Home/Search/Workspace at
+  390/430px and 1100px desktop frame, including the ready native Workspace slider.
+- Final build + all 13 maintained Node suites passed. Updated Recording Chromium
+  QA passes 390/430px: original asset/geometry/typography, no mic on entry, synthetic
+  start/pause/frozen time/resume/retake cancellation/stop, Review reload/playback,
+  Submitting disabled state, controlled submit failure/same-Take preservation/retry,
+  unchanged pre-submit Tracks and scoped 2x control text stress.
+- Core reduced-motion Chromium replay passed both widths through public playback/
+  save, Search/My Voice/Back, participation, synthetic recording/Review/direct submit,
+  final-Track Auto Mix and a nonempty completed Mix; no page/console errors.
+  Physical microphone/listening and native-device zoom remain unverified.
+- `npm run qa:capture`: all 14 entries × 390/430px (28 successes, 0 failures), at
+  `qa/captures/2026-10-21T10-20-30-813Z/`. Delivered standalone HTML/ZIP labelled
+  undeployed `d92c891`, with 56 entry PNGs/manifest plus 10 Recording-state PNGs.
+  Generated images/results are not committed. Actual renders were inspected.
+- Build: `index-TNy5QXBe.js` / `index-BAoZ7zk8.css`. Renderer/audio/storage
+  source files and standalone are unchanged; no original Notion/Figma source edits.
+- Original https://ieum-v2-react.vercel.app still returns 200 with old
+  `index-BmmlD67C.js` / `index-BqlZo9hY.css`; latest original-project Production
+  remains READY `b57c1d4`. Main `caa0f30`, standalone `3d82976` unchanged.
+  No deployment request/main advance before `2026-10-21T22:07:09Z`
+  (Oct 22 07:07 KST). This code is not live.
+- Next: verify Review/Submitting long-copy and enlarged-text reflow without changing
+  native state/save contracts, then compare any remaining confirmed Home/Workspace/
+  Recording/Search differences. Preserve unresolved verified personal imagery,
+  actual lyrics/backing, independent renderer/3D, real community results, final
+  visual acceptance and physical-device checks. After the retry window, recheck
+  user's main changes before original-project integration/deployment and verify
+  exact READY commit, assets and original URL.
+
 ## Current Gold First screen controls · 2026-10-21
 
 - Code `cc09abe108659d477f114c8dc2f51a266cc055b6`, resumed from fresh `289aadd`.

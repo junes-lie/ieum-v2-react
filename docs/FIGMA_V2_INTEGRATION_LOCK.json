@@ -1,7 +1,0 @@
-{
-  "runId": "automation-figma-v2-20261021T100037Z-e6c6de6fbc91",
-  "startedAt": "2026-10-21T10:00:37Z",
-  "baseSha": "ed14639060a488979e532b2a5731733d3838e115",
-  "branch": "feature/figma-v2-integration",
-  "scope": "Keyboard focus clearance and latest confirmed recorder state controls"
-}
