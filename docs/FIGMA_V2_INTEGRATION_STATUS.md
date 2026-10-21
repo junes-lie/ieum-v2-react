@@ -1,5 +1,42 @@
 # Figma V2 integration checkpoint · 2026-10-21
 
+## Workspace Player and Current Mix timeline · 2026-10-21
+
+- Code `ba7525de96781de0b9dd0772ff597ef8dbd35646`, based on `c900f49`; expected-HEAD lock
+  `automation-figma-v2-20261021T050504Z-e6c6de6fbc91` is released by this checkpoint.
+- Read current Notion DS/screen spec and fresh Figma Player `1432:40200`,
+  Disabled `1480:33659`, timeline `1476:32202` contexts/screenshots and bounds.
+- Reused the existing original 48px Player SVG; native 48px button, 14.4px icon,
+  original .38 disabled opacity and source placement replace the CSS-gradient
+  44px control. Fixed housing/foreground live Record and actual transport remain.
+- Workspace stage/timeline share max 370px (350px at 390); stage ratio 370:388,
+  11px timeline gap. Removed legacy Player borders/padding/caption in Workspace.
+  Current Mix now matches the 72px source: heading/count, 2px live progress,
+  split current/total time below the seek bar, Montserrat 11/16 Meta.
+  Native seek hit area stays 44px and exposes actual elapsed/total to assistive
+  technology. Empty selection disables playback/seek and shows 0:00 duration.
+- Build + all 13 Node suites passed. New maintained Chromium QA passed 390/430px:
+  exact geometry/local asset bytes, actual audio advance/pause, keyboard Home/
+  End/arrows, individual Track/Mix return, zero-selection disable/re-enable,
+  unchanged submitted count, no automatic mic, full timeline exposed above nav.
+  Inspected actual stage/timeline captures. Scoped 2x text/line-height stress
+  reflows without clock clipping/heading overlap; this is not native-device zoom.
+- Core reduced-motion replay passed both widths: public save/playback/Search/
+  My Voice/Back, participation, synthetic-mic pause/resume/Review/direct submit,
+  last-Track Auto Mix and nonempty completed Mix. No page/console errors.
+  Physical microphone, audible listening and final visual acceptance remain open.
+- Renderer remains `74d7559e8ca1c6ff2cd1aeb1c73b13fe2211ace6`; no standalone,
+  Song identity, storage, recording engine or mixing algorithm changes.
+  Build `index-C6oZPXEy.js` / `index-C6eKzezb.css`.
+- Production still READY `b57c1d4`; https://ieum-v2-react.vercel.app returns 200
+  with old `index-BmmlD67C.js` / `index-BqlZo9hY.css`. Main remains `caa0f30`.
+  No deployment request/main advance during the recorded wait through
+  2026-10-21T22:07:09Z. This change is pushed to integration, not deployed.
+- Next: compare Recording Instrument panel/readout/control spacing and typography
+  against its latest confirmed child contexts. Preserve live input/Guide/Review.
+  Keep verified personal artwork, real lyrics/backing, separate 3D/community
+  integration and physical/final checks open. Recheck main/Production after wait.
+
 ## Home recommendation/completion cards · 2026-10-21
 
 - Code `32b2a5981ef44c80a36393bb2a7bba565d412dcf`, based on `0c5ce63`; expected-HEAD lock
