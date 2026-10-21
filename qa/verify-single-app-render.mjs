@@ -176,10 +176,12 @@ try {
   assert.deepEqual(workspaceIds,[],'Carousel does not leave comparison for Workspace')
   detailButtons.find(button=>button['data-action']==='open-selected-created-project').onClick()
   assert.deepEqual(workspaceIds,[homeProject.id],'Explicit action opens the same selected Project')
-  assert.equal(recordProps[0].projectId,homeProject.id)
-  assert.equal(recordProps[0].seed,homeProject.seed)
-  assert.deepEqual(recordProps[0].parts.map(part=>part.id),homeProject.parts.map(part=>part.id))
-  assert.deepEqual(recordProps[0].layers,[null,null,finalLower.layer],'Record preserves actual Part order and final layer reference')
+  const selectedRecord=recordProps.find(props=>props.projectId===homeProject.id && props.parts.length===homeProject.parts.length && props.layers?.[2]===finalLower.layer)
+  assert.ok(selectedRecord,'Selected Record retains the actual submitted layer')
+  assert.equal(selectedRecord.projectId,homeProject.id)
+  assert.equal(selectedRecord.seed,homeProject.seed)
+  assert.deepEqual(selectedRecord.parts.map(part=>part.id),homeProject.parts.map(part=>part.id))
+  assert.deepEqual(selectedRecord.layers,[null,null,finalLower.layer],'Record preserves actual Part order and final layer reference')
   const otherSelected=renderDetail({initialProjectId:'qa-static-project',createdProjectTracks:{[homeProject.id]:fullTracks}})
   assert.ok(otherSelected.includes('00/02 · RECRUITING'))
   assert.ok(!otherSelected.includes('open-selected-created-project'),'Another selected Project must not expose this owner Workspace action')
@@ -199,6 +201,7 @@ try {
   try{
     React.createElement=(type,props,...children)=>{
       if(typeof type==='function' && type.name==='PartRow')mainRows.push(props)
+      if(typeof type==='function' && type.name==='CurrentMixPanel' && props.detailMode)mainRows.push(...props.parts.map(part=>({part,onPlay:props.projectTracks[part.id]?()=>{}:undefined})))
       if(type==='button' && props?.['data-action']==='open-selected-main-project')mainActions.push(props)
       return originalCreateElement(type,props,...children)
     }

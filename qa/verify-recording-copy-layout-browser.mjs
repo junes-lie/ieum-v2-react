@@ -21,7 +21,7 @@ try{
   await page.goto(base+'/?scene=recording');await page.waitForSelector('[data-action="record-start"]:not(:disabled)');await page.evaluate(()=>document.fonts.ready)
   const measure=()=>page.evaluate(()=>{
    const box=s=>{const n=typeof s==='string'?document.querySelector(s):s,r=n.getBoundingClientRect(),c=getComputedStyle(n);return {x:r.x,y:r.y,width:r.width,height:r.height,font:c.fontSize,line:c.lineHeight,family:c.fontFamily,weight:c.fontWeight,color:c.color,display:c.display,text:n.textContent}}
-   return {body:document.body.scrollWidth,heading:box('.recording-heading'),title:box('.recording-heading h1'),meta:box('.recording-heading p'),monitor:box('.v2-monitoring'),lyrics:box('.lyrics'),lines:[...document.querySelectorAll('.lyrics>span')].map(box),instrument:box('.v2-instrument'),stream:window.__IEUM_V2__.audioRuntime.stream?.active||false}
+   return {body:document.body.scrollWidth,heading:box('.topbar-center'),title:box('.topbar-center h1'),meta:box('.topbar-center small'),monitor:box('.v2-monitoring'),lyrics:box('.lyrics'),lines:[...document.querySelectorAll('.lyrics>span')].map(box),instrument:box('.v2-instrument'),stream:window.__IEUM_V2__.audioRuntime.stream?.active||false}
   })
   const empty=await measure();if(baseline)console.log('LAYOUT',width,JSON.stringify(empty))
   assert.equal(empty.body,width);assert.equal(empty.title.text,'A Thousand Years');assert.equal(empty.stream,false)
@@ -30,7 +30,7 @@ try{
   if(!baseline){
    assert.equal(empty.title.font,'18px');assert.equal(empty.title.line,'24px');assert.ok(empty.title.family.includes('Montserrat'))
    assert.equal(empty.meta.font,'12px');assert.equal(empty.meta.line,'16px');assert.ok(empty.meta.family.includes('Pretendard'));assert.equal(empty.meta.color,'rgb(145, 138, 128)')
-   assert.equal(empty.title.y,26);assert.equal(empty.meta.y,52);assert.equal(empty.monitor.y,104)
+   assert.equal(empty.title.y,15);assert.equal(empty.meta.y,41);assert.equal(empty.monitor.y,104)
    assert.ok(Math.abs(empty.lyrics.y-284)<1);assert.ok(Math.abs(empty.instrument.y-752)<.3)
    assert.equal(empty.lines[0].display,'block');assert.equal(empty.lines[2].display,'block')
    assert.equal(empty.lines[0].height,30);assert.equal(empty.lines[1].height,40);assert.equal(empty.lines[2].height,30)
@@ -58,15 +58,15 @@ try{
   await page.locator('.lyrics').screenshot({path:`${output}/timed-text-${width}.png`})
   if(!baseline){
    await page.evaluate(()=>{
-    const title=document.querySelector('.recording-heading h1');title.lang='ko';title.textContent='QA 긴 한글 곡명과 영문 Song title이 함께 있는 줄바꿈 검증'
+    const title=document.querySelector('.topbar-center h1');title.lang='ko';title.textContent='QA 긴 한글 곡명과 영문 Song title이 함께 있는 줄바꿈 검증'
     document.querySelector('.lyrics .active').textContent='QA 여러 줄로 이어지는 긴 한글 가사 배치 검증 문장'
-    const nodes=[...document.querySelectorAll('.recording-heading h1,.recording-heading p,.lyrics>span')]
+    const nodes=[...document.querySelectorAll('.topbar-center h1,.topbar-center small,.lyrics>span')]
     const values=nodes.map(n=>({n,size:parseFloat(getComputedStyle(n).fontSize),line:parseFloat(getComputedStyle(n).lineHeight)}))
     for(const {n,size,line} of values){n.style.setProperty('font-size',size*2+'px','important');n.style.setProperty('line-height',line*2+'px','important')}
    })
    const stress=await page.evaluate(()=>{
-    const h=document.querySelector('.recording-heading').getBoundingClientRect(),m=document.querySelector('.v2-monitoring').getBoundingClientRect(),l=document.querySelector('.lyrics').getBoundingClientRect(),p=document.querySelector('.v2-instrument').getBoundingClientRect()
-    const inside=[...document.querySelectorAll('.recording-heading h1,.recording-heading p,.lyrics>span')].every(n=>{const range=document.createRange();range.selectNodeContents(n);const box=n.getBoundingClientRect();return [...range.getClientRects()].every(r=>r.left>=0&&r.right<=innerWidth&&r.top>=box.top&&r.bottom<=box.bottom+1)})
+    const h=document.querySelector('.topbar-center').getBoundingClientRect(),m=document.querySelector('.v2-monitoring').getBoundingClientRect(),l=document.querySelector('.lyrics').getBoundingClientRect(),p=document.querySelector('.v2-instrument').getBoundingClientRect()
+    const inside=[...document.querySelectorAll('.topbar-center h1,.topbar-center small,.lyrics>span')].every(n=>{const range=document.createRange();range.selectNodeContents(n);const box=n.getBoundingClientRect();return [...range.getClientRects()].every(r=>r.left>=0&&r.right<=innerWidth&&r.top>=box.top&&r.bottom<=box.bottom+1)})
     return {body:document.body.scrollWidth,inside,separate:h.bottom<=m.top&&m.bottom<=l.top&&l.bottom<=p.top,headingHeight:h.height,lyricsHeight:l.height}
    })
    assert.equal(stress.body,width);assert.equal(stress.inside,true);assert.equal(stress.separate,true)

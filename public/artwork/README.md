@@ -32,3 +32,5 @@
 The current catalogue retains its real Song IDs/titles/artists/genres. `src/songArtwork.js` explicitly binds four illustrative covers by Song ID; supplied `song.cover` has priority. Rock/electronic variants are retained for later catalogue artwork selection without inventing songs. Home recommendation, recent sleeve and Search share this mapping.
 
 Never export a whole UI screenshot as artwork. Turntable housing and the dynamic Record must remain separate; the uploaded combined image is a reference, not a replacement for functioning playback/recording layers.
+
+- `figma-detail-harmony.png`: exact 382×130 read-only PNG export of Detail `1713:43334`. Preserves the source composition; explicitly labelled as a combination illustration, never a measured personal identity, Track result or computed matching score. Live Project Record and song cover remain data-driven. Source nodes were not modified.
