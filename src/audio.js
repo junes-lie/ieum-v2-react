@@ -304,10 +304,11 @@ function scheduleRecordingGuides(offsetSec = 0) {
       if (offsetSec < state.decodedBacking.duration) scheduleBuffer(ctx, ctx.destination, state.decodedBacking, start, offsetSec, backingPlaybackGain(state.decodedBacking))
     } else scheduleBacking(ctx, ctx.destination, start, remaining, .07, offsetSec)
   }
+  const vocalVolume = Math.min(1,Math.max(0,Number(state.guides.vocalVolume ?? .5)))
   state.decodedGuides.forEach(({track,buffer}) => {
     const index = Number(track.partIndex)
     const sourceOffset = offsetSec + (track.syncOffsetMs || 0) / 1000
-    if (state.guides.parts[index] && sourceOffset < buffer.duration) scheduleBuffer(ctx, ctx.destination, buffer, start, sourceOffset, .58, (index - 1.5) * .12)
+    if (state.guides.parts[index] && vocalVolume > 0 && sourceOffset < buffer.duration) scheduleBuffer(ctx, ctx.destination, buffer, start, sourceOffset, .58 * vocalVolume, (index - 1.5) * .12)
   })
 }
 

@@ -293,13 +293,22 @@
 .workspace-v2-screen .v2-own-recording-action:focus-visible,.workspace-v2-screen .v2-part-identity:focus-visible{outline:2px solid var(--text-primary);outline-offset:2px}
 
 /* Recording instrument · original 1478:32685 / RecordingControl 1239:2480. */
-.recording-v2-screen:not([data-recording-status="review"]) .v2-instrument{display:flex;flex-direction:column;gap:8px;padding:12px 20px 8px;border-width:.75px;overflow:visible}
-.recording-v2-screen .v2-instrument-readout{width:100%;max-width:310px;margin-inline:auto;gap:6px;min-height:18px;font:500 11px/16px var(--font-functional-en);letter-spacing:.22px}
+.recording-v2-screen:not([data-recording-status="review"]) .v2-instrument{display:flex;flex-direction:column;gap:16px;width:min(350px,100%);min-height:237.26px;margin-inline:auto;padding:16px 20px;border-width:.75px;background:var(--bg-elevated);overflow:visible}
+.recording-v2-screen .v2-instrument-readout{width:100%;max-width:259.2px;margin-inline:auto;gap:6px;min-height:16px;font:500 11px/16px var(--font-functional-en);letter-spacing:.22px}
 .recording-v2-screen .v2-instrument .v2-instrument-readout .v2-recording-time{margin:0;gap:6px}
 .recording-v2-screen .v2-instrument-readout :is(span,b){font:inherit;letter-spacing:inherit}
 .recording-v2-screen .v2-instrument-readout .v2-recording-time{color:var(--text-primary)}
 .recording-v2-screen .v2-instrument-readout .meter-row{color:var(--text-secondary)}
-.recording-v2-screen .recorder-controls{width:100%;max-width:310px;height:auto;min-height:111.76px;margin:0 auto;padding:0;gap:24px;align-items:flex-start;flex-shrink:0}
+.recording-v2-screen .recorder-controls{width:100%;max-width:259.2px;height:auto;min-height:111.76px;margin:0 auto;padding:0;gap:24px;align-items:flex-start;flex-shrink:0}
+.recording-v2-screen .v2-guide-volume{display:flex;flex-direction:column;gap:4px;width:100%;max-width:259.2px;margin:0 auto;color:var(--text-primary);font:500 12px/16px var(--font-interface)}
+.recording-v2-screen .v2-guide-volume>span{display:flex;align-items:center;justify-content:space-between;padding:0 4px}
+.recording-v2-screen .v2-guide-volume output{font-family:var(--font-functional-en);letter-spacing:.24px}
+.recording-v2-screen .v2-guide-volume input{--guide-volume:50%;width:100%;height:24px;margin:0;padding:0 4px;border:0;background:linear-gradient(to right,#ead8b8 0 var(--guide-volume),#4b4540 var(--guide-volume) 100%) center/251.2px 6px no-repeat;appearance:none;accent-color:#ead8b8;cursor:pointer}
+.recording-v2-screen .v2-guide-volume input::-webkit-slider-thumb{width:20px;height:20px;border:0;background:transparent url('/artwork/figma-guide-volume-thumb.png') center/20px 20px no-repeat;appearance:none}
+.recording-v2-screen .v2-guide-volume input::-webkit-slider-runnable-track{height:6px;background:transparent}
+.recording-v2-screen .v2-guide-volume input::-moz-range-thumb{width:20px;height:20px;border:0;background:transparent url('/artwork/figma-guide-volume-thumb.png') center/20px 20px no-repeat}
+.recording-v2-screen .v2-guide-volume input::-moz-range-track{height:6px;background:transparent}
+.recording-v2-screen .v2-guide-volume input:focus-visible{outline:2px solid var(--text-primary);outline-offset:2px;border-radius:4px}
 .recording-v2-screen .record-control{width:63.36px;min-width:0;min-height:111.76px;padding-top:10.56px;gap:5.28px;flex-shrink:0}
 .recording-v2-screen .record-control:has(.record-btn){width:84.48px;padding-top:0;gap:7.04px}
 .recording-v2-screen .record-control>span{width:100%;text-align:center;overflow-wrap:anywhere;font:400 10.07px/14.714px var(--font-interface);color:#dcd2c0}

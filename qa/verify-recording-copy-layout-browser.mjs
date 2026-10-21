@@ -21,7 +21,7 @@ try{
   await page.goto(base+'/?scene=recording');await page.waitForSelector('[data-action="record-start"]:not(:disabled)');await page.evaluate(()=>document.fonts.ready)
   const measure=()=>page.evaluate(()=>{
    const box=s=>{const n=typeof s==='string'?document.querySelector(s):s,r=n.getBoundingClientRect(),c=getComputedStyle(n);return {x:r.x,y:r.y,width:r.width,height:r.height,font:c.fontSize,line:c.lineHeight,family:c.fontFamily,weight:c.fontWeight,color:c.color,display:c.display,text:n.textContent}}
-   return {body:document.body.scrollWidth,heading:box('.topbar-center'),title:box('.topbar-center h1'),meta:box('.topbar-center small'),monitor:box('.v2-monitoring'),lyrics:box('.lyrics'),lines:[...document.querySelectorAll('.lyrics>span')].map(box),instrument:box('.v2-instrument'),stream:window.__IEUM_V2__.audioRuntime.stream?.active||false}
+   return {body:document.body.scrollWidth,heading:box('.topbar-center'),title:box('.topbar-center h1'),meta:box('.topbar-center small'),monitor:box('.v2-monitoring'),lyrics:box('.lyrics'),lines:[...document.querySelectorAll('.lyrics>span')].map(box),instrument:box('.v2-instrument'),guideVolume:document.querySelector('[aria-label="가이드 보컬 볼륨"]')?.value,stream:window.__IEUM_V2__.audioRuntime.stream?.active||false}
   })
   const empty=await measure();if(baseline)console.log('LAYOUT',width,JSON.stringify(empty))
   assert.equal(empty.body,width);assert.equal(empty.title.text,'A Thousand Years');assert.equal(empty.stream,false)
@@ -31,7 +31,10 @@ try{
    assert.equal(empty.title.font,'18px');assert.equal(empty.title.line,'24px');assert.ok(empty.title.family.includes('Montserrat'))
    assert.equal(empty.meta.font,'12px');assert.equal(empty.meta.line,'16px');assert.ok(empty.meta.family.includes('Pretendard'));assert.equal(empty.meta.color,'rgb(145, 138, 128)')
    assert.equal(empty.title.y,15);assert.equal(empty.meta.y,41);assert.equal(empty.monitor.y,104)
-   assert.ok(Math.abs(empty.lyrics.y-284)<1);assert.ok(Math.abs(empty.instrument.y-752)<.3)
+   assert.ok(Math.abs(empty.lyrics.y-284)<1);assert.ok(Math.abs(empty.instrument.y-674.75)<.3);assert.ok(Math.abs(empty.instrument.height-237.26)<.6)
+   assert.equal(empty.guideVolume,'50');assert.equal(await page.locator('.v2-guide-volume output').textContent(),'50%')
+   await page.getByRole('slider',{name:'가이드 보컬 볼륨'}).fill('25');assert.equal(await page.locator('.v2-guide-volume output').textContent(),'25%')
+   await page.getByRole('slider',{name:'가이드 보컬 볼륨'}).fill('50')
    assert.equal(empty.lines[0].display,'block');assert.equal(empty.lines[2].display,'block')
    assert.equal(empty.lines[0].height,30);assert.equal(empty.lines[1].height,40);assert.equal(empty.lines[2].height,30)
   }

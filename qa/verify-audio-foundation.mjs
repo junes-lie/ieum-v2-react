@@ -33,19 +33,26 @@ resumeRecording()
 audioRuntime.context.currentTime=101
 assert.equal(getRecordingTimeline().elapsedSec,7,'Resume continues the same timeline')
 const scheduled=[]
-audioRuntime.context.createBufferSource=()=>({connect(){return this},start(at,offset){scheduled.push({at,offset})},stop(){}})
+audioRuntime.context.createBufferSource=()=>({connect(node){if(node?.gain)this.qaGain=node;return node},start(at,offset){scheduled.push({at,offset,gain:this.qaGain?.gain.value})},stop(){}})
 audioRuntime.context.createGain=()=>({gain:{value:0},connect(){return this}})
 audioRuntime.syncOffsetSec=.035
 audioRuntime.recordingGuideState={guides:{backing:false,parts:[true]},duration:20,decodedGuides:[{track:{partIndex:0,syncOffsetMs:100},buffer:{duration:20}}]}
 updateRecordingGuides({backing:false,parts:[true]})
 assert.ok(Math.abs(scheduled[0].offset-7.1)<1e-9,'Guide offset includes its own encoded lead-in, not another recording lead-in')
 assert.ok(Math.abs(scheduled[0].at-101.035)<1e-9,'Guide starts on the same scheduling latency as initial recording')
+assert.equal(scheduled[0].gain,.29,'Guide vocals default to the confirmed 50% level')
+updateRecordingGuides({backing:false,parts:[true],vocalVolume:.25})
+assert.equal(scheduled.at(-1).gain,.145,'Guide-vocal volume scales the actual guide Track gain')
+updateRecordingGuides({backing:false,parts:[true],vocalVolume:0})
+assert.equal(scheduled.length,2,'Zero guide-vocal volume does not schedule a silent guide Track')
 pauseRecording()
 updateRecordingGuides({backing:false,parts:[true]})
-assert.equal(scheduled.length,1,'Changing paused guides does not restart audio')
+assert.equal(scheduled.length,2,'Changing paused guides does not restart audio')
 audioRuntime.context.currentTime=150
 resumeRecording()
-assert.ok(Math.abs(scheduled[1].offset-7.1)<1e-9,'Resume preserves project time and guide trim')
+assert.equal(scheduled.length,3)
+assert.ok(Math.abs(scheduled.at(-1).offset-7.1)<1e-9,'Resume preserves project time and guide trim')
+assert.equal(scheduled.at(-1).gain,.29,'Resume preserves the confirmed default guide-vocal level')
 const actualBacking={duration:20}
 audioRuntime.context.createOscillator=()=>{throw new Error('A supplied backing must never be replaced by synthetic tones')}
 audioRuntime.context.createBufferSource=()=>({connect(){return this},start(at,offset){scheduled.push({at,offset,buffer:this.buffer})},stop(){}})

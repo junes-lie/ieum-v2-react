@@ -34,3 +34,4 @@ The current catalogue retains its real Song IDs/titles/artists/genres. `src/song
 Never export a whole UI screenshot as artwork. Turntable housing and the dynamic Record must remain separate; the uploaded combined image is a reference, not a replacement for functioning playback/recording layers.
 
 - `figma-detail-harmony.png`: exact 382×130 read-only PNG export of Detail `1713:43334`. Preserves the source composition; explicitly labelled as a combination illustration, never a measured personal identity, Track result or computed matching score. Live Project Record and song cover remain data-driven. Source nodes were not modified.
+- `figma-guide-volume-thumb.png`: exact read-only PNG export of the 16px machined-metal handle `1732:43409` with its 20px effect bounds, used by the functional guide-vocal volume range control. Source nodes were not modified.
