@@ -261,6 +261,37 @@
 
 .workspace-v2-screen .v2-turntable-play:disabled{opacity:.38;color:#ece6dc}
 
+/* Full-body Workspace source 1571:41074. Identity/channel, record/transport and
+   own recording action keep their separate spacing and native control targets. */
+.workspace-v2-screen .v2-part-module{gap:8px;min-height:172px;padding:8px 4px;border-radius:5px}
+.workspace-v2-screen .v2-part-identity{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:4px;width:100%;min-width:0;min-height:79px}
+.workspace-v2-screen button.v2-part-identity{padding:0;border:0;background:none;color:inherit;max-width:100%;font:inherit}
+.workspace-v2-screen .v2-voice-slot{height:40px;min-height:40px}
+.workspace-v2-screen .v2-part-name-role{display:flex;flex-direction:column;align-items:center;gap:0;width:100%;min-width:0}
+.workspace-v2-screen .v2-part-name-role strong{font:400 13px/19px var(--font-interface);text-align:center;overflow-wrap:anywhere}
+.workspace-v2-screen .v2-part-channel{display:flex;flex-direction:column;align-items:center;gap:8px;min-height:68px}
+.workspace-v2-screen .v2-part-actions{margin-top:0;height:44px;min-height:44px}
+.workspace-v2-screen .v2-part-actions>.v2-metal-play,.workspace-v2-screen .v2-part-actions>.v2-toggle{top:0}
+.workspace-v2-screen .current-mix{margin-top:0}
+.workspace-v2-screen .current-mix-head{padding-bottom:8px}
+.workspace-v2-screen .split-timeline{display:grid;grid-template-columns:48px minmax(0,1fr);column-gap:16px;align-items:start;min-height:60px}
+.workspace-v2-screen .split-timeline .time-row{grid-column:2;grid-row:1;min-height:60px}
+.workspace-v2-screen .split-timeline .time-row input{top:2px}
+.workspace-v2-screen .split-timeline .time-row .player-split-clock{margin-top:44px}
+.workspace-v2-screen .split-timeline>.play-btn{grid-column:1;grid-row:1;position:relative;align-self:start;width:48px;height:48px;min-height:48px;margin:0;padding:0;border:0;background:none;box-shadow:none}
+.workspace-v2-screen .split-timeline>.play-btn:disabled{opacity:.38}
+.workspace-v2-screen .split-timeline .v2-review-play-surface{display:block;position:absolute;inset:0;width:48px;height:48px}
+.workspace-v2-screen .split-timeline .v2-review-play-surface>img{position:absolute;inset:0;width:48px;height:48px}
+.workspace-v2-screen .split-timeline .v2-review-play-surface>svg{position:absolute;left:17.6px;top:16.8px;color:#f1e8d8;max-width:none;width:14.4px;height:14.4px}
+.workspace-v2-screen .split-timeline>.play-btn:disabled .v2-review-play-surface>svg{color:var(--text-primary)}
+.workspace-v2-screen .v2-own-recording{align-self:center;display:flex;flex-direction:column;align-items:center;gap:8px;width:calc(100% + 16px);margin:40px -8px 0;padding:12px 8px;background:var(--bg-elevated);border-radius:10px}
+.workspace-v2-screen .v2-own-recording>p{margin:0;color:var(--text-primary);font:400 13px/19px var(--font-interface)}
+.workspace-v2-screen .v2-own-recording-action{position:relative;isolation:isolate;display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:52px;height:auto;padding:15px 26px;border:0;border-radius:26px;background:none;color:#3d3221;font:500 15px/22px var(--font-interface);letter-spacing:0;overflow-wrap:anywhere}
+.v2-own-recording-surface{position:absolute;inset:0;z-index:-1;border-style:solid;border-width:0 26px;border-color:transparent;border-image:url('/artwork/figma-record-gold-current.svg') 0 26 fill / 0 26px / 0 stretch;pointer-events:none}
+.workspace-v2-screen .v2-own-recording-action>svg{flex-shrink:0}
+.workspace-v2-screen .v2-own-recording-action:active .v2-own-recording-surface{filter:brightness(.88)}
+.workspace-v2-screen .v2-own-recording-action:focus-visible,.workspace-v2-screen .v2-part-identity:focus-visible{outline:2px solid var(--text-primary);outline-offset:2px}
+
 /* Recording instrument · original 1478:32685 / RecordingControl 1239:2480. */
 .recording-v2-screen:not([data-recording-status="review"]) .v2-instrument{display:flex;flex-direction:column;gap:8px;padding:12px 20px 8px;border-width:.75px;overflow:visible}
 .recording-v2-screen .v2-instrument-readout{width:100%;max-width:310px;margin-inline:auto;gap:6px;min-height:18px;font:500 11px/16px var(--font-functional-en);letter-spacing:.22px}

@@ -136,7 +136,7 @@ try{
   await page.locator('[data-action="resume-project"]').click();await page.waitForSelector('.workspace-v2-screen')
   const inclusion=page.getByRole('checkbox',{name:'Soprano 현재 Mix 포함',exact:true});const checked=await inclusion.isChecked();await inclusion.click();assert.notEqual(await inclusion.isChecked(),checked);await inclusion.click()
   await page.getByRole('button',{name:'Soprano Track 재생',exact:true}).click();await page.waitForSelector('.listening-context');await page.getByRole('button',{name:'현재 Mix로',exact:true}).click()
-  const turntablePlay=page.locator('[data-action="turntable-play"]')
+  const turntablePlay=page.locator('[data-action="current-mix-play"]')
   await turntablePlay.click();await page.waitForFunction(()=>document.querySelector('.workspace-v2-screen audio')?.currentTime>.1)
   assert.equal(await turntablePlay.getAttribute('aria-label'),'현재 듣기 일시정지')
   await turntablePlay.click();await page.waitForFunction(()=>document.querySelector('.workspace-v2-screen audio')?.paused)

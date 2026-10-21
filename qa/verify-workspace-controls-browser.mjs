@@ -27,19 +27,22 @@ try{
   const geometry=await page.evaluate(()=>{
    const rect=n=>({width:n.getBoundingClientRect().width,height:n.getBoundingClientRect().height})
    const record=document.querySelector('[data-action="record-part"]'),track=document.querySelector('.v2-metal-play'),toggle=document.querySelector('.v2-part-actions .v2-toggle'),row=document.querySelector('.v2-part-modules')
-   return {body:document.body.scrollWidth,cardWidths:[...document.querySelectorAll('.v2-part-module')].map(n=>rect(n).width),row:{width:row.clientWidth,scrollWidth:row.scrollWidth},record:rect(record),recordSurface:rect(record.querySelector('img')),recordIcon:rect(record.querySelector('svg')),font:getComputedStyle(record).fontSize,line:getComputedStyle(record).lineHeight,track:rect(track),trackSurface:rect(track.querySelector('img')),trackIcon:rect(track.querySelector('svg')),toggle:rect(toggle),toggleSurface:rect(toggle.querySelector('i')),separate:track.getBoundingClientRect().right<=toggle.getBoundingClientRect().left,stream:window.__IEUM_V2__.audioRuntime.stream?.active||false}
+   return {body:document.body.scrollWidth,cardWidths:[...document.querySelectorAll('.v2-part-module')].map(n=>rect(n).width),row:{width:row.clientWidth,scrollWidth:row.scrollWidth},record:rect(record),recordSurface:rect(record.querySelector('.v2-own-recording-surface')),recordIcon:rect(record.querySelector('svg')),font:getComputedStyle(record).fontSize,line:getComputedStyle(record).lineHeight,track:rect(track),trackSurface:rect(track.querySelector('img')),trackIcon:rect(track.querySelector('svg')),toggle:rect(toggle),toggleSurface:rect(toggle.querySelector('i')),separate:track.getBoundingClientRect().right<=toggle.getBoundingClientRect().left,stream:window.__IEUM_V2__.audioRuntime.stream?.active||false}
   })
   assert.equal(geometry.body,width);assert.ok(geometry.cardWidths.every(n=>n>=99))
   assert.equal(geometry.row.scrollWidth,414)
-  assert.deepEqual(geometry.record,{width:84,height:44});assert.deepEqual(geometry.recordSurface,{width:84,height:40})
-  assert.deepEqual(geometry.recordIcon,{width:14,height:14});assert.equal(geometry.font,'12px');assert.equal(geometry.line,'16px')
+  assert.deepEqual(geometry.record,{width:width===390?350:382,height:52});assert.deepEqual(geometry.recordSurface,geometry.record)
+  assert.deepEqual(geometry.recordIcon,{width:18,height:18});assert.equal(geometry.font,'15px');assert.equal(geometry.line,'22px')
   assert.deepEqual(geometry.track,{width:44,height:44});assert.deepEqual(geometry.trackSurface,{width:32,height:32});assert.deepEqual(geometry.trackIcon,{width:14,height:14})
   assert.deepEqual(geometry.toggle,{width:44,height:44});assert.ok(Math.abs(geometry.toggleSurface.width-33.12)<.02&&Math.abs(geometry.toggleSurface.height-18.72)<.02)
   assert.equal(geometry.separate,true);assert.equal(geometry.stream,false)
-  for(const name of ['figma-compact-button.svg','figma-vocal-finder-disabled.svg','figma-track-play-surface.svg']){
+  for(const name of ['figma-record-gold-current.svg','figma-compact-button.svg','figma-vocal-finder-disabled.svg','figma-track-play-surface.svg']){
    const response=await page.request.get(base+'/artwork/'+name)
    assert.equal(response.status(),200);assert.deepEqual(await response.body(),await readFile(new URL('../public/artwork/'+name,import.meta.url)))
   }
+  assert.equal(await page.locator('[data-action="record-part"]').count(),1,'Recording has one primary action');
+  assert.equal(await page.locator('.v2-part-module [data-action="record-part"]').count(),0,'Compact own Part has no duplicate recording action');
+  assert.ok(await page.evaluate(()=>document.querySelector('.v2-own-recording').getBoundingClientRect().top-document.querySelector('.current-mix').getBoundingClientRect().bottom>=39.9),'Own action keeps the source 40px separation');
   await page.locator('.screen').screenshot({path:`${output}/workspace-${width}.png`})
   await page.locator('.v2-part-modules').screenshot({path:`${output}/part-controls-${width}.png`})
   const inclusion=page.getByRole('checkbox',{name:'Soprano 현재 Mix 포함',exact:true}),checked=await inclusion.isChecked()
@@ -48,7 +51,7 @@ try{
   await inclusion.click();assert.equal(await inclusion.isChecked(),checked)
   await page.getByRole('button',{name:'Soprano Track 재생',exact:true}).click();await page.waitForSelector('.listening-context')
   await page.waitForFunction(()=>document.querySelector('.workspace-v2-screen audio')?.currentTime>.1)
-  await page.locator('[data-action="turntable-play"]').click();await page.waitForFunction(()=>document.querySelector('.workspace-v2-screen audio')?.paused)
+  await page.locator('[data-action="current-mix-play"]').click();await page.waitForFunction(()=>document.querySelector('.workspace-v2-screen audio')?.paused)
   await page.getByRole('button',{name:'현재 Mix로',exact:true}).click()
   await page.locator('[data-action="record-part"]').click();await page.waitForSelector('.recording-v2-screen')
   assert.equal(await page.evaluate(()=>window.__IEUM_V2__.audioRuntime.stream?.active||false),false,'Opening Record never requests the microphone')

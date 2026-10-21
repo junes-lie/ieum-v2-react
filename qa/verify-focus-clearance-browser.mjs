@@ -16,7 +16,7 @@ const results=[]
 try{
  for(const width of [390,430,1100]){
   const context=await browser.newContext({viewport:{width,height:932},reducedMotion:'reduce',locale:'ko-KR'}),page=await context.newPage()
-  for(const [scene,selector]of [['profile-ready','.v2-project-action'],['search','.search-v2-result'],['workspace','.current-mix input[type="range"]']]){
+  for(const [scene,selector]of [['profile-ready','.v2-project-action'],['search','.search-v2-result'],['workspace','.current-mix input[type="range"]'],['workspace','[data-action="record-part"]']]){
    await page.goto(base+'/?scene='+scene)
    const target=page.locator(selector).last();await target.waitFor()
    await page.waitForFunction(()=>!!window.__IEUM_V2__?.state.projectTracks.soprano)
