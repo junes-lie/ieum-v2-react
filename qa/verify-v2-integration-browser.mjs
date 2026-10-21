@@ -69,7 +69,7 @@ try{
   assert.ok(housing.sliding,'Only the inner record runs the slide transition')
   assert.ok(housing.continuous,'The same neighbouring Record and Canvas travel into the center; the old center travels out')
   assert.ok(housing.noFade,'Every carousel Record stays fully opaque throughout translation')
-  await page.waitForTimeout(420)
+  await page.waitForFunction(()=>[...document.querySelectorAll('.v2-carousel-record')].every(n=>n.getAnimations().every(a=>a.playState!=='running')))
   const slots=await page.locator('.v2-carousel-record:is([data-slot="-1"],[data-slot="0"],[data-slot="1"])').evaluateAll(nodes=>nodes.map(n=>({slot:Number(n.dataset.slot),width:n.getBoundingClientRect().width,opacity:getComputedStyle(n).opacity})))
   assert.ok(slots.every(n=>Math.abs(n.width-(n.slot===0?255*.748:172))<.1&&n.opacity==='1'),'Settled center and side sizes match the fixed deck geometry')
   await page.locator('.v2-carousel-neighbor-previous').press('Enter')
@@ -88,7 +88,7 @@ try{
     await page.getByRole('button',{name:label,exact:true}).evaluate(n=>n.click())
     await page.waitForTimeout(35)
   }
-  await page.waitForTimeout(420)
+  await page.waitForFunction(()=>[...document.querySelectorAll('.v2-carousel-record')].every(n=>n.getAnimations().every(a=>a.playState!=='running')))
   assert.equal(await selectedProject(),originalProject,'Rapid direction changes settle on the exact selected Project')
   assert.equal(await page.locator('.v2-carousel-record').count(),5,'Offscreen records stay bounded during repeated selection')
   await page.emulateMedia({reducedMotion:'reduce'})
