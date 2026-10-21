@@ -1,5 +1,13 @@
 # Figma V2 integration checkpoint · 2026-10-21
 
+## User-visible screen capture delivery · 2026-10-21
+
+- Added `npm run qa:capture`: 14 screen entries, paired full-content/unaltered viewport PNGs, self-contained HTML gallery, version-labelled manifest and visible failures.
+- Outputs persist under `qa/captures/<timestamp>/`; screenshots remain untracked. See `qa/README.md` for delivery and environment settings.
+- Verified 430px current Production b57c1d4: all 14 entries captured; pre-design a20cf97: 12 captured, Search and completed result unavailable in that version/context and reported as failures. These are deployed-build captures, not integration-HEAD fidelity evidence.
+- No app, audio, renderer, product policy or deployment changes. This capture helper does not cover every substate or replace functional QA.
+
+
 ## Recording heading/lyrics rhythm · 2026-10-21
 
 - Code `6bd205db1ed27c2b6b2065f7e5a0bab4c44e4bfc`, based on `f6040bd`; this checkpoint releases only
