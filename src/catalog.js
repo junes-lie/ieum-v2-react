@@ -1,6 +1,7 @@
 import providedSamples from './providedSamples.json' with { type: 'json' }
+import {demoScenario} from './demoSession.js'
 
-export const CURRENT_USER_ID = 'jisun'
+export const CURRENT_USER_ID = demoScenario?.actorId || 'jisun'
 
 export const PEOPLE = [
   {

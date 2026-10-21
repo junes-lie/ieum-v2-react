@@ -118,7 +118,7 @@ try{
   await page.locator('.search-v2-result').first().click();await page.waitForSelector('.detail-screen');await page.getByRole('button',{name:'뒤로',exact:true}).click();await page.waitForSelector('[data-screen-id="01S"]')
   assert.equal(await input.inputValue(),'Ocean');assert.equal(await page.locator('[data-nav="search"]').getAttribute('aria-current'),'page')
   await input.fill('no-matching-track');assert.equal(await page.locator('.search-v2-result').count(),0);await page.getByRole('button',{name:'검색 조건 초기화',exact:true}).click()
-  await page.getByRole('tab',{name:'곡',exact:true}).click();assert.equal(await page.locator('.search-v2-result').count(),4)
+  await page.getByRole('tab',{name:'곡',exact:true}).click();assert.equal(await page.locator('.search-v2-result').count(),5)
   await page.getByRole('tab',{name:'완성곡',exact:true}).click();assert.equal(await page.locator('.search-v2-result').count(),3,'Independent labelled showcase catalogue is visible without my completions')
   await page.locator('[data-action="open-my-voice"]').click();await page.waitForFunction(()=>window.__IEUM_V2__.state.screen==='my');await page.getByRole('button',{name:'뒤로',exact:true}).click();await page.waitForSelector('[data-screen-id="01S"]');assert.equal(await page.getByRole('tab',{name:'완성곡',exact:true}).getAttribute('aria-selected'),'true')
   // Isolated broad-range registration and one received demo Track; no real singer or physical mic claim.

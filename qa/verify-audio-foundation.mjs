@@ -38,8 +38,8 @@ audioRuntime.context.createGain=()=>({gain:{value:0},connect(){return this}})
 audioRuntime.syncOffsetSec=.035
 audioRuntime.recordingGuideState={guides:{backing:false,parts:[true]},duration:20,decodedGuides:[{track:{partIndex:0,syncOffsetMs:100},buffer:{duration:20}}]}
 updateRecordingGuides({backing:false,parts:[true]})
-assert.ok(Math.abs(scheduled[0].offset-7.1)<1e-9,'Guide offset includes its own encoded lead-in, not another recording lead-in')
-assert.ok(Math.abs(scheduled[0].at-101.035)<1e-9,'Guide starts on the same scheduling latency as initial recording')
+assert.ok(Math.abs(scheduled[0].offset-7.065)<1e-9,'Guide offset includes its own encoded lead-in, not another recording lead-in')
+assert.ok(Math.abs(scheduled[0].at-101)<1e-9,'Guide toggle adds no new lead-in to an already running musical timeline')
 assert.equal(scheduled[0].gain,.29,'Guide vocals default to the confirmed 50% level')
 updateRecordingGuides({backing:false,parts:[true],vocalVolume:.25})
 assert.equal(scheduled.at(-1).gain,.145,'Guide-vocal volume scales the actual guide Track gain')
@@ -51,7 +51,7 @@ assert.equal(scheduled.length,2,'Changing paused guides does not restart audio')
 audioRuntime.context.currentTime=150
 resumeRecording()
 assert.equal(scheduled.length,3)
-assert.ok(Math.abs(scheduled.at(-1).offset-7.1)<1e-9,'Resume preserves project time and guide trim')
+assert.ok(Math.abs(scheduled.at(-1).offset-7.065)<1e-9,'Resume preserves project time and guide trim')
 assert.equal(scheduled.at(-1).gain,.29,'Resume preserves the confirmed default guide-vocal level')
 const actualBacking={duration:20}
 audioRuntime.context.createOscillator=()=>{throw new Error('A supplied backing must never be replaced by synthetic tones')}
@@ -59,7 +59,7 @@ audioRuntime.context.createBufferSource=()=>({connect(){return this},start(at,of
 audioRuntime.recordingGuideState.decodedBacking=actualBacking
 updateRecordingGuides({backing:true,parts:[false]})
 assert.equal(scheduled.at(-1).buffer,actualBacking)
-assert.equal(scheduled.at(-1).offset,7,'Actual backing follows the same elapsed project time')
+assert.equal(scheduled.at(-1).offset,6.965,'Actual backing follows the same elapsed project time')
 pauseRecording()
 const pausedCount=scheduled.length
 updateRecordingGuides({backing:false,parts:[false]})
@@ -68,7 +68,7 @@ assert.equal(scheduled.length,pausedCount,'Paused backing toggles must not start
 audioRuntime.context.currentTime=200
 resumeRecording()
 assert.equal(scheduled.at(-1).buffer,actualBacking)
-assert.equal(scheduled.at(-1).offset,7,'Actual backing resumes at the preserved project time')
+assert.equal(scheduled.at(-1).offset,6.965,'Actual backing resumes at the preserved project time')
 audioRuntime.context.currentTime=220
 const beforeEnd=scheduled.length
 updateRecordingGuides({backing:true,parts:[false]})

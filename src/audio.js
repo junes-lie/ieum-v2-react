@@ -33,7 +33,7 @@ const runtime = {
 export function getRecordingTimeline() {
   const state = runtime.recorder?.state || 'inactive'
   const active = state === 'recording' ? Math.max(0, context().currentTime - runtime.activeStartedAt) : 0
-  return { elapsedSec: runtime.activeElapsedSec + active, state, syncOffsetSec: runtime.syncOffsetSec }
+  return { elapsedSec: Math.max(0,runtime.activeElapsedSec + active - runtime.syncOffsetSec), state, syncOffsetSec: runtime.syncOffsetSec }
 }
 
 function context() {
@@ -297,7 +297,8 @@ function scheduleRecordingGuides(offsetSec = 0) {
   const state = runtime.recordingGuideState
   if (!state) return
   const ctx = context()
-  const start = ctx.currentTime + .035
+  // Resume/toggle share the current musical position; no new lead-in is added.
+  const start = ctx.currentTime
   const remaining = Math.max(.1, state.duration - offsetSec)
   if (state.guides.backing) {
     if (state.decodedBacking) {
@@ -385,7 +386,8 @@ export async function startRecording({ onFrame, guides = {backing:false,parts:[]
   }
   decodedGuides.forEach(({track,buffer}) => {
     const index = Number(track.partIndex)
-    if (guides.parts[index]) scheduleBuffer(ctx, ctx.destination, buffer, start, (track.syncOffsetMs || 0) / 1000, .58, (index - 1.5) * .12)
+    const volume = Math.min(1,Math.max(0,Number(guides.vocalVolume ?? .5)))
+    if (guides.parts[index] && volume > 0) scheduleBuffer(ctx, ctx.destination, buffer, start, (track.syncOffsetMs || 0) / 1000, .58 * volume, (index - 1.5) * .12)
   })
   if(prepareSeconds){
     runtime.preparationRecorder=recorder
@@ -432,7 +434,7 @@ export function pauseRecording() {
 export function resumeRecording() {
   if (runtime.recorder?.state === 'paused') {
     try {
-      scheduleRecordingGuides(runtime.activeElapsedSec)
+      scheduleRecordingGuides(Math.max(0,runtime.activeElapsedSec-runtime.syncOffsetSec))
       runtime.recorder.resume()
     } catch(error) {
       stopGuides()
@@ -613,16 +615,16 @@ function cleanAndMeasureBuffer(buffer, reportedNoiseFloor = 0) {
   return { rms, gain:Math.min(2.4,Math.max(.55,.12 / Math.max(.0001,rms))), threshold }
 }
 
-export async function createAutoMix({ tracks = [], backingBlob = null, duration = 18, onProgress }) {
-  return renderTrackMix({tracks,duration,onProgress,backing:true,backingBlob,minTracks:2})
+export async function createAutoMix({ tracks = [], backingBlob = null, duration = 18, timelineDuration, onProgress }) {
+  return renderTrackMix({tracks,duration,timelineDuration,onProgress,backing:true,backingBlob,minTracks:2})
 }
 
-export async function createPreviewMix({tracks=[],duration=18,backing=false,backingBlob=null,onProgress}={}) {
+export async function createPreviewMix({tracks=[],duration=18,timelineDuration,backing=false,backingBlob=null,onProgress}={}) {
   if (!tracks.length && !backing) throw new Error('들을 Track을 선택해 주세요.')
-  return renderTrackMix({tracks,duration,onProgress,backing,backingBlob,minTracks:0})
+  return renderTrackMix({tracks,duration,timelineDuration,onProgress,backing,backingBlob,minTracks:0})
 }
 
-async function renderTrackMix({tracks,duration,onProgress,backing,backingBlob,minTracks}) {
+async function renderTrackMix({tracks,duration,timelineDuration,onProgress,backing,backingBlob,minTracks}) {
   if (!OfflineAudioContextClass) throw new Error('이 브라우저는 오프라인 믹싱을 지원하지 않아요.')
   if (tracks.length < minTracks || tracks.length > 4 || tracks.some(track=>!track?.blob)) throw new Error('선택한 Part의 실제 녹음이 필요해요.')
   if (new Set(tracks.map(track=>track.partId)).size !== tracks.length) throw new Error('Part별 녹음은 하나씩 필요해요.')
@@ -637,7 +639,8 @@ async function renderTrackMix({tracks,duration,onProgress,backing,backingBlob,mi
   }
     if (backing && backingBlob) decodedBacking = await decodeBlob(decodeContext,backingBlob)
   } finally { await decodeContext.close() }
-  const actualDuration = Math.max(duration, minTracks>0 ? decodedBacking?.duration || 0 : 0, ...decodedTracks.map(({buffer,sourceOffset}) => buffer.duration - (minTracks===0 ? sourceOffset : 0) + .2))
+  if(timelineDuration!==undefined && (!Number.isFinite(timelineDuration)||timelineDuration<=0||!decodedBacking||Math.abs(decodedBacking.duration-timelineDuration)>.1))throw new Error('등록된 반주와 프로젝트 길이가 다릅니다.')
+  const actualDuration = timelineDuration ?? Math.max(duration, minTracks>0 ? decodedBacking?.duration || 0 : 0, ...decodedTracks.map(({buffer,sourceOffset}) => buffer.duration-sourceOffset+.2))
   const offline = new OfflineAudioContextClass(2, Math.ceil(actualDuration * rate), rate)
   const master = offline.createDynamicsCompressor()
   master.threshold.value = -3; master.knee.value = 0; master.ratio.value = 20

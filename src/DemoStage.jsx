@@ -1,5 +1,5 @@
 import React, {useEffect,useRef,useState} from 'react'
-import {DEMO_SCENARIOS} from './demoSession.js'
+import {DEMO_SCENARIOS,demoTrackDatabaseName} from './demoSession.js'
 import './demo-stage.css'
 
 const demoHref = id => `?demo=${id}`
@@ -32,12 +32,12 @@ export default function DemoStage({initialScenario}) {
       if(frame)frame.src='about:blank'
       await new Promise(resolve=>setTimeout(resolve,100))
       await new Promise((resolve,reject)=>{
-        const request=indexedDB.deleteDatabase(`ieum-v2-demo-records:${selected.id}`)
+        const request=indexedDB.deleteDatabase(demoTrackDatabaseName(selected.id))
         request.onsuccess=resolve;request.onerror=()=>reject(request.error)
         request.onblocked=()=>reject(Error('화면을 닫고 다시 시도해 주세요.'))
       })
       for(const storage of [localStorage,sessionStorage]){
-        for(const key of Object.keys(storage))if(key.startsWith(`ieum-demo:${selected.id}:`))storage.removeItem(key)
+        for(const key of Object.keys(storage))if((selected.music?['music-a','music-b']:[selected.id]).some(id=>key.startsWith(`ieum-demo:${id}:`)))storage.removeItem(key)
       }
     } catch {setError('시연 초기화에 실패했어요. 다시 시도해 주세요.')}
     finally {setRevision(value=>value+1);setResetting(false)}
@@ -55,6 +55,6 @@ export default function DemoStage({initialScenario}) {
       <div className="demo-phone" style={{'--demo-width':`${width}px`}}><iframe ref={frameRef} key={`${selected.id}:${revision}`} title={`IEUM ${selected.label}`} src={`?scene=${selected.id}`} allow="microphone; autoplay" /></div>
       <p className="demo-size">{width} × 932 · MOBILE WEB</p>
     </section>
-    <aside className="demo-notes"><p className="demo-eyebrow">NOW SHOWING</p><h2>{selected.label}</h2><p>{selected.detail}</p><hr/><p>프레임 안에서 실제 버튼을 눌러<br/>다음 화면까지 이어갈 수 있어요.</p><p>녹음은 시작 버튼을 눌렀을 때<br/>마이크 권한을 요청합니다.</p><hr/><p>예시 프로필과 시연 음원을 사용합니다.<br/>기존 프로필·녹음과 별도로 보관됩니다.</p><button className="demo-reset-scene" onClick={reset} disabled={resetting}>{resetting?'초기화 중…':'이 상황 처음부터 다시 보기'}</button>{error&&<p role="alert">{error}</p>}<a href={`?scene=${selected.id}`} target="_blank" rel="noreferrer">현재 화면만 새 탭에서 열기 ↗</a></aside>
+    <aside className="demo-notes"><p className="demo-eyebrow">NOW SHOWING</p><h2>{selected.label}</h2><p>{selected.detail}</p><hr/>{selected.music&&<p>① 음악 녹음 A를 끝내고 제출해 주세요.<br/>② 음악 녹음 B에서 다시 노래하고 제출하면 완성됩니다.<br/>같은 기기의 두 시연 역할이며 두 Track 모두 직접 녹음합니다. 화음 편곡이 아닌 유니즌입니다.</p>}<p>프레임 안에서 실제 버튼을 눌러<br/>다음 화면까지 이어갈 수 있어요.</p><p>녹음은 시작 버튼을 눌렀을 때<br/>마이크 권한을 요청합니다.</p><hr/><p>예시 프로필과 시연 음원을 사용합니다.<br/>기존 프로필·녹음과 별도로 보관됩니다.</p><button className="demo-reset-scene" onClick={reset} disabled={resetting}>{resetting?'초기화 중…':'이 상황 처음부터 다시 보기'}</button>{error&&<p role="alert">{error}</p>}<a href={`?scene=${selected.id}`} target="_blank" rel="noreferrer">현재 화면만 새 탭에서 열기 ↗</a></aside>
   </main>
 }

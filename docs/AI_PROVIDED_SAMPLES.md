@@ -31,3 +31,20 @@
 ## 앱 QA
 
 `IEUM_QA_URL`을 실행 중인 기존 앱 주소로 지정해 `npm run qa:provided`를 실행한다. 세 곡의 서버/로컬 MP3 해시·미리듣기·실제 Guide/가사/지정 길이 Take/기존 Profile 보존과 다운로드 실패/변조 차단/재시도/이탈/재진입 후 늦은 권한 응답의 새 Take 보호를 격리 DB와 합성 마이크로 검사한다. `qa/verify-real-backing.mjs <실제 backing WAV>`는 실제 Web Audio pause/resume/토글/offline mix와 decode 실패 마이크 해제를 검사한다. 물리 마이크·청취·Guide 누출·지연은 별도 인수 항목이다.
+
+
+## P0 Project 편곡 등록 · 2026-10-22
+
+Voice Setup 제공곡 세 항목과 기존 개인 Sample은 그대로 유지한다. 별도 Song `ieum-original-warm-unison-v1` / Project `ieum-project-warm-unison-v1` / arrangement revision `warm-unison-intro3-v1`을 `src/projectMusic.js`에 명시적으로 등록한다. 기존 상용곡의 제목·Key·반주를 이 음원으로 바꾸지 않는다.
+
+선정: 천천히 함께. 실제 MP3를 디코드한 길이는 sample/backing 각각 19.000초이며 SHA256은 기존 제공곡 manifest와 일치한다. 다른 두 곡의 실제 sample/backing은 서로의 빛 16.000초, 비가 그친 뒤 18.000초이며 각각 해시·가사 순서·길이 범위를 확인했다. 천천히 함께는 기존 구간 word alignment 1.0이고 두 유니즌 역할의 같은 멜로디 범위는 기존 pYIN 추정 F♯3–E♭4를 사용한다. SATB 화음·추가 멜로디·BPM·실측 조성은 주장하지 않는다.
+
+Key는 원키 고정이며 음고 변환을 하지 않는다. 원곡 생성 당시 요청 조성이 실측 조성인 것처럼 C major 등으로 표시하지 않는다. 원곡 90초 WAV의 SHA256 계보는 보존된 보고서값이며, 그 WAV는 이 환경/저장소에 없어 이번에 재해시하지 못했다. 저장소의 실제 압축 sample/backing과 직전 3초 PCM은 직접 해시를 확인했다.
+
+원곡 full backing의 28.7–31.7초인 기존 `lead-in.wav` 3.000초와 분리 반주 31.7–50.7초를 순서대로 붙여 22.000초 Project 반주를 만들었다. `public/audio/project-warm-unison-v1/backing.mp3` SHA256 `8120a09591a030c6e04019e6aa7bd5c44c29eac36df20617da489932c311c5e1`. 같은 준비 반주+기존 보컬 포함 sample을 붙인 melody reference SHA256 `b1c604ebffb9acb51ed385a0fbbdc2646db4cc7381c74211fef7d50caf5c73a3`은 녹음 전 미리듣기 전용이며 제출 Track으로 등록하지 않는다. 새 음악 생성·추가 가사 생성·합성 화음 생성은 하지 않았다.
+
+재현 명령: ffmpeg에 lead-in.wav와 backing.mp3(또는 sample.mp3)를 각각 두 입력으로 주고 `[0:a][1:a]concat=n=2:v=0:a=1[a]`, `-map [a] -c:a libmp3lame -q:a 2`로 export. MP3 container 길이 22.047347초에는 encoder delay/padding이 포함되고 실제 디코딩 PCM 길이는 두 결과 모두 22.000초다. 가사 cue는 기존 0/8.2/13.96초에 3초를 더한 3/11.2/16.96초다. 자동 정렬값이며 발음·음악적 진입의 청취 인수는 미완료다.
+
+실제 앱: Search의 곡 탭 → 천천히 함께 → 해당 Project → Voice A 또는 B 선택 → 직접 참여 → 녹음. 새 프로젝트도 등록된 반주·가사·원키·2파트 유니즌을 유지한다. 녹음 시작 전 멜로디를 미리 듣고 3초 원곡 반주 뒤 가사에 맞춰 부른다. Guide와 내 마이크 원본은 분리되며 Review는 내 원본+같은 반주의 정렬된 미리듣기를 제공한다.
+
+발표 시연: `?demo=music-a`에서 첫 Track 직접 녹음·Review·제출, `?demo=music-b`에서 두 번째 Track 직접 녹음·Review·제출. 두 역할은 같은 기기의 격리된 시연 DB를 공유하고 실제 사용자 DB·Profile과 분리한다. 두 Track 모두 초기에는 없으며 AI 음원이나 가짜 참여자 Track을 미리 제출하지 않는다. 최종 제출만 Auto Mix를 시작한다. 이 역할 전환은 실제 다기기/서버 협업을 의미하지 않는다.

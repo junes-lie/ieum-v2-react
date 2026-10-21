@@ -60,7 +60,10 @@
     "qa:record-errors": "node qa/verify-recorder-session.mjs && node qa/verify-recorder-start-failure.mjs && node qa/verify-ended-recording-preservation.mjs && node qa/verify-recording-chunk-ownership.mjs && node qa/verify-microphone-errors.mjs && node qa/verify-retake-lifecycle.mjs && node qa/verify-project-screen-continuity.mjs",
     "qa:project-backing": "node qa/verify-project-audio-contract.mjs && node qa/verify-project-backing.mjs",
     "qa:submitted-track-analysis": "node qa/verify-submitted-track-analysis.mjs",
-    "qa:capture": "node qa/capture-screen-gallery.mjs"
+    "qa:capture": "node qa/capture-screen-gallery.mjs",
+    "qa:project-music": "node qa/verify-project-music.mjs && node qa/verify-project-audio-contract.mjs",
+    "qa:project-music-browser": "node qa/verify-project-music-browser.mjs",
+    "qa:project-music-catalog": "node qa/verify-project-music-catalog-browser.mjs"
   },
   "dependencies": {
     "@fortawesome/free-regular-svg-icons": "^7.3.1",

@@ -21,6 +21,8 @@ const scenes=[
  ['01S-search','검색','search','search'],
  ['02-detail','곡·프로젝트 상세','detail','participate'],
  ['03-workspace','작업실','workspace','workspace'],
+ ['P0-music-workspace','실제 음악 · 첫 녹음 작업실','workspace','music-a'],
+ ['P0-music-recording','실제 음악 · 가사·멜로디·녹음 준비','record','music-a'],
  ['04-finder','보컬 찾기','finder','workspace'],
  ['05-match','후보 상세','finder','workspace','match'],
  ['05A-vocal-profile','다른 보컬 프로필','vocal-profile','workspace'],
