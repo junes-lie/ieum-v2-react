@@ -32,15 +32,15 @@ GitHub main은 영구 기록이며, 제품 코드의 기본 검증 경로는 작
 
 Team: team_9FqAIbX8fzhbTX2t9mLWiGDr. 위 배포는 2026-10-22 실제 READY 조회 기준이며 새 코드의 검증 URL이 아니다. 공명 프로젝트 이름의 “preview”와 Vercel 환경 필드(target)는 다르다. 보존 기준 공명 배포의 실제 target은 production이며 이를 새 Preview로 부르거나 환경을 임의 전환하지 않는다.
 
-## 현재 설정의 확인된 한계
+## 현재 운영 설정 · 사용자 확인 2026-10-22
 
-두 프로젝트 모두 같은 GitHub 저장소에 연결돼 있다. React e1812f0 커밋이 공명 프로젝트에도 Git 자동 배포 dpl_3FsaekVvi6Gun7foEkn9vSFmeBW7를 만들었으며, main/통합 브랜치에 resonance-standalone Root Directory가 없어 NOW_SANDBOX_WORKER_ROOTDIR_NOT_EXIST로 실패했다. 이는 API 수동 중복 생성과 다른 “교차 프로젝트 자동 트리거”다.
+공명 프로젝트는 Production Branch=feature/resonance-standalone, Preview Branch Tracking=OFF, 기존 Ignored Build Step을 유지한다. Vercel 활동 로그에서 19:47:23 KST의 Production Branch 변경과 19:49:29 KST의 Preview 추적 OFF를 확인했다. 이 시각 이전 교차 배포/Root Directory 오류를 현재도 남은 문제의 근거로 사용하지 않는다. 설정 이후 조회한 신규 배포는 두 프로젝트 모두 0건이며, 이것만으로 다음 실제 Push의 차단/정상 배포를 실증한 것은 아니다.
 
-현재 React ignoreCommand의 공명 프로젝트 guard는 해당 폴더 검증보다 늦게 실행될 수 있어 이 문제의 완전한 예방책이 아니다. 브랜치별 Git 트리거 설정 수정은 아직 적용하지 않았다. 공명 브랜치 수정 금지 지시를 유지하며, 해당 브랜치의 배포 설정 파일 변경 범위는 사용자에게 확인한 뒤 수행한다. 연결을 끊거나 Preview 전체를 비활성화하거나 기준 배포를 삭제하는 방식으로 우회하지 않는다.
+사용자는 배포 설정 파일 3곳의 변경을 명시적으로 보류했다. 현재 설정을 유지하며 배포 조사·설정 변경 대신 React P0 음악 녹음 흐름을 진행한다. 다음 검증된 실제 코드 Push에서 React 프로젝트의 Git 자동 Preview와 공명 프로젝트 교차 요청 여부를 함께 조회한다. 확인만을 위한 Push, 별도 API/CLI 배포, 재배포를 만들지 않는다. 현재 Root Directory 값이 도구에 노출되지 않았다는 이유로 이전 값을 현재 설정으로 단정하지 않는다.
 
-## 교차 트리거 차단 변경안 · 아직 미적용
+## 교차 트리거 차단 변경안 · 사용자 보류, 적용 금지
 
-사용자 확인이 필요한 변경은 앱/공명 소스가 아니라 아래 배포 설정 3곳뿐이다. Root Directory·기존 buildCommand/outputDirectory·도메인·기준 배포는 유지한다.
+아래는 이전에 제안한 배포 설정 3곳의 참고안이다. 현재 사용자 지시에 따라 보류하며 적용하지 않는다. Root Directory·기존 buildCommand/outputDirectory·도메인·기준 배포는 유지한다.
 
 | 브랜치 | 경로 | 제안 설정 |
 | --- | --- | --- |
@@ -48,7 +48,7 @@ Team: team_9FqAIbX8fzhbTX2t9mLWiGDr. 위 배포는 2026-10-22 실제 READY 조�
 | feature/resonance-standalone | vercel.json | git.deploymentEnabled=false 추가. 이 브랜치가 루트 React 프로젝트로 자동 배포되지 않게 함. |
 | feature/resonance-standalone | resonance-standalone/vercel.json | 기존 빌드 설정 유지, git.deploymentEnabled={"**":false,"feature/resonance-standalone":true} 추가. 지정 공명 브랜치 자동 배포만 허용. |
 
-설정 적용 뒤 기존 SHA의 배포를 테스트 목적으로 새로 만들지 않는다. 다음 승인된 실제 코드 Push의 Git 상태와 두 프로젝트 배포 목록으로 라우팅 효과를 확인한다. 허용된 프로젝트의 자동 Preview는 계속 유지한다.
+보류 해제 없이 아래 설정을 적용하지 않으며, 기존 SHA의 배포를 테스트 목적으로 새로 만들지 않는다. 다음 승인된 실제 코드 Push의 Git 상태와 두 프로젝트 배포 목록으로 라우팅 효과를 확인한다. 허용된 프로젝트의 자동 Preview는 계속 유지한다.
 
 ## 공식 근거
 
