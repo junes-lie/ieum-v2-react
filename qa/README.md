@@ -6,6 +6,10 @@
 
 아래 표의 `PLAYWRIGHT_MODULE_PATH`, `CHROMIUM_EXECUTABLE_PATH`, `IEUM_QA_WIDTHS`, `IEUM_QA_OUTPUT`을 지원합니다. `IEUM_BASE_URL`을 주면 외부 서버 실행 없이 해당 주소를 검사합니다. 일반 사용자 DB를 초기화하지 않으며 실제 기기·청취·실시간 다중 사용자 검증을 대신하지 않습니다. 특정 Windows 설치 경로를 고정한 이전 개별 QA와 별개로 실행할 수 있습니다.
 
+`node qa/verify-submission-return-browser.mjs`는 실제 반주를 들으며 짧게 녹음한 두 Take를 직접 제출합니다. React 효과 갱신 전의 낡은 presentation bridge를 재현해, 제출 완료 후 Back이 `forward()`로 거절되지 않는지, 원본 해시·작업실 복귀·Auto Mix·재생·reload를 확인합니다. 마이크는 Chromium 합성 입력이며, 이 검사는 **22초 연속 녹음 인수 검사를 대체하지 않습니다.**
+
+`node qa/verify-project-music-browser.mjs`는 기존 22초 길이·가사 대기·Review 시간 기준을 유지합니다. 루트와 Pages 하위 경로를 모두 지원하며 실패 JSON에 벽시계/Web Audio 시계, native recorder chunk timecode, History 이동을 기록합니다. Linux CPU quota/소프트웨어 GPU 진단은 해당 머신의 허용 CPU 목록을 확인한 후 `taskset -c 0-3 node qa/verify-project-music-browser.mjs`처럼 실행 범위를 제한할 수 있습니다. 자원 제한 실행 결과와 일반 실행 실패는 각각 기록하며, 한 번의 통과로 간헐 지연 해결을 주장하지 않습니다.
+
 ## 전체 화면 캡처
 
 `npm run qa:record-visibility`는 일반 모션에서 390/430px의 실제 레코드가 화면 밖에서 GPU 렌더링을 멈추고, 다시 들어오면 같은 그래픽·제출 Track을 유지하며 움직이는지 검사합니다. 기존 조형·입자·shader의 시각적 승인 여부를 대신하지 않습니다.

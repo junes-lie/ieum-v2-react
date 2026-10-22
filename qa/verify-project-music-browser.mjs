@@ -6,6 +6,7 @@ import {WARM_ARRANGEMENT,WARM_PROJECT_ID} from '../src/projectMusic.js'
 const require=createRequire(import.meta.url)
 const {chromium}=require(process.env.PLAYWRIGHT_MODULE_PATH||'playwright')
 const base=process.env.IEUM_BASE_URL||'http://127.0.0.1:4251'
+const appBase=base.endsWith('/')?base:base+'/'
 const out=process.env.IEUM_QA_OUTPUT||'/tmp/ieum-project-music'
 await mkdir(out,{recursive:true})
 let server,browser,activePage,activeWidth,activeActor
@@ -23,6 +24,23 @@ try{
    window.qaReviewTransitions=[]
    window.qaLongTasks=[]
    window.qaDecodes=[]
+   window.qaOfflineRenders=[]
+   window.qaClockSamples=[]
+   window.qaNavigation=[]
+   const forward=History.prototype.forward
+   History.prototype.forward=function(...args){
+    window.qaNavigation.push({event:'forward',wallMs:performance.now(),screen:window.__IEUM_V2__?.state.screen})
+    return forward.apply(this,args)
+   }
+   addEventListener('popstate',event=>window.qaNavigation.push({event:'popstate',wallMs:performance.now(),target:event.state?.ieumScreen,screen:window.__IEUM_V2__?.state.screen}))
+   // Wall time and Web Audio can diverge under output/render starvation.
+   // Observe both without substituting a wall clock for the musical timeline.
+   setInterval(()=>{
+    const rt=window.__IEUM_V2__?.audioRuntime
+    if(!rt?.context||!rt.recorder||rt.recorder.state==='inactive')return
+    window.qaClockSamples.push({wallMs:performance.now(),audioSec:rt.context.currentTime,contextState:rt.context.state,recorder:rt.recorder.state,elapsed:rt.activeElapsedSec,started:rt.activeStartedAt,clock:document.querySelector('[data-recording-entry]')?.textContent})
+    if(window.qaClockSamples.length>120)window.qaClockSamples.shift()
+   },1000)
    let lastReviewState=''
    const inspectReview=()=>{
     const screen=document.querySelector('[data-recording-status]'),submit=document.querySelector('[data-action="record-submit"]')
@@ -37,10 +55,17 @@ try{
     for(const entry of list.getEntries())window.qaLongTasks.push({start:entry.startTime,duration:entry.duration})
     if(window.qaLongTasks.length>200)window.qaLongTasks.splice(0,window.qaLongTasks.length-200)
    }).observe({type:'longtask',buffered:true})
-   const decode=AudioContext.prototype.decodeAudioData
-   AudioContext.prototype.decodeAudioData=function(...args){
-    const entry={start:performance.now(),bytes:args[0]?.byteLength};window.qaDecodes.push(entry)
-    return decode.apply(this,args).then(buffer=>{entry.end=performance.now();entry.duration=buffer.duration;return buffer},error=>{entry.end=performance.now();entry.error=String(error);throw error})
+   for(const ContextClass of [AudioContext,OfflineAudioContext]){
+    const decode=ContextClass.prototype.decodeAudioData
+    ContextClass.prototype.decodeAudioData=function(...args){
+     const entry={start:performance.now(),bytes:args[0]?.byteLength,context:ContextClass.name};window.qaDecodes.push(entry)
+     return decode.apply(this,args).then(buffer=>{entry.end=performance.now();entry.duration=buffer.duration;return buffer},error=>{entry.end=performance.now();entry.error=String(error);throw error})
+    }
+   }
+   const render=OfflineAudioContext.prototype.startRendering
+   OfflineAudioContext.prototype.startRendering=function(...args){
+    const entry={start:performance.now(),frames:this.length,sampleRate:this.sampleRate,channels:this.destination.channelCount};window.qaOfflineRenders.push(entry)
+    return render.apply(this,args).then(buffer=>{entry.end=performance.now();entry.duration=buffer.duration;return buffer},error=>{entry.end=performance.now();entry.error=String(error);throw error})
    }
    const observed=new WeakSet()
    const trace=(recorder,event)=>{
@@ -50,7 +75,13 @@ try{
    for(const name of ['start','pause','resume','stop']){
     const original=MediaRecorder.prototype[name]
     MediaRecorder.prototype[name]=function(...args){
-     if(!observed.has(this)){observed.add(this);for(const event of ['start','pause','resume','stop'])this.addEventListener(event,()=>trace(this,event+' event'))}
+     if(!observed.has(this)){
+      observed.add(this)
+      for(const event of ['start','pause','resume','stop'])this.addEventListener(event,()=>trace(this,event+' event'))
+      this.addEventListener('dataavailable',event=>{
+       window.qaRecorderEvents.push({event:'dataavailable',wallMs:performance.now(),audioSec:window.__IEUM_V2__?.audioRuntime?.context?.currentTime,timecode:event.timecode,bytes:event.data.size})
+      })
+     }
      trace(this,name+' call')
      return original.apply(this,args)
     }
@@ -62,22 +93,22 @@ try{
   activePage=page;activeWidth=width;activeActor=null
   const errors=[];page.on('pageerror',e=>errors.push(e.message))
   page.on('console',m=>{if(m.type()==='error')errors.push(m.text())})
-  await page.goto(new URL('?embedded=1',base).href);await page.waitForFunction(()=>window.__IEUM_V2__?.state)
+  await page.goto(new URL('?embedded=1',appBase).href);await page.waitForFunction(()=>window.__IEUM_V2__?.state)
   await page.evaluate(()=>localStorage.setItem('qa:original-user-sentinel','preserve'))
-  const decoded=await page.evaluate(async()=>{
+  const decoded=await page.evaluate(async appBase=>{
    const ctx=new AudioContext(),result=[]
    for(const [folder,duration] of [['ai-light-v1',16],['ai-warm-direct-v1',19],['ai-rain-v1',18],['project-warm-unison-v1',22]]){
     for(const file of folder.startsWith('project-')?['backing.mp3','reference.mp3']:['sample.mp3','backing.mp3']){
-     const response=await fetch('/audio/'+folder+'/'+file);if(!response.ok)throw Error('Missing '+folder+'/'+file)
+     const response=await fetch(new URL('audio/'+folder+'/'+file,appBase));if(!response.ok)throw Error('Missing '+folder+'/'+file)
      const b=await ctx.decodeAudioData(await response.arrayBuffer());result.push({file:folder+'/'+file,duration:b.duration,expected:duration})
     }
    }await ctx.close();return result
-  })
+  },appBase)
   assert.ok(decoded.every(x=>Math.abs(x.duration-x.expected)<.01));console.log('PASS',width,'all 3 existing source excerpts and registered arrangement native decode durations',JSON.stringify(decoded))
 
   for(const actor of ['a','b']){
    activeActor=actor
-   await page.goto(base+'/?scene=music-'+actor)
+   await page.goto(new URL('?scene=music-'+actor,appBase).href)
    await page.waitForFunction(()=>window.__IEUM_V2__?.state.activeProject?.audioSource);await page.waitForSelector('.workspace-v2-screen')
    const initial=await page.evaluate(()=>({id:window.__IEUM_V2__.state.activeProject.id,tracks:Object.keys(window.__IEUM_V2__.state.activeTracks),key:window.__IEUM_V2__.state.activeProject.key}))
    assert.equal(initial.id,'demo:'+WARM_PROJECT_ID);assert.equal(initial.tracks.length,actor==='a'?0:1);assert.equal(initial.key,'원키')
@@ -170,6 +201,7 @@ try{
   await page.locator('[data-action="turntable-play"]:enabled').waitFor()
   assert.equal(await page.evaluate(()=>Object.keys(window.__IEUM_V2__.state.activeTracks).length),2)
   assert.equal(await page.evaluate(()=>window.__IEUM_V2__.state.activeMix.blob.size),mix.bytes,'Listening selection preserves the completed Mix')
+  assert.equal(await page.evaluate(()=>window.qaNavigation.filter(event=>event.event==='forward').length),0,'Committed submission must not bounce forward into Recorder')
   console.log('PASS',width,'selected Track rebuilds native Current Mix, stops old playback, zero selection disables play; originals/final Mix preserved')
   assert.deepEqual(errors,[])
   await writeFile(`${out}/result-${width}.json`,JSON.stringify(mix,null,2))
@@ -184,7 +216,7 @@ try{
    const button=document.querySelector('[data-action="record-submit"]')
    const ancestors=[]
    for(let node=button;node&&ancestors.length<6;node=node.parentElement){const style=getComputedStyle(node);ancestors.push({tag:node.tagName,className:node.className,rect:node.getBoundingClientRect().toJSON(),display:style.display,visibility:style.visibility,overflow:style.overflow})}
-   return {wallMs:performance.now(),audioSec:rt?.context?.currentTime,lastLyric:window.qaLastLyric,screen:window.__IEUM_V2__?.state.screen,status:document.querySelector('[data-recording-status]')?.dataset.recordingStatus,clock:document.querySelector('[data-recording-entry]')?.textContent,errors:[...document.querySelectorAll('.permission-error')].map(n=>n.textContent),recorder:rt?.recorder?.state,elapsed:rt?.activeElapsedSec,sync:rt?.syncOffsetSec,decoded:rt?.decoded?.duration,bytes:rt?.recordingBlob?.size,streamActive:rt?.stream?.active,submit:{present:Boolean(button),disabled:button?.disabled,ancestors},events:window.qaRecorderEvents,reviewTransitions:window.qaReviewTransitions,longTasks:window.qaLongTasks,decodes:window.qaDecodes}
+   return {wallMs:performance.now(),audioSec:rt?.context?.currentTime,lastLyric:window.qaLastLyric,screen:window.__IEUM_V2__?.state.screen,status:document.querySelector('[data-recording-status]')?.dataset.recordingStatus,clock:document.querySelector('[data-recording-entry]')?.textContent,errors:[...document.querySelectorAll('.permission-error')].map(n=>n.textContent),recorder:rt?.recorder?.state,elapsed:rt?.activeElapsedSec,sync:rt?.syncOffsetSec,decoded:rt?.decoded?.duration,bytes:rt?.recordingBlob?.size,streamActive:rt?.stream?.active,submit:{present:Boolean(button),disabled:button?.disabled,ancestors},navigation:window.qaNavigation,clockSamples:window.qaClockSamples,events:window.qaRecorderEvents,reviewTransitions:window.qaReviewTransitions,longTasks:window.qaLongTasks,decodes:window.qaDecodes,offlineRenders:window.qaOfflineRenders,projectState:{projectId:window.__IEUM_V2__?.state.activeProject?.id,tracks:Object.keys(window.__IEUM_V2__?.state.activeTracks||{}),mixStatus:window.__IEUM_V2__?.state.activeMixStatus,mixBytes:window.__IEUM_V2__?.state.activeMix?.blob?.size}}
   })
  }catch(reason){diagnostic.inspectError=String(reason)}
  await writeFile(`${out}/failure-${activeWidth||'startup'}.json`,JSON.stringify(diagnostic,null,2))

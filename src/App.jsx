@@ -1977,7 +1977,11 @@ export default function App() {
       setCreatedProjectTracks(current=>({...current,[targetProject.id]:{...(current[targetProject.id]||{}),[part.id]:{...track,url:trackUrl}}}))
       setCreatedProjects(current=>current.map(project=>project.id===targetProject.id?{...project,progress:Object.keys({...activeTracks,[part.id]:track}).length,status:'RECORDING',parts:project.parts.map(item=>item.id===part.id?{...item,status:'submitted'}:item)}:project))
     } else setProjectTracks(current=>({...current,[part.id]:{...track,url:trackUrl}}))
-    setScreen('workspace'); back('workspace')
+    // The Track is committed. Mark the exit synchronously before browser Back:
+    // popstate may run before the React effect refreshes the presentation bridge.
+    // Re-running its Recorder guard here rejects navigation while send is busy
+    // and forwards back into a fresh Recorder, hiding the completed Auto Mix.
+    screenRef.current='workspace';setScreen('workspace');back('workspace')
     return track
   }
   const toggleProjectLike = () => setProjectLikes(current => current.some(entry=>entry.projectId===PROJECT_ID)
@@ -2026,7 +2030,7 @@ export default function App() {
     let recordingNavigationPending=false
     const onPopState = async event => {
       const next = event.state?.ieumScreen || window.location.hash.slice(1).split('?')[0] || 'home'
-      if(window.__IEUM_V2__?.state.screen==='record'&&next!=='record'&&window.__IEUM_PREPARE_PRESENTATION_SWITCH__){
+      if(screenRef.current==='record'&&next!=='record'&&window.__IEUM_PREPARE_PRESENTATION_SWITCH__){
         if(recordingNavigationPending)return
         recordingNavigationPending=true
         let approved=false
