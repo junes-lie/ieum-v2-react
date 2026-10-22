@@ -373,10 +373,10 @@ try{
   const originals=Object.values(supplied).map(item=>({item,index:item.partIndex,duration:item.duration,blob:item.blob,layer:item.layer}))
   root=createRoot(container)
   await act(async()=>root.render(React.createElement(Recorder,{go:()=>{},submit:async()=>{},partId:ownPart.id,project:recorderProject,parts:recorderParts,projectTracks:supplied,layers:recorderParts.map(part=>supplied[part.id].layer)})));await settle();await settle()
-  assert.equal(document.querySelectorAll('.v2-monitor-module:not(:first-child) input').length,1,'Only another actual submitted Track is a recording Guide')
+  assert.equal(document.querySelectorAll('.v2-monitoring-row .v2-monitor-module input').length,1,'Only another actual submitted Track is a recording Guide')
   assert.ok(!container.textContent.includes('INVALID'))
   assert.ok(container.textContent.includes('00:18'),'Invalid input duration cannot extend recording')
-  const guideCheck=document.querySelector('.v2-monitor-module:not(:first-child) input')
+  const guideCheck=document.querySelector('.v2-monitoring-row .v2-monitor-module input')
   await act(async()=>guideCheck.click());await settle()
   await click('[data-action="record-start"]')
   const options=globalThis.__qaRecordingOptions

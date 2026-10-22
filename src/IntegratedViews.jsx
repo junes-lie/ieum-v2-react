@@ -27,8 +27,8 @@ export function TurntableFrame({children,playing,onPlay,canPlay}) {
   return <div className="v2-turntable-frame"><img className="v2-turntable-housing" src="/artwork/turntable-housing.webp" width="900" height="900" alt="" decoding="async"/><div className="v2-turntable-live-record">{children}</div>{onPlay&&<button className="v2-turntable-play" data-action="turntable-play" disabled={!canPlay} onClick={onPlay} aria-label={playing?'현재 듣기 일시정지':'현재 듣기 재생'}><img src={canPlay?'/artwork/figma-player-gold-current.svg':'/artwork/figma-player-play-surface.svg'} width="48" height="48" alt="" aria-hidden="true"/><Icon name={playing?'pause':'play'} size={14.4}/></button>}</div>
 }
 
-export function ProjectActionButton({onClick}) {
-  return <button className="primary v2-project-action" data-action="open-parts" data-figma-node="1583:54015" onClick={onClick}><span className="v2-project-action-surface" aria-hidden="true"/><span className="v2-project-action-label">프로젝트 보기 →</span></button>
+export function ProjectActionButton({onClick,label="프로젝트 보기 →",actionId="open-parts"}) {
+  return <button className="primary v2-project-action" data-action={actionId} data-figma-node="1583:54015" onClick={onClick}><span className="v2-project-action-surface" aria-hidden="true"/><span className="v2-project-action-label">{label}</span></button>
 }
 
 function RecordSlide({projectId,slot,children}) {
@@ -72,10 +72,10 @@ export function SectionHeading({title,action,onAction}) {
 }
 
 export function PartModules({parts,projectTracks,included,onToggle,onPlay,onParticipant,partAction,recordPart,hasDraft,currentUserId}) {
-  return <div className="v2-part-modules" aria-label="파트별 참여 상태와 듣기">{parts.map((part,index)=>{
+  return <div className="v2-part-modules" style={{'--part-count':parts.length}} aria-label="파트별 참여 상태와 듣기">{parts.map((part,index)=>{
     const track=projectTracks[part.id],own=part.participantId===currentUserId
     const action=partAction?.(part)||{}
-    const identity=<><span className="v2-voice-slot" style={{color:part.color}} aria-hidden="true">{part.participant?<ParticipantKnot participantId={part.participantId} name={part.participant}/>:<Icon name="plus" size={22}/>}</span><span className="v2-part-name-role"><strong>{own?'내 파트':part.participant||'OPEN'}</strong><span className="v2-part-role">{part.name}</span></span></>
+    const identity=<><span className={`v2-voice-slot ${part.participant?"":"v2-open-voice-slot"}`} style={{color:part.color}} aria-hidden="true">{part.participant?<ParticipantKnot participantId={part.participantId} name={part.participant}/>:<Icon name="plus" size={22}/>}</span><span className="v2-part-name-role"><strong>{own?'내 파트':part.participant||'OPEN'}</strong><span className="v2-part-role">{part.name}</span></span></>
     return <section className="v2-part-module" key={part.id} data-part={part.id}>
       {part.participantId&&!own?<button className="v2-part-identity v2-part-person" onClick={()=>onParticipant(part.participantId)} aria-label={part.participant+' 보컬 프로필'}>{identity}</button>:<div className="v2-part-identity">{identity}</div>}
       <div className="v2-part-channel"><small>{track?'제출됨':own?(hasDraft?'임시 보관':'녹음 대기'):part.invitationStatus==='sent'?'초대 대기':part.participant?'Track 대기':'모집 중'}</small>
@@ -109,7 +109,7 @@ export function HomeView({header,entries,songs,renderRecord,openSong,openProject
   }):[]
   const open=entry=>entry.complete?openProject(entry):openSong(entry.song.id,entry.project.id)
   return <div className="screen figma-v2 home-v2-screen" data-screen-id="01">
-    <section className="v2-hero"><img className="v2-hero-artwork" src="/artwork/home-hero.webp" width="1300" height="1209" alt="" fetchPriority="high"/>{header}<div className="v2-hero-copy"><h1>다른 목소리,<br/>하나의 노래.</h1><p>함께 부를 곡을 고르고,<br/>당신의 목소리를 더해보세요.</p></div></section>
+    <section className="v2-hero"><img className="v2-hero-artwork" src="/artwork/figma-home-hero.png" width="430" height="400" alt="" fetchPriority="high"/>{header}<div className="v2-hero-copy"><h1>다른 목소리,<br/>하나의 노래.</h1><p>함께 부를 곡을 고르고,<br/>당신의 목소리를 더해보세요.</p></div></section>
     <main>
       <section className="v2-recruitment" id="recruiting-projects" tabIndex={-1}>
         <SectionHeading title="파트 모집 중" onAction={()=>openSearch('projects')}/><p className="v2-section-note">내 음역과 취향에 맞는 프로젝트</p>
@@ -121,7 +121,7 @@ export function HomeView({header,entries,songs,renderRecord,openSong,openProject
           </div><div className="v2-recruit-info"><SongArtwork song={selected.song} className="v2-recruit-jacket"/><div className="v2-recruit-copy"><h3 lang={/[가-힣]/.test(selected.song.title)?'ko':'en'}>{selected.song.title}</h3><p><span className="v2-recruit-open">OPEN · {selected.openParts.map(part=>part.name).join(' · ')}</span><span>{selected.partCount-selected.openParts.length}명 참여</span></p></div></div><ProjectActionButton onClick={()=>open(selected)}/></>:<p className="empty-proof">현재 모집 중인 프로젝트가 없어요.</p>}
       </section>
       <section className="v2-recommended"><SectionHeading title="어떤 곡으로 시작할까요" onAction={()=>openSearch('songs')}/><div className="v2-song-grid">{songs.slice(0,3).map(song=><button className="v2-song-card" key={song.id} onClick={()=>openSong(song.id)}><SongArtwork song={song} className="v2-cover-slot"/><strong>{song.title}</strong><small>{song.artist}</small><small className="v2-song-count">프로젝트 {entries.filter(entry=>entry.song.id===song.id).length}</small></button>)}</div></section>
-      <section className="v2-recent"><SectionHeading title="최근 열린 프로젝트"/><div className="v2-project-rows">{[...entries.filter(entry=>entry.isCreated),...entries.filter(entry=>!entry.isCreated&&!entry.publicExample)].slice(0,3).map(entry=><button className="v2-project-row" data-project-id={entry.project.id} key={entry.project.id} onClick={()=>open(entry)}><div className="v2-project-thumbnail"><div className="v2-thumbnail-record">{renderRecord(entry)}</div><SongArtwork song={entry.song} className="v2-thumbnail-sleeve"/></div><span><strong lang={/[가-힣]/.test(entry.song.title)?'ko':'en'}>{entry.song.title}</strong><small>{entry.song.artist}</small><small className="v2-project-count">{entry.partCount-entry.openParts.length}명 참여 · {entry.submitted}/{entry.partCount} 제출</small></span><span className="v2-open-roles"><small>{entry.complete?'COMPLETE':'OPEN'}</small>{entry.complete?'완성곡':entry.openParts.map(part=>part.name).join(' · ')||'녹음 중'}</span></button>)}</div></section>
+      <section className="v2-recent"><SectionHeading title="최근 열린 프로젝트"/><div className="v2-project-rows">{[...entries.filter(entry=>entry.isCreated),...entries.filter(entry=>!entry.isCreated&&!entry.publicExample)].slice(0,3).map(entry=><button className="v2-project-row" data-project-id={entry.project.id} key={entry.project.id} onClick={()=>open(entry)}><div className="v2-project-thumbnail"><div className="v2-thumbnail-record">{renderRecord(entry)}</div><SongArtwork song={entry.song} className="v2-thumbnail-sleeve"/></div><span><strong lang={/[가-힣]/.test(entry.song.title)?'ko':'en'}>{entry.song.title}</strong><small>{entry.song.artist}</small><small className="v2-project-count" aria-label={`${entry.partCount-entry.openParts.length}명 참여 · ${entry.submitted}/${entry.partCount} 제출`}><span className="v2-recent-voices" aria-hidden="true">{entry.project.parts.filter(part=>part.participant||part.participantId).slice(0,4).map(part=><ParticipantKnot key={part.id} participantId={part.participantId} name={part.participant}/>)}</span>{entry.partCount-entry.openParts.length}명 참여</small></span><span className="v2-open-roles"><small>{entry.complete?'COMPLETE':'OPEN'}</small>{entry.complete?'완성곡':entry.openParts.map(part=>part.name).join(' · ')||'녹음 중'}</span></button>)}</div></section>
       <section className="v2-completed"><SectionHeading title="완성곡 둘러보기" onAction={()=>openSearch('completed')}/><div className="v2-completed-carousel">{completed.length?completed.map(entry=>{
         const duration=Number.isFinite(entry.mix?.duration)&&entry.mix.duration>0?formatDuration(entry.mix.duration):'—'
         return <button className="v2-completed-card" key={entry.project.id} data-project-id={entry.project.id} onClick={()=>openProject(entry)}>
