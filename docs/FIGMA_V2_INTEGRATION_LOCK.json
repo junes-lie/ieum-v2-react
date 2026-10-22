@@ -1,6 +1,0 @@
-{
-  "owner": "interactive-four-screen-storage-20261022-74ca471bab36",
-  "baseHead": "521d329d1193ac3243dffe0ba30ac3c37408b49d",
-  "scope": "read-only deployment storage audit; restore approved Hero and profile-flow Detail states, carousel creation card and full-shell gallery; no deployment settings or standalone changes",
-  "startedAt": "2026-10-22T11:51:30.260Z"
-}
