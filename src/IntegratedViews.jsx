@@ -116,7 +116,7 @@ export function HomeView({header,profile,startVoiceSetup,entries,songs,renderRec
   }):[]
   const open=entry=>entry.complete?openProject(entry):openSong(entry.song.id,entry.project.id)
   return <div className="screen figma-v2 home-v2-screen" data-screen-id="01">
-    <section className="v2-hero"><img className="v2-hero-artwork" src="/artwork/figma-home-hero.png" width="430" height="400" alt="" fetchPriority="high"/>{header}<div className="v2-hero-copy"><h1>다른 목소리,<br/>하나의 노래.</h1><p>함께 부를 곡을 고르고,<br/>당신의 목소리를 더해보세요.</p></div></section>
+    <section className="v2-hero"><img className="v2-hero-artwork" src="/artwork/home-hero.webp" width="430" height="400" alt="" fetchPriority="high"/>{header}<div className="v2-hero-copy"><h1>다른 목소리,<br/>하나의 노래.</h1><p>함께 부를 곡을 고르고,<br/>당신의 목소리를 더해보세요.</p></div></section>
     <main>
       {!profile&&<section className="v2-first-visit-guide" aria-label="처음 방문한 사용자를 위한 안내"><h2>한 곡의 빈 Part를<br/>함께 채워요.</h2><p>마음에 드는 곡의 빈 파트를 골라 함께 불러요.<br/>각자의 녹음이 모이면 하나의 노래가 완성돼요.</p><ProjectActionButton actionId="explore-open-parts" label="OPEN Part 찾기" onClick={()=>{const target=document.getElementById('recruiting-projects');target?.scrollIntoView({behavior:'smooth',block:'start'});target?.focus({preventScroll:true})}}/>{completed[0]&&<button className="v2-onboarding-text-action" data-action="listen-first-completion" onClick={()=>openProject(completed[0])}>완성곡 먼저 듣기 →</button>}</section>}
       <section className="v2-recruitment" id="recruiting-projects" tabIndex={-1}>

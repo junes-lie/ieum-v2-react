@@ -20,7 +20,10 @@ const scenes=[
  ['01-first-visit','첫 방문 · 프로필 미등록 안내','home','first-visit'],
  ['01-home','홈','home','profile-ready'],
  ['01S-search','검색','search','search'],
- ['02-detail','곡·프로젝트 상세','detail','participate'],
+ ['02-detail','곡·프로젝트 상세 · 프로필 있음','detail','participate'],
+ ['02-detail-no-profile','곡·프로젝트 상세 · 프로필 미등록 안내','detail','first-visit'],
+ ['02-detail-create-card','같은 곡 프로젝트 · 맨 오른쪽 생성 카드','detail','participate','carousel-end'],
+ ['01-returning','저장 상태로 재방문 · 검수 브라우저','home','saved'],
  ['03-workspace','작업실','workspace','workspace'],
  ['P0-music-workspace','실제 음악 · 첫 녹음 작업실','workspace','music-a'],
  ['P0-music-recording','실제 음악 · 가사·멜로디·녹음 준비','record','music-a'],
@@ -45,8 +48,6 @@ const escape=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&g
 try{
  for(const width of widths){
   const context=await browser.newContext({viewport:{width,height:932},deviceScaleFactor:1,locale:'ko-KR',reducedMotion:'reduce',ignoreHTTPSErrors:process.env.IEUM_QA_IGNORE_HTTPS==='1',...(storage?{storageState:storage}:{})})
-  // Same local demonstration prerequisite used by existing layout QA; no remote writes.
-  await context.addInitScript(()=>{if(!localStorage.getItem('ieum-v2:user-state:v7'))localStorage.setItem('ieum-v2:user-state:v7',JSON.stringify({joined:true,joinedPart:'tenor'}))})
   const page=await context.newPage();page.setDefaultTimeout(15000)
   // A share URL may establish a cookie, but is never copied to reports/logs.
   const appEntry=new URL(base);appEntry.searchParams.set('embedded','1')
@@ -67,6 +68,7 @@ try{
      await page.locator('.v2-completed-card').first().click()
     }else await page.evaluate(screen=>{history.replaceState({...history.state,ieumScreen:screen},'',location.pathname+location.search+'#'+screen);dispatchEvent(new PopStateEvent('popstate',{state:history.state}))},screen)
     await page.waitForFunction(screen=>window.__IEUM_V2__?.state?.screen===screen,screen)
+    if(action==='carousel-end')await page.locator('.project-carousel').evaluate(n=>{n.scrollLeft=n.scrollWidth})
     if(action==='match'){
      const candidate=page.locator('[data-action="candidate"],.candidate-open').first()
      await candidate.waitFor();await candidate.click()
@@ -88,7 +90,38 @@ try{
     await page.locator('.bottom-nav').evaluateAll((nodes,styles)=>nodes.forEach((n,i)=>styles[i]===null?n.removeAttribute('style'):n.setAttribute('style',styles[i])),navStyles)
     item.status='captured';item.file=file;item.viewportFile=`${id}-${width}-viewport.png`;item.actualScreen=await page.evaluate(()=>window.__IEUM_V2__.state.screen)
     item.heading=(await page.locator('.screen h1').allTextContents()).join(' / ')
-   }catch(error){item.error=String(error.message).split('\n')[0].replace(/https?:\/\/\S+/g,'[URL]')}
+    // Include the actual persistent entry menu and common mobile housing.
+    // Keep the separate unchanged viewport/full-content exports above.
+    const stage=await context.newPage()
+    try{
+     await stage.setViewportSize({width:1440,height:1100})
+     const shellUrl=new URL(clean);shellUrl.searchParams.set('demo',scene)
+     await stage.goto(shellUrl.href,{waitUntil:'domcontentloaded',timeout:45000})
+     await stage.getByRole('button',{name:String(width),exact:true}).click()
+     await stage.locator('[data-demo-profile-state="present"],[data-demo-profile-state="absent"]').waitFor()
+     const frame=stage.frames().find(f=>/[?&](scene|embedded)=/.test(f.url()))
+     if(!frame)throw Error('Presentation iframe missing')
+     await frame.waitForFunction(()=>window.__IEUM_V2__?.state)
+     if(action==='received-invitation')await frame.locator('[data-action="open-received-invitation"]').click()
+     else if(screen==='complete'){
+      await frame.evaluate(()=>{history.replaceState({ieumScreen:'home'},'','#home');dispatchEvent(new PopStateEvent('popstate',{state:history.state}))})
+      await frame.locator('.v2-completed-card').first().click()
+     }else await frame.evaluate(screen=>{history.replaceState({...history.state,ieumScreen:screen},'',location.pathname+location.search+'#'+screen);dispatchEvent(new PopStateEvent('popstate',{state:history.state}))},screen)
+     await frame.waitForFunction(screen=>window.__IEUM_V2__.state.screen===screen,screen)
+     if(action==='match')await frame.locator('[data-action="candidate"],.candidate-open').first().click()
+     if(action==='carousel-end')await frame.locator('.project-carousel').evaluate(n=>{n.scrollLeft=n.scrollWidth})
+     await frame.evaluate(async()=>{await document.fonts.ready;await Promise.all([...document.images].map(i=>i.decode().catch(()=>{})))})
+     await stage.waitForTimeout(300)
+     const geometry=await stage.locator('.demo-phone').boundingBox()
+     if(geometry.width!==width||geometry.height!==932)throw Error('Incorrect presentation phone dimensions')
+     if(await stage.locator('.demo-menu nav>a').count()!==5)throw Error('User-flow entry menu incomplete')
+     if(await stage.locator('.demo-menu').evaluate(n=>getComputedStyle(n).position)!=='fixed')throw Error('Entry menu is not fixed')
+     item.presentationState=await frame.evaluate(()=>({profile:Boolean(window.__IEUM_V2__.state.profile),joined:window.__IEUM_V2__.state.joined,screen:window.__IEUM_V2__.state.screen}))
+     const presentationFile=`${id}-${width}-presentation.png`
+     await stage.screenshot({path:path.join(output,presentationFile),fullPage:true,animations:'disabled'})
+     item.presentationFile=presentationFile
+    }finally{await stage.close()}
+   }catch(error){item.status='failed';item.error=String(error.message).split('\n')[0].replace(/https?:\/\/\S+/g,'[URL]')}
    results.push(item);console.log(item.status,id,width)
   }
   await context.close()
@@ -96,12 +129,13 @@ try{
 }finally{await browser.close()}
 const cards=[]
 for(const r of results){
- const image=r.file?`<a download="${escape(r.file)}" href="data:image/png;base64,${(await readFile(path.join(output,r.file))).toString('base64')}"><img alt="${escape(r.title)} ${r.width}px" loading="lazy" src="data:image/png;base64,${(await readFile(path.join(output,r.file))).toString('base64')}"></a>`:`<p class="error">이 버전에서 캡처하지 못함: ${escape(r.error)}</p>`
+ const image=r.file?`<a download="${escape(r.file)}" href="#" onclick="this.href=this.querySelector('img').src"><img alt="${escape(r.title)} ${r.width}px" loading="lazy" src="data:image/png;base64,${(await readFile(path.join(output,r.file))).toString('base64')}"></a>`:`<p class="error">이 버전에서 캡처하지 못함: ${escape(r.error)}</p>`
+ const presentation=r.presentationFile?`<a download="${escape(r.presentationFile)}" href="#" onclick="this.href=this.querySelector('img').src"><img class="presentation" alt="고정 진입점과 모바일 프레임 포함 · ${escape(r.title)} ${r.width}px" loading="lazy" src="data:image/png;base64,${(await readFile(path.join(output,r.presentationFile))).toString('base64')}"></a>`:''
  const viewport=r.viewportFile?`<a download="${escape(r.viewportFile)}" href="data:image/png;base64,${(await readFile(path.join(output,r.viewportFile))).toString('base64')}">원래 화면 크기 PNG 저장</a>`:''
- cards.push(`<article><h2>${escape(r.id)} · ${escape(r.title)}</h2><p>${r.width}px · ${escape(r.status)} · ${escape(r.heading||'')}</p>${viewport}${image}</article>`)
+ cards.push(`<article><h2>${escape(r.id)} · ${escape(r.title)}</h2><p>${r.width}px · ${escape(r.status)} · ${escape(r.heading||'')}</p>${presentation}<details><summary>모바일 전체 내용과 원래 화면 크기 PNG</summary>${viewport}${image}</details></article>`)
 }
 const origin=new URL(base).origin
 await writeFile(path.join(output,'manifest.json'),JSON.stringify({createdAt:new Date().toISOString(),origin,revision,label,results},null,2))
-await writeFile(path.join(output,'index.html'),`<!doctype html><html lang="ko"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>IEUM 화면 캡처</title><style>body{margin:24px;background:#15110e;color:#ece6dc;font:15px system-ui}header{max-width:900px;margin-bottom:32px}main{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,430px));gap:24px;align-items:start}article{background:#262220;padding:16px;border-radius:8px}h2{font-size:17px}p{color:#bbb3a8;overflow-wrap:anywhere}img{width:100%;height:auto}.error{color:#edb7af}a{color:inherit}</style><header><h1>IEUM 화면 캡처</h1><p>${escape(label)} · ${escape(revision)}</p><p>${escape(origin)} · ${new Date().toISOString()}</p><p>이미지를 클릭하면 전체 내용 PNG를 저장할 수 있습니다. 긴 내용 캡처에서는 고정 하단 탭만 숨기며, 원래 화면 크기 PNG에는 원래 위치대로 포함됩니다. 캡처 실패와 미구현 화면은 그대로 표시합니다. 실제 사용자 데이터·물리 마이크 검증을 의미하지 않습니다.</p></header><main>${cards.join('')}</main></html>`)
+await writeFile(path.join(output,'index.html'),`<!doctype html><html lang="ko"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>IEUM 화면 캡처</title><style>body{margin:24px;background:#15110e;color:#ece6dc;font:15px system-ui}header{max-width:900px;margin-bottom:32px}main{display:grid;grid-template-columns:minmax(0,1440px);gap:24px;align-items:start}article{background:#262220;padding:16px;border-radius:8px}h2{font-size:17px}p{color:#bbb3a8;overflow-wrap:anywhere}img{width:100%;height:auto;max-width:430px}.presentation{max-width:1440px}details{margin-top:16px}summary{cursor:pointer;padding:12px 0}.error{color:#edb7af}a{color:inherit}</style><header><h1>IEUM 화면 캡처</h1><p>${escape(label)} · ${escape(revision)}</p><p>${escape(origin)} · ${new Date().toISOString()}</p><p>각 화면의 첫 이미지는 고정 진입점 메뉴·모바일 프레임을 포함한 전체 화면입니다. 클릭하면 원본 PNG를 저장할 수 있습니다. 펼침 항목에서 모바일 전체 내용도 확인할 수 있습니다. 긴 내용 캡처에서는 고정 하단 탭만 숨기며, 원래 화면 크기 PNG에는 원래 위치대로 포함됩니다. 캡처 실패와 미구현 화면은 그대로 표시합니다. 실제 사용자 데이터·물리 마이크 검증을 의미하지 않습니다.</p></header><main>${cards.join('')}</main></html>`)
 console.log(JSON.stringify({output,captured:results.filter(r=>r.status==='captured').length,failed:results.filter(r=>r.status!=='captured').length}))
 if(results.some(r=>r.status!=='captured'))process.exitCode=1
