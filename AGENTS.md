@@ -387,32 +387,27 @@ git diff 검토
 ↓
 commit
 ↓
-push origin/main
+작업 브랜치 Push
 ↓
-Vercel Git Integration 자동배포
+Git Integration 자동 Preview의 SHA·상태·실제 URL 확인
 ↓
-Production QA
+Preview QA 및 사용자 확인용 URL 제공
+↓
+승인된 검증 변경만 main 반영 → Git Integration Production QA
 
 
 # 13. Vercel Policy
 
-정상 배포 경로:
+## 배포 중복 방지 · 사용자 지시 2026-10-22 (기존 배포 순서보다 우선)
 
-Codex 수정
-→ 테스트
-→ commit
-→ GitHub push
-→ Vercel 자동배포
-
-commit/push하지 않은 로컬 코드를
-Vercel production에 직접 배포하는 것을
-기본 작업 방식으로 사용하지 않는다.
-
-Vercel 자동배포가 실패하면
-먼저 Git Integration 문제를 진단한다.
-
-수동 Production Deploy로 조용히 우회하지 않는다.
-
+- 기본 경로는 **로컬 코드 변경 → 관련 QA → GitHub 작업 브랜치 Push → Git Integration 자동 Preview 확인**이다. React는 `feature/figma-v2-integration` → `ieum-v2-react`, 공명은 `feature/resonance-standalone` → `ieum-resonance-preview`에서만 검증한다. Preview를 생략하고 main부터 갱신하지 않는다. 문서만 정리하는 작업은 화면 Preview 완료로 보고하지 않는다.
+- 배포 확인 키는 팀·프로젝트·브랜치·정확한 SHA·환경이다. Push 후 Git 상태/Checks와 해당 프로젝트의 배포 목록을 조회하고 기존 배포 ID·상태·URL을 재사용한다. READY 또는 QUEUED/INITIALIZING/BUILDING/업로드 중인 동일 SHA가 있으면 새 배포를 생성하지 않는다. main과 Preview의 정상적인 환경 차이는 같은 환경의 중복 배포와 구분한다.
+- Git 자동 배포가 시작된 커밋에는 Vercel API/CLI, Deploy Hook, 별도 CI 배포, Redeploy로 두 번째 배포를 만들지 않는다. 상태가 늦게 표시되거나 목록이 잠시 비어도 별도 생성으로 보충하지 않는다. Git Integration 장애를 먼저 진단한다. 자동 배포용과 수동 배포용 경로를 동시에 운영하지 않는다.
+- 문서·체크포인트·QA 기록·작업 잠금의 추가/해제는 가능한 한 관련 코드 커밋과 한 번의 Push로 합친다. 여러 로컬 커밋도 QA 완료 뒤 묶어 Push한다. 배포를 유발하려는 빈 커밋, SHA만 바꾸는 커밋, 확인 기록만을 위한 연속 Push를 금지한다. 필수 공유 잠금 획득이 별도 원격 기록을 요구하면 그 예외만 허용하고 main에 잠금 전용 Push를 하지 않으며, 종료 기록·자기 잠금 해제는 한 커밋으로 합친다. 문서만 요청된 작업은 관련 없는 코드 변경이나 빌드를 추가하지 않는다.
+- 정상 Production과 공명 기준 배포를 삭제·취소·덮어쓰기·승격하지 않는다. 새 Preview가 해당 코드/QA를 통과하기 전 main에 제품 변경을 반영하지 않는다. Production 갱신은 승인된 범위의 검증된 변경만 expected-HEAD/비강제로 반영하고 기존 Git Integration을 사용한다. 공명 브랜치 수정·병합 금지 등 기존 범위 제한은 배포 정리만을 이유로 해제하지 않는다.
+- 제한 응답은 실제 오류 코드/시각, Retry-After 또는 제공자 재시도 안내를 기록하고 **같은 실행에서 재배포·반복 재시도하지 않는다**. 재조회로 재시도 시각을 갱신하거나 실패 시각마다 무조건 24시간을 더하지 않는다. 절대 해제 시각을 확인하지 못하면 확인 불가로 적는다. 제한 해제를 명분으로 프로젝트를 추가하거나 API/CLI 수동 배포로 우회하지 않는다.
+- 화면·모션을 변경하면 사용자가 열 수 있는 **실제 해당 SHA의 Preview URL**을 반드시 제공한다. 로컬 캡처, Production URL, 브랜치 별칭, 과거 READY URL을 새 Preview처럼 제시하지 않는다. 상태·환경·코드 SHA와 함께 URL을 확인한다. 제한/실패로 새 Preview가 없으면 링크를 지어내지 않고 “새 Preview 미생성, 시각 검증/완료 차단”을 명시한다.
+- Ignored Build Step은 배포 생성 전 차단과 다르다. Vercel 공식 문서상 이 단계에서 취소된 빌드도 배포/동시 빌드 한도에 포함된다. 이 설정만으로 배포 횟수가 0이 된다고 보고하지 않는다. 교차 프로젝트 차단이 필요하면 실제 Root Directory와 각 브랜치의 `git.deploymentEnabled` 적용 위치를 확인한 뒤, 허용된 범위의 배포 설정만 변경한다.
 
 # 14. QA
 
