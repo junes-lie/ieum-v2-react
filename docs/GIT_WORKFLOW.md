@@ -2,6 +2,17 @@
 
 GitHub main은 영구 기록이며, 제품 코드의 기본 검증 경로는 작업 브랜치의 Git Integration 자동 Preview다. 로컬의 미배포 코드·실제 Preview·기존 Production을 구분한다.
 
+## GitHub Pages 우선 Preview · 사용자 지시 2026-10-23
+
+Vercel Deployment Storage 제한 기간에는 React 시각 Preview의 우선 확인 경로를 https://junes-lie.github.io/ieum-v2-react/ 로 한다. 이 절은 React Preview 경로에 대한 기존 Vercel 우선 규칙과 이전 임시 Push 금지보다 우선한다. 배포 중복 방지와 main 승인 절차, 공명 정책은 유지한다.
+
+1. `feature/figma-v2-integration`에서 수정하고 관련 로컬 QA·빌드를 완료한다.
+2. 코드·관련 기록을 한 번의 Push로 저장한다. 기존 `.github/workflows/ieum-pages-preview.yml`의 `IEUM GitHub Pages Preview` 자동 실행을 사용한다.
+3. 정확한 SHA에 대한 Actions `build`·`deploy` 모두 Success인지 확인한 뒤 Pages 실제 변경 화면을 검수한다. Pages URL·정확한 SHA·검수 범위를 보고한다. Pages는 가변 URL이므로 현재 실행/제공 파일이 해당 SHA의 빌드와 일치하는지도 확인한다.
+4. 별도 Pages 프로젝트·중복 워크플로·빈 커밋·중복 Push를 만들지 않는다. Pages 경로 변환은 `scripts/prepare-github-pages.mjs`가 담당한다. `vite.config.js`나 React 원본 경로를 Pages 전용으로 무작정 변경하지 않는다.
+5. Pages는 정적 호스팅이다. 디자인·레이아웃·화면 전환·정적 음원·브라우저 기능 확인에 사용하며 `/api/`, DB·로그인·원격 저장·실제 믹싱 서비스 검증은 기존 Vercel 또는 별도 서버에서 수행한다. Pages 성공을 전체 서비스 E2E 성공으로 보고하지 않는다.
+6. Vercel Git 자동 Preview가 정상 생성되면 서버 기능 검증에 활용한다. 제한 중에는 재배포를 반복하지 않고 API/CLI 수동 배포를 추가하지 않는다. 기존 Production·공명 독립 브랜치 및 공명 배포 설정을 보존한다.
+
 ## 배포 중복 방지 · 사용자 지시 2026-10-22 (기존 배포 순서보다 우선)
 
 - 기본 경로는 **로컬 코드 변경 → 관련 QA → GitHub 작업 브랜치 Push → Git Integration 자동 Preview 확인**이다. React는 `feature/figma-v2-integration` → `ieum-v2-react`, 공명은 `feature/resonance-standalone` → `ieum-resonance-preview`에서만 검증한다. Preview를 생략하고 main부터 갱신하지 않는다. 문서만 정리하는 작업은 화면 Preview 완료로 보고하지 않는다.

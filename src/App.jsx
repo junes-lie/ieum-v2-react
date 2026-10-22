@@ -699,7 +699,7 @@ function SearchScreen({ openSong, openCreatedProject, openComplete, openMyVoice,
   const addedAt=item=>Date.parse(item.project?.createdAt||item.addedAt||'')||0
   const ordered=sort!=='추천순'?[...items].sort((a,b)=>addedAt(b)-addedAt(a)):items
   return <div className="screen figma-v2 search-v2-screen" data-screen-id="01S">
-    <TopBar title="검색" action={<MyVoiceIcon/>} actionLabel="마이보이스 열기" actionId="open-my-voice" onAction={openMyVoice}/>
+    <TopBar title="검색" action={<MyVoiceIcon profile={profile}/>} actionLabel="마이보이스 열기" actionId="open-my-voice" onAction={openMyVoice}/>
     <main>
       <label className="search-v2-input"><Icon name="search" size={20}/><input ref={inputRef} value={query} onChange={e=>setQuery(e.target.value)} placeholder="곡, 아티스트, 프로젝트 검색" aria-label="곡, 아티스트, 프로젝트 검색"/>{query&&<button type="button" aria-label="검색어 지우기" onClick={()=>{setQuery('');inputRef.current?.focus()}}><Icon name="close" size={16}/></button>}</label>
       <div className="search-v2-tabs" role="tablist" aria-label="검색 결과 유형">
@@ -733,7 +733,49 @@ function Home({ startVoiceSetup, mainProject = PROJECT, openSong, openMyVoice, o
     const recordLayers=preview?recruitmentPreviewLayers(entry.project):entry.project.parts.map(part=>entry.tracks[part.id]?.layer||null)
     return <div className="v2-project-record-graphic" data-graphic-source={preview?'catalogue-preview':'project-tracks'}><ResonanceRecord counterRotate compact cataloguePreview={preview} recordRef={entry.project.voiceRecordRef} projectId={entry.project.id} parts={entry.project.parts} tracks={entry.tracks} layers={recordLayers} seed={entry.project.seed} label={preview?`${entry.song.title}, 프로젝트 예시 공명`:`${entry.song.title}, ${entry.submitted}/${entry.partCount} Track 제출`}/></div>
   }
-  return <HomeView startVoiceSetup={startVoiceSetup} header={<TopBar action={<MyVoiceIcon/>} actionLabel="마이보이스 열기" actionId="open-my-voice" onAction={openMyVoice}/>} profile={profile} entries={entries} songs={SONGS} openSong={openSong} openSearch={openSearch} openCreateProject={openCreateProject} formatDuration={fmt} openProject={entry=>entry.publicExample?openComplete(entry.project.id):entry.isCreated?openCreatedProject(entry.project.id):openComplete()} renderRecord={renderRecord}/>
+  return <HomeView startVoiceSetup={startVoiceSetup} header={<TopBar action={<MyVoiceIcon profile={profile}/>} actionLabel="마이보이스 열기" actionId="open-my-voice" onAction={openMyVoice}/>} profile={profile} entries={entries} songs={SONGS} openSong={openSong} openSearch={openSearch} openCreateProject={openCreateProject} formatDuration={fmt} openProject={entry=>entry.publicExample?openComplete(entry.project.id):entry.isCreated?openCreatedProject(entry.project.id):openComplete()} renderRecord={renderRecord}/>
+}
+
+// Native touch/trackpad scrolling, plus desktop mouse dragging without selecting a card.
+function ProjectCarousel({children}) {
+  const drag=useRef(null)
+  const suppressClick=useRef(false)
+  const finish=event=>{
+    const node=event.currentTarget
+    if(node.hasPointerCapture(event.pointerId))node.releasePointerCapture(event.pointerId)
+    delete node.dataset.dragging
+    drag.current=null
+  }
+  return <div className="project-carousel" role="region" aria-label="같은 곡의 프로젝트" tabIndex={0}
+    onPointerDown={event=>{
+      suppressClick.current=false
+      if(event.pointerType!=='mouse'||event.button!==0)return
+      drag.current={x:event.clientX,y:event.clientY,left:event.currentTarget.scrollLeft}
+    }}
+    onPointerMove={event=>{
+      const start=drag.current
+      if(!start)return
+      const dx=event.clientX-start.x,dy=event.clientY-start.y
+      if(!suppressClick.current){
+        if(Math.abs(dx)<6)return
+        if(Math.abs(dy)>Math.abs(dx)){drag.current=null;return}
+        suppressClick.current=true
+        event.currentTarget.dataset.dragging='true'
+        event.currentTarget.setPointerCapture(event.pointerId)
+      }
+      event.preventDefault()
+      event.currentTarget.scrollLeft=start.left-dx
+    }}
+    onPointerUp={finish} onPointerCancel={finish}
+    onPointerLeave={()=>{if(!suppressClick.current)drag.current=null}}
+    onDragStart={event=>event.preventDefault()}
+    onClickCapture={event=>{if(suppressClick.current){event.preventDefault();event.stopPropagation();suppressClick.current=false}}}
+    onKeyDown={event=>{
+      if(event.target!==event.currentTarget)return
+      const node=event.currentTarget
+      if(event.key==='ArrowRight'||event.key==='ArrowLeft'){event.preventDefault();node.scrollBy({left:(event.key==='ArrowRight'?1:-1)*node.clientWidth*.75})}
+      if(event.key==='Home'||event.key==='End'){event.preventDefault();node.scrollLeft=event.key==='Home'?0:node.scrollWidth}
+    }}>{children}</div>
 }
 
 function DetailRangeComparison({part,profile}) {
@@ -800,7 +842,7 @@ function Detail({ go, back, song, profile, join, layers, projectTracks, songSave
     <main>
       {receivedInvitation&&<section className="fit-panel invitation-context" data-received-invitation={receivedInvitation.id} data-invitation-status={receivedInvitation.status}><p className="kicker">받은 초대{receivedInvitation.demo?' · 시연 예시':''}</p><h2>{receivedInvitation.projectName} · {receivedInvitation.partName}</h2><p>{receivedInvitation.senderName}님이 함께 부르자고 초대했어요.</p><small>초대 수락은 아래에 표시된 프로젝트와 파트에만 적용돼요.</small>{receivedInvitation.status==='pending'?<div className="invitation-response-actions">{invitationTargetSelected&&<ProjectActionButton actionId="accept-received-invitation" label="초대 수락" onClick={()=>respondToInvitation(receivedInvitation.id,'accept')}/>}<div>{!invitationTargetSelected&&<button className="secondary" data-action="show-invitation-target" onClick={()=>{setSelectedProjectId(receivedInvitation.projectId);setSelectedPartId(receivedInvitation.partId);onSelectProject?.(receivedInvitation.projectId)}}>초대받은 프로젝트·파트 보기</button>}<button className="invitation-decline" data-action="decline-received-invitation" onClick={()=>respondToInvitation(receivedInvitation.id,'decline')}>거절</button></div></div>:<p role="status">{receivedInvitation.status==='declined'?'초대를 거절했어요.':'초대에 응답했어요.'}</p>}{invitationError&&<p role="alert">{invitationError}</p>}</section>}
       <section className="detail-projects">
-        <div className="project-picker"><div className="section-head"><h2>같은 곡의 프로젝트</h2><span>{allProjects.length}개의 프로젝트 ›</span></div><div className="project-carousel">{allProjects.map(project=><button key={project.id} data-project-id={project.id} className={selectedProject.id===project.id?'active':''} aria-pressed={selectedProject.id===project.id} onClick={()=>selectProject(project.id)}><span className="detail-project-disc"><ResonanceRecord projectId={project.id} parts={project.parts||[]} seed={project.seed} layers={project.id===selectedProject.id?projectLayers:[]} active={Array.from({length:project.partCount},(_,i)=>i<project.progress)} compact/></span><span className="detail-project-copy"><strong>{project.name}</strong><small>{project.key}</small><small>{project.progress}/{project.partCount} 제출됨</small></span>{selectedProject.id===project.id&&<span className="detail-project-check"><Icon name="check" size={10}/></span>}</button>)}<button className="project-create-card" data-action="create-project-for-song" aria-label="이 곡으로 새 프로젝트 만들기" onClick={()=>onCreateProject(song.id)}><span className="detail-project-disc detail-project-create-mark" aria-hidden="true"><Icon name="plus" size={22}/></span><span className="detail-project-copy"><small>이 곡으로</small><strong>새 프로젝트 만들기</strong><small>내가 부를 Part부터 시작해요.</small></span></button></div></div>
+        <div className="project-picker"><div className="section-head"><h2>같은 곡의 프로젝트</h2><span>{allProjects.length}개의 프로젝트 ›</span></div><ProjectCarousel>{allProjects.map(project=><button key={project.id} data-project-id={project.id} className={selectedProject.id===project.id?'active':''} aria-pressed={selectedProject.id===project.id} onClick={()=>selectProject(project.id)}><span className="detail-project-disc"><ResonanceRecord projectId={project.id} parts={project.parts||[]} seed={project.seed} layers={project.id===selectedProject.id?projectLayers:[]} active={Array.from({length:project.partCount},(_,i)=>i<project.progress)} compact/></span><span className="detail-project-copy"><strong>{project.name}</strong><small>{project.key}</small><small>{project.progress}/{project.partCount} 제출됨</small></span>{selectedProject.id===project.id&&<span className="detail-project-check"><Icon name="check" size={10}/></span>}</button>)}<button className="project-create-card" data-action="create-project-for-song" aria-label="이 곡으로 새 프로젝트 만들기" onClick={()=>onCreateProject(song.id)}><span className="detail-project-disc detail-project-create-mark" aria-hidden="true"><Icon name="plus" size={22}/></span><span className="detail-project-copy"><small>이 곡으로</small><strong>새 프로젝트 만들기</strong><small>내가 부를 Part부터 시작해요.</small></span></button></ProjectCarousel></div>
         <div className="detail-selected"><div className="detail-selected-heading"><p>선택한 프로젝트</p><h2>{selectedProject.name}</h2></div><div className="detail-project-body"><div className="detail-record"><ResonanceRecord recordRef={selectedProject.voiceRecordRef} parts={displayParts} projectId={selectedProject.id} layers={projectLayers} active={staticActive} seed={selectedProject.seed}/><p aria-label={`${String(submitted).padStart(2,'0')}/${String(selectedProject.partCount).padStart(2,'0')} · ${selectedProject.status}`}>{selectedProject.key} · {submitted}/{selectedProject.partCount}</p><small>{keyLocked?'첫 녹음 시작 후 Key 고정':'첫 녹음 시작 전 조정 가능'}</small></div>{isLiveProject||isCreatedProject||selectedProject.audioSource?<CurrentMixPanel detailMode key={selectedProject.id} project={selectedProject} parts={displayParts} projectTracks={listenTracks} openVocalProfile={openVocalProfile} partAction={part=>(isLiveProject||selectedProject.audioSource)&&['open','recruiting'].includes(part.status)?{action:()=>setSelectedPartId(part.id),label:selectedPartId===part.id?'선택됨':'확인'}:{}}/>:<div className="detail-listening"><p>참여한 멤버 {members.length}명</p>{displayParts.map(part=><PartRow waveform={false} key={part.id} part={part} onParticipant={part.participantId?()=>openVocalProfile(part.participantId):undefined}/>)}</div>}</div></div>
       </section>
       {!profile&&!receivedInvitation&&openParts.length>0&&(!action||action.id==='voice-setup')?<section className="detail-profile-guide" data-testid="detail-profile-guide" aria-label="목소리 프로필 등록 안내"><h2>내 목소리를 아직 등록하지 않았어요.</h2><p>음역과 목소리 샘플을 등록해요. 약 1–2분 걸려요.</p><ProjectActionButton actionId="voice-setup" onClick={()=>go('voice')} label="내 목소리 알아보기"/><small>{chosen?`${chosen.name} Part를 확인하러 이 프로젝트로 돌아와요.`:'등록 후 이 곡과 프로젝트로 돌아와 빈 Part를 선택해요.'} 탐색과 듣기는 먼저 할 수 있어요.</small></section>:action&&<div className="detail-project-action"><ProjectActionButton actionId={action.id} onClick={action.click} label={action.label}/></div>}

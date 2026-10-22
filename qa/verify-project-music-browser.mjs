@@ -8,21 +8,36 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE_PATH||'playwright')
 const base=process.env.IEUM_BASE_URL||'http://127.0.0.1:4251'
 const out=process.env.IEUM_QA_OUTPUT||'/tmp/ieum-project-music'
 await mkdir(out,{recursive:true})
-let server,browser
+let server,browser,activePage,activeWidth,activeActor
 try{
  if(!process.env.IEUM_BASE_URL){
   server=spawn(process.execPath,['node_modules/vite/bin/vite.js','preview','--host','127.0.0.1','--port','4251','--strictPort'],{stdio:['ignore','pipe','inherit']})
   await new Promise((resolve,reject)=>{server.stdout.on('data',d=>String(d).includes('Local:')&&resolve());server.on('error',reject);server.on('exit',c=>reject(Error('Vite '+c)))})
  }
- browser=await chromium.launch({headless:true,executablePath:process.env.CHROMIUM_EXECUTABLE_PATH||undefined,args:['--no-sandbox','--use-angle=swiftshader','--enable-unsafe-swiftshader','--use-fake-device-for-media-stream','--use-fake-ui-for-media-stream','--autoplay-policy=no-user-gesture-required']})
+ browser=await chromium.launch({headless:true,executablePath:process.env.CHROMIUM_EXECUTABLE_PATH||undefined,args:['--no-sandbox','--use-angle=swiftshader','--enable-unsafe-swiftshader','--use-fake-device-for-media-stream','--use-fake-ui-for-media-stream','--autoplay-policy=no-user-gesture-required',...(process.env.IEUM_QA_FAKE_AUDIO_FILE?[`--use-file-for-fake-audio-capture=${process.env.IEUM_QA_FAKE_AUDIO_FILE}`]:[])]})
  for(const width of (process.env.IEUM_QA_WIDTHS||'390,430').split(',').map(Number)){
   const context=await browser.newContext({viewport:{width,height:932},permissions:['microphone'],reducedMotion:'reduce'})
   await context.addInitScript(()=>{
    window.qaStarts=[]
+   window.qaRecorderEvents=[]
+   const observed=new WeakSet()
+   const trace=(recorder,event)=>{
+    const rt=window.__IEUM_V2__?.audioRuntime
+    window.qaRecorderEvents.push({event,wallMs:performance.now(),audioSec:rt?.context?.currentTime,state:recorder.state,elapsed:rt?.activeElapsedSec,started:rt?.activeStartedAt,segment:rt?.recordingSegmentActive})
+   }
+   for(const name of ['start','pause','resume','stop']){
+    const original=MediaRecorder.prototype[name]
+    MediaRecorder.prototype[name]=function(...args){
+     if(!observed.has(this)){observed.add(this);for(const event of ['start','pause','resume','stop'])this.addEventListener(event,()=>trace(this,event+' event'))}
+     trace(this,name+' call')
+     return original.apply(this,args)
+    }
+   }
    const create=AudioContext.prototype.createBufferSource
    AudioContext.prototype.createBufferSource=function(){const node=create.call(this),start=node.start.bind(node),ctx=this;node.start=(at,offset=0,...rest)=>{window.qaStarts.push({at,offset,now:ctx.currentTime,duration:node.buffer?.duration,timeline:window.__IEUM_V2__?.audioRuntime?{elapsed:window.__IEUM_V2__.audioRuntime.activeElapsedSec,started:window.__IEUM_V2__.audioRuntime.activeStartedAt,sync:window.__IEUM_V2__.audioRuntime.syncOffsetSec,state:window.__IEUM_V2__.audioRuntime.recorder?.state}:null});return start(at,offset,...rest)};return node}
   })
   const page=await context.newPage();page.setDefaultTimeout(20000)
+  activePage=page;activeWidth=width;activeActor=null
   const errors=[];page.on('pageerror',e=>errors.push(e.message))
   page.on('console',m=>{if(m.type()==='error')errors.push(m.text())})
   await page.goto(new URL('?embedded=1',base).href);await page.waitForFunction(()=>window.__IEUM_V2__?.state)
@@ -39,6 +54,7 @@ try{
   assert.ok(decoded.every(x=>Math.abs(x.duration-x.expected)<.01));console.log('PASS',width,'all 3 existing source excerpts and registered arrangement native decode durations',JSON.stringify(decoded))
 
   for(const actor of ['a','b']){
+   activeActor=actor
    await page.goto(base+'/?scene=music-'+actor)
    await page.waitForFunction(()=>window.__IEUM_V2__?.state.activeProject?.audioSource);await page.waitForSelector('.workspace-v2-screen')
    const initial=await page.evaluate(()=>({id:window.__IEUM_V2__.state.activeProject.id,tracks:Object.keys(window.__IEUM_V2__.state.activeTracks),key:window.__IEUM_V2__.state.activeProject.key}))
@@ -117,4 +133,18 @@ try{
   console.log('PASS',width,'last Track -> native Auto Mix -> 22s Complete playback, peak ceiling, reload and original-user preservation',JSON.stringify({...mix,inputs:undefined}))
   await context.close()
  }
+}catch(error){
+ const diagnostic={width:activeWidth,actor:activeActor,error:String(error),fakeAudio:process.env.IEUM_QA_FAKE_AUDIO_FILE?'file':'default'}
+ try{
+  diagnostic.runtime=await activePage.evaluate(()=>{
+   const rt=window.__IEUM_V2__?.audioRuntime
+   const button=document.querySelector('[data-action="record-submit"]')
+   const ancestors=[]
+   for(let node=button;node&&ancestors.length<6;node=node.parentElement){const style=getComputedStyle(node);ancestors.push({tag:node.tagName,className:node.className,rect:node.getBoundingClientRect().toJSON(),display:style.display,visibility:style.visibility,overflow:style.overflow})}
+   return {screen:window.__IEUM_V2__?.state.screen,status:document.querySelector('[data-recording-status]')?.dataset.recordingStatus,clock:document.querySelector('[data-recording-entry]')?.textContent,errors:[...document.querySelectorAll('.permission-error')].map(n=>n.textContent),recorder:rt?.recorder?.state,elapsed:rt?.activeElapsedSec,sync:rt?.syncOffsetSec,decoded:rt?.decoded?.duration,bytes:rt?.recordingBlob?.size,streamActive:rt?.stream?.active,submit:{present:Boolean(button),disabled:button?.disabled,ancestors},events:window.qaRecorderEvents}
+  })
+ }catch(reason){diagnostic.inspectError=String(reason)}
+ await writeFile(`${out}/failure-${activeWidth||'startup'}.json`,JSON.stringify(diagnostic,null,2))
+ console.error('FAILURE DIAGNOSTIC',JSON.stringify(diagnostic))
+ throw error
 }finally{await browser?.close();server?.kill()}
