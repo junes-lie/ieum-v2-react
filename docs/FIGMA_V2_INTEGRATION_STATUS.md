@@ -1,3 +1,11 @@
+## Home footer and bottom-navigation clearance · 2026-10-22
+
+- Explicit user request: retry Desktop MCP for Figma 1803:72333, remove the home bottom button, reserve navigation obstruction plus end spacing. Desktop initialize POST to http://127.0.0.1:3845/mcp failed immediately with curl(7), connection refused. The four-screen source was not read or implemented; no Remote Figma/Computer Use fallback.
+- Code `55df89ab66fd58463cc696d693c89e2d54acd7c4`: removed only HomeView's trailing “새 프로젝트 만들기” button; existing project-creation routes elsewhere remain. Base screen and Home end padding now use shared navigation-height 76px + env(safe-area-inset-bottom) + 24px gap; navigation consumes the same height variable. Detail's separate 156px action reserve and Recording's 28px/no-global-nav remain unchanged.
+- Remote file blobs matched local files before editing. Build passed: `index-CaPiRN3O.js`, `index-Bstb-cOE.css`. All 13 maintained Node suites passed. Chromium current local production build at 390/430/1440px passed removed-footer presence check, 100px end padding with zero inset, no body overflow/page errors, and last Home card above navigation by 56.34/55.67/57.34px after end-scroll. Safe-area expression is implemented; physical iOS inset not verified. First separately launched local server was unreachable across command network namespaces; same-command server/browser rerun passed.
+- Full local screenshot gallery 16 x two widths: 32 captured/0 failed, 64 PNGs, standalone HTML and validated ZIP. Functional audio E2E was not repeated for this footer/CSS-only change; preceding deployed full music acceptance remains recorded below.
+- Expected-HEAD owner `home-bottom-clearance-20261022`; only this lock is released in this checkpoint. Next: Git Integration release of the verified runtime and targeted original-URL check; keep Figma four-screen and physical audio/real-backend/independent-renderer items open.
+
 ## Production music E2E verified · 2026-10-22
 
 - Actual deployed runtime: `9b4f46a3910f2f43b8798eb2ceac92cbdca680ae`, original URL https://ieum-v2-react.vercel.app, Production `dpl_6HcjmmBdRdecSxstYFxXAm7goTFE` READY, served `index-ffM00cXa.js`. Main was safely fast-forwarded to this runtime earlier in this same conversation. No runtime/design/Notion/Figma/standalone changes or redeploy in this verification pass.
