@@ -1,5 +1,15 @@
 # 화면 캡처 확인
 
+## 실제 음악 녹음 복구 검증
+
+`npm run build` 후 `npm run qa:project-music-recovery`를 실행합니다. 자체 Vite preview와 격리된 시연 DB에서 390/430px 합성 마이크로 권한 거부·연속 시작/정지·Review 후 마이크 해제·임시녹음 재진입/새로고침·제출 저장 실패·재녹음 이전 콜백·임시저장 실패 시 이탈 방지·Auto Mix 저장 실패와 단일 재시도를 검사합니다. 녹음 원본의 해시는 반주가 합성된 Review 재생 파일과 구분해서 비교합니다.
+
+아래 표의 `PLAYWRIGHT_MODULE_PATH`, `CHROMIUM_EXECUTABLE_PATH`, `IEUM_QA_WIDTHS`, `IEUM_QA_OUTPUT`을 지원합니다. `IEUM_BASE_URL`을 주면 외부 서버 실행 없이 해당 주소를 검사합니다. 일반 사용자 DB를 초기화하지 않으며 실제 기기·청취·실시간 다중 사용자 검증을 대신하지 않습니다. 특정 Windows 설치 경로를 고정한 이전 개별 QA와 별개로 실행할 수 있습니다.
+
+## 전체 화면 캡처
+
+`npm run qa:record-visibility`는 일반 모션에서 390/430px의 실제 레코드가 화면 밖에서 GPU 렌더링을 멈추고, 다시 들어오면 같은 그래픽·제출 Track을 유지하며 움직이는지 검사합니다. 기존 조형·입자·shader의 시각적 승인 여부를 대신하지 않습니다.
+
 `npm run qa:capture`로 현재 실행 중인 앱의 전체 화면 갤러리를 만듭니다.
 기본 주소는 `http://127.0.0.1:4187`이며 먼저 `npm run dev`를 실행합니다.
 

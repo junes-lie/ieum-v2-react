@@ -570,8 +570,9 @@ export function createResonanceRenderer({ canvas, materialCanvas, slots, project
     }
     return true
   }
+  let inViewport = true
   const draw = now => {
-    if (disposed || !resize()) return
+    if (disposed || !inViewport || document.hidden || !resize()) return
     const debugParams = new URLSearchParams(window.location.search)
     const captureTime = Number(debugParams.get('resonanceTime'))
     const soloPart = Number(debugParams.get('resonanceSolo'))
@@ -621,6 +622,21 @@ export function createResonanceRenderer({ canvas, materialCanvas, slots, project
   }
   const observer = new ResizeObserver(() => { cancelAnimationFrame(raf); draw(performance.now()) })
   observer.observe(canvas)
+  // A Home contains several offscreen catalogue/thumbnail records. Keep their
+  // existing buffers and timeline, but do not spend GPU frames outside the
+  // viewport or in a hidden tab. No shader, particle or source data changes.
+  const wake = () => {
+    cancelAnimationFrame(raf)
+    previousFrame=performance.now()
+    if(!disposed && inViewport && !document.hidden)raf=requestAnimationFrame(draw)
+  }
+  const intersection = typeof IntersectionObserver==='undefined' ? null : new IntersectionObserver(entries=>{
+    inViewport=entries[0]?.isIntersecting!==false
+    canvas.dataset.renderVisibility=inViewport?'visible':'offscreen'
+    wake()
+  })
+  intersection?.observe(canvas)
+  document.addEventListener('visibilitychange',wake)
   raf = requestAnimationFrame(draw)
   canvas.dataset.renderer = 'webgl-particles'
   canvas.dataset.particleCount = String(particleCount)
@@ -631,6 +647,8 @@ export function createResonanceRenderer({ canvas, materialCanvas, slots, project
     dispose() {
       disposed = true
       observer.disconnect()
+      intersection?.disconnect()
+      document.removeEventListener('visibilitychange',wake)
       cancelAnimationFrame(raf)
       gl.deleteBuffer(buffer)
       textures.forEach(texture=>gl.deleteTexture(texture))

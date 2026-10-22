@@ -12,7 +12,7 @@ assert.equal(evaluatePartFit({rangeData:{lowMidi:48,highMidi:67,comfortableRange
 assert.equal(evaluatePartFit({rangeData:{lowMidi:48,highMidi:67},part:{range:'C3–G4'}}).tessituraFit,null)
 
 globalThis.window = {AudioContext:class {}}
-const {limitBufferPeak,cancelRecording,audioRuntime,getRecordingTimeline,pauseRecording,resumeRecording,updateRecordingGuides} = await import('../src/audio.js')
+const {limitBufferPeak,cancelRecording,stopRecording,audioRuntime,getRecordingTimeline,pauseRecording,resumeRecording,updateRecordingGuides} = await import('../src/audio.js')
 for (const count of [2,3,4]) {
   const channels=[Float32Array.from([count*.7,-count*.8,.02]),Float32Array.from([count*.5,-.1,.2])]
   const result=limitBufferPeak({numberOfChannels:2,getChannelData:index=>channels[index]})
@@ -88,3 +88,22 @@ assert.equal(audioRuntime.lastAnalysis,null)
 assert.equal(await (await fetch(retainedUrl)).text(),'original persisted Take','Session cleanup must preserve independently owned Review/Profile audio')
 URL.revokeObjectURL(retainedUrl)
 console.log('PASS session cleanup releases analysis references while preserving independently owned Take bytes and playable URL')
+
+// A stopped recorder has already delivered its last bytes. Analysis failure
+// must neither retain the live microphone nor lose that independently owned Take.
+let microphoneStopped=false
+audioRuntime.stream={getTracks:()=>[{stop(){microphoneStopped=true}}]}
+audioRuntime.recorder={state:'inactive',mimeType:'audio/webm'}
+audioRuntime.chunks=[new Blob(['captured before decoder failure'])]
+audioRuntime.activeElapsedSec=3.25
+audioRuntime.context.decodeAudioData=async()=>{assert.equal(microphoneStopped,true,'Release capture before any decoder work');throw Error('QA decode unavailable')}
+const endedTake=await stopRecording()
+assert.equal(audioRuntime.stream,null)
+assert.equal(audioRuntime.source,null)
+assert.equal(audioRuntime.analyser,null)
+assert.equal(endedTake.duration,3.25)
+assert.equal(endedTake.features,null)
+assert.equal(await endedTake.blob.text(),'captured before decoder failure')
+assert.equal(await(await fetch(endedTake.url)).text(),'captured before decoder failure')
+URL.revokeObjectURL(endedTake.url)
+console.log('PASS finalized Take releases microphone before decoding; failed analysis retains exact Blob, playable URL and elapsed duration')

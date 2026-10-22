@@ -486,6 +486,10 @@ export async function stopRecording() {
   runtime.recordingUrl = recordingUrl
   runtime.recordingBlob = blob
   const fallbackDuration = runtime.activeElapsedSec
+  // Final dataavailable/stop have completed and the original is now owned by
+  // the Take. Review/analysis need the AudioContext, not a live microphone.
+  // Release before decoding so even a decoder failure cannot keep capture open.
+  stopMicrophone()
   let decoded = null, features = null
   try {
     decoded = await context().decodeAudioData(await blob.arrayBuffer())

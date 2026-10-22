@@ -63,7 +63,9 @@
     "qa:capture": "node qa/capture-screen-gallery.mjs",
     "qa:project-music": "node qa/verify-project-music.mjs && node qa/verify-project-audio-contract.mjs",
     "qa:project-music-browser": "node qa/verify-project-music-browser.mjs",
-    "qa:project-music-catalog": "node qa/verify-project-music-catalog-browser.mjs"
+    "qa:project-music-catalog": "node qa/verify-project-music-catalog-browser.mjs",
+    "qa:project-music-recovery": "node qa/verify-project-music-recovery.mjs",
+    "qa:record-visibility": "node qa/verify-record-visibility-browser.mjs"
   },
   "dependencies": {
     "@fortawesome/free-regular-svg-icons": "^7.3.1",
