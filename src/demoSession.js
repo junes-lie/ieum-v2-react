@@ -22,9 +22,20 @@ export const demoTrackDatabaseName = (id,run=null) => `ieum-v2-demo-records:${id
 export const trackDatabaseName = demoScenario ? demoTrackDatabaseName(demoScenario.id,demoRun) : 'ieum-v2-records'
 export const demoReceivedInvitation = () => ({id:'presentation-invitation-tenor',recipientId:'jisun',projectId:'ieum-thousand-years-v7',songId:'a-thousand-years',projectName:'Original C · Quartet',songTitle:'오늘 같은 날',partId:'tenor',partName:'Tenor',senderId:'yoonseul',senderName:'윤슬',status:'pending',demo:true})
 export const demoProfile = () => ({
-  name:'시연 프로필',range:'C3–F5 · 시연값',rangeData:{lowMidi:48,highMidi:77},
-  roles:['Tenor'],genres:['Pop ballad'],taste:[],preferredSongIds:['a-thousand-years'],
-  voiceType:'화면 시연용 예시 · 실제 측정값 아님',sampleSong:'오늘 같은 날 · 제공곡 예시',
+  name:'JISUN',range:'C3–F5',rangeData:{lowMidi:48,highMidi:77},
+  roles:['메인 멜로디','화음·코러스'],genres:['발라드','팝'],taste:['어쿠스틱','잔잔함'],preferredSongIds:['a-thousand-years'],
+  voiceType:'맑고 부드러운 중음 · 따뜻한 음색',sampleSong:'오늘 같은 날 · 제공곡 예시',
   sampleUrl:samples[1].audioFile,sampleDuration:samples[1].duration,
+  sampleFeatures:{version:'ieum-basic-voice-v3',fingerprint:'demo-profile-registered-v1',brightness:.62,roughness:.23,energy:.56,dynamicRange:.44,spectralFlux:.3,activeRatio:.84,articulation:.48,pitchVariation:.32,envelope:[.2,.5,.8,.6,.3]},
+  matchingPreview:{version:'registered-profile-demo-v1',parts:{soprano:84,alto:91,tenor:96,bass:73},project:{overall:92,range:96,timbre:91,role:95,taste:89}},
   identity:{status:'blocked',reason:'presentation-fixture'},demo:true
 })
+
+// Presentation values only. Real Profiles never acquire these scores.
+export function demoMatchPreview(profile,subject='project') {
+  if(!profile?.demo || profile.matchingPreview?.version!=='registered-profile-demo-v1')return null
+  const base=profile.matchingPreview.project
+  const examples={yoonseul:[91,94,90,92,88],doyoon:[89,91,88,93,85],luna:[94,96,93,95,91],min:[90,94,88,92,86],mina:[92,95,90,94,89],sena:[88,92,86,90,84],noa:[87,90,85,89,84],haru:[89,93,87,91,85],yun:[86,90,83,88,84],joon:[90,94,88,93,86]}
+  const values=examples[subject]
+  return values?Object.fromEntries(['overall','range','timbre','role','taste'].map((key,index)=>[key,values[index]])):{...base}
+}

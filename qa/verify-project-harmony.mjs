@@ -19,3 +19,16 @@ assert.match(evaluateProjectHarmony({...input,tracks:{}}).reasons[0][1],/기존 
 assert.equal(evaluateProjectHarmony({...input,profile:{sampleFeatures:{...features(.6,.5),brightness:NaN}}}).status,'insufficient')
 assert.equal(evaluatePartFit({rangeData:{lowMidi:48,highMidi:72},part:{range:'C3–C5'}}).eligible,true,'Range feasibility remains separate')
 console.log('PASS measured descriptors and declared preference comparison; missing/demo/nonfinite inputs have explicit reasons; self excluded; Profile/Tracks preserved; Part Fit independent')
+
+// Explicit demo fixtures must not leak into real registrations.
+const {demoProfile,demoMatchPreview}=await import('../src/demoSession.js')
+const demo=demoProfile(),snapshot=structuredClone(demo)
+assert.equal(demo.matchingPreview.parts.tenor,96)
+assert.equal(demoMatchPreview(demo).overall,92)
+assert.equal(demoMatchPreview(demo,'luna').overall,94)
+assert.equal(demoMatchPreview({...demo,demo:false}),null)
+assert.equal(demoMatchPreview({sampleFeatures:demo.sampleFeatures,rangeData:demo.rangeData}),null)
+assert.deepEqual(demo,snapshot)
+for(const score of Object.values(demoMatchPreview(demo)))assert.ok(score>=0&&score<=100)
+assert.ok(demo.roles.length&&demo.genres.length&&demo.taste.length&&demo.sampleUrl&&demo.sampleFeatures)
+console.log('PASS complete registered demo profile and explicit example percentages; real Profiles excluded and source fixture preserved')
