@@ -268,6 +268,7 @@ function scheduleRecordingGuides(offsetSec = 0) {
     }
   }
   const vocalVolume = Math.min(1,Math.max(0,Number(state.guides.vocalVolume ?? .5)))
+  if(state.decodedVocalGuide && vocalVolume>0 && offsetSec<state.decodedVocalGuide.duration) scheduleBuffer(ctx,ctx.destination,state.decodedVocalGuide,start,offsetSec,.58*vocalVolume)
   state.decodedGuides.forEach(({track,buffer}) => {
     const index = Number(track.partIndex)
     const sourceOffset = offsetSec + (track.syncOffsetMs || 0) / 1000
@@ -283,7 +284,7 @@ function trackSourceOffset(track, buffer) {
   return milliseconds / 1000
 }
 
-export async function startRecording({ onFrame, guides = {backing:false,parts:[]}, guideTracks = [], backingBlob = null, preparationBlob = null, preparationDuration = 0, onPreparation, duration = 35 }) {
+export async function startRecording({ onFrame, guides = {backing:false,parts:[]}, guideTracks = [], vocalGuideBlob = null, backingBlob = null, preparationBlob = null, preparationDuration = 0, onPreparation, duration = 35 }) {
   if (runtime.preparationRecorder || (runtime.recorder && runtime.recorder.state !== 'inactive')) throw new Error('이미 녹음 중이에요.')
   const generation=runtime.microphoneGeneration
   const hasSpeakerGuides = Boolean(guides?.backing || guides?.parts?.some(Boolean))
@@ -295,7 +296,7 @@ export async function startRecording({ onFrame, guides = {backing:false,parts:[]
     throw error
   }
   const ctx = context()
-  let decodedGuides, decodedBacking, decodedPreparation
+  let decodedGuides, decodedVocalGuide, decodedBacking, decodedPreparation
   try {
     await ctx.resume()
     decodedGuides = await Promise.all(guideTracks.filter(track => track?.blob).map(async track => {
@@ -303,6 +304,7 @@ export async function startRecording({ onFrame, guides = {backing:false,parts:[]
       trackSourceOffset(track, buffer)
       return { track, buffer }
     }))
+    decodedVocalGuide = vocalGuideBlob ? await decodeBlob(ctx,vocalGuideBlob) : null
     decodedBacking = backingBlob ? await decodeBlob(ctx, backingBlob) : null
     decodedPreparation = preparationBlob ? await decodeBlob(ctx, preparationBlob) : null
     if(decodedPreparation && (!decodedBacking || preparationDuration!==3 || Math.abs(decodedPreparation.duration-preparationDuration)>.02))throw new Error('준비 반주 구간이 올바르지 않아요.')
@@ -341,11 +343,13 @@ export async function startRecording({ onFrame, guides = {backing:false,parts:[]
   const preparationStart=ctx.currentTime+.035
   const start = preparationStart + prepareSeconds
   runtime.syncOffsetSec = prepareSeconds ? 0 : Math.max(0, start - ctx.currentTime)
-  runtime.recordingGuideState = { guides:{...guides,parts:[...guides.parts]}, decodedGuides, decodedBacking, duration:Math.max(.1,duration) }
+  runtime.recordingGuideState = { guides:{...guides,parts:[...guides.parts]}, decodedGuides, decodedVocalGuide, decodedBacking, duration:Math.max(.1,duration) }
   if (guides.backing) {
     if (decodedBacking) scheduleBuffer(ctx, ctx.destination, decodedBacking, start, 0, backingPlaybackGain(decodedBacking))
 
   }
+  const guideVolume=Math.min(1,Math.max(0,Number(guides.vocalVolume ?? .5)))
+  if(decodedVocalGuide && guideVolume>0) scheduleBuffer(ctx,ctx.destination,decodedVocalGuide,start,0,.58*guideVolume)
   decodedGuides.forEach(({track,buffer}) => {
     const index = Number(track.partIndex)
     const volume = Math.min(1,Math.max(0,Number(guides.vocalVolume ?? .5)))

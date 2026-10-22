@@ -103,7 +103,7 @@ const SONGS = [
 ]
 // Keep the original Song/Project IDs, four Parts and the existing screen routes.
 // The old extra original-song catalogue entry is no longer added.
-const EXISTING_PROJECT_AUDIO={...WARM_ARRANGEMENT,songId:SONG_ID,key:'원키'}
+const EXISTING_PROJECT_AUDIO={...WARM_ARRANGEMENT,songId:SONG_ID,key:'원키',vocalGuideFile:'/audio/project-warm-unison-v1/provided-vocal.mp3',vocalGuideSha256:'dafd068295ba4c4761f9106ad74891e6c0800ab25d82ccb87eae3f7f66d907b1'}
 Object.assign(SONGS[0].projects[0],{songId:SONG_ID,key:'원키',recordingDuration:22,lyrics:WARM_LYRICS,audioSource:EXISTING_PROJECT_AUDIO})
 const CURRENT_USER_NAME = demoScenario?.actorName || 'JISUN'
 const MUSIC_DEMO_PROJECT = musicDemoProject(demoScenario)
@@ -1277,6 +1277,7 @@ function Recorder({ go, submit, onRecordingStart, partId, projectTracks, layers,
       setError(''); setMicrophoneFailure(false); setPermissionDenied(false);setReferencePlaying(false)
       document.querySelectorAll('audio').forEach(audio=>audio.pause())
       const backingBlob=await loadProjectBacking(project)
+      const vocalGuideBlob=project.audioSource?.vocalGuideFile?await loadProvidedAudio(project.audioSource.vocalGuideFile,project.audioSource.vocalGuideSha256):null
       if(!backingBlob)throw new Error('이 프로젝트에는 실제 반주가 아직 없어요. 오늘 같은 날 프로젝트에서 녹음해 주세요.')
       if(!startingRef.current)return
       recordingSourceRef.current=projectAudioReference(project)
@@ -1284,7 +1285,7 @@ function Recorder({ go, submit, onRecordingStart, partId, projectTracks, layers,
       await requestMicrophone({ voiceProcessing:(guides.backing || guides.parts.some(Boolean)) ? true : null })
       if(!startingRef.current)return
       inputLevels.current=[]
-      await startRecording({ onFrame: frame => { waveformRef.current=frame.waveform;setInputRms(frame.rms || 0);setLevel(frame.level); setPeak(frame.peak); setSeconds(frame.elapsedSec || 0);inputLevels.current.push(frame.level) }, guides, guideTracks, backingBlob, duration:recordingWindow })
+      await startRecording({ onFrame: frame => { waveformRef.current=frame.waveform;setInputRms(frame.rms || 0);setLevel(frame.level); setPeak(frame.peak); setSeconds(frame.elapsedSec || 0);inputLevels.current.push(frame.level) }, guides, guideTracks, vocalGuideBlob, backingBlob, duration:recordingWindow })
       onRecordingStart?.(); setStatus('recording'); setSeconds(0); timer.current = window.setInterval(() => setSeconds(getRecordingTimeline().elapsedSec), 100)
     } catch (e) { if(!startingRef.current)return;setMicrophoneFailure(audioReady); setPermissionDenied(audioReady&&isMicrophonePermissionError(e)); setError(audioReady?microphoneErrorMessage(e):e.message); setStatus('ready') }
     finally {startingRef.current=false;setRecordingBusy(false)}
@@ -1447,7 +1448,7 @@ function Recorder({ go, submit, onRecordingStart, partId, projectTracks, layers,
       {!project.lyrics?.length&&<p className="lyric-source-note">실제 곡 가사와 반주가 아직 등록되지 않았어요.</p>}
       <div className="recording-lyrics-scene">
       <div className="lyrics" aria-live="polite"><LiveLyricWave active={status==='recording'&&lyricIndex>=0} level={level} waveformRef={waveformRef}/>{visibleLyrics.map((text,index)=><span key={index} className={index===1?'active':''} aria-hidden={!text||undefined}>{text}</span>)}</div>
-      {guideTracks.length>0&&status!=='review'&&<label className="v2-guide-volume"><span><span>가이드 보컬</span><output>{Math.round(guides.vocalVolume*100)}%</output></span><input aria-label="가이드 보컬 볼륨" type="range" min="0" max="100" step="1" value={Math.round(guides.vocalVolume*100)} style={{'--guide-volume':`${guides.vocalVolume*100}%`}} onChange={event=>setGuides({...guides,vocalVolume:Number(event.target.value)/100})}/></label>}
+      {status!=='review'&&<label className="v2-guide-volume"><span><span>가이드 보컬</span><output>{Math.round(guides.vocalVolume*100)}%</output></span><input aria-label="가이드 보컬 볼륨" type="range" min="0" max="100" step="1" value={Math.round(guides.vocalVolume*100)} style={{'--guide-volume':`${guides.vocalVolume*100}%`}} onChange={event=>setGuides({...guides,vocalVolume:Number(event.target.value)/100})}/></label>}
       </div>
       <div className="v2-instrument" data-instrument-state={submitting?'submitting':status} aria-busy={submitting}><div className="recording-timeline v2-instrument-readout" hidden={status==='review'} aria-label="녹음 시간과 입력 상태"><div className="v2-recording-time" data-state={status}><span className="v2-recording-indicator" aria-hidden="true"/><span data-recording-readout>{status==='recording'?'REC':status==='paused'?'일시정지':status==='review'?'확인':'준비'}</span><b>{fmt(seconds)} / {fmt(recordingWindow)}</b></div><div className="meter-row"><span>MIC {inputRms>0?`${Math.max(-96,Math.round(20*Math.log10(inputRms)))} dBFS`:"— dBFS"}</span><b className={peak>.9?'v2-input-clipping':''}>{peak>.9?'CLIP':level>.08?'GOOD':'LOW'}</b></div></div>{noiseFloor>0&&<p className={`noise-status ${noiseFloor>.08?'warning':''}`}>주변 소음 · {noiseFloor>.08?'높음 — Review에서 다시 녹음을 선택할 수 있어요.':'양호'} ({Math.round(noiseFloor*100)}%)</p>}
 
