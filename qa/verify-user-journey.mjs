@@ -163,9 +163,12 @@ try{
  const restored={ieumScreen:'workspace',scrollTop:233}
  await act(async()=>window.dispatchEvent(new window.PopStateEvent('popstate',{state:restored})));await settle()
  assert.equal(state().screen,'workspace');assert.equal(document.querySelector('.screen').scrollTop,233)
+ assert.equal(document.querySelector('[data-nav="folder"]').getAttribute('aria-current'),'page','Workspace always belongs to Projects')
  check('Core navigation keeps project context and popstate restores mobile frame scroll')
- const finderButton=Array.from(document.querySelectorAll('button')).find(button=>button.textContent==='보컬 찾기' && !button.disabled)
+ const finderButton=Array.from(document.querySelectorAll('button')).find(button=>button.getAttribute('aria-label')==='Bass 보컬 찾기' && !button.disabled)
  assert.ok(finderButton)
+ assert.equal(document.querySelectorAll('.v2-part-actions button').length,0,'Compact channels contain Mix toggles only')
+ assert.ok(finderButton.closest('.v2-part-identity'),'OPEN identity keeps vocal finder reachable without an extra action button')
  await act(async()=>finderButton.click());await settle()
  assert.equal(state().screen,'finder')
  const rangeSort=Array.from(document.querySelectorAll('.sort-row button')).find(button=>button.textContent==='음역 적합순')

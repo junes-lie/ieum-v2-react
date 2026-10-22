@@ -78,9 +78,9 @@ export function PartModules({parts,projectTracks,included,onToggle,onPlay,onPart
     const action=partAction?.(part)||{}
     const identity=<><span className={`v2-voice-slot ${part.participant?"":"v2-open-voice-slot"}`} style={{color:part.color}} aria-hidden="true">{part.participant?<ParticipantKnot participantId={part.participantId} name={part.participant}/>:<Icon name="plus" size={22}/>}</span><span className="v2-part-name-role"><strong>{own?'내 파트':part.participant||'OPEN'}</strong><span className="v2-part-role">{part.name}</span></span></>
     return <section className="v2-part-module" key={part.id} data-part={part.id}>
-      {part.participantId&&!own?<button className="v2-part-identity v2-part-person" onClick={()=>onParticipant(part.participantId)} aria-label={part.participant+' 보컬 프로필'}>{identity}</button>:<div className="v2-part-identity">{identity}</div>}
+      {part.participantId&&!own?<button className="v2-part-identity v2-part-person" onClick={()=>onParticipant(part.participantId)} aria-label={part.participant+' 보컬 프로필'}>{identity}</button>:action.action?<button className="v2-part-identity v2-part-person" onClick={action.action} aria-label={part.name+' 보컬 찾기'}>{identity}</button>:<div className="v2-part-identity">{identity}</div>}
       <div className="v2-part-channel"><small>{track?'제출됨':own?(hasDraft?'임시 보관':'녹음 대기'):part.invitationStatus==='sent'?'초대 대기':part.participant?'Track 대기':'모집 중'}</small>
-      <div className="v2-part-actions">{track?<label className="v2-toggle"><input type="checkbox" aria-label={part.name+' 현재 Mix 포함'} checked={Boolean(included[index])} onChange={()=>onToggle(index)}/><i/></label>:!own&&<button className="v2-compact-action secondary" disabled={!action.action} onClick={action.action}><img className="v2-compact-surface" src={action.action?'/artwork/figma-compact-button.svg':'/artwork/figma-vocal-finder-disabled.svg'} width="84" height="40" alt="" aria-hidden="true"/>보컬 찾기</button>}</div></div>
+      <div className="v2-part-actions">{track&&<label className="v2-toggle"><input type="checkbox" aria-label={part.name+' 현재 Mix 포함'} checked={Boolean(included[index])} onChange={()=>onToggle(index)}/><i/></label>}</div></div>
     </section>
   })}</div>
 }

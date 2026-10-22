@@ -58,6 +58,16 @@ if (renamedScripts.length) {
 }
 if (!renamedScripts.length) throw new Error('No rewritten JavaScript bundle; Pages URL check required')
 if (audioValidators !== 1) throw new Error('Project backing URL validator was not adapted exactly once for Pages')
+// Bind the served preview to the exact Actions source, without adding UI or
+// relying on the workflow status alone as proof of what Pages currently serves.
+const commitSha = process.env.GITHUB_SHA
+if (commitSha) {
+  if (!/^[a-f0-9]{40}$/.test(commitSha)) throw new Error('Invalid Pages source commit')
+  await writeFile('dist/build-info.json', JSON.stringify({
+    commitSha,
+    scripts: renamedScripts.map(([, name]) => 'assets/' + name)
+  }, null, 2) + '\n')
+}
 console.log('Pages public asset paths rewritten:', replacements, 'in', files, 'files')
 if (replacements === 0) {
   throw new Error('No public asset paths found; review the build before publishing')
