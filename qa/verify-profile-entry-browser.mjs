@@ -24,6 +24,12 @@ try{
    assert.ok(f)
    await f.waitForFunction(()=>Object.keys(window.__IEUM_V2__?.state?.projectTracks||{}).length===2)
    assert.equal(await f.evaluate(()=>innerWidth),width)
+   const box=await page.locator('.demo-phone').boundingBox()
+   assert.equal(box.width,width,'Every entry retains the selected mobile width')
+   assert.equal(box.height,932,'Both retained widths use the original adaptive mobile height rule')
+   assert.equal(box.x+box.width/2,720,'Frame remains centered in the browser, independent of the menu')
+   assert.equal(box.y+box.height/2,550,'Frame remains vertically centered')
+   assert.equal(await page.evaluate(()=>document.documentElement.scrollHeight<=innerHeight),true,'Presentation does not add outer scrolling')
    assert.equal(await f.evaluate(()=>document.body.scrollWidth<=innerWidth),true)
    assert.equal(await page.locator('.demo-menu').evaluate(n=>n===window.qaMenu),true,'Same outside menu remains mounted')
    return f
