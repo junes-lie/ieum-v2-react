@@ -1,0 +1,58 @@
+name: IEUM GitHub Pages Preview
+
+on:
+  push:
+    branches:
+      - feature/figma-v2-integration
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: ieum-github-pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact commit
+        uses: actions/checkout@v4
+      - name: Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Build for GitHub Pages subpath
+        run: npm run build -- --base=/ieum-v2-react/
+      - name: Adapt public asset paths for Pages
+        run: node scripts/prepare-github-pages.mjs
+      - name: Check Pages artifact
+        run: |
+          test -s dist/index.html
+          test -d dist/assets
+          test -d dist/audio
+          if grep -q 'src="/src/main.jsx"' dist/index.html; then exit 1; fi
+          echo "GitHub Pages build prepared; Vercel configuration untouched"
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
