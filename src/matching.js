@@ -1,3 +1,4 @@
+import {isSupportedVoiceAnalysis} from './voiceAnalysis.js'
 const NOTES = {C:0,D:2,E:4,F:5,G:7,A:9,B:11}
 
 export function noteToMidi(note) {
@@ -64,4 +65,20 @@ export function openProjectRangeAvailability(rangeData, projects) {
     else if(fits.some(fit=>['unavailable','profile-required'].includes(fit.status)) || !project.parts)unverifiedProjects++
   }
   return {matchingProjects,unverifiedProjects}
+}
+
+// Report observable comparisons only; normalized descriptors are not a harmony score.
+export function evaluateProjectHarmony({profile,parts,tracks,selectedPart,currentUserId}) {
+  const own=profile?.sampleFeatures
+  const valid=features=>isSupportedVoiceAnalysis(features)&&['brightness','roughness'].every(key=>Number.isFinite(features[key])&&features[key]>=0&&features[key]<=1)
+  const members=parts.filter(part=>part.participantId||part.participant).filter(part=>part.participantId!==currentUserId)
+  const measured=members.flatMap(part=>valid(tracks[part.id]?.features)?[{part,features:tracks[part.id].features}]:[])
+  const missing=members.filter(part=>!measured.some(row=>row.part.id===part.id))
+  const timbre=!valid(own)
+    ?(profile?.demo?'시연 프로필에는 실제 녹음 분석값이 없어요. Voice Profile 샘플을 직접 등록해 주세요.':'내 Voice Sample의 음색 분석값이 없어요. 샘플을 등록하거나 다시 녹음해 주세요.')
+    :!measured.length?'기존 참여자의 제출 Track 음색 분석값이 없어 비교할 수 없어요.'
+    :measured.map(({part,features})=>`${part.participant||part.name}와 밝기 차이 ${Math.round(Math.abs(own.brightness-features.brightness)*100)}, 거칠기 차이 ${Math.round(Math.abs(own.roughness-features.roughness)*100)}`).join(' · ')+' (0–100 분석 척도 차이 · 적합도 점수 아님)'
+  const preferences=members.flatMap(part=>{const other=tracks[part.id]?.preferences||part.preferences;return other?[{part,shared:sharedVoicePreferences(profile,other)}]:[]})
+  const taste=!preferences.length?'기존 참여자의 선호 장르·음악 취향이 등록되지 않아 비교할 수 없어요.':preferences.map(({part,shared})=>`${part.participant||part.name}: ${[...shared.genres,...shared.taste,...shared.songIds].join(' · ')||'공통으로 등록한 취향 없음'}`).join(' / ')
+  return {status:valid(own)&&measured.length?'compared':'insufficient',compared:measured.length,missing:missing.map(part=>part.participant||part.name),reasons:[['음색',timbre],['역할',selectedPart?`기존 ${members.map(part=>part.name).join(' · ')||'참여자 없음'} 구성에 ${selectedPart.name} 역할을 더해요.`:'OPEN Part를 선택하면 역할 구성을 비교해요.'],['취향',taste]]}
 }

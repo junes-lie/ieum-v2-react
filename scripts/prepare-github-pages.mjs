@@ -10,6 +10,7 @@ const paths = ['audio/', 'artwork/', 'demo-stems/', 'figma/', 'resonance-referen
 const re = new RegExp('(["\\x27\\x60(=])\\/(' + paths.map(p => p.replaceAll('.', '\\.')).join('|') + ')', 'g')
 let files = 0
 let replacements = 0
+let audioValidators = 0
 const renamedScripts = []
 
 async function walk(dir) {
@@ -18,10 +19,20 @@ async function walk(dir) {
     if (item.isDirectory()) { await walk(path); continue }
     if (!['.js', '.css', '.html', '.json'].includes(extname(item.name))) continue
     const before = await readFile(path, 'utf8')
-    const after = before.replace(re, (_match, lead, suffix) => {
+    let after = before.replace(re, (_match, lead, suffix) => {
       replacements++
       return lead + prefix + suffix
     })
+    // The Project contract validates the backing URL before fetching it. Its
+    // anchored regex must follow the same Pages prefix as the rewritten URL.
+    // Keep the exact path/traversal guard; change only this build's base path.
+    if (extname(item.name) === '.js') {
+      const validator = String.raw`/^\/audio\/[\w./-]+$/`
+      if (after.includes(validator)) {
+        after = after.replaceAll(validator, String.raw`/^\/ieum-v2-react\/audio\/[\w./-]+$/`)
+        audioValidators++
+      }
+    }
     if (after !== before) {
       await writeFile(path, after)
       files++
@@ -46,6 +57,7 @@ if (renamedScripts.length) {
   await writeFile('dist/index.html', html)
 }
 if (!renamedScripts.length) throw new Error('No rewritten JavaScript bundle; Pages URL check required')
+if (audioValidators !== 1) throw new Error('Project backing URL validator was not adapted exactly once for Pages')
 console.log('Pages public asset paths rewritten:', replacements, 'in', files, 'files')
 if (replacements === 0) {
   throw new Error('No public asset paths found; review the build before publishing')

@@ -130,7 +130,12 @@ try{
  const originalDelete=IDBObjectStore.prototype.delete
  try {
   IDBObjectStore.prototype.delete=function(key,...args){if(key===draftId)throw new Error('QA cleanup failure');return originalDelete.call(this,key,...args)}
-  await click('[data-action="record-submit"]');await settle()
+  // Node DOM replays an obsolete synthetic entry on back(); native traversal is
+  // covered in the browser suite. Deliver the actual Workspace destination here.
+  const nativeBack=window.history.back
+  window.history.back=()=>{}
+  try{await click('[data-action="record-submit"]');await settle()}finally{window.history.back=nativeBack}
+  await act(async()=>window.dispatchEvent(new window.PopStateEvent('popstate',{state:{ieumScreen:'workspace'}})));await settle()
   assert.equal(state().screen,'workspace');assert.equal(Object.keys(state().projectTracks).length,3)
   assert.equal(await (await loadTrack(draftId)).blob.text(),await blob.text())
   assert.equal(await (await loadTrack(projectId+':tenor')).blob.text(),await blob.text())
@@ -284,6 +289,8 @@ try{
  assert.equal(await loadTrack(legacyDraftId),null)
  assert.equal(await loadTrack(draftId),null)
  await click('.recording-screen .topbar button')
+ // Deliver native Back's Workspace destination in this Node-only harness.
+ await act(async()=>window.dispatchEvent(new window.PopStateEvent('popstate',{state:{ieumScreen:'workspace'}})));await settle()
  await click('[data-action="record-part"]')
  assert.ok(document.querySelector('[data-action="record-start"]'))
  check('Confirmed retake removes the restored legacy draft; re-entry cannot resurrect the discarded Take')

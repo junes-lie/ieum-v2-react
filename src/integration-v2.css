@@ -511,3 +511,31 @@ html,.screen{scroll-padding-block-end:calc(92px + env(safe-area-inset-bottom))}
 .recording-v2-screen .recording-visual:after{content:'';position:absolute;left:0;right:0;bottom:0;height:252px;background:linear-gradient(transparent,rgba(21,17,14,.42) 36%,#15110e);pointer-events:none;z-index:2}
 .home-v2-screen .v2-first-visit-guide{display:flex;flex-direction:column;align-items:stretch;gap:16px;padding:0 24px;margin:0 0 48px}.home-v2-screen .v2-first-visit-guide h2{font:500 24px/30px var(--font-interface);letter-spacing:-.5px;margin:0}.home-v2-screen .v2-first-visit-guide p{font:400 15px/22px var(--font-interface);color:var(--text-secondary);margin:0}.home-v2-screen .v2-onboarding-text-action{align-self:flex-start;background:none;border:0;padding:10px 0;min-height:44px;color:var(--text-primary);font:400 13px/19px var(--font-interface);text-align:left}.home-v2-screen .v2-first-visit-guide .v2-explore-hint{margin-top:8px;font-size:13px;line-height:20px;color:var(--text-primary)}.home-v2-screen .v2-recommended>.v2-onboarding-text-action{margin-bottom:8px}
 .invitation-context .invitation-response-actions{display:flex;flex-direction:column;gap:8px;margin-top:16px}.invitation-context .invitation-response-actions>div{display:flex;align-items:center;gap:16px}.invitation-context .invitation-decline{padding:10px 0;min-height:44px;background:none;border:0;color:var(--text-secondary);font:400 13px/19px var(--font-interface)}
+
+/* Recording is one viewport: scene artwork may overlap; control groups never do. */
+.recording-v2-screen{height:100vh;height:100dvh;min-height:0;display:flex;flex-direction:column;overflow:hidden;padding-bottom:0}
+.recording-v2-screen>.topbar{flex-shrink:0}
+.recording-v2-screen>main,.recording-v2-screen:not([data-recording-status=review])>main{display:flex;flex:1;flex-direction:column;min-height:0;height:auto;padding-top:16px!important;padding-bottom:max(18px,env(safe-area-inset-bottom,0px))!important;overflow:hidden}
+.recording-v2-screen .v2-monitoring{flex-shrink:0}
+.recording-v2-screen .lyrics,.recording-v2-screen:not([data-recording-status=review]) .lyrics,.recording-v2-screen:has(.project-reference) .lyrics{flex-shrink:0;margin:48px 0 0;height:124px;min-height:124px}
+.recording-v2-screen .v2-instrument,.recording-v2-screen:not([data-recording-status=review]) .v2-instrument,.recording-v2-screen[data-recording-status=review] .v2-instrument{flex-shrink:0;position:relative;margin-top:auto;min-height:0;width:100%;padding:16px 24px 12px;z-index:3}
+.recording-v2-screen .project-reference{top:auto;bottom:202px}
+.recording-v2-screen:not([data-recording-status=review]) .recording-visual{top:160px;height:calc(100% - 160px)!important}
+.recording-v2-screen:not([data-recording-status=review]) .recording-visual .record{top:max(180px,calc(100dvh - 552px))}
+.recording-v2-screen[data-recording-status=review] .recording-visual{position:absolute;inset:160px auto auto 0;margin:0 -24px!important;pointer-events:none}
+.recording-v2-screen .v2-take-quality{margin-top:8px}
+.recording-v2-screen .v2-take-quality p{margin-bottom:0}
+.workspace-v2-screen .v2-part-actions>.v2-toggle{position:relative;left:auto;top:auto}
+@media(max-height:780px){
+ .recording-v2-screen .lyrics,.recording-v2-screen:not([data-recording-status=review]) .lyrics,.recording-v2-screen:has(.project-reference) .lyrics{margin-top:24px}
+ .recording-v2-screen .v2-guide-volume{top:240px}
+}
+
+.recording-v2-screen:not([data-recording-status=review]) .v2-monitoring{align-self:stretch}
+.recording-v2-screen[data-recording-status=review] .v2-instrument{padding:0;border:0;background:none}
+.search-v2-project-art{position:relative;display:block;flex-shrink:0;overflow:hidden}
+.search-v2-project-art .search-v2-disc{position:absolute;inset:0;display:block}
+.search-v2-project-art .record{width:92px;height:92px;max-width:none;margin:0}
+.search-v2-project-art.with-sleeve .search-v2-disc{left:20px;top:8px}
+.search-v2-project-art.with-sleeve .record{width:76px;height:76px}
+.search-v2-project-art .search-v2-sleeve{position:absolute;left:0;top:9px;width:72px;height:72px;z-index:1;border:.5px solid var(--line-default);border-radius:2px;box-shadow:2px 2px 4px #0006}

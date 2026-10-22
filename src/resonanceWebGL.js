@@ -388,11 +388,18 @@ void main(){
   gl_FragColor=vec4(colorFor(vPart)*vBrightness*fieldGain*mix(1.55,2.4,uPointMode)*alpha,alpha);
 }`
 
+const materialPaints = new WeakMap()
+
 function drawMaterial(canvas, rotation = 0) {
   const size = canvas.clientWidth
   if (size < 8) return
   const ratio = Math.min(window.devicePixelRatio || 1, 2)
   const pixels = Math.round(size * ratio)
+  // Live input changes the particles, not the vinyl underneath them. Reuse
+  // identical material pixels; rotating surfaces and resized canvases repaint.
+  const previous = materialPaints.get(canvas)
+  if (canvas.width === pixels && canvas.height === pixels &&
+      previous?.pixels === pixels && previous.ratio === ratio && previous.rotation === rotation) return
   if (canvas.width !== pixels || canvas.height !== pixels) {
     canvas.width = pixels
     canvas.height = pixels
@@ -475,6 +482,7 @@ function drawMaterial(canvas, rotation = 0) {
   }
   ctx.beginPath();ctx.arc(center,center,radius*.034,0,Math.PI*2);ctx.fillStyle='#020202';ctx.fill()
   ctx.restore()
+  materialPaints.set(canvas, { pixels, ratio, rotation })
 }
 
 export function createResonanceRenderer({ canvas, materialCanvas, slots, projectSeed, state, activePartIndex, levelRef, reducedMotion, aiFields = [], timeline = {}, voiceStyles = [], counterRotate = false }) {
@@ -636,6 +644,8 @@ export function createResonanceRenderer({ canvas, materialCanvas, slots, project
     wake()
   })
   intersection?.observe(canvas)
+  const restoreMaterial = () => { materialPaints.delete(materialCanvas); wake() }
+  materialCanvas.addEventListener('contextrestored', restoreMaterial)
   document.addEventListener('visibilitychange',wake)
   raf = requestAnimationFrame(draw)
   canvas.dataset.renderer = 'webgl-particles'
@@ -649,6 +659,7 @@ export function createResonanceRenderer({ canvas, materialCanvas, slots, project
       observer.disconnect()
       intersection?.disconnect()
       document.removeEventListener('visibilitychange',wake)
+      materialCanvas.removeEventListener('contextrestored',restoreMaterial)
       cancelAnimationFrame(raf)
       gl.deleteBuffer(buffer)
       textures.forEach(texture=>gl.deleteTexture(texture))

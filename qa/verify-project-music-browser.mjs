@@ -20,6 +20,28 @@ try{
   await context.addInitScript(()=>{
    window.qaStarts=[]
    window.qaRecorderEvents=[]
+   window.qaReviewTransitions=[]
+   window.qaLongTasks=[]
+   window.qaDecodes=[]
+   let lastReviewState=''
+   const inspectReview=()=>{
+    const screen=document.querySelector('[data-recording-status]'),submit=document.querySelector('[data-action="record-submit"]')
+    const status=screen?.dataset.recordingStatus,disabled=submit?.disabled
+    const signature=JSON.stringify([status,Boolean(submit),disabled])
+    if(signature===lastReviewState)return
+    lastReviewState=signature
+    window.qaReviewTransitions.push({wallMs:performance.now(),audioSec:window.__IEUM_V2__?.audioRuntime?.context?.currentTime,status,submit:Boolean(submit),disabled})
+   }
+   new MutationObserver(inspectReview).observe(document,{childList:true,subtree:true,attributes:true,attributeFilter:['data-recording-status','disabled']})
+   if(PerformanceObserver.supportedEntryTypes?.includes('longtask'))new PerformanceObserver(list=>{
+    for(const entry of list.getEntries())window.qaLongTasks.push({start:entry.startTime,duration:entry.duration})
+    if(window.qaLongTasks.length>200)window.qaLongTasks.splice(0,window.qaLongTasks.length-200)
+   }).observe({type:'longtask',buffered:true})
+   const decode=AudioContext.prototype.decodeAudioData
+   AudioContext.prototype.decodeAudioData=function(...args){
+    const entry={start:performance.now(),bytes:args[0]?.byteLength};window.qaDecodes.push(entry)
+    return decode.apply(this,args).then(buffer=>{entry.end=performance.now();entry.duration=buffer.duration;return buffer},error=>{entry.end=performance.now();entry.error=String(error);throw error})
+   }
    const observed=new WeakSet()
    const trace=(recorder,event)=>{
     const rt=window.__IEUM_V2__?.audioRuntime
@@ -78,16 +100,19 @@ try{
    await page.waitForTimeout(450)
    assert.equal(await page.locator('[data-recording-entry]').textContent(),paused)
    await page.locator('[data-action="record-resume"]').click()
-   await page.getByRole('checkbox',{name:'Guide 반주',exact:true}).uncheck()
-   await page.getByRole('checkbox',{name:'Guide 반주',exact:true}).check()
+   assert.equal(await page.getByRole('checkbox',{name:'Guide 반주',exact:true}).count(),0,'Project backing is always provided')
    if(actor==='b'){
     await page.getByRole('slider',{name:'가이드 보컬 볼륨',exact:true}).fill('25')
    }
    await page.waitForFunction(()=>document.querySelector('.lyrics .active')?.textContent==='우리 함께 걸어요',{},{timeout:15000})
    const scheduled=await page.evaluate(()=>window.qaStarts.filter(s=>s.timeline&&s.duration>21.9&&s.at-s.now<.01&&s.timeline.elapsed>0))
-   assert.ok(scheduled.length>=2)
+   assert.ok(scheduled.length>=1,'Resume reschedules the always-on backing; removed toggle no longer adds a second restart')
    for(const s of scheduled){const musical=s.timeline.elapsed+(s.timeline.state==='recording'?s.now-s.timeline.started:0)-s.timeline.sync;assert.ok(Math.abs(s.offset-musical)<.075,'Resume/toggle follows the same musical time without repeated lead-in')}
-   await page.waitForFunction(()=>document.querySelector('.lyrics .active')?.textContent==='작은 노래 모아서',{},{timeout:10000});console.log('CHECK',width,actor,'all 3 lyric cues')
+   await page.waitForFunction(()=>{
+    if(document.querySelector('.lyrics .active')?.textContent!=='작은 노래 모아서')return false
+    window.qaLastLyric={wallMs:performance.now(),audioSec:window.__IEUM_V2__.audioRuntime.context.currentTime}
+    return true
+   },{},{timeout:10000});console.log('CHECK',width,actor,'all 3 lyric cues')
    await page.waitForSelector('[data-action="record-submit"]',{timeout:12000})
    await page.waitForSelector('.record-review audio',{state:'attached'})
    assert.ok((await page.locator('.record-review').textContent()).includes('내 녹음과 반주'))
@@ -128,6 +153,24 @@ try{
   assert.equal(await page.evaluate(()=>Object.keys(window.__IEUM_V2__.state.activeTracks).length),2)
   assert.equal(await page.evaluate(()=>localStorage.getItem('qa:original-user-sentinel')),'preserve')
   assert.equal(await page.evaluate(()=>document.body.scrollWidth<=innerWidth),true)
+  await page.evaluate(()=>{const state={...history.state,ieumScreen:'workspace'};history.pushState(state,'','#workspace');dispatchEvent(new PopStateEvent('popstate',{state}))})
+  await page.waitForSelector('.workspace-v2-screen')
+  const toggles=page.locator('.v2-part-actions input[type=checkbox]')
+  assert.equal(await toggles.count(),2)
+  assert.equal(await page.locator('.v2-part-actions .v2-metal-play').count(),0)
+  await page.locator('[data-action="turntable-play"]:enabled').click()
+  await page.waitForFunction(()=>document.querySelector('#current-mix audio')?.currentTime>.1)
+  const previousSource=await page.locator('#current-mix audio').getAttribute('src')
+  await toggles.first().uncheck()
+  await page.waitForFunction(src=>{const a=document.querySelector('#current-mix audio');return a&&a.src!==src&&a.paused},previousSource)
+  assert.match(await page.locator('.current-mix-head').innerText(),/1개 선택/)
+  await toggles.nth(1).uncheck()
+  await page.waitForFunction(()=>document.querySelector('[data-action="turntable-play"]')?.disabled)
+  await toggles.first().check()
+  await page.locator('[data-action="turntable-play"]:enabled').waitFor()
+  assert.equal(await page.evaluate(()=>Object.keys(window.__IEUM_V2__.state.activeTracks).length),2)
+  assert.equal(await page.evaluate(()=>window.__IEUM_V2__.state.activeMix.blob.size),mix.bytes,'Listening selection preserves the completed Mix')
+  console.log('PASS',width,'selected Track rebuilds native Current Mix, stops old playback, zero selection disables play; originals/final Mix preserved')
   assert.deepEqual(errors,[])
   await writeFile(`${out}/result-${width}.json`,JSON.stringify(mix,null,2))
   console.log('PASS',width,'last Track -> native Auto Mix -> 22s Complete playback, peak ceiling, reload and original-user preservation',JSON.stringify({...mix,inputs:undefined}))
@@ -141,7 +184,7 @@ try{
    const button=document.querySelector('[data-action="record-submit"]')
    const ancestors=[]
    for(let node=button;node&&ancestors.length<6;node=node.parentElement){const style=getComputedStyle(node);ancestors.push({tag:node.tagName,className:node.className,rect:node.getBoundingClientRect().toJSON(),display:style.display,visibility:style.visibility,overflow:style.overflow})}
-   return {screen:window.__IEUM_V2__?.state.screen,status:document.querySelector('[data-recording-status]')?.dataset.recordingStatus,clock:document.querySelector('[data-recording-entry]')?.textContent,errors:[...document.querySelectorAll('.permission-error')].map(n=>n.textContent),recorder:rt?.recorder?.state,elapsed:rt?.activeElapsedSec,sync:rt?.syncOffsetSec,decoded:rt?.decoded?.duration,bytes:rt?.recordingBlob?.size,streamActive:rt?.stream?.active,submit:{present:Boolean(button),disabled:button?.disabled,ancestors},events:window.qaRecorderEvents}
+   return {wallMs:performance.now(),audioSec:rt?.context?.currentTime,lastLyric:window.qaLastLyric,screen:window.__IEUM_V2__?.state.screen,status:document.querySelector('[data-recording-status]')?.dataset.recordingStatus,clock:document.querySelector('[data-recording-entry]')?.textContent,errors:[...document.querySelectorAll('.permission-error')].map(n=>n.textContent),recorder:rt?.recorder?.state,elapsed:rt?.activeElapsedSec,sync:rt?.syncOffsetSec,decoded:rt?.decoded?.duration,bytes:rt?.recordingBlob?.size,streamActive:rt?.stream?.active,submit:{present:Boolean(button),disabled:button?.disabled,ancestors},events:window.qaRecorderEvents,reviewTransitions:window.qaReviewTransitions,longTasks:window.qaLongTasks,decodes:window.qaDecodes}
   })
  }catch(reason){diagnostic.inspectError=String(reason)}
  await writeFile(`${out}/failure-${activeWidth||'startup'}.json`,JSON.stringify(diagnostic,null,2))
