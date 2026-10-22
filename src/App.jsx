@@ -1,7 +1,7 @@
 import navigationArtwork from './navigationArtwork.json' with { type: 'json' }
 import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
-import {demoScenario,demoStorageKey,demoProfile,demoReceivedInvitation,presentationMusic} from './demoSession.js'
-import {WARM_SONG,PRESENTATION_PROJECT,PRESENTATION_VOCAL,musicDemoProject} from './projectMusic.js'
+import {demoScenario,demoStorageKey,demoProfile,demoReceivedInvitation} from './demoSession.js'
+import {WARM_SONG,WARM_ARRANGEMENT,WARM_LYRICS,musicDemoProject} from './projectMusic.js'
 import VoicePreferenceChoices, {preferenceValues} from './VoicePreferenceChoices.jsx'
 import Icon from './Icons.jsx'
 import { ProjectActionButton,HomeView,PartModules,MonitoringModule,ParticipantKnot,MyVoiceIcon,SongArtwork,TurntableFrame,recruitmentPreviewLayers} from './IntegratedViews.jsx'
@@ -73,7 +73,7 @@ const PART_CATALOG = [
   { id: 'tenor', name: 'Tenor', ko: '테너', color: '#d6b895', range: 'C3–G4', participant: null, status: 'open', duration: null },
   { id: 'bass', name: 'Bass', ko: '베이스', color: '#2eb6ad', range: 'E2–C4', participant: null, status: 'recruiting', duration: null }
 ]
-const PROJECT = presentationMusic ? PRESENTATION_PROJECT : createProjectModel({
+const PROJECT = createProjectModel({
   id:'ieum-thousand-years-v7',
   seed:'ieum:thousand-years:original-c:0048',
   partIds:['soprano','alto','tenor','bass'],
@@ -81,14 +81,13 @@ const PROJECT = presentationMusic ? PRESENTATION_PROJECT : createProjectModel({
 })
 const PROJECT_ID = PROJECT.id
 const PROJECT_SEED = PROJECT.seed
-const SONG_ID = presentationMusic ? WARM_SONG.id : 'a-thousand-years'
+const SONG_ID = 'a-thousand-years'
 const PARTS = PROJECT.parts
-const RECORD_PALETTE = [{id:'soprano',color:'#3b82f6'},{id:'alto',color:'#f16f61'},{id:'tenor',color:'#d6b895'},{id:'bass',color:'#2eb6ad'}]
-const USER_PART_ID = presentationMusic ? 'voice-b' : 'tenor'
+const USER_PART_ID = 'tenor'
 
 const SONGS = [
-  { id:'a-thousand-years', title:'A Thousand Years', artist:'Christina Perri', year:'2011', genre:'Pop ballad', duration:'04:45', note:'긴 호흡과 겹겹이 쌓이는 화음이 어울리는 곡이에요.', projects:[
-    { id:'ieum-thousand-years-v7', name:'Original C · Quartet', key:'C major', status:'RECORDING', progress:2, partCount:4, seed:PROJECT_SEED },
+  { id:SONG_ID, title:'오늘 같은 날', artist:'Christina Perri', year:'2011', genre:'Pop ballad', duration:'04:45', note:'긴 호흡과 겹겹이 쌓이는 화음이 어울리는 곡이에요.', projects:[
+    { id:PROJECT_ID, name:'Original C · Quartet', key:'C major', status:'RECORDING', progress:2, partCount:4, seed:PROJECT_SEED },
     { id:'a-thousand-warm-duet', name:'Warm Duet', key:'B♭ major', status:'RECRUITING', progress:1, partCount:2, seed:'ieum:a-thousand:warm-duet', parts:[{id:'vocal-a',name:'Vocal A',color:'#f16f61',participantId:'mina',participant:'Mina',status:'submitted',duration:'03:58'},{id:'vocal-b',name:'Vocal B',color:'#2eb6ad',participant:null,status:'open'}] }
   ]},
   { id:'ocean-eyes', title:'Ocean Eyes', artist:'Billie Eilish', year:'2016', genre:'Dream pop', duration:'03:20', note:'가벼운 호흡과 섬세한 다이내믹을 살펴볼 수 있어요.', projects:[
@@ -102,8 +101,10 @@ const SONGS = [
     { id:'city-of-stars-duet', name:'Night Duet', key:'D minor', status:'RECRUITING', progress:1, partCount:2, seed:'ieum:city-stars:duet', parts:[{id:'vocal-a',name:'Vocal A',color:'#d6b895',participantId:'joon',participant:'Joon',status:'submitted',duration:'02:27'},{id:'vocal-b',name:'Vocal B',color:'#3b82f6',participant:null,status:'open'}] }
   ]}
 ]
-if(presentationMusic)SONGS[0]={...WARM_SONG,projects:[PRESENTATION_PROJECT]}
-else SONGS.unshift(WARM_SONG)
+// Keep the original Song/Project IDs, four Parts and the existing screen routes.
+// The old extra original-song catalogue entry is no longer added.
+const EXISTING_PROJECT_AUDIO={...WARM_ARRANGEMENT,songId:SONG_ID,key:'원키'}
+Object.assign(SONGS[0].projects[0],{songId:SONG_ID,key:'원키',recordingDuration:22,lyrics:WARM_LYRICS,audioSource:EXISTING_PROJECT_AUDIO})
 const CURRENT_USER_NAME = demoScenario?.actorName || 'JISUN'
 const MUSIC_DEMO_PROJECT = musicDemoProject(demoScenario)
 const TOTAL_PARTS = PARTS.length
@@ -479,7 +480,7 @@ function ResonanceRecord({ active = [true, false, true, false], layers = [], par
   useEffect(() => { levelRef.current = level }, [level])
 
   const numericSeed = typeof seed === 'number' ? seed : [...String(seed)].reduce((sum,char,index)=>sum+char.charCodeAt(0)*(index+17),0)
-  const partSlots = resolveRecordPartSlots(parts.map(part=>RECORD_PALETTE.find(palettePart=>palettePart.id===part.id || palettePart.color===part.color)?.id||part.id),RECORD_PALETTE.map(part=>part.id))
+  const partSlots = resolveRecordPartSlots(parts.map(part=>cataloguePreview?(PARTS.find(palettePart=>palettePart.color===part.color)?.id||part.id):part.id),PARTS.map(part=>part.id))
   const recordingSlot = partSlots[activePartIndex] ?? partSlots[0]
   const slots = Array(4).fill(null)
   if (layers.length) layers.forEach((layer,index) => {
@@ -814,7 +815,7 @@ function Detail({ go, back, song, profile, join, layers, projectTracks, songSave
       {!profile&&!receivedInvitation&&openParts.length>0&&(!action||action.id==='voice-setup')?<section className="detail-profile-guide" data-testid="detail-profile-guide" aria-label="목소리 프로필 등록 안내"><h2>내 목소리를 아직 등록하지 않았어요.</h2><p>음역과 목소리 샘플을 등록해요. 약 1–2분 걸려요.</p><ProjectActionButton actionId="voice-setup" onClick={()=>go('voice')} label="내 목소리 알아보기"/><small>{chosen?`${chosen.name} Part를 확인하러 이 프로젝트로 돌아와요.`:'등록 후 이 곡과 프로젝트로 돌아와 빈 Part를 선택해요.'} 탐색과 듣기는 먼저 할 수 있어요.</small></section>:action&&<div className="detail-project-action"><ProjectActionButton actionId={action.id} onClick={action.click} label={action.label}/></div>}
       {chosen&&['open','recruiting'].includes(chosen.status)&&<section className="fit-panel detail-fit" data-testid="part-fit"><div className="detail-fit-heading"><h2>이 파트를 부를 수 있나요?</h2><span>음역 적합 <b>{profile?(fit.requiredRange?'참고 비교':'정보 부족'):'등록 필요'}</b></span></div><DetailRangeComparison part={chosen} profile={profile}/><p>{profile?fit.reasons.join(' '):'음역과 목소리 샘플을 등록해요. 약 1–2분 걸려요.'}</p><small>음역 비교는 참고 정보예요. 요구 음역을 벗어나도 참여할 수 있어요.</small></section>}
       {profile&&<section className="detail-harmony"><h2>내 목소리가 더해지면</h2><figure><img src="/artwork/figma-detail-harmony.png" width="382" height="130" alt="목소리가 프로젝트에 연결되는 공명 일러스트"/><figcaption><span>나의 목소리{chosen?` · ${chosen.name}`:''}</span><span>프로젝트 하모니 · {members.map(part=>part.name).join(' + ')||'참여 대기'}</span></figcaption><small>결합 방식 예시 · 개인 분석 결과가 아니에요.</small></figure><div className="detail-harmony-summary"><p>{chosen?`${members.length}명의 목소리에 ${chosen.name}를 더해요.`:'함께할 목소리의 조화를 확인해요.'}</p><span>참여 후 예상 조화 <b>{harmony.status==='compared'?`${harmony.compared}명 음색 비교`:'비교 데이터 부족'}</b></span></div><div className="detail-match-reasons">{harmony.reasons.map(([label,reason])=><div key={label}><span>{label}</span><span className="detail-metric-track" aria-hidden="true"/><small>—</small><p>{reason}</p></div>)}</div></section>}
-      <div className="detail-secondary"><p className="demo-disclosure">{isLiveProject?(presentationMusic?'원곡 보컬은 기존 AI 제작곡의 보컬 시연 Track입니다. 실제 사용자의 제출 Track이 아닙니다.':`${demoNames||'현재 없음'}: 실제 제출된 녹음만 표시합니다.`):isCreatedProject?'이 브라우저에 저장된 내 프로젝트입니다. 실제 서버 협업 연결은 아직 완료되지 않았습니다.':selectedProject.audioSource?'IEUM Originals · 실제 반주와 가사가 등록된 22초 유니즌 시연곡입니다.':'탐색용 Project 데이터입니다. 녹음 시연은 오늘 같은 날 프로젝트에서 제공합니다.'}</p></div>
+      <div className="detail-secondary"><p className="demo-disclosure">{isLiveProject?`${demoNames||'현재 없음'}: 흐름 검증용 로컬 합성 Stem입니다. 실제 사람의 보컬 Track이나 실제 협업 결과가 아닙니다.`:isCreatedProject?'이 브라우저에 저장된 내 프로젝트입니다. 실제 서버 협업 연결은 아직 완료되지 않았습니다.':selectedProject.audioSource?'IEUM Originals · 실제 반주와 가사가 등록된 22초 유니즌 시연곡입니다.':'탐색용 Project 데이터입니다. 녹음 시연은 Original C · Quartet에서 제공합니다.'}</p></div>
     </main>
 
   </div>
@@ -1444,8 +1445,10 @@ function Recorder({ go, submit, onRecordingStart, partId, projectTracks, layers,
       {status==='ready'&&project.audioSource?.referenceFile&&<section className="project-reference" aria-label="멜로디 미리듣기"><Player source={project.audioSource.referenceFile} durationHint={project.audioSource.duration} playing={referencePlaying} setPlaying={setReferencePlaying} figma caption="멜로디 미리듣기 · 먼저 들어보세요"/></section>}
       <div className="recording-visual"><img className="v2-recording-thread-art" src="/artwork/figma-recording-thread.png" width="430" height="700" alt="" aria-hidden="true"/><ResonanceRecord recordRef={project.voiceRecordRef} parts={parts} tracks={finalTracks} projectId={project.id} layers={status==='review'?reviewLayers:finalLayers} activePartIndex={currentIndex} state={status === 'recording' ? 'recording' : status==='paused'?'paused':'rest'} level={level} seed={project.seed} compact /><RecordingInflow active={status==='recording'} partIndex={0} level={level} seed={project.seed} waveformRef={waveformRef}/></div>
       {!project.lyrics?.length&&<p className="lyric-source-note">실제 곡 가사와 반주가 아직 등록되지 않았어요.</p>}
+      <div className="recording-lyrics-scene">
       <div className="lyrics" aria-live="polite"><LiveLyricWave active={status==='recording'&&lyricIndex>=0} level={level} waveformRef={waveformRef}/>{visibleLyrics.map((text,index)=><span key={index} className={index===1?'active':''} aria-hidden={!text||undefined}>{text}</span>)}</div>
       {guideTracks.length>0&&status!=='review'&&<label className="v2-guide-volume"><span><span>가이드 보컬</span><output>{Math.round(guides.vocalVolume*100)}%</output></span><input aria-label="가이드 보컬 볼륨" type="range" min="0" max="100" step="1" value={Math.round(guides.vocalVolume*100)} style={{'--guide-volume':`${guides.vocalVolume*100}%`}} onChange={event=>setGuides({...guides,vocalVolume:Number(event.target.value)/100})}/></label>}
+      </div>
       <div className="v2-instrument" data-instrument-state={submitting?'submitting':status} aria-busy={submitting}><div className="recording-timeline v2-instrument-readout" hidden={status==='review'} aria-label="녹음 시간과 입력 상태"><div className="v2-recording-time" data-state={status}><span className="v2-recording-indicator" aria-hidden="true"/><span data-recording-readout>{status==='recording'?'REC':status==='paused'?'일시정지':status==='review'?'확인':'준비'}</span><b>{fmt(seconds)} / {fmt(recordingWindow)}</b></div><div className="meter-row"><span>MIC {inputRms>0?`${Math.max(-96,Math.round(20*Math.log10(inputRms)))} dBFS`:"— dBFS"}</span><b className={peak>.9?'v2-input-clipping':''}>{peak>.9?'CLIP':level>.08?'GOOD':'LOW'}</b></div></div>{noiseFloor>0&&<p className={`noise-status ${noiseFloor>.08?'warning':''}`}>주변 소음 · {noiseFloor>.08?'높음 — Review에서 다시 녹음을 선택할 수 있어요.':'양호'} ({Math.round(noiseFloor*100)}%)</p>}
 
       {error && (microphoneFailure&&status!=='review'?<MicrophonePermissionNotice error={error} onRetry={begin} permissionDenied={permissionDenied}/>:<div className="permission-error" role="alert"><span>{error}</span>{restoreState==='error'&&<button className="secondary" data-action="draft-restore-retry" onClick={()=>{setRestoreState('loading');setRestoreAttempt(value=>value+1)}}>저장한 녹음 다시 불러오기</button>}</div>)}
@@ -1529,7 +1532,7 @@ function CurrentMixPanel({ parts, projectTracks, project, mix, mixStatus, retryA
   const chooseTrack=id=>{setPlaying(false);setSelectedTrackId(id);window.setTimeout(()=>setPlaying(true),0)}
   if(detailMode)return <section className="detail-listening" aria-label="현재 Mix와 Track">
     <div className="detail-mix"><p>현재 MIX 듣기</p><Player figma splitTimeline metalControl source={selectedTrack?.url||preview?.url} durationHint={selectedTrack?.duration||preview?.duration} playing={playing} setPlaying={setPlaying}/>{selectedTrack&&<span className="listening-context"><button className="detail-mix-return" onClick={()=>{setPlaying(false);setSelectedTrackId(null)}}>현재 Mix로</button></span>}{!trackArray.length&&<small>아직 제출된 녹음이 없어요.</small>}{trackArray.length>0&&!selectedTracks.length&&!selectedTrack&&<small>들을 트랙을 하나 이상 선택해 주세요.</small>}</div>
-    <div className="detail-people"><p>참여한 멤버 {rows.filter(part=>part.participant).length}명</p><div className="detail-member-list">{rows.filter(part=>part.participant).map(part=><div key={part.id} className="detail-member" data-part={part.id}><button className="detail-member-name" disabled={!part.participantId||part.participantId===CURRENT_USER_ID||part.participantId==='provided-vocal'} onClick={()=>openVocalProfile(part.participantId)}><span className="detail-member-mark" style={{color:part.color}}><ParticipantKnot participantId={part.participantId} name={part.participant}/></span><span><strong>{part.participant}</strong><small>{part.name}</small>{projectTracks[part.id]&&<small>{fmt(projectTracks[part.id].duration)}</small>}</span></button></div>)}</div></div>
+    <div className="detail-people"><p>참여한 멤버 {rows.filter(part=>part.participant).length}명</p><div className="detail-member-list">{rows.filter(part=>part.participant).map(part=><div key={part.id} className="detail-member" data-part={part.id}><button className="detail-member-name" disabled={!part.participantId||part.participantId===CURRENT_USER_ID} onClick={()=>openVocalProfile(part.participantId)}><span className="detail-member-mark" style={{color:part.color}}><ParticipantKnot participantId={part.participantId} name={part.participant}/></span><span><strong>{part.participant}</strong><small>{part.name}</small>{projectTracks[part.id]&&<small>{fmt(projectTracks[part.id].duration)}</small>}</span></button></div>)}</div></div>
     <div className="detail-open-parts"><p>모집 중인 파트</p><div>{rows.filter(part=>!part.participant&&['open','recruiting','ready'].includes(part.status)).map(part=>{const action=partAction?.(part)||{};return <div data-part={part.id} key={part.id}><button className={`row-action ${action.label==='선택됨'?'active':''}`} disabled={!action.action} aria-pressed={action.label==='선택됨'} onClick={action.action}><Icon name="plus" size={12}/><span>{part.name}</span></button></div>})}</div></div>
     {previewError&&<p role="alert">{previewError}</p>}
   </section>
@@ -1599,11 +1602,11 @@ function Complete({ go, back, publicResult, mix, layers, projectTracks, project 
     <TopBar figmaHeader title="완성곡" back={back||(() => go('workspace'))} meta={publicResult?'IEUM ORIGINALS · 시연 음원':`${String(project.parts.length).padStart(2,'0')}/${String(project.parts.length).padStart(2,'0')} · COMPLETE`} />
     <main>
       <div className="complete-title"><h1 data-title-language={/[가-힣]/.test(song?.title || '함께 완성한 곡')?"kr":"en"}>{song?.title || '함께 완성한 곡'}</h1><p>{project.name}</p><span className="complete-badge">{publicResult?'시연 완성곡':'완성'}</span></div>
-      <div className="complete-record"><ResonanceRecord recordRef={project.voiceRecordRef} parts={project.parts} tracks={projectTracks} projectId={project.id} layers={layers} state={playing?'playing':'complete'} seed={project.seed}/><div className="record-center-credits" style={{backgroundImage:`url("${figmaAssets.imgArtworkCenterLabelCleanCrop}")`}} aria-label="함께한 목소리"><span>CREDITS</span>{publicResult?<div><strong>IEUM Originals</strong><small>시연 음원 · 예시 그래픽</small></div>:<div>{project.parts.map(part=>{const track=projectTracks[part.id];const personId=track?.participantId;return <button key={part.id} disabled={!personId||personId===CURRENT_USER_ID||personId==='provided-vocal'} onClick={()=>openVocalProfile(personId)}><small style={{color:part.color}}>{part.name}</small><strong>{track?.participant || '—'}</strong></button>})}</div>}<small>{project.key || 'C major'}</small><time dateTime={validCompletionDate?completedAt.toISOString():undefined}>{completionDate}</time></div></div>
+      <div className="complete-record"><ResonanceRecord recordRef={project.voiceRecordRef} parts={project.parts} tracks={projectTracks} projectId={project.id} layers={layers} state={playing?'playing':'complete'} seed={project.seed}/><div className="record-center-credits" style={{backgroundImage:`url("${figmaAssets.imgArtworkCenterLabelCleanCrop}")`}} aria-label="함께한 목소리"><span>CREDITS</span>{publicResult?<div><strong>IEUM Originals</strong><small>시연 음원 · 예시 그래픽</small></div>:<div>{project.parts.map(part=>{const track=projectTracks[part.id];const personId=track?.participantId;return <button key={part.id} disabled={!personId||personId===CURRENT_USER_ID} onClick={()=>openVocalProfile(personId)}><small style={{color:part.color}}>{part.name}</small><strong>{track?.participant || '—'}</strong></button>})}</div>}<small>{project.key || 'C major'}</small><time dateTime={validCompletionDate?completedAt.toISOString():undefined}>{completionDate}</time></div></div>
       <Player figma source={mix?.url} durationHint={mix?.duration} playing={playing} setPlaying={setPlaying}/>
       <p className="final-player-label">{hasPlayed?'다시 재생':'완성곡 재생'}</p>
 
-      <p className="demo-disclosure">{publicResult?publicResult.disclosure:project.audioSource?(project.id===PRESENTATION_PROJECT.id?'기존 AI 원곡의 보컬 예시에 내 녹음을 더한 시연곡입니다.':project.demo?'같은 기기의 시연 A/B가 직접 녹음한 유니즌과 AI 원곡의 반주입니다.':'직접 제출한 마이크 녹음과 등록된 원곡 반주입니다.'):'Credits의 LOCAL DEMO 표시는 흐름 검증용 합성 Stem이며 실제 참여자의 사람 녹음이 아님을 뜻합니다.'}</p>
+      <p className="demo-disclosure">{publicResult?publicResult.disclosure:project.audioSource?(project.demo?'같은 기기의 시연 A/B가 직접 녹음한 유니즌과 AI 원곡의 반주입니다.':'직접 제출한 마이크 녹음과 등록된 원곡 반주입니다.'):'Credits의 LOCAL DEMO 표시는 흐름 검증용 합성 Stem이며 실제 참여자의 사람 녹음이 아님을 뜻합니다.'}</p>
       {!publicResult&&<p className="ai-boundary">현재 Record는 제출 Track 특징 기반 시각화이며, 생성형 AI 서비스는 아직 연결되지 않았어요.</p>}
       <div className="complete-actions"><button className="secondary" aria-pressed={projectLiked} data-action="toggle-project-like" onClick={toggleProjectLike}><img src={figmaAssets.imgFaFaHeart} alt="" aria-hidden="true"/>{projectLiked?'마음에 들어요 · 저장됨':'마음에 들어요'}</button><button className="secondary" data-action="share" onClick={share}><img src={figmaAssets.imgFaFaLink} alt="" aria-hidden="true"/>링크 공유</button><button className="primary" onClick={()=>go(publicResult?'home':'projects')}>{publicResult?'완성곡 둘러보기':'내 프로젝트'}</button></div>
       {shareState==='unavailable'&&<p className="share-result" role="status">이 완성곡은 현재 기기에 저장되어 있어요. 서버 연결 후 결과 링크를 공유할 수 있습니다.</p>}{shareState==='done'&&<p className="share-result" role="status">공유 또는 링크 복사를 완료했어요.</p>}{shareState==='error'&&<p className="share-result error" role="alert">이 브라우저에서는 공유를 열 수 없어요.</p>}
@@ -1650,7 +1653,7 @@ function CollectionArea({ openComplete, mainProject = PROJECT, collectionContext
     <div className="object-tabs" role="tablist" aria-label="컬렉션 종류">
       {[['projects','프로젝트'],['vocals','보컬'],['songs','곡']].map(([value,label])=><button key={value} role="tab" aria-selected={tab===value} className={tab===value?'active':''} data-action={`collection-tab-${value}`} onClick={()=>selectTab(value)}>{label}<small>{counts[value]}</small></button>)}
     </div>
-    {tab==='projects' && projectLiked && <article className="collection-card" data-project-id={PROJECT_ID}><button className="collection-cover" aria-label={`${SONGS.find(song=>song.id===SONG_ID)?.title} 프로젝트 열기`} onClick={()=>mix||joined?openMainWorkspace(mix?'complete':'workspace'):openSong(SONG_ID)}><ResonanceRecord recordRef={mainProject.voiceRecordRef} projectId={mainProject.id} parts={mainProject.parts} seed={mainProject.seed} layers={layers} compact/></button><div className="collection-copy"><div className="collection-card-head"><span>{mix?'COMPLETE':readyForMix?'MIXING':joined?'RECORDING':'RECRUITING'} · {String(trackCount).padStart(2,'0')}/{String(mainProject.parts.length).padStart(2,'0')}</span><button className="collection-remove active" aria-label="프로젝트 Like 취소" onClick={toggleProjectLike}><Icon name="heart" size={17}/></button></div><h2>{SONGS.find(song=>song.id===SONG_ID)?.title}</h2><p>{mix?'완성곡과 Credits 보기':joined?'참여 중인 프로젝트':'관심 프로젝트'}</p><button className="primary" data-action="open-project-like" onClick={()=>mix||joined?openMainWorkspace(mix?'complete':'workspace'):openSong(SONG_ID)}>프로젝트 열기</button></div></article>}
+    {tab==='projects' && projectLiked && <article className="collection-card" data-project-id={PROJECT_ID}><button className="collection-cover" aria-label="오늘 같은 날 프로젝트 열기" onClick={()=>mix||joined?openMainWorkspace(mix?'complete':'workspace'):openSong(SONG_ID)}><ResonanceRecord recordRef={mainProject.voiceRecordRef} projectId={mainProject.id} parts={mainProject.parts} seed={mainProject.seed} layers={layers} compact/></button><div className="collection-copy"><div className="collection-card-head"><span>{mix?'COMPLETE':readyForMix?'MIXING':joined?'RECORDING':'RECRUITING'} · {String(trackCount).padStart(2,'0')}/04</span><button className="collection-remove active" aria-label="프로젝트 Like 취소" onClick={toggleProjectLike}><Icon name="heart" size={17}/></button></div><h2>오늘 같은 날</h2><p>{mix?'완성곡과 Credits 보기':joined?'참여 중인 프로젝트':'관심 프로젝트'}</p><button className="primary" data-action="open-project-like" onClick={()=>mix||joined?openMainWorkspace(mix?'complete':'workspace'):openSong(SONG_ID)}>프로젝트 열기</button></div></article>}
     {tab==='projects'&&savedProjects.map(project=><article className="collection-card" key={project.id}><button className="collection-cover" onClick={()=>openCreatedProject(project.id)} aria-label={project.title+' 프로젝트 열기'}><ResonanceRecord recordRef={project.voiceRecordRef} projectId={project.id} parts={project.parts} layers={project.parts.map(part=>submittedProjectTracks(project,createdProjectTracks[project.id] || {}).find(track=>track.partId===part.id)?.layer || null)} seed={project.seed} compact/></button><div className="collection-copy"><div className="collection-card-head"><span>{localProjectLifecycle(project,createdProjectTracks[project.id] || {},createdMixes[project.id])} · {submittedProjectTracks(project,createdProjectTracks[project.id] || {}).length}/{project.partCount}</span><button className="collection-remove active" aria-label={project.title+' Like 취소'} onClick={()=>toggleProjectById(project.id)}><Icon name="heart" size={17}/></button></div><h2>{project.title}</h2><p>{project.name}</p><button className="primary" onClick={()=>openCreatedProject(project.id)}>프로젝트 열기</button></div></article>)}
     {tab==='projects'&&PUBLIC_COMPLETIONS.filter(entry=>projectLikes.some(saved=>saved.projectId===entry.project.id)).map(entry=><article className="collection-card" key={entry.project.id} data-project-id={entry.project.id}><SongArtwork song={entry.song} className="search-v2-record"/><div className="collection-copy"><h2>{entry.song.title}</h2><p>IEUM Originals · 시연 완성곡</p><button className="primary" onClick={()=>openComplete(entry.project.id)}>완성곡 듣기</button><button className="secondary" onClick={()=>toggleProjectById(entry.project.id)}>저장 해제</button></div></article>)}
     {tab==='vocals' && savedVocals.map(vocal=><article className="vocal-collection-row" key={vocal.id}><button className="vocal-collection-open" onClick={()=>openVocalProfile(vocal.id)}><VoiceIdentity identity={vocal.identity}/><span><strong>{vocal.name}</strong><small>{vocal.range} · {vocal.role}</small><em>{(vocal.genres||[]).join(' · ')}</em></span></button><button className="collection-remove active" aria-label={`${vocal.name} 보컬 저장 취소`} onClick={()=>toggleVocalSave(vocal.id)}><Icon name="star" size={17}/></button></article>)}
@@ -1688,7 +1691,7 @@ function PersonalArea({ receivedInvitations = [], openReceivedInvitation, openCo
   const projectFilterEmpty=hasProject&&!(joined&&projectVisible)&&filteredCreatedProjects.length===0&&pendingInvitations.length===0
   const projectLiked = projectLikes.some(item=>item.projectId===PROJECT_ID)
   return <div className="screen figma-v2 ds-v2-screen simple-screen"><TopBar meta="IEUM" back={type==='my'?back:undefined} action={type!=='my'?<Icon name="user"/>:undefined} actionLabel="마이보이스 열기" actionId="open-my-voice" onAction={openMyVoice}/><main><p className="kicker">Personal area</p><h1>{titles[type]}</h1>
-    {type==='projects' && <>{pendingInvitations.map(invitation=><section className="saved-card received-invitation-card" key={invitation.id}><div><p className="kicker">초대됨{invitation.demo?' · 시연 예시':''}</p><strong>{invitation.songTitle}</strong><p>{invitation.senderName} · {invitation.projectName} · {invitation.partName}</p><button className="secondary" data-action="open-received-invitation" onClick={()=>openReceivedInvitation(invitation.id)}>초대 확인</button></div></section>)}<div className="object-tabs project-tabs" aria-label="프로젝트 상태 필터">{[['all','전체'],['recruiting','모집'],['recording','녹음'],['mixing','믹싱'],['complete','완성']].map(([value,label])=><button key={value} className={projectFilter===value?'active':''} aria-pressed={projectFilter===value} onClick={()=>setProjectFilter(value)}>{label}</button>)}</div>{joined && projectVisible && <section className="saved-card"><ResonanceRecord recordRef={mainProject.voiceRecordRef} projectId={mainProject.id} parts={mainProject.parts} seed={mainProject.seed} layers={layers} compact/><div>{delayedProjectIds.includes(PROJECT_ID)&&<span className="completion-delay-badge">녹음 필요 · 7일</span>}<div className="saved-card-title"><strong>{SONGS.find(song=>song.id===SONG_ID)?.title}</strong><button className={projectLiked?'active':''} aria-label={projectLiked?'프로젝트 Like 취소':'프로젝트 Like'} onClick={toggleProjectLike}><Icon name="heart" size={18}/></button></div><p>{trackCount}/{mainProject.parts.length} Tracks · {lifecycle.toUpperCase()}</p><button className="secondary" data-action="resume-project" onClick={()=>openMainWorkspace(mix?'complete':readyForMix?'multitrack':'workspace')}>{mix?'완성곡 열기':readyForMix?'믹싱 확인':'작업실 계속하기'}</button></div></section>}{filteredCreatedProjects.map(project=><section className="saved-card created-project-card" key={project.id}><div className="empty-record-mark"><span>{String(submittedProjectTracks(project,createdProjectTracks[project.id] || {}).length).padStart(2,'0')}</span><small>/{String(project.partCount).padStart(2,'0')}</small></div><div>{delayedProjectIds.includes(project.id)&&<span className="completion-delay-badge">녹음 필요 · 7일</span>}<div className="saved-card-title"><strong>{project.title}</strong></div><p>{project.name} · {createdLifecycle(project).toUpperCase()}</p><button className="secondary" data-action="open-created-project" onClick={()=>openCreatedProject(project.id)}>{createdLifecycle(project)==='complete'?'완성곡 열기':'작업실 열기'}</button></div></section>)}{!hasProject && <section className="empty-state"><p>참여하거나 만든 프로젝트가 아직 없어요.</p><button className="primary" data-action="browse-open-projects" onClick={()=>go('home')}>OPEN Part 찾기</button><button className="secondary" onClick={()=>go('create-project')}>새 프로젝트 만들기</button></section>}</>}
+    {type==='projects' && <>{pendingInvitations.map(invitation=><section className="saved-card received-invitation-card" key={invitation.id}><div><p className="kicker">초대됨{invitation.demo?' · 시연 예시':''}</p><strong>{invitation.songTitle}</strong><p>{invitation.senderName} · {invitation.projectName} · {invitation.partName}</p><button className="secondary" data-action="open-received-invitation" onClick={()=>openReceivedInvitation(invitation.id)}>초대 확인</button></div></section>)}<div className="object-tabs project-tabs" aria-label="프로젝트 상태 필터">{[['all','전체'],['recruiting','모집'],['recording','녹음'],['mixing','믹싱'],['complete','완성']].map(([value,label])=><button key={value} className={projectFilter===value?'active':''} aria-pressed={projectFilter===value} onClick={()=>setProjectFilter(value)}>{label}</button>)}</div>{joined && projectVisible && <section className="saved-card"><ResonanceRecord recordRef={mainProject.voiceRecordRef} projectId={mainProject.id} parts={mainProject.parts} seed={mainProject.seed} layers={layers} compact/><div>{delayedProjectIds.includes(PROJECT_ID)&&<span className="completion-delay-badge">녹음 필요 · 7일</span>}<div className="saved-card-title"><strong>오늘 같은 날</strong><button className={projectLiked?'active':''} aria-label={projectLiked?'프로젝트 Like 취소':'프로젝트 Like'} onClick={toggleProjectLike}><Icon name="heart" size={18}/></button></div><p>{trackCount}/4 Tracks · {lifecycle.toUpperCase()}</p><button className="secondary" data-action="resume-project" onClick={()=>openMainWorkspace(mix?'complete':readyForMix?'multitrack':'workspace')}>{mix?'완성곡 열기':readyForMix?'믹싱 확인':'작업실 계속하기'}</button></div></section>}{filteredCreatedProjects.map(project=><section className="saved-card created-project-card" key={project.id}><div className="empty-record-mark"><span>{String(submittedProjectTracks(project,createdProjectTracks[project.id] || {}).length).padStart(2,'0')}</span><small>/{String(project.partCount).padStart(2,'0')}</small></div><div>{delayedProjectIds.includes(project.id)&&<span className="completion-delay-badge">녹음 필요 · 7일</span>}<div className="saved-card-title"><strong>{project.title}</strong></div><p>{project.name} · {createdLifecycle(project).toUpperCase()}</p><button className="secondary" data-action="open-created-project" onClick={()=>openCreatedProject(project.id)}>{createdLifecycle(project)==='complete'?'완성곡 열기':'작업실 열기'}</button></div></section>)}{!hasProject && <section className="empty-state"><p>참여하거나 만든 프로젝트가 아직 없어요.</p><button className="primary" data-action="browse-open-projects" onClick={()=>go('home')}>OPEN Part 찾기</button><button className="secondary" onClick={()=>go('create-project')}>새 프로젝트 만들기</button></section>}</>}
     {type==='projects'&&projectFilterEmpty&&<section className="empty-state"><p>이 상태의 프로젝트가 없어요.</p><button className="secondary" data-action="reset-project-filter" onClick={()=>setProjectFilter('all')}>필터 초기화</button></section>}
     {type==='collection' && <CollectionArea openComplete={openComplete} mainProject={mainProject} collectionContext={collectionContext} go={go} openMainWorkspace={openMainWorkspace} openSong={openSong} createdProjects={createdProjects} createdProjectTracks={createdProjectTracks} createdMixes={createdMixes} openCreatedProject={openCreatedProject} toggleProjectById={toggleProjectById} projectLikes={projectLikes} vocalSaves={vocalSaves} songSaves={songSaves} toggleProjectLike={toggleProjectLike} toggleVocalSave={toggleVocalSave} toggleSongSave={toggleSongSave} openVocalProfile={openVocalProfile} layers={layers} trackCount={trackCount} mix={mix} joined={joined} readyForMix={readyForMix}/>}
     {type==='my' && <>{profile ? <><section className="profile-card"><VoiceIdentity identity={profile.identity} suppliedPreview/><div><p className="kicker">Voice profile</p><h2>{profile.name} · {profile.range}</h2><p>{profile.voiceType || "음색 분석 대기"}<br/>Voice Identity 생성형 AI는 미검증</p>{profile.sampleUrl && <ProfileSamplePlayer source={profile.sampleUrl} duration={profile.sampleDuration}/>}</div></section><ProfilePreferences profile={profile} save={updatePreferences} songSaves={songSaves}/><section className="my-voice-details"><div><span>Voice Range</span><b>{profile.range}</b><button onClick={()=>editVoice("range")}>다시 측정</button></div><div><span>Voice Sample</span><b>{profile.sampleSong}</b><button onClick={()=>editVoice("sample")}>다시 등록</button></div><div><span>선호 역할</span><b>{profile.roles?.join(' · ') || '아직 선택하지 않았어요.'}</b></div><div><span>장르</span><b>{profile.genres?.join(' · ') || '아직 선택하지 않았어요.'}</b></div><div><span>음악 취향</span><b>{SONGS.filter(song=>profile.preferredSongIds?.includes(song.id)).map(song=>song.title).join(' · ') || profile.taste?.join(' · ') || '아직 선택하지 않았어요.'}</b></div><div><span>Voice Identity</span><b>무료·로컬 생성 모델 미연결</b><button disabled>대기</button></div></section></> : <section className="empty-state"><p>등록된 Voice Profile이 없어요.</p><button className="primary" onClick={()=>go('voice')}>내 목소리 알아보기</button></section>}<section className="demo-reset"><div><strong>처음부터 다시 검증하기</strong><p>내 Voice Profile, 참여·초대 상태와 녹음을 초기화합니다. 기존 합성 시연 Track은 사용하지 않습니다.</p></div><button className="secondary" data-action="reset-demo" onClick={resetDemo}>시연 상태 초기화</button></section></>}
@@ -1741,7 +1744,7 @@ export default function App() {
   const [stateSaveError,setStateSaveError] = useState(false)
   const [stateSaveAttempt,setStateSaveAttempt] = useState(0)
   const [mainKeyLocked,setMainKeyLocked]=useState(Boolean(persisted.mainKeyLocked))
-  const [joinedPart,setJoinedPart]=useState(PARTS.some(part=>part.id===persisted.joinedPart)?persisted.joinedPart:USER_PART_ID)
+  const [joinedPart,setJoinedPart]=useState(persisted.joinedPart || USER_PART_ID)
   const [recordingPart,setRecordingPart] = useState(demoScenario?.musicPartId || USER_PART_ID)
   const [selectedVocalId,setSelectedVocalId] = useState(()=>initialVocalProfileId(window.history?.state))
   const [selectedMatchVocalId,setSelectedMatchVocalId] = useState(null)
@@ -1778,7 +1781,7 @@ export default function App() {
   const invitedPerson = PERSON_BY_ID[invitedVocalId] || PERSON_BY_ID.luna
   const selectedVocalTrack = Object.values(projectTracks).find(track => (track.participantId || personFromName(track.participant)?.id) === selectedVocalId)
   const activeCreatedProject = createdProjects.find(project=>project.id===activeCreatedProjectId) || null
-  const mainProject = {...PROJECT,...SONGS.find(song=>song.id===SONG_ID)?.projects.find(project=>project.id===PROJECT_ID)}
+  const mainProject = {...PROJECT,...SONGS[0].projects.find(project=>project.id===PROJECT_ID)}
   const activeProject = activeCreatedProject || mainProject
   const activeSong = SONGS.find(song=>song.id===(activeCreatedProject?.songId || SONG_ID)) || SONGS[0]
   const activeParts = activeProject.parts || PARTS
@@ -1912,7 +1915,7 @@ export default function App() {
     setRecordingPart(partId); go('record')
   }
   const submit = async (draft,part) => {
-    const targetProject = activeCreatedProject || PROJECT
+    const targetProject = activeCreatedProject || mainProject
     const targetParts = targetProject.parts || PARTS
     if (!draft?.blob || part?.id !== recordingPart) throw new Error('제출할 녹음 원본을 찾지 못했어요.')
     if (activeCreatedProject ? part.id!==activeCreatedProject.ownerPartId : (!joined || part.id!==joinedPart)) throw new Error('내가 맡은 Part만 제출할 수 있어요.')
@@ -2059,12 +2062,11 @@ export default function App() {
       try {
         const prepared = await prepareProjectMix(PROJECT,projectTracks)
         if(cancelled)return
-        assertProjectTrackAudio(PROJECT,prepared.tracks)
-        const backingBlob=await loadProjectBacking(PROJECT)
-        const value = await createAutoMix({ tracks:prepared.tracks, backingBlob, timelineDuration:PROJECT.audioSource?.duration, duration:Math.max(PROJECT.recordingDuration||0,...prepared.tracks.map(track=>track.duration||0)), onProgress:value=>!cancelled&&setMixProgress(value) })
+        const backingBlob=await loadProjectBacking(mainProject)
+        const value = await createAutoMix({ tracks:prepared.tracks, backingBlob, timelineDuration:backingBlob?mainProject.audioSource?.duration:undefined, duration:Math.max(...prepared.tracks.map(track=>track.duration||0)), onProgress:value=>!cancelled&&setMixProgress(value) })
         unpublishedUrl = value.url
         if (cancelled) return
-        const record = { id:MIX_RECORD_ID, projectId:PROJECT_ID, kind:'auto-mix', inputManifest:prepared.inputManifest, audioSourceRef:projectAudioReference(PROJECT), blob:value.blob, mimeType:value.blob.type || 'audio/wav', duration:value.duration, bytes:value.bytes, origin:value.origin, processing:value.processing, createdAt:new Date().toISOString() }
+        const record = { id:MIX_RECORD_ID, projectId:PROJECT_ID, kind:'auto-mix', inputManifest:prepared.inputManifest, blob:value.blob, mimeType:value.blob.type || 'audio/wav', duration:value.duration, bytes:value.bytes, origin:value.origin, processing:value.processing, createdAt:new Date().toISOString() }
         await saveTrack(record)
         if (cancelled) return
         setMix({...record,url:value.url}); setMixStatus('complete'); setMixProgress(100)
@@ -2134,24 +2136,11 @@ export default function App() {
         loadProjectTracks(PROFILE_PROJECT_ID)
       ])
       const stored = await Promise.all(projectStored
-        .filter(track => ['live-microphone-recording',...(presentationMusic?['provided-song-demo']:[])].includes(track.origin) && submittedProjectTracks(PROJECT,{[track.partId]:track}).length)
+        .filter(track => track.origin === 'live-microphone-recording' && submittedProjectTracks(PROJECT,{[track.partId]:track}).length)
         .map(async track => ({
           ...await refreshTrackAnalysis(track,PROJECT_SEED),
           participantId:track.participantId || personFromName(track.participant)?.id || null
         })))
-      if(presentationMusic && !projectStored.some(track=>track.partId==='voice-a' && track.blob)) {
-        const blob=await loadProvidedAudio(PRESENTATION_VOCAL.file,PRESENTATION_VOCAL.sha256)
-        const analyzed=await analyzeBlob(blob)
-        const part=PARTS[0]
-        const provided={id:`${PROJECT_ID}:${part.id}`,projectId:PROJECT_ID,projectSeed:PROJECT_SEED,
-          partId:part.id,partIndex:0,participantId:part.participantId,participant:part.participant,
-          kind:'project-track',submissionStatus:'success',origin:'provided-song-demo',demo:true,
-          disclosure:part.disclosure,source:PRESENTATION_VOCAL,audioSourceRef:projectAudioReference(PROJECT),
-          blob,mimeType:'audio/mpeg',duration:analyzed.duration,syncOffsetMs:0,features:analyzed.features,
-          layer:buildVoiceLayer(PROJECT_SEED,part.id,analyzed.features),createdAt:new Date().toISOString()}
-        await saveTrack(provided)
-        stored.push(provided)
-      }
       if (!active) return
       setProjectTracks(Object.fromEntries(stored.map(track=>[track.partId,{...track,url:restoredUrl(track.blob)}])))
       const mainDrafts=projectStored.filter(item=>item.kind==='temporary-recording'&&item.blob)

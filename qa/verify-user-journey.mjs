@@ -7,6 +7,7 @@ import React,{act} from 'react'
 import {createRoot} from 'react-dom/client'
 import {saveTrack,loadTrack,clearProjectTracks,deleteRecordingDraft} from '../src/trackStore.js'
 import {buildVoiceLayer} from '../src/voiceAnalysis.js'
+import {WARM_ARRANGEMENT} from '../src/projectMusic.js'
 
 // Isolated Node DOM and in-memory IndexedDB only. Never opens a browser or the user's DB.
 // GPU renderers and current-mix preview are test-only stubs; microphone is never invoked.
@@ -19,6 +20,8 @@ globalThis.requestAnimationFrame=callback=>setTimeout(()=>callback(performance.n
 globalThis.cancelAnimationFrame=clearTimeout
 window.scrollTo=()=>{}
 window.AudioContext=class{}
+const {projectAudioReference,loadProjectBacking}=await import('../src/projectAudio.js')
+const currentAudioRef=projectAudioReference({audioSource:{...WARM_ARRANGEMENT,songId:'a-thousand-years',key:'원키'}})
 window.HTMLMediaElement.prototype.play=async()=>{}
 window.HTMLMediaElement.prototype.pause=()=>{}
 globalThis.fetch=async url=>{assert.equal(url,'/demo-stems/manifest.json','Existing submitted Tracks must prevent loading replacement demo audio');return {ok:true,json:async()=>({tracks:[{partId:'soprano',file:'/demo-stems/soprano.wav'},{partId:'alto',file:'/demo-stems/alto.wav'}]})}}
@@ -31,7 +34,7 @@ const blob=new Blob(['isolated synthetic recording bytes'],{type:'audio/wav'})
 const features={version:'ieum-basic-voice-v3',fingerprint:'qa-preserved',brightness:.5,low:.33,dynamicRange:.4,spectralFlux:.2,roughness:.3,energy:.5,activeRatio:.8,articulation:.2,pitchVariation:.1,envelope:[.2,.7,.4]}
 const track=partId=>{
  const sourceFeatures=partId==='alto'?{...features,version:'ieum-basic-voice-v4',pitchAnalysisVersion:'normalized-difference-v1'}:features
- return {id:projectId+':'+partId,projectId,projectSeed:seed,partId,participantId:partId==='tenor'?'jisun':partId,participant:partId,blob,features:sourceFeatures,layer:buildVoiceLayer(seed,partId,sourceFeatures),duration:7,origin:'live-microphone-recording'}
+ return {id:projectId+':'+partId,projectId,projectSeed:seed,audioSourceRef:currentAudioRef,partId,participantId:partId==='tenor'?'jisun':partId,participant:partId,blob,features:sourceFeatures,layer:buildVoiceLayer(seed,partId,sourceFeatures),duration:7,origin:'live-microphone-recording'}
 }
 const draftId='jisun:'+projectId+':tenor:temporary-recording'
 let root
@@ -61,7 +64,7 @@ try{
  await saveTrack(track('soprano'));await saveTrack(track('alto'))
  await saveTrack({id:profileId+':range',projectId:profileId,kind:'voice-range',range:'C3–G4',rangeData:{lowMidi:48,highMidi:67}})
  await saveTrack({id:profileId+':sample',projectId:profileId,kind:'voice-sample',blob,duration:7,songLabel:'QA personal sample',features})
- await saveTrack({id:draftId,projectId,partId:'tenor',kind:'temporary-recording',userId:'jisun',blob,features,duration:7,guides:{backing:false,parts:[false,false,false,false]}})
+ await saveTrack({id:draftId,projectId,audioSourceRef:currentAudioRef,partId:'tenor',kind:'temporary-recording',userId:'jisun',blob,features,duration:7,guides:{backing:false,parts:[false,false,false,false]}})
  const incompleteStored=[
   {...track('bass'),kind:'project-track',submissionStatus:'failed',features:{version:'unsupported'},layer:null},
   {...track('soprano'),id:projectId+':soprano:review',kind:'temporary-recording',submissionStatus:'review',features:{version:'unsupported'},userId:'other-owner',layer:null},
@@ -71,6 +74,7 @@ try{
  window.history.replaceState({ieumScreen:'complete'},'','#complete')
  const container=document.createElement('div');document.body.append(container);root=createRoot(container)
  await act(async()=>root.render(React.createElement(App)));await settle();await settle()
+ assert.equal(await loadProjectBacking(state().activeProject,async()=>blob),blob,'Existing four-Part project must bind the actual song/key/backing before recording');
  assert.equal(state().screen,'workspace');assert.equal(Object.keys(state().projectTracks).length,2);assert.equal(state().candidateAccepted,false)
  assert.equal(state().projectTracks.soprano.layer.signature,track('soprano').layer.signature)
  assert.equal(state().projectTracks.alto.features.version,'ieum-basic-voice-v4')
@@ -219,7 +223,7 @@ try{
  root=createRoot(container);await act(async()=>root.render(React.createElement(App)));await settle();await settle()
  assert.equal(Object.keys(state().projectTracks).length,4);assert.equal(await state().mix.blob.text(),await blob.text())
  await click('[data-nav="folder"]');await click('[data-action="resume-project"]');assert.equal(state().screen,'complete')
- assert.ok(document.querySelector('.complete-screen audio'));assert.ok(document.querySelector('.complete-screen').textContent.includes('Credits'))
+ assert.ok(document.querySelector('.complete-screen audio'));assert.ok(document.querySelector('.complete-screen [aria-label="함께한 목소리"]').textContent.includes('CREDITS'))
  assert.equal(state().projectTracks.tenor.layer.signature,track('tenor').layer.signature)
  check('Reload restores 4 submitted Tracks and saved final mix; project resume opens Complete with credits and native audio')
  await click('[data-nav="folder"]')

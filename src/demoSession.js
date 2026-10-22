@@ -1,4 +1,3 @@
-import {WARM_SONG_ID,PRESENTATION_PROJECT} from './projectMusic.js'
 import samples from './providedSamples.json' with {type:'json'}
 // Presentation fixtures use separate storage. Never seed the real user's profile.
 export const DEMO_SCENARIOS = [
@@ -18,14 +17,13 @@ const scene = typeof location==='undefined' ? null : new URLSearchParams(locatio
 const requestedRun = typeof location==='undefined' ? null : new URLSearchParams(location.search).get('run')
 export const demoRun = /^[a-zA-Z0-9-]{1,80}$/.test(requestedRun || '') ? requestedRun : null
 export const demoScenario = DEMO_SCENARIOS.find(item=>item.id===scene) || null
-export const presentationMusic = Boolean(demoScenario && !demoScenario.music && demoScenario.id!=='complete')
 export const demoStorageKey = key => demoScenario ? `ieum-demo:${demoScenario.id}:${demoRun&&!demoScenario.music?`run:${demoRun}:`:''}${key}` : key
 export const demoTrackDatabaseName = (id,run=null) => `ieum-v2-demo-records:${id?.startsWith('music-')?'music':`${id}${run?':run:'+run:''}`}`
 export const trackDatabaseName = demoScenario ? demoTrackDatabaseName(demoScenario.id,demoRun) : 'ieum-v2-records'
-export const demoReceivedInvitation = () => presentationMusic ? {id:'presentation-invitation-vocal',recipientId:'jisun',projectId:PRESENTATION_PROJECT.id,songId:WARM_SONG_ID,projectName:PRESENTATION_PROJECT.name,songTitle:'오늘 같은 날',partId:'voice-b',partName:'Voice B',senderId:'provided-vocal',senderName:'원곡 보컬',status:'pending',demo:true} : ({id:'presentation-invitation-tenor',recipientId:'jisun',projectId:'ieum-thousand-years-v7',songId:'a-thousand-years',projectName:'Original C · Quartet',songTitle:'A Thousand Years',partId:'tenor',partName:'Tenor',senderId:'yoonseul',senderName:'윤슬',status:'pending',demo:true})
+export const demoReceivedInvitation = () => ({id:'presentation-invitation-tenor',recipientId:'jisun',projectId:'ieum-thousand-years-v7',songId:'a-thousand-years',projectName:'Original C · Quartet',songTitle:'오늘 같은 날',partId:'tenor',partName:'Tenor',senderId:'yoonseul',senderName:'윤슬',status:'pending',demo:true})
 export const demoProfile = () => ({
   name:'시연 프로필',range:'C3–F5 · 시연값',rangeData:{lowMidi:48,highMidi:77},
-  roles:['Tenor'],genres:['Acoustic pop'],taste:[],preferredSongIds:[WARM_SONG_ID],
+  roles:['Tenor'],genres:['Pop ballad'],taste:[],preferredSongIds:['a-thousand-years'],
   voiceType:'화면 시연용 예시 · 실제 측정값 아님',sampleSong:'오늘 같은 날 · 제공곡 예시',
   sampleUrl:samples[1].audioFile,sampleDuration:samples[1].duration,
   identity:{status:'blocked',reason:'presentation-fixture'},demo:true

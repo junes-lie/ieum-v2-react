@@ -528,7 +528,6 @@ html,.screen{scroll-padding-block-end:calc(92px + env(safe-area-inset-bottom))}
 .workspace-v2-screen .v2-part-actions>.v2-toggle{position:relative;left:auto;top:auto}
 @media(max-height:780px){
  .recording-v2-screen .lyrics,.recording-v2-screen:not([data-recording-status=review]) .lyrics,.recording-v2-screen:has(.project-reference) .lyrics{margin-top:24px}
- .recording-v2-screen .v2-guide-volume{top:240px}
 }
 
 .recording-v2-screen:not([data-recording-status=review]) .v2-monitoring{align-self:stretch}
@@ -539,3 +538,10 @@ html,.screen{scroll-padding-block-end:calc(92px + env(safe-area-inset-bottom))}
 .search-v2-project-art.with-sleeve .search-v2-disc{left:20px;top:8px}
 .search-v2-project-art.with-sleeve .record{width:76px;height:76px}
 .search-v2-project-art .search-v2-sleeve{position:absolute;left:0;top:9px;width:72px;height:72px;z-index:1;border:.5px solid var(--line-default);border-radius:2px;box-shadow:2px 2px 4px #0006}
+
+/* Center the floating guide within the space above the recording controls. */
+.recording-v2-screen .recording-lyrics-scene{position:relative;flex:1;min-height:124px}
+.recording-v2-screen .recording-lyrics-scene .v2-guide-volume{top:0;bottom:0;right:-8px;justify-content:center;margin:0;max-height:100%;gap:8px}
+.recording-v2-screen .recording-lyrics-scene .v2-guide-volume input{flex:0 1 160px;min-height:32px;background-size:4px calc(100% - 10px)}
+.recording-v2-screen .recording-lyrics-scene .v2-guide-volume>span>span,.recording-v2-screen .recording-lyrics-scene .v2-guide-volume output{flex-shrink:0}
+@media(max-width:429px){.recording-v2-screen .recording-lyrics-scene .v2-guide-volume{right:-4px}}

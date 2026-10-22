@@ -57,7 +57,7 @@ export default function DemoStage({initialScenario}) {
       <nav aria-label="사용자 시작 상황">{entries.map((item,index)=><a key={item.id} href={href(item.id,null)} aria-current={selected.id===item.id?'page':undefined} aria-disabled={switching} onClick={event=>{event.preventDefault();choose(item)}}><span>{String(index+1).padStart(2,'0')}</span><span><strong>{item.label}</strong><small>{item.detail}</small></span></a>)}</nav>
       <p className="demo-entry-note">상황을 선택하면 해당 시작 상태로 열려요.<br/>화면을 이동해도 이 메뉴는 유지됩니다.</p>
       <div className="demo-preview-caption"><div aria-label="모바일 화면 폭">{[390,430].map(size=><button key={size} aria-pressed={width===size} onClick={()=>setWidth(size)}>{size}</button>)}</div></div>
-      <details className="demo-music-entries"><summary>실제 음악 A/B 협업 시연</summary>{DEMO_SCENARIOS.filter(item=>item.music).map(item=><a key={item.id} href={href(item.id,null)} aria-current={selected.id===item.id?'page':undefined} onClick={event=>{event.preventDefault();choose(item)}}>{item.label}<small>{item.detail}</small></a>)}</details>
+
       <p className="demo-profile-status" role="status" data-demo-profile-state={current?.status==='ready'?(current.hasProfile?'present':'absent'):current?.status||'loading'}>{status}</p>
       {error&&<p role="alert">{error}</p>}
       <details className="demo-notes"><summary>현재 상태</summary><p>{selected.detail}</p>{current?.status==='ready'&&<p data-demo-current-screen>현재 화면 · {screenNames[current.screen]||current.screen}</p>}

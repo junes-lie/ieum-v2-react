@@ -34,16 +34,3 @@ export function musicDemoProject(scenario) {
   return {...WARM_PROJECT,demo:true,id:'demo:'+WARM_PROJECT_ID,ownerPartId:scenario.musicPartId,
     name:'실제 음악 녹음 · A/B 시연',parts:parts.map((p,i)=>({...p,participantId:i?'demo-music-b':'jisun',participant:i?'시연 B':'시연 A',status:'ready'}))}
 }
-
-// Isolated presentation fixture: one actual provided vocal example, one open seat.
-// The source is a residual from the existing original/reference and separated backing;
-// it is never described as a real member's microphone submission.
-export const PRESENTATION_VOCAL = Object.freeze({
-  file:'/audio/project-warm-unison-v1/provided-vocal.mp3',
-  sha256:'dafd068295ba4c4761f9106ad74891e6c0800ab25d82ccb87eae3f7f66d907b1',
-  referenceSha256:WARM_ARRANGEMENT.referenceSha256,backingSha256:WARM_ARRANGEMENT.backingSha256,
-  method:'decoded original reference minus its aligned separated backing; MP3 residual, not clean isolated vocals'
-})
-export const PRESENTATION_PROJECT = {...WARM_PROJECT,id:'presentation:'+WARM_PROJECT_ID,
-  name:'원키 · Acoustic Duet',status:'RECORDING',progress:1,demo:true,
-  parts:parts.map((part,index)=>index?{...part}:{...part,participantId:'provided-vocal',participant:'원곡 보컬',status:'submitted',demo:true,disclosure:'기존 AI 제작곡에서 가져온 보컬 시연 Track · 실제 사용자 제출 아님'})}
