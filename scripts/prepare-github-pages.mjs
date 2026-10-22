@@ -6,7 +6,7 @@ import { join, extname } from 'node:path'
 // Vite --base handles bundled JS/CSS. These are literal URLs to public/ assets.
 // Keep /api/ untouched: GitHub Pages cannot host Vercel server functions.
 const prefix = '/ieum-v2-react/'
-const paths = ['audio/', 'artwork/', 'demo-stems/', 'figma/', 'resonance-reference-v1.png', 'resonance-reference-v2.png', 'manifest.webmanifest']
+const paths = ['audio/', 'artwork/', 'figma/', 'resonance-reference-v1.png', 'resonance-reference-v2.png', 'manifest.webmanifest']
 const re = new RegExp('(["\\x27\\x60(=])\\/(' + paths.map(p => p.replaceAll('.', '\\.')).join('|') + ')', 'g')
 let files = 0
 let replacements = 0
@@ -63,8 +63,3 @@ if (replacements === 0) {
   throw new Error('No public asset paths found; review the build before publishing')
 }
 
-// JSON manifests contain runtime audio URLs and must be rewritten too.
-const manifest = await readFile('dist/demo-stems/manifest.json', 'utf8')
-if (!manifest.includes(prefix + 'demo-stems/soprano.wav') || manifest.includes('"/demo-stems/')) {
-  throw new Error('GitHub Pages demo Track manifest still contains root-relative URLs')
-}

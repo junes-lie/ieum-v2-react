@@ -1,6 +1,7 @@
 # IEUM V2 통합 체크포인트 · 2026-10-23
 
 ## 완료
+- 사용자 지시: 합성 반주·합성 보컬 시연 폐기. oscillator 반주 fallback·demo-stems 자동 주입/프로필 샘플 연결 및 public 합성 WAV 제거. 기존 저장 원본은 삭제하지 않고 합성 Track/Mix 재생 복원에서 제외. 기존 3곡 중 `천천히 함께` 실제 22초 편곡을 홈 첫 모집 프로젝트/첫 곡으로 노출하고 프로필 예시도 해당 제공곡으로 연결. 반주 없는 곡은 녹음 시작 전에 이유 안내. Node QA 13개·실제 3곡/편곡 해시 계약·Pages build 통과. Chromium 390/430 실제 반주 decode/schedule·첫 가사·pause/resume/Review 및 합성 oscillator/asset 요청 0 검증. 전체 22초 연속 녹음 미완료는 유지.
 - 모바일 시연 셸 수정: 600px 이하에서 외부 메뉴·베젤·여백 제거, 앱을 100dvh로 표시하고 프로필 등록 완료(profile-ready) 진입만 사용. 데스크톱 선택지는 유지. Pages 하위 경로 로컬 Chromium 390×844/430×932/390×740 및 데스크톱 1280×1000 통과, build·Node QA 13개 통과. 게시 후 실제 URL 확인은 해당 커밋 Actions와 최종 보고로 확인한다. 녹음/매칭 미완료 상태는 아래 그대로 유지.
 - 원격/로컬 통합 브랜치 기준 `39b2fd7d6602d80fed38f493596f726b517ec368`, tree `4ded9f67f5f826a4baa70397d1bed758b7bb4cd4`. 이전 `5e48c3b`/`53d9d0b`/`d99a5a7` 작업 보존. main·Vercel Production·공명 독립 브랜치·Notion/Figma 원본 보존.
 - 기존 완료 유지: Recording 100dvh/Safe Area·하단 조작·Back/임시 보관, Detail/Part 개별 재생 UI 제거, Workspace 선택 Track만 Current Mix, Search 결과별 표현, 실제 프로필/Track 분석 전달·부족 데이터 안내, Pages 반주 URL 검증 변환. 제출 후 낡은 bridge 때문에 Recorder로 forward되던 경합은 39b2fd7에서 수정·배포했다. 반복 구현하지 않는다.

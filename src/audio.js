@@ -193,43 +193,6 @@ export function monitorInput(onFrame, { detectPitch = false } = {}) {
   return () => cancelAnimationFrame(runtime.raf)
 }
 
-function createTone(ctx, destination, start, duration, frequency, gainValue, type = 'sine') {
-  const osc = ctx.createOscillator()
-  const gain = ctx.createGain()
-  osc.type = type
-  osc.frequency.value = frequency
-  gain.gain.setValueAtTime(0.0001, start)
-  gain.gain.exponentialRampToValueAtTime(gainValue, start + 0.025)
-  gain.gain.setValueAtTime(gainValue, start + Math.max(0.03, duration - 0.05))
-  gain.gain.exponentialRampToValueAtTime(0.0001, start + duration)
-  osc.connect(gain).connect(destination)
-  osc.start(start)
-  osc.stop(start + duration + 0.02)
-  runtime.guideNodes.push(osc)
-}
-
-export function scheduleSyntheticTrack(ctx, destination, start, duration, partIndex, gain = 0.055) {
-  const roots = [261.63, 220, 174.61, 130.81]
-  const notes = [0, 4, 7, 4, 2, 5, 9, 7]
-  for (let t = 0, n = 0; t < duration; t += 0.5, n++) {
-    const semitone = notes[(n + partIndex * 2) % notes.length]
-    const f = roots[partIndex] * Math.pow(2, semitone / 12)
-    createTone(ctx, destination, start + t, Math.min(0.43, duration - t), f, gain, partIndex === 3 ? 'triangle' : 'sine')
-  }
-}
-
-export function scheduleBacking(ctx, destination, start, duration, gain = 0.07, timelineOffset = 0) {
-  const chords = [[130.81,164.81,196],[146.83,174.61,220],[110,138.59,164.81],[130.81,164.81,196]]
-  const firstBeat = Math.floor(timelineOffset / 2) * 2
-  for (let absolute = firstBeat, c = firstBeat / 2; absolute < timelineOffset + duration; absolute += 2, c++) {
-    const localStart = Math.max(0, absolute - timelineOffset)
-    const skipped = Math.max(0, timelineOffset - absolute)
-    const noteDuration = Math.min(1.9 - skipped, duration - localStart)
-    if (noteDuration <= .02) continue
-    chords[c % chords.length].forEach(f => createTone(ctx, destination, start + localStart, noteDuration, f, gain / 3, 'triangle'))
-  }
-}
-
 async function decodeBlob(ctx, blob) {
   return ctx.decodeAudioData(await blob.arrayBuffer())
 }
@@ -299,11 +262,10 @@ function scheduleRecordingGuides(offsetSec = 0) {
   const ctx = context()
   // Resume/toggle share the current musical position; no new lead-in is added.
   const start = ctx.currentTime
-  const remaining = Math.max(.1, state.duration - offsetSec)
   if (state.guides.backing) {
     if (state.decodedBacking) {
       if (offsetSec < state.decodedBacking.duration) scheduleBuffer(ctx, ctx.destination, state.decodedBacking, start, offsetSec, backingPlaybackGain(state.decodedBacking))
-    } else scheduleBacking(ctx, ctx.destination, start, remaining, .07, offsetSec)
+    }
   }
   const vocalVolume = Math.min(1,Math.max(0,Number(state.guides.vocalVolume ?? .5)))
   state.decodedGuides.forEach(({track,buffer}) => {
@@ -382,7 +344,7 @@ export async function startRecording({ onFrame, guides = {backing:false,parts:[]
   runtime.recordingGuideState = { guides:{...guides,parts:[...guides.parts]}, decodedGuides, decodedBacking, duration:Math.max(.1,duration) }
   if (guides.backing) {
     if (decodedBacking) scheduleBuffer(ctx, ctx.destination, decodedBacking, start, 0, backingPlaybackGain(decodedBacking))
-    else scheduleBacking(ctx, ctx.destination, start, duration)
+
   }
   decodedGuides.forEach(({track,buffer}) => {
     const index = Number(track.partIndex)
@@ -548,7 +510,7 @@ export async function playCurrentMix({ included, tracks = [], backingBlob = null
   const start = ctx.currentTime + 0.08
   if (included.backing) {
     if (decodedBacking) scheduleBuffer(ctx, ctx.destination, decodedBacking, start, 0, backingPlaybackGain(decodedBacking))
-    else scheduleBacking(ctx, ctx.destination, start, actualDuration)
+
   }
   for (const {track,buffer} of selected) {
     const index = Number(track.partIndex)
@@ -653,7 +615,7 @@ async function renderTrackMix({tracks,duration,timelineDuration,onProgress,backi
   onProgress?.(18)
   if (backing) {
     if (decodedBacking) scheduleBuffer(offline, master, decodedBacking, 0, 0, backingPlaybackGain(decodedBacking), 0, false)
-    else scheduleBacking(offline, master, 0, actualDuration, 0.075)
+
   }
   for (const {track,buffer:decoded,sourceOffset,cleanup} of decodedTracks) {
     const source = offline.createBufferSource()

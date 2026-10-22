@@ -101,11 +101,10 @@ const SONGS = [
     { id:'city-of-stars-duet', name:'Night Duet', key:'D minor', status:'RECRUITING', progress:1, partCount:2, seed:'ieum:city-stars:duet', parts:[{id:'vocal-a',name:'Vocal A',color:'#d6b895',participantId:'joon',participant:'Joon',status:'submitted',duration:'02:27'},{id:'vocal-b',name:'Vocal B',color:'#3b82f6',participant:null,status:'open'}] }
   ]}
 ]
-SONGS.push(WARM_SONG)
+SONGS.unshift(WARM_SONG)
 const CURRENT_USER_NAME = demoScenario?.actorName || 'JISUN'
 const MUSIC_DEMO_PROJECT = musicDemoProject(demoScenario)
 const TOTAL_PARTS = PARTS.length
-const INITIAL_DEMO_PARTS = new Set(['soprano','alto'])
 const APP_STATE_KEY = demoStorageKey('ieum-v2:user-state:v7')
 const PROFILE_PROJECT_ID = 'ieum-v2:voice-profile:v7'
 const RANGE_RECORD_ID = `${PROFILE_PROJECT_ID}:range`
@@ -149,42 +148,6 @@ const scrollToTop = () => {
 const fmt = seconds => {
   const value = Math.max(0, Number(seconds) || 0)
   return `${String(Math.floor(value / 60)).padStart(2, '0')}:${String(Math.floor(value % 60)).padStart(2, '0')}`
-}
-
-async function loadDisclosedDemoTrack(entry) {
-  const response = await fetch(entry.file)
-  if (!response.ok) throw new Error(`데모 Track을 불러오지 못했습니다: ${entry.partId}`)
-  const blob = await response.blob()
-  const analyzed = await analyzeBlob(blob)
-  return {
-    id:`${PROJECT_ID}:${entry.partId}`,
-    projectId:PROJECT_ID,
-    projectSeed:PROJECT_SEED,
-    partId:entry.partId,
-    partIndex:PARTS.findIndex(part=>part.id===entry.partId),
-    participantId:entry.participantId || personFromName(entry.participant)?.id || null,
-    participant:entry.participant,
-    blob,
-    mimeType:blob.type || 'audio/wav',
-    duration:analyzed.duration,
-    syncOffsetMs:0,
-    features:analyzed.features,
-    layer:buildVoiceLayer(PROJECT_SEED,entry.partId,analyzed.features),
-    origin:'local-formant-singing-demo',
-    demo:true,
-    source:entry.source,
-    disclosure:entry.disclosure,
-    createdAt:new Date().toISOString()
-  }
-}
-
-async function loadDemoTrackByPart(partId) {
-  const response = await fetch('/demo-stems/manifest.json')
-  if (!response.ok) throw new Error('데모 Track manifest 없음')
-  const manifest = await response.json()
-  const entry = manifest.tracks.find(track=>track.partId===partId)
-  if (!entry) throw new Error(`${partId} 데모 Track 없음`)
-  return loadDisclosedDemoTrack(entry)
 }
 
 async function refreshTrackAnalysis(track, projectSeed) {
@@ -1311,6 +1274,7 @@ function Recorder({ go, submit, onRecordingStart, partId, projectTracks, layers,
       setError(''); setMicrophoneFailure(false); setPermissionDenied(false);setReferencePlaying(false)
       document.querySelectorAll('audio').forEach(audio=>audio.pause())
       const backingBlob=await loadProjectBacking(project)
+      if(!backingBlob)throw new Error('이 프로젝트에는 실제 반주가 아직 없어요. 천천히 함께 프로젝트에서 녹음해 주세요.')
       if(!startingRef.current)return
       recordingSourceRef.current=projectAudioReference(project)
       audioReady=true
@@ -1725,7 +1689,7 @@ function PersonalArea({ receivedInvitations = [], openReceivedInvitation, openCo
     {type==='projects' && <>{pendingInvitations.map(invitation=><section className="saved-card received-invitation-card" key={invitation.id}><div><p className="kicker">초대됨{invitation.demo?' · 시연 예시':''}</p><strong>{invitation.songTitle}</strong><p>{invitation.senderName} · {invitation.projectName} · {invitation.partName}</p><button className="secondary" data-action="open-received-invitation" onClick={()=>openReceivedInvitation(invitation.id)}>초대 확인</button></div></section>)}<div className="object-tabs project-tabs" aria-label="프로젝트 상태 필터">{[['all','전체'],['recruiting','모집'],['recording','녹음'],['mixing','믹싱'],['complete','완성']].map(([value,label])=><button key={value} className={projectFilter===value?'active':''} aria-pressed={projectFilter===value} onClick={()=>setProjectFilter(value)}>{label}</button>)}</div>{joined && projectVisible && <section className="saved-card"><ResonanceRecord recordRef={mainProject.voiceRecordRef} projectId={mainProject.id} parts={mainProject.parts} seed={mainProject.seed} layers={layers} compact/><div>{delayedProjectIds.includes(PROJECT_ID)&&<span className="completion-delay-badge">녹음 필요 · 7일</span>}<div className="saved-card-title"><strong>A Thousand Years</strong><button className={projectLiked?'active':''} aria-label={projectLiked?'프로젝트 Like 취소':'프로젝트 Like'} onClick={toggleProjectLike}><Icon name="heart" size={18}/></button></div><p>{trackCount}/4 Tracks · {lifecycle.toUpperCase()}</p><button className="secondary" data-action="resume-project" onClick={()=>openMainWorkspace(mix?'complete':readyForMix?'multitrack':'workspace')}>{mix?'완성곡 열기':readyForMix?'믹싱 확인':'작업실 계속하기'}</button></div></section>}{filteredCreatedProjects.map(project=><section className="saved-card created-project-card" key={project.id}><div className="empty-record-mark"><span>{String(submittedProjectTracks(project,createdProjectTracks[project.id] || {}).length).padStart(2,'0')}</span><small>/{String(project.partCount).padStart(2,'0')}</small></div><div>{delayedProjectIds.includes(project.id)&&<span className="completion-delay-badge">녹음 필요 · 7일</span>}<div className="saved-card-title"><strong>{project.title}</strong></div><p>{project.name} · {createdLifecycle(project).toUpperCase()}</p><button className="secondary" data-action="open-created-project" onClick={()=>openCreatedProject(project.id)}>{createdLifecycle(project)==='complete'?'완성곡 열기':'작업실 열기'}</button></div></section>)}{!hasProject && <section className="empty-state"><p>참여하거나 만든 프로젝트가 아직 없어요.</p><button className="primary" data-action="browse-open-projects" onClick={()=>go('home')}>OPEN Part 찾기</button><button className="secondary" onClick={()=>go('create-project')}>새 프로젝트 만들기</button></section>}</>}
     {type==='projects'&&projectFilterEmpty&&<section className="empty-state"><p>이 상태의 프로젝트가 없어요.</p><button className="secondary" data-action="reset-project-filter" onClick={()=>setProjectFilter('all')}>필터 초기화</button></section>}
     {type==='collection' && <CollectionArea openComplete={openComplete} mainProject={mainProject} collectionContext={collectionContext} go={go} openMainWorkspace={openMainWorkspace} openSong={openSong} createdProjects={createdProjects} createdProjectTracks={createdProjectTracks} createdMixes={createdMixes} openCreatedProject={openCreatedProject} toggleProjectById={toggleProjectById} projectLikes={projectLikes} vocalSaves={vocalSaves} songSaves={songSaves} toggleProjectLike={toggleProjectLike} toggleVocalSave={toggleVocalSave} toggleSongSave={toggleSongSave} openVocalProfile={openVocalProfile} layers={layers} trackCount={trackCount} mix={mix} joined={joined} readyForMix={readyForMix}/>}
-    {type==='my' && <>{profile ? <><section className="profile-card"><VoiceIdentity identity={profile.identity} suppliedPreview/><div><p className="kicker">Voice profile</p><h2>{profile.name} · {profile.range}</h2><p>{profile.voiceType || "음색 분석 대기"}<br/>Voice Identity 생성형 AI는 미검증</p>{profile.sampleUrl && <ProfileSamplePlayer source={profile.sampleUrl} duration={profile.sampleDuration}/>}</div></section><ProfilePreferences profile={profile} save={updatePreferences} songSaves={songSaves}/><section className="my-voice-details"><div><span>Voice Range</span><b>{profile.range}</b><button onClick={()=>editVoice("range")}>다시 측정</button></div><div><span>Voice Sample</span><b>{profile.sampleSong}</b><button onClick={()=>editVoice("sample")}>다시 등록</button></div><div><span>선호 역할</span><b>{profile.roles?.join(' · ') || '아직 선택하지 않았어요.'}</b></div><div><span>장르</span><b>{profile.genres?.join(' · ') || '아직 선택하지 않았어요.'}</b></div><div><span>음악 취향</span><b>{SONGS.filter(song=>profile.preferredSongIds?.includes(song.id)).map(song=>song.title).join(' · ') || profile.taste?.join(' · ') || '아직 선택하지 않았어요.'}</b></div><div><span>Voice Identity</span><b>무료·로컬 생성 모델 미연결</b><button disabled>대기</button></div></section></> : <section className="empty-state"><p>등록된 Voice Profile이 없어요.</p><button className="primary" onClick={()=>go('voice')}>내 목소리 알아보기</button></section>}<section className="demo-reset"><div><strong>처음부터 다시 검증하기</strong><p>내 Voice Profile, 참여·초대 상태와 녹음을 초기화합니다. 출처가 표시된 Soprano·Alto 시연 Track 2개만 다시 준비되어 2/4에서 시작합니다.</p></div><button className="secondary" data-action="reset-demo" onClick={resetDemo}>시연 상태 초기화</button></section></>}
+    {type==='my' && <>{profile ? <><section className="profile-card"><VoiceIdentity identity={profile.identity} suppliedPreview/><div><p className="kicker">Voice profile</p><h2>{profile.name} · {profile.range}</h2><p>{profile.voiceType || "음색 분석 대기"}<br/>Voice Identity 생성형 AI는 미검증</p>{profile.sampleUrl && <ProfileSamplePlayer source={profile.sampleUrl} duration={profile.sampleDuration}/>}</div></section><ProfilePreferences profile={profile} save={updatePreferences} songSaves={songSaves}/><section className="my-voice-details"><div><span>Voice Range</span><b>{profile.range}</b><button onClick={()=>editVoice("range")}>다시 측정</button></div><div><span>Voice Sample</span><b>{profile.sampleSong}</b><button onClick={()=>editVoice("sample")}>다시 등록</button></div><div><span>선호 역할</span><b>{profile.roles?.join(' · ') || '아직 선택하지 않았어요.'}</b></div><div><span>장르</span><b>{profile.genres?.join(' · ') || '아직 선택하지 않았어요.'}</b></div><div><span>음악 취향</span><b>{SONGS.filter(song=>profile.preferredSongIds?.includes(song.id)).map(song=>song.title).join(' · ') || profile.taste?.join(' · ') || '아직 선택하지 않았어요.'}</b></div><div><span>Voice Identity</span><b>무료·로컬 생성 모델 미연결</b><button disabled>대기</button></div></section></> : <section className="empty-state"><p>등록된 Voice Profile이 없어요.</p><button className="primary" onClick={()=>go('voice')}>내 목소리 알아보기</button></section>}<section className="demo-reset"><div><strong>처음부터 다시 검증하기</strong><p>내 Voice Profile, 참여·초대 상태와 녹음을 초기화합니다. 기존 합성 시연 Track은 사용하지 않습니다.</p></div><button className="secondary" data-action="reset-demo" onClick={resetDemo}>시연 상태 초기화</button></section></>}
   </main></div>
 }
 
@@ -2002,7 +1966,7 @@ export default function App() {
     setScreen('complete'); setHistory([])
   }
   const resetDemo = async () => {
-    if (!window.confirm('내 Voice Profile과 Tenor 녹음, 참여·컬렉션 상태를 초기화할까요? 출처가 표시된 시연 Track 2개만 다시 준비되어 2/4에서 시작합니다.')) return
+    if (!window.confirm('내 Voice Profile과 Tenor 녹음, 참여·컬렉션 상태를 초기화할까요? 합성 시연 Track은 다시 만들지 않습니다.')) return
     stopGuides(); stopMicrophone()
     await Promise.all([clearProjectTracks(PROJECT_ID),clearProjectTracks(PROFILE_PROJECT_ID),...createdProjects.map(project=>clearProjectTracks(project.id))])
     localStorage.removeItem(APP_STATE_KEY)
@@ -2161,23 +2125,16 @@ export default function App() {
     }
     const bootstrap = async () => {
       setTracksLoadError('')
-      const [projectStored, profileStored, demoManifest] = await Promise.all([
+      const [projectStored, profileStored] = await Promise.all([
         loadProjectTracks(PROJECT_ID),
-        loadProjectTracks(PROFILE_PROJECT_ID),
-        fetch('/demo-stems/manifest.json').then(response=>response.ok?response.json():Promise.reject(new Error('데모 Track manifest 없음')))
+        loadProjectTracks(PROFILE_PROJECT_ID)
       ])
       const stored = await Promise.all(projectStored
-        .filter(track => ['live-microphone-recording','local-formant-singing-demo'].includes(track.origin) && submittedProjectTracks(PROJECT,{[track.partId]:track}).length)
+        .filter(track => track.origin === 'live-microphone-recording' && submittedProjectTracks(PROJECT,{[track.partId]:track}).length)
         .map(async track => ({
           ...await refreshTrackAnalysis(track,PROJECT_SEED),
           participantId:track.participantId || personFromName(track.participant)?.id || null
         })))
-      for (const entry of demoManifest.tracks.filter(item=>INITIAL_DEMO_PARTS.has(item.partId))) {
-        if (projectStored.some(track=>track.id===`${PROJECT_ID}:${entry.partId}` && track.blob)) continue
-        const demoTrack = await loadDisclosedDemoTrack(entry)
-        await saveTrack(demoTrack)
-        stored.push(demoTrack)
-      }
       if (!active) return
       setProjectTracks(Object.fromEntries(stored.map(track=>[track.partId,{...track,url:restoredUrl(track.blob)}])))
       const mainDrafts=projectStored.filter(item=>item.kind==='temporary-recording'&&item.blob)
@@ -2189,14 +2146,14 @@ export default function App() {
       const restoredSourceRevision=rangeRecord && sampleRecord ? await voiceSourceRevision(rangeRecord.sourceProvenance,sampleRecord.sourceProvenance) : null
       if(!active)return
       if (rangeRecord && sampleRecord) setProfile({name:'JISUN',voiceSourceRevision:restoredSourceRevision,voiceType:null,range:rangeRecord.range,rangeData:rangeRecord.rangeData,rangeProvenance:rangeRecord.sourceProvenance || null,sampleSong:sampleRecord.songLabel,roles:[],genres:[],taste:[],sampleUrl:restoredUrl(sampleRecord.blob),sampleDuration:sampleRecord.duration,sampleFeatures:sampleRecord.features,sampleProvenance:sampleRecord.sourceProvenance || null,identity:{status:'blocked',reason:'free-local-generative-model-not-connected'},...preferenceRecord?.preferences})
-      if (mixRecord) { setMix({...mixRecord,url:restoredUrl(mixRecord.blob)}); setMixStatus('complete'); setMixProgress(100) }
+      if (mixRecord && !projectStored.some(track=>track.origin==='local-formant-singing-demo') && !(mixRecord.inputManifest?.tracks || []).some(track=>track.origin==='local-formant-singing-demo')) { setMix({...mixRecord,url:restoredUrl(mixRecord.blob)}); setMixStatus('complete'); setMixProgress(100) }
       const createdTrackEntries = await Promise.all(createdProjects.map(async project=>{
         const records = await loadProjectTracks(project.id)
         const tracks = await Promise.all(records
-          .filter(track=>submittedProjectTracks(project,{[track.partId]:track}).length)
+          .filter(track=>track.origin!=='local-formant-singing-demo' && submittedProjectTracks(project,{[track.partId]:track}).length)
           .map(async track=>{const refreshed=await refreshTrackAnalysis(track,project.seed);return {...refreshed,url:restoredUrl(refreshed.blob)}}))
         const storedMix=records.find(track=>track.kind==='auto-mix'&&track.blob)
-        if(storedMix){setCreatedMixes(current=>({...current,[project.id]:{...storedMix,url:restoredUrl(storedMix.blob)}}));setCreatedMixStates(current=>({...current,[project.id]:'complete'}))}
+        if(storedMix && !records.some(track=>track.origin==='local-formant-singing-demo')){setCreatedMixes(current=>({...current,[project.id]:{...storedMix,url:restoredUrl(storedMix.blob)}}));setCreatedMixStates(current=>({...current,[project.id]:'complete'}))}
         const drafts=records.filter(track=>track.kind==='temporary-recording'&&track.blob)
         if(drafts.length)setDraftKeys(current=>({...current,...Object.fromEntries(drafts.map(item=>[`${item.projectId}:${item.partId}`,true]))}))
         return [project.id,Object.fromEntries(tracks.map(track=>[track.partId,track]))]

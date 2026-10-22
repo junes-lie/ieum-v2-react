@@ -1,3 +1,4 @@
+import samples from './providedSamples.json' with {type:'json'}
 // Presentation fixtures use separate storage. Never seed the real user's profile.
 export const DEMO_SCENARIOS = [
   {id:'first-visit',label:'프로필 미등록',detail:'첫 방문 · 프로필과 참여 프로젝트 없음',flow:'Flow 1 · UF01 / UF03',screen:'home',profile:false,entry:true},
@@ -23,7 +24,7 @@ export const demoReceivedInvitation = () => ({id:'presentation-invitation-tenor'
 export const demoProfile = () => ({
   name:'시연 프로필',range:'C3–F5 · 시연값',rangeData:{lowMidi:48,highMidi:77},
   roles:['Tenor'],genres:['Pop ballad'],taste:[],preferredSongIds:['a-thousand-years'],
-  voiceType:'화면 시연용 예시 · 실제 측정값 아님',sampleSong:'시연용 합성 Stem',
-  sampleUrl:'/demo-stems/soprano.wav',sampleDuration:10,
+  voiceType:'화면 시연용 예시 · 실제 측정값 아님',sampleSong:'천천히 함께 · 제공곡 예시',
+  sampleUrl:samples[1].audioFile,sampleDuration:samples[1].duration,
   identity:{status:'blocked',reason:'presentation-fixture'},demo:true
 })
