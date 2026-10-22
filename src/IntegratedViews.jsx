@@ -132,7 +132,6 @@ export function HomeView({header,entries,songs,renderRecord,openSong,openProject
           </span>
         </button>
       }):<p className="empty-proof">아직 완성한 곡이 없어요. 마지막 Track 제출 후 완성곡을 들을 수 있어요.</p>}</div></section>
-      <button className="secondary v2-create-project" data-action="create-project" onClick={openCreateProject}><Icon name="plus" size={16}/>새 프로젝트 만들기</button>
     </main>
   </div>
 }
