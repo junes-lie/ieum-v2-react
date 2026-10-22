@@ -444,6 +444,14 @@ void main(){
 }
 
 function ResonanceRecord({ active = [true, false, true, false], layers = [], parts = PARTS, tracks, projectId = PROJECT_ID, activePartIndex = 1, state = 'rest', level = 0, seed = PROJECT_SEED, label, compact = false, recordRef, counterRotate = false, cataloguePreview = false }) {
+  // Restore the existing project's illustrative participant artwork independently
+  // of submitted audio. Never create Tracks or replace a measured/stored layer.
+  const participantArtwork = projectId===PROJECT_ID && !recordRef
+    ? recruitmentPreviewLayers({id:projectId,seed,parts}) : []
+  const displayLayers = participantArtwork.length ? parts.map((part,index)=>
+    layers.find(layer=>layer?.partId===part.id) || layers[index] ||
+    (!tracks?.[part.id] ? participantArtwork[index] : null)) : layers
+  const hasParticipantArtwork = displayLayers.some(layer=>layer?.signature?.startsWith('catalogue-art:'))
   const materialRef = useRef(null)
   const particleRef = useRef(null)
   const recordTimelineRef = useRef({})
@@ -483,7 +491,7 @@ function ResonanceRecord({ active = [true, false, true, false], layers = [], par
   const partSlots = resolveRecordPartSlots(parts.map(part=>cataloguePreview?(PARTS.find(palettePart=>palettePart.color===part.color)?.id||part.id):part.id),PARTS.map(part=>part.id))
   const recordingSlot = partSlots[activePartIndex] ?? partSlots[0]
   const slots = Array(4).fill(null)
-  if (layers.length) layers.forEach((layer,index) => {
+  if (displayLayers.length) displayLayers.forEach((layer,index) => {
     if (!layer) return
     const partIndex = parts.findIndex(part => part.id === layer.partId)
     const slot = partSlots[partIndex >= 0 ? partIndex : index]
@@ -542,8 +550,8 @@ function ResonanceRecord({ active = [true, false, true, false], layers = [], par
     return () => renderer?.dispose()
   }, [slotSignature, recordingSlot, state, seed, projectId, partIds, fieldSignature, selectedRender, counterRotate])
 
-  const layerCount = layers.length ? layers.filter(Boolean).length : active.filter(Boolean).length
-  return <figure className={`record ${compact ? 'record-compact' : ''}`} data-state={state} data-record-signature={projectRecordSignature(String(seed),layers)} data-resonance-engine="webgl-particles" aria-label={label || `공명 레코드, ${layerCount}개 Track 활성`}>
+  const layerCount = displayLayers.length ? displayLayers.filter(Boolean).length : active.filter(Boolean).length
+  return <figure className={`record ${compact ? 'record-compact' : ''}`} data-state={state} data-record-signature={projectRecordSignature(String(seed),displayLayers)} data-artwork-kind={hasParticipantArtwork?'participant-illustration':undefined} data-resonance-layer-count={layerCount} data-resonance-engine="webgl-particles" aria-label={label || (hasParticipantArtwork?`참여자 예시 공명 레코드, ${layerCount}개 그래픽`:`공명 레코드, ${layerCount}개 Track 활성`)}>
     <canvas ref={materialRef} className="record-material" aria-hidden="true" />
     <canvas ref={particleRef} className="record-particles" aria-hidden="true" />
     {state === 'processing' && <div className="record-processing">MIX</div>}
