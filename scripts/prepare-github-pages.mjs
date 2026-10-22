@@ -14,7 +14,7 @@ async function walk(dir) {
   for (const item of await readdir(dir, { withFileTypes: true })) {
     const path = join(dir, item.name)
     if (item.isDirectory()) { await walk(path); continue }
-    if (!['.js', '.css', '.html'].includes(extname(item.name))) continue
+    if (!['.js', '.css', '.html', '.json'].includes(extname(item.name))) continue
     const before = await readFile(path, 'utf8')
     const after = before.replace(re, (_match, lead, suffix) => {
       replacements++
@@ -27,4 +27,10 @@ await walk('dist')
 console.log('Pages public asset paths rewritten:', replacements, 'in', files, 'files')
 if (replacements === 0) {
   throw new Error('No public asset paths found; review the build before publishing')
+}
+
+// JSON manifests contain runtime audio URLs and must be rewritten too.
+const manifest = await readFile('dist/demo-stems/manifest.json', 'utf8')
+if (!manifest.includes(prefix + 'demo-stems/soprano.wav') || manifest.includes('"/demo-stems/')) {
+  throw new Error('GitHub Pages demo Track manifest still contains root-relative URLs')
 }
