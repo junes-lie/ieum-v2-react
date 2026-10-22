@@ -1277,6 +1277,7 @@ function Recorder({ go, submit, onRecordingStart, partId, projectTracks, layers,
   const leavingRef=useRef(false)
   const recorderActiveRef=useRef(true)
   const [recordingBusy,setRecordingBusy]=useState(false)
+  const [draftSaving,setDraftSaving]=useState(false)
   const [restoreState,setRestoreState]=useState('loading')
   const [restoreAttempt,setRestoreAttempt]=useState(0)
   const [confirmAction,setConfirmAction] = useState(null)
@@ -1325,7 +1326,7 @@ function Recorder({ go, submit, onRecordingStart, partId, projectTracks, layers,
   }
   const stop = async () => {
     if(stoppingRef.current)return false
-    stoppingRef.current=true;setRecordingBusy(true)
+    stoppingRef.current=true;setRecordingBusy(true);setDraftSaving(true)
     try {
     setError('')
     clearInterval(timer.current)
@@ -1342,7 +1343,7 @@ function Recorder({ go, submit, onRecordingStart, partId, projectTracks, layers,
       setError(reason?.message || '녹음을 끝내지 못했어요. 다시 정지를 눌러 주세요.')
       if(getRecordingTimeline().state==='recording')timer.current=window.setInterval(()=>setSeconds(getRecordingTimeline().elapsedSec),100)
       return false
-    } finally {stoppingRef.current=false;setRecordingBusy(false)}
+    } finally {stoppingRef.current=false;setDraftSaving(false);setRecordingBusy(false)}
   }
   const retry = async () => {
     if(discardingRef.current)return
@@ -1444,7 +1445,10 @@ function Recorder({ go, submit, onRecordingStart, partId, projectTracks, layers,
     if(seconds>=project.audioSource.duration)void stop()
   },[status,seconds,project.audioSource])
   useEffect(()=>{
-    if(status!=='review'||!draft?.blob||!project.audioSource)return
+    // Persist the original Take before optional decoding/offline rendering.
+    // Both start at stop(), so rendering here while saveTrack is pending makes
+    // storage compete with Review work and leaves all Take actions waiting.
+    if(status!=='review'||draftSaving||!draft?.blob||!project.audioSource)return
     let active=true,url
     setReviewMix(null)
     Promise.resolve().then(()=>{
@@ -1454,7 +1458,7 @@ function Recorder({ go, submit, onRecordingStart, partId, projectTracks, layers,
       .then(value=>{url=value.url;if(active)setReviewMix(value);else URL.revokeObjectURL(url)})
       .catch(reason=>{if(active)setError(reason.message)})
     return()=>{active=false;if(url)URL.revokeObjectURL(url)}
-  },[status,draft?.blob,project.audioSource?.revision])
+  },[status,draftSaving,draft?.blob,project.audioSource?.revision])
   const provisionalLayer = draft?.features ? buildVoiceLayer(project.seed,currentPart.id,draft.features) : null
   const reviewLayers = finalLayers.map((layer,index)=>index===currentIndex&&provisionalLayer?provisionalLayer:layer)
   return <div className="screen figma-v2 recording-screen recording-v2-screen" data-screen-id="06" data-recording-status={status}>
@@ -2242,7 +2246,13 @@ export default function App() {
   else if (screen==='workspace' || (screen==='complete' && !activeComplete)) content=<Workspace go={go} back={()=>back('detail')} project={activeProject} song={activeSong} isCreated={Boolean(activeCreatedProject)} ownerPartId={activeCreatedProject?.ownerPartId || joinedPart} findVocal={openFinder} joined={joined} invited={invited} invitedPerson={invitedPerson} candidateAccepted={candidateAccepted} candidateArrivalStatus={candidateArrivalStatus} projectTracks={activeTracks} layers={activeLayers} recordPart={recordPart} projectLiked={activeProjectLiked} toggleProjectLike={toggleActiveProjectLike} openVocalProfile={openVocalProfile} mix={activeMix} mixStatus={activeMixStatus} retryAutoMix={retryAutoMix} completionDelayed={delayedProjectIds.includes(activeProject.id)} hasDraft={Boolean(draftKeys[`${activeProject.id}:${activeCreatedProject?.ownerPartId||joinedPart}`])}/>
   else if (screen==='finder') content=<Finder project={activeProject} song={activeSong} tracks={activeTracks} profile={profile} back={()=>back('workspace')} preferences={finderPreferences[finderContextKey]} updatePreferences={patch=>setFinderPreferences(current=>({...current,[finderContextKey]:{...current[finderContextKey],...patch}}))} invite={canSendInvite?invite:null} invitedVocalIds={activeCreatedProject?(activeFinderPart?.invitations||[]).map(item=>item.vocalId):(invited?[invitedVocalId]:[])} part={activeFinderPart} vocalSaves={vocalSaves} toggleVocalSave={toggleVocalSave} openVocalProfile={openVocalProfile} selectedVocalId={selectedMatchVocalId} setSelectedVocalId={setSelectedMatchVocalId}/>
   else if (screen==='vocal-profile') content=<OtherVocalProfile profile={profile} setupVoice={()=>go('voice')} vocal={selectedVocal} back={()=>back('collection')} saved={vocalSaves.some(item=>item.vocalId===selectedVocalId)} toggleSave={toggleVocalSave} sampleUrl={selectedVocal?.sampleUrl} sampleDuration={selectedVocal?.sampleDuration}/>
-  else if (screen==='record') content=<Recorder go={target=>target==='workspace'?back('workspace'):go(target)} submit={submit} onRecordingStart={()=>{touchProjectActivity(activeProject.id);if(!activeCreatedProject)setMainKeyLocked(true);if(activeCreatedProject)setCreatedProjects(current=>current.map(project=>project.id===activeProject.id?{...project,keyLocked:true}:project))}} partId={recordingPart} projectTracks={activeTracks} layers={activeLayers} project={{...activeProject,songTitle:activeSong.title,recordingDuration:activeProject.audioSource?.duration || activeSong.duration.split(":").reduce((total,value)=>total*60+Number(value),0)}} parts={activeParts} onDraftChange={present=>setDraftKeys(current=>({...current,[`${activeProject.id}:${recordingPart}`]:present}))}/>
+  else if (screen==='record') content=<Recorder go={target=>{
+    if(target!=='workspace'){go(target);return}
+    // Recorder only exits here after its Take has been saved. As with submit,
+    // mark the committed exit before Back so popstate cannot re-enter the busy
+    // Recorder guard and bounce forward into a newly mounted recording screen.
+    screenRef.current='workspace';setScreen('workspace');back('workspace')
+  }} submit={submit} onRecordingStart={()=>{touchProjectActivity(activeProject.id);if(!activeCreatedProject)setMainKeyLocked(true);if(activeCreatedProject)setCreatedProjects(current=>current.map(project=>project.id===activeProject.id?{...project,keyLocked:true}:project))}} partId={recordingPart} projectTracks={activeTracks} layers={activeLayers} project={{...activeProject,songTitle:activeSong.title,recordingDuration:activeProject.audioSource?.duration || activeSong.duration.split(":").reduce((total,value)=>total*60+Number(value),0)}} parts={activeParts} onDraftChange={present=>setDraftKeys(current=>({...current,[`${activeProject.id}:${recordingPart}`]:present}))}/>
   else if (screen==='complete') content=<Complete go={go} project={activeProject} song={activeSong} mix={activeMix} layers={activeLayers} projectTracks={activeTracks} projectLiked={activeProjectLiked} toggleProjectLike={toggleActiveProjectLike} openVocalProfile={openVocalProfile}/>
   else if (['projects','collection','my'].includes(screen)) content=<PersonalArea receivedInvitations={receivedInvitations} openReceivedInvitation={openReceivedInvitation} openComplete={openDiscoveredComplete} openMyVoice={()=>go('my')} back={()=>back('home')} mainProject={mainProject} collectionContext={collectionContext} type={screen} go={target=>target==='create-project'?startCreateProject():go(target)} createdProjectTracks={createdProjectTracks} createdMixes={createdMixes} toggleProjectById={id=>setProjectLikes(current=>current.some(item=>item.projectId===id)?current.filter(item=>item.projectId!==id):[...current,{projectId:id,savedAt:new Date().toISOString()}])} editVoice={mode=>{setVoiceEditMode(mode);go("voice")}} updatePreferences={async preferences=>{await saveTrack({id:PROFILE_PROJECT_ID+":preferences",projectId:PROFILE_PROJECT_ID,kind:"voice-preferences",preferences});setProfile(current=>({...current,...preferences}))}} openMainWorkspace={openMainWorkspace} openSong={openSong} openCreatedProject={openCreatedProject} joined={joined} createdProjects={createdProjects} projectLikes={projectLikes} vocalSaves={vocalSaves} songSaves={songSaves} toggleProjectLike={toggleProjectLike} toggleVocalSave={toggleVocalSave} toggleSongSave={toggleSongSave} openVocalProfile={openVocalProfile} profile={profile} layers={layers} trackCount={Object.keys(projectTracks).length} mix={mix} readyForMix={readyForMix} resetDemo={resetDemo} delayedProjectIds={delayedProjectIds}/>
   else content=<Home startVoiceSetup={()=>go('voice')} openMyVoice={()=>go('my')} openSearch={openSearch} mainProject={mainProject} createdProjects={createdProjects} createdProjectTracks={createdProjectTracks} createdMixes={createdMixes} openCreatedProject={openCreatedProject} joined={joined} joinedPart={joinedPart} candidateAccepted={candidateAccepted} openSong={openSong} layers={layers} projectTracks={projectTracks} profile={profile} mix={mix} openCreateProject={()=>startCreateProject(null)} openComplete={openDiscoveredComplete}/>

@@ -43,3 +43,5 @@ Playwright와 Chromium이 필요합니다. 실행 환경의 기존 설치를 재
 캡처는 독립 브라우저 컨텍스트에서 수행하며, 기존 레이아웃 QA와 같은 로컬 참여 시연값을 사용합니다. 녹음·Track 제출·초대·실제 계정 수정은 하지 않습니다. 실행한 버전에 화면이나 필요한 시연 데이터가 없으면 실패를 명시하고 종료 코드 1을 반환합니다. 실패를 다른 화면 캡처로 대체하지 않습니다.
 
 UI QA 완료 시 `npm run qa:capture`를 실행하고, 실제 대상 버전을 명시한 `index.html`과 PNG/manifest가 포함된 ZIP을 사용자에게 전달합니다. 기존의 개별 검증 스크립트 산출물은 기능·상태 검증 근거로 유지합니다. 캡처만으로 기능·오디오·물리 마이크·시각적 승인 완료를 주장하지 않습니다. 이미지 산출물은 Git에 자동 추가하지 않습니다.
+
+`node qa/verify-review-save-order-browser.mjs`는 기존 4-Part 프로젝트의 22초 반주와 합성 마이크 녹음으로 임시 저장 완료를 지연시킨다. 저장 대기 중 Review 디코딩이 시작되지 않는지, 완료 후 미리듣기·내 Tenor 제출·새로고침 원본 해시가 유지되는지 390/430에서 검사한다. `PLAYWRIGHT_MODULE_PATH`, `CHROMIUM_EXECUTABLE_PATH`, `IEUM_BASE_URL`, `IEUM_QA_OUTPUT`, `IEUM_QA_WIDTHS`를 지원한다. 실제 사람·4인 협업·물리 마이크 검증이 아니며 1/4를 완성으로 바꾸지 않는다.
