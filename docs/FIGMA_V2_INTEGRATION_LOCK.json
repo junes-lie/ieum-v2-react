@@ -1,0 +1,6 @@
+{
+  "owner": "interactive-deployment-policy-20261022-74ca471bab36",
+  "baseHead": "6390890d26969243ebd1dbf22d7180d4d3f03985",
+  "scope": "Document Git-only Preview-first workflow and SHA deduplication; preserve deployed baselines and standalone branch",
+  "startedAt": "2026-10-22T10:34:43Z"
+}
