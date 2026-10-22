@@ -55,6 +55,7 @@ try{
    await page.waitForSelector('[data-action="record-pause"]')
    assert.equal(await page.locator('.project-reference audio').count(),0,'Reference listening ends before microphone capture')
    await page.waitForFunction(()=>document.querySelector('.lyrics .active')?.textContent==='오늘도 함께해요');console.log('CHECK',width,actor,'first lyric at 3s')
+   await page.waitForFunction(()=>document.querySelector('[data-recording-entry]')?.textContent.includes('00:03'))
    const atFirst=await page.locator('[data-recording-entry]').textContent();assert.ok(atFirst.includes('00:03'))
    await page.locator('[data-action="record-pause"]').click()
    const paused=await page.locator('[data-recording-entry]').textContent()
