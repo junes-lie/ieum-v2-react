@@ -48,3 +48,11 @@ Key는 원키 고정이며 음고 변환을 하지 않는다. 원곡 생성 당�
 실제 앱: Search의 곡 탭 → 천천히 함께 → 해당 Project → Voice A 또는 B 선택 → 직접 참여 → 녹음. 새 프로젝트도 등록된 반주·가사·원키·2파트 유니즌을 유지한다. 녹음 시작 전 멜로디를 미리 듣고 3초 원곡 반주 뒤 가사에 맞춰 부른다. Guide와 내 마이크 원본은 분리되며 Review는 내 원본+같은 반주의 정렬된 미리듣기를 제공한다.
 
 발표 시연: `?demo=music-a`에서 첫 Track 직접 녹음·Review·제출, `?demo=music-b`에서 두 번째 Track 직접 녹음·Review·제출. 두 역할은 같은 기기의 격리된 시연 DB를 공유하고 실제 사용자 DB·Profile과 분리한다. 두 Track 모두 초기에는 없으며 AI 음원이나 가짜 참여자 Track을 미리 제출하지 않는다. 최종 제출만 Auto Mix를 시작한다. 이 역할 전환은 실제 다기기/서버 협업을 의미하지 않는다.
+
+## 시연 통합 · 2026-10-23
+
+사용자 확정 표시 제목은 **오늘 같은 날**(이전 제목 천천히 함께)이다. 기존 Song/Sample ID·원본 해시·가사·타이밍은 유지한다. 새로운 곡 페이지를 추가하지 않고 기존 A Thousand Years 시연 목록 자리와 동일 Home/Detail/Workspace/Recorder/Complete 컴포넌트의 데이터를 교체한다. 실제 사용자 데이터와 충돌하지 않도록 새 시연 원본 식별자 `presentation:ieum-project-warm-unison-v1`을 격리된 Demo DB에서만 사용한다. 시연 카탈로그에 두 곡을 중복 노출하지 않는다.
+
+2인 유니즌의 원곡 보컬 예시 1개와 OPEN Voice B로 시작한다. 원곡 보컬은 실제 사람의 제출로 주장하지 않는 `provided-song-demo` fixture이며 화면에도 원곡 보컬로 표시한다. 추가 음성 합성이나 같은 원본을 여러 사람으로 복제하지 않는다. 제공 보컬 파일은 기존 22초 reference PCM에서 시간 정렬된 backing PCM을 빼고 MP3로 내보낸 residual이다. 기존 분리 반주와 손실 압축의 잔향이 있으므로 순수 isolated vocal로 주장하지 않는다. SHA256 `dafd068295ba4c4761f9106ad74891e6c0800ab25d82ccb87eae3f7f66d907b1`, 경로 `public/audio/project-warm-unison-v1/provided-vocal.mp3`. 양 입력 해시는 `PRESENTATION_VOCAL`에 고정한다. 원본 파일·가사·사용자 녹음은 변경하지 않는다.
+
+내 Voice B를 녹음하고 직접 제출하면 실제 제출 Track과 제공 예시가 2/2가 되어 등록된 원곡 반주를 포함한 Auto Mix가 시작된다. 합성 마이크 브라우저 QA는 물리 마이크·청취·서버 협업의 성공을 뜻하지 않는다. 유지 QA: `qa/verify-presentation-song-browser.mjs`.

@@ -15,7 +15,7 @@ try{
   await page.goto('http://127.0.0.1:4252/');await seedCreationProfile(page)
   await page.locator('[data-nav="search"]').click()
   await page.getByRole('tab',{name:'곡',exact:true}).click()
-  await page.getByRole('textbox',{name:'곡, 아티스트, 프로젝트 검색'}).fill('천천히 함께')
+  await page.getByRole('textbox',{name:'곡, 아티스트, 프로젝트 검색'}).fill('오늘 같은 날')
   await page.locator('.search-v2-result').click()
   await page.locator('[data-part="voice-a"] .row-action').click()
   await page.locator('[data-action="join-part"]').click()
@@ -45,7 +45,7 @@ try{
 
   await page.goto('http://127.0.0.1:4252/');await page.waitForSelector('.v2-hero')
   await page.locator('[data-nav="search"]').click();await page.getByRole('tab',{name:'곡',exact:true}).click()
-  await page.getByRole('textbox',{name:'곡, 아티스트, 프로젝트 검색'}).fill('천천히 함께');await page.locator('.search-v2-result').click()
+  await page.getByRole('textbox',{name:'곡, 아티스트, 프로젝트 검색'}).fill('오늘 같은 날');await page.locator('.search-v2-result').click()
   assert.equal(await page.locator('.project-carousel>button').count(),1,'Joined registered Project replaces its catalogue row without a duplicate')
   await page.locator('[data-action="create-project-for-song"]').click()
   const key=page.locator('.field-label select');assert.equal(await key.inputValue(),'원키');assert.equal(await key.isDisabled(),true)

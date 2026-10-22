@@ -1,7 +1,8 @@
 # IEUM V2 통합 체크포인트 · 2026-10-23
 
 ## 완료
-- 사용자 지시: 합성 반주·합성 보컬 시연 폐기. oscillator 반주 fallback·demo-stems 자동 주입/프로필 샘플 연결 및 public 합성 WAV 제거. 기존 저장 원본은 삭제하지 않고 합성 Track/Mix 재생 복원에서 제외. 기존 3곡 중 `천천히 함께` 실제 22초 편곡을 홈 첫 모집 프로젝트/첫 곡으로 노출하고 프로필 예시도 해당 제공곡으로 연결. 반주 없는 곡은 녹음 시작 전에 이유 안내. Node QA 13개·실제 3곡/편곡 해시 계약·Pages build 통과. Chromium 390/430 실제 반주 decode/schedule·첫 가사·pause/resume/Review 및 합성 oscillator/asset 요청 0 검증. 전체 22초 연속 녹음 미완료는 유지.
+- 사용자 지시 반영: 제목 **오늘 같은 날**. 기존 A Thousand Years 시연 목록 자리와 동일 Home/Detail/Workspace/Recording/Complete를 교체해 통합했다. 별도 빈 곡을 시연 목록에 추가하지 않는다. 실제 AI 원곡 보컬 예시 1개(명시적 demo) + OPEN Voice B로 시작, 내 Track 제출 뒤 2/2 Auto Mix에 실제 반주를 포함한다. 기존 사용자 DB/원본을 건드리지 않는 격리 Demo fixture이며 출처는 AI_PROVIDED_SAMPLES.md. Node QA 13개·실제 파일 해시 QA·Pages build 및 Chromium 390/430의 22초 자동 정지→Review→제출→실제 22초 Mix/재생 통과. 실제 사람의 참여·물리 마이크·서버 Mix 검증은 아니다.
+- 사용자 지시: 합성 반주·합성 보컬 시연 폐기. oscillator 반주 fallback·demo-stems 자동 주입/프로필 샘플 연결 및 public 합성 WAV 제거. 기존 저장 원본은 삭제하지 않고 합성 Track/Mix 재생 복원에서 제외. 기존 3곡 중 `오늘 같은 날` 실제 22초 편곡을 홈 첫 모집 프로젝트/첫 곡으로 노출하고 프로필 예시도 해당 제공곡으로 연결. 반주 없는 곡은 녹음 시작 전에 이유 안내. Node QA 13개·실제 3곡/편곡 해시 계약·Pages build 통과. Chromium 390/430 실제 반주 decode/schedule·첫 가사·pause/resume/Review 및 합성 oscillator/asset 요청 0 검증. 전체 22초 연속 녹음 미완료는 유지.
 - 모바일 시연 셸 수정: 600px 이하에서 외부 메뉴·베젤·여백 제거, 앱을 100dvh로 표시하고 프로필 등록 완료(profile-ready) 진입만 사용. 데스크톱 선택지는 유지. Pages 하위 경로 로컬 Chromium 390×844/430×932/390×740 및 데스크톱 1280×1000 통과, build·Node QA 13개 통과. 게시 후 실제 URL 확인은 해당 커밋 Actions와 최종 보고로 확인한다. 녹음/매칭 미완료 상태는 아래 그대로 유지.
 - 원격/로컬 통합 브랜치 기준 `39b2fd7d6602d80fed38f493596f726b517ec368`, tree `4ded9f67f5f826a4baa70397d1bed758b7bb4cd4`. 이전 `5e48c3b`/`53d9d0b`/`d99a5a7` 작업 보존. main·Vercel Production·공명 독립 브랜치·Notion/Figma 원본 보존.
 - 기존 완료 유지: Recording 100dvh/Safe Area·하단 조작·Back/임시 보관, Detail/Part 개별 재생 UI 제거, Workspace 선택 Track만 Current Mix, Search 결과별 표현, 실제 프로필/Track 분석 전달·부족 데이터 안내, Pages 반주 URL 검증 변환. 제출 후 낡은 bridge 때문에 Recorder로 forward되던 경합은 39b2fd7에서 수정·배포했다. 반복 구현하지 않는다.
@@ -12,7 +13,7 @@
 - `qa:project-music`와 Track store Node QA PASS. 앱/오디오/renderer 구현과 기존 길이·대기 인수 기준을 유지했다. 모든 진단/캡처/원본은 로컬 `.git/ieum-integration-evidence-review-phase/`에 보존한다.
 
 ## 미완료
-- **22초 A/B 전체 음악 회귀 미통과.** 녹음 중 오디오 시계 지연과 기존 Review disabled 지연의 영구 원인/해결은 미확정. 그래픽 제외·짧은 Take·복원 검사·자원 제한 실행 성공으로 대체하지 않는다. 430 간헐 지연도 미해결이다. 30fps 후보는 이전 실패 후 원복됐으므로 근거 없이 반복하지 않는다. 원본 자르기·길이 재표기·벽시계 대체·대기 완화 금지.
+- **기존 별도 A/B 전체 음악 회귀 미통과.** 새 기본 2인 시연의 22초 회귀 통과와 구분한다. 녹음 중 오디오 시계 지연과 기존 Review disabled 지연의 영구 원인/해결은 미확정. 그래픽 제외·짧은 Take·복원 검사·자원 제한 실행 성공으로 대체하지 않는다. 430 간헐 지연도 미해결이다. 30fps 후보는 이전 실패 후 원복됐으므로 근거 없이 반복하지 않는다. 원본 자르기·길이 재표기·벽시계 대체·대기 완화 금지.
 - 종합 매칭/프로젝트 조화 %의 확정 산식·가중치 없음. 실제 특징 비교 연결과 별개이며 생성용 밝기·거칠기 차이를 궁합 %로 전환하지 않는다.
 - Figma 5화면 최종 픽셀/모션/정적 자산 전체 검수 미완료. 430 비교 캡처에서 Workspace 전체 길이 screenshot 15초 실패(원래 viewport는 보존), 나머지 4화면 전체 내용 캡처. 기기/이어폰 청취·물리 마이크·서버 AI Mix·실제 다중 사용자 검증 미완료.
 

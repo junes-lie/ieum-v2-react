@@ -21,10 +21,10 @@ const parts = [
   {id:'voice-a',name:'Voice A',ko:'보컬 A',color:'#3b82f6',range:'F♯3–E♭4',minMidi:54,maxMidi:63,participantId:null,participant:null,status:'open'},
   {id:'voice-b',name:'Voice B',ko:'보컬 B',color:'#d6b895',range:'F♯3–E♭4',minMidi:54,maxMidi:63,participantId:null,participant:null,status:'open'}
 ]
-export const WARM_PROJECT = {id:WARM_PROJECT_ID,songId:WARM_SONG_ID,name:'원키 · 22초 유니즌',title:'천천히 함께',key:'원키',keyLocked:true,
+export const WARM_PROJECT = {id:WARM_PROJECT_ID,songId:WARM_SONG_ID,name:'원키 · 22초 유니즌',title:'오늘 같은 날',key:'원키',keyLocked:true,
   seed:'ieum:original:warm:unison:intro3:v1',partCount:2,totalParts:2,partIds:parts.map(p=>p.id),parts,
   status:'RECRUITING',progress:0,recordingDuration:22,lyrics:WARM_LYRICS,audioSource:WARM_ARRANGEMENT}
-export const WARM_SONG = {id:WARM_SONG_ID,title:'천천히 함께',artist:'IEUM Originals',genre:'Acoustic pop',duration:'00:22',
+export const WARM_SONG = {id:WARM_SONG_ID,title:'오늘 같은 날',artist:'IEUM Originals',genre:'Acoustic pop',duration:'00:22',
   cover:'/artwork/cover-folk.webp',note:'같은 멜로디를 두 목소리로 부르는 22초 시연곡 · 원키 유지',
   audioSource:WARM_ARRANGEMENT,lyrics:WARM_LYRICS,projects:[WARM_PROJECT]}
 
@@ -34,3 +34,16 @@ export function musicDemoProject(scenario) {
   return {...WARM_PROJECT,demo:true,id:'demo:'+WARM_PROJECT_ID,ownerPartId:scenario.musicPartId,
     name:'실제 음악 녹음 · A/B 시연',parts:parts.map((p,i)=>({...p,participantId:i?'demo-music-b':'jisun',participant:i?'시연 B':'시연 A',status:'ready'}))}
 }
+
+// Isolated presentation fixture: one actual provided vocal example, one open seat.
+// The source is a residual from the existing original/reference and separated backing;
+// it is never described as a real member's microphone submission.
+export const PRESENTATION_VOCAL = Object.freeze({
+  file:'/audio/project-warm-unison-v1/provided-vocal.mp3',
+  sha256:'dafd068295ba4c4761f9106ad74891e6c0800ab25d82ccb87eae3f7f66d907b1',
+  referenceSha256:WARM_ARRANGEMENT.referenceSha256,backingSha256:WARM_ARRANGEMENT.backingSha256,
+  method:'decoded original reference minus its aligned separated backing; MP3 residual, not clean isolated vocals'
+})
+export const PRESENTATION_PROJECT = {...WARM_PROJECT,id:'presentation:'+WARM_PROJECT_ID,
+  name:'원키 · Acoustic Duet',status:'RECORDING',progress:1,demo:true,
+  parts:parts.map((part,index)=>index?{...part}:{...part,participantId:'provided-vocal',participant:'원곡 보컬',status:'submitted',demo:true,disclosure:'기존 AI 제작곡에서 가져온 보컬 시연 Track · 실제 사용자 제출 아님'})}

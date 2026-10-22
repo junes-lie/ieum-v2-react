@@ -1,3 +1,4 @@
+import {WARM_SONG_ID,PRESENTATION_PROJECT} from './projectMusic.js'
 import samples from './providedSamples.json' with {type:'json'}
 // Presentation fixtures use separate storage. Never seed the real user's profile.
 export const DEMO_SCENARIOS = [
@@ -5,7 +6,7 @@ export const DEMO_SCENARIOS = [
   {id:'profile-ready',label:'프로필 등록 완료',detail:'목소리 준비됨 · OPEN Part 직접 참여',flow:'Flow 2A · UF01',screen:'home',profile:true,entry:true},
   {id:'invitation',label:'프로젝트 초대받음',detail:'받은 초대 확인 · 지정 Part 수락 또는 거절',flow:'Flow 2B · UF02',screen:'projects',profile:true,receivedInvitation:true,entry:true},
   {id:'workspace',label:'프로젝트 참여 중',detail:'내 Part 배정됨 · 아직 내 녹음 미제출',flow:'Flow 2C / 2D · UF05 / UF09',screen:'workspace',profile:true,joined:true,entry:true},
-  {id:'music-a',label:'음악 녹음 A',detail:'천천히 함께 · 첫 목소리 직접 녹음',screen:'workspace',profile:true,music:true,musicPartId:'voice-a',actorId:'jisun',actorName:'시연 A'},
+  {id:'music-a',label:'음악 녹음 A',detail:'오늘 같은 날 · 첫 목소리 직접 녹음',screen:'workspace',profile:true,music:true,musicPartId:'voice-a',actorId:'jisun',actorName:'시연 A'},
   {id:'music-b',label:'음악 녹음 B',detail:'두 번째 목소리 제출 → 자동 완성',screen:'workspace',profile:true,music:true,musicPartId:'voice-b',actorId:'demo-music-b',actorName:'시연 B'},
   // Keep existing deep links for QA/bookmarks; these are not user-flow entry choices.
   {id:'participate',label:'참여 직전',detail:'프로필 있음 · OPEN Part 선택',screen:'detail',profile:true},
@@ -17,14 +18,15 @@ const scene = typeof location==='undefined' ? null : new URLSearchParams(locatio
 const requestedRun = typeof location==='undefined' ? null : new URLSearchParams(location.search).get('run')
 export const demoRun = /^[a-zA-Z0-9-]{1,80}$/.test(requestedRun || '') ? requestedRun : null
 export const demoScenario = DEMO_SCENARIOS.find(item=>item.id===scene) || null
+export const presentationMusic = Boolean(demoScenario && !demoScenario.music && demoScenario.id!=='complete')
 export const demoStorageKey = key => demoScenario ? `ieum-demo:${demoScenario.id}:${demoRun&&!demoScenario.music?`run:${demoRun}:`:''}${key}` : key
 export const demoTrackDatabaseName = (id,run=null) => `ieum-v2-demo-records:${id?.startsWith('music-')?'music':`${id}${run?':run:'+run:''}`}`
 export const trackDatabaseName = demoScenario ? demoTrackDatabaseName(demoScenario.id,demoRun) : 'ieum-v2-records'
-export const demoReceivedInvitation = () => ({id:'presentation-invitation-tenor',recipientId:'jisun',projectId:'ieum-thousand-years-v7',songId:'a-thousand-years',projectName:'Original C · Quartet',songTitle:'A Thousand Years',partId:'tenor',partName:'Tenor',senderId:'yoonseul',senderName:'윤슬',status:'pending',demo:true})
+export const demoReceivedInvitation = () => presentationMusic ? {id:'presentation-invitation-vocal',recipientId:'jisun',projectId:PRESENTATION_PROJECT.id,songId:WARM_SONG_ID,projectName:PRESENTATION_PROJECT.name,songTitle:'오늘 같은 날',partId:'voice-b',partName:'Voice B',senderId:'provided-vocal',senderName:'원곡 보컬',status:'pending',demo:true} : ({id:'presentation-invitation-tenor',recipientId:'jisun',projectId:'ieum-thousand-years-v7',songId:'a-thousand-years',projectName:'Original C · Quartet',songTitle:'A Thousand Years',partId:'tenor',partName:'Tenor',senderId:'yoonseul',senderName:'윤슬',status:'pending',demo:true})
 export const demoProfile = () => ({
   name:'시연 프로필',range:'C3–F5 · 시연값',rangeData:{lowMidi:48,highMidi:77},
-  roles:['Tenor'],genres:['Pop ballad'],taste:[],preferredSongIds:['a-thousand-years'],
-  voiceType:'화면 시연용 예시 · 실제 측정값 아님',sampleSong:'천천히 함께 · 제공곡 예시',
+  roles:['Tenor'],genres:['Acoustic pop'],taste:[],preferredSongIds:[WARM_SONG_ID],
+  voiceType:'화면 시연용 예시 · 실제 측정값 아님',sampleSong:'오늘 같은 날 · 제공곡 예시',
   sampleUrl:samples[1].audioFile,sampleDuration:samples[1].duration,
   identity:{status:'blocked',reason:'presentation-fixture'},demo:true
 })
