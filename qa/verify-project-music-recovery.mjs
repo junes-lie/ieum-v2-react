@@ -73,6 +73,34 @@ try {
   await page.locator('[data-action="record-part"]').click();await page.waitForSelector('[data-action="record-submit"]')
   assert.equal(await hash(),firstHash,'Reload must restore exact microphone original')
   assert.equal(await page.evaluate(()=>window.qaMicRequests),0,'Restoring Review does not acquire microphone')
+  // A restored Take must retain the arrangement it was recorded against.
+  // Inject metadata failure into this isolated draft, never a submitted Track.
+  const updateDraftReference=async reference=>page.evaluate(async reference=>{
+   const db=await new Promise((resolve,reject)=>{const q=indexedDB.open('ieum-v2-demo-records:music');q.onsuccess=()=>resolve(q.result);q.onerror=()=>reject(q.error)})
+   try{
+    const tx=db.transaction('tracks','readwrite'),store=tx.objectStore('tracks')
+    const rows=await new Promise((resolve,reject)=>{const q=store.getAll();q.onsuccess=()=>resolve(q.result);q.onerror=()=>reject(q.error)})
+    const draft=rows.find(t=>t.kind==='temporary-recording'&&t.partId==='voice-a')
+    const original=draft.audioSourceRef
+    store.put({...draft,audioSourceRef:reference||{...original,revision:'qa-previous-arrangement'}})
+    await new Promise((resolve,reject)=>{tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error)})
+    return {reference:original,hash:Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',await draft.blob.arrayBuffer())),b=>b.toString(16).padStart(2,'0')).join('')}
+   }finally{db.close()}
+  },reference)
+  const originalDraft=await updateDraftReference(null)
+  await page.reload();await page.locator('[data-action="record-part"]').click();await page.waitForSelector('[data-action="record-submit"]')
+  await page.getByRole('alert').filter({hasText:'녹음 당시 곡·Key·반주 버전'}).waitFor()
+  assert.equal(await page.locator('.record-review audio').count(),0,'A stale arrangement never creates a Review Mix')
+  assert.equal(await page.locator('.record-review .play-btn').isDisabled(),true)
+  assert.equal(await page.evaluate(()=>window.qaMicRequests),0)
+  await page.locator('[data-action="record-submit"]').click()
+  assert.equal((await state()).tracks,0,'Source mismatch cannot submit or complete')
+  const retainedDraft=await updateDraftReference(originalDraft.reference)
+  assert.equal(retainedDraft.hash,firstHash,'Blocked Review retains exact microphone bytes')
+  await page.reload();await page.locator('[data-action="record-part"]').click();await page.waitForSelector('[data-action="record-submit"]')
+  assert.equal(await hash(),firstHash,'Original matching reference restores playable Review')
+  results.push({width,pass:'stale-arrangement-review-blocked-original-preserved-and-valid-restore',original:firstHash})
+  console.log('PASS',width,'stale arrangement blocks Review playback and submit before current backing; exact original retained and valid restore plays')
   await page.evaluate(()=>window.qaRejectSubmission=true)
   await page.locator('[data-action="record-submit"]').click();await page.waitForSelector('.permission-error')
   assert.equal(await hash(),firstHash);assert.equal((await state()).tracks,0)

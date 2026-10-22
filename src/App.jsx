@@ -1413,7 +1413,10 @@ function Recorder({ go, submit, onRecordingStart, partId, projectTracks, layers,
     if(status!=='review'||!draft?.blob||!project.audioSource)return
     let active=true,url
     setReviewMix(null)
-    loadProjectBacking(project).then(backingBlob=>createPreviewMix({tracks:[{...draft,partId:currentPart.id}],backing:true,backingBlob,duration:project.audioSource.duration,timelineDuration:project.audioSource.duration}))
+    Promise.resolve().then(()=>{
+      assertProjectTrackAudio(project,[draft])
+      return loadProjectBacking(project)
+    }).then(backingBlob=>createPreviewMix({tracks:[{...draft,partId:currentPart.id}],backing:true,backingBlob,duration:project.audioSource.duration,timelineDuration:project.audioSource.duration}))
       .then(value=>{url=value.url;if(active)setReviewMix(value);else URL.revokeObjectURL(url)})
       .catch(reason=>{if(active)setError(reason.message)})
     return()=>{active=false;if(url)URL.revokeObjectURL(url)}
