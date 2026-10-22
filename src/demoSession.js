@@ -2,7 +2,7 @@
 export const DEMO_SCENARIOS = [
   {id:'music-a',label:'음악 녹음 A',detail:'천천히 함께 · 첫 목소리 직접 녹음',screen:'workspace',profile:true,music:true,musicPartId:'voice-a',actorId:'jisun',actorName:'시연 A'},
   {id:'music-b',label:'음악 녹음 B',detail:'두 번째 목소리 제출 → 자동 완성',screen:'workspace',profile:true,music:true,musicPartId:'voice-b',actorId:'demo-music-b',actorName:'시연 B'},
-  {id:'first-visit',label:'첫 방문',detail:'프로필 없음 · 홈에서 탐색',screen:'home',profile:false},
+  {id:'first-visit',label:'첫 방문',detail:'등록 전 탐색 · 이후 등록한 내용은 유지',screen:'home',profile:false},
   {id:'profile-ready',label:'프로필 등록 완료',detail:'프로필 있음 · 홈 추천 확인',screen:'home',profile:true},
   {id:'participate',label:'참여 직전',detail:'프로필 있음 · OPEN Part 선택',screen:'detail',profile:true},
   {id:'workspace',label:'작업실',detail:'내 Part 배정 · 2/4 Track',screen:'workspace',profile:true,joined:true},

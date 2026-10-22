@@ -732,7 +732,7 @@ function Home({ mainProject = PROJECT, openSong, openMyVoice, openSearch, layers
     const recordLayers=preview?recruitmentPreviewLayers(entry.project):entry.project.parts.map(part=>entry.tracks[part.id]?.layer||null)
     return <div className="v2-project-record-graphic" data-graphic-source={preview?'catalogue-preview':'project-tracks'}><ResonanceRecord counterRotate compact cataloguePreview={preview} recordRef={entry.project.voiceRecordRef} projectId={entry.project.id} parts={entry.project.parts} tracks={entry.tracks} layers={recordLayers} seed={entry.project.seed} label={preview?`${entry.song.title}, 프로젝트 예시 공명`:`${entry.song.title}, ${entry.submitted}/${entry.partCount} Track 제출`}/></div>
   }
-  return <HomeView header={<TopBar action={<MyVoiceIcon/>} actionLabel="마이보이스 열기" actionId="open-my-voice" onAction={openMyVoice}/>} entries={entries} songs={SONGS} openSong={openSong} openSearch={openSearch} openCreateProject={openCreateProject} formatDuration={fmt} openProject={entry=>entry.publicExample?openComplete(entry.project.id):entry.isCreated?openCreatedProject(entry.project.id):openComplete()} renderRecord={renderRecord}/>
+  return <HomeView header={<TopBar action={<MyVoiceIcon/>} actionLabel="마이보이스 열기" actionId="open-my-voice" onAction={openMyVoice}/>} profile={profile} entries={entries} songs={SONGS} openSong={openSong} openSearch={openSearch} openCreateProject={openCreateProject} formatDuration={fmt} openProject={entry=>entry.publicExample?openComplete(entry.project.id):entry.isCreated?openCreatedProject(entry.project.id):openComplete()} renderRecord={renderRecord}/>
 }
 
 function DetailRangeComparison({part,profile}) {
@@ -1673,7 +1673,7 @@ export default function App() {
   const [history,setHistory] = useState(()=>['workspace','record'].includes(demoScenario?.screen)?['projects']:[])
   const [voiceEditMode,setVoiceEditMode]=useState(null)
   const [voiceReturnScreen,setVoiceReturnScreen]=useState('detail')
-  const [profile,setProfile] = useState(null)
+  const [profile,setProfile] = useState(()=>demoScenario?.profile ? demoProfile() : null)
   useEffect(() => {
     const url=profile?.sampleUrl
     return () => { if(url)URL.revokeObjectURL(url) }
@@ -2092,7 +2092,6 @@ export default function App() {
       const restoredSourceRevision=rangeRecord && sampleRecord ? await voiceSourceRevision(rangeRecord.sourceProvenance,sampleRecord.sourceProvenance) : null
       if(!active)return
       if (rangeRecord && sampleRecord) setProfile({name:'JISUN',voiceSourceRevision:restoredSourceRevision,voiceType:null,range:rangeRecord.range,rangeData:rangeRecord.rangeData,rangeProvenance:rangeRecord.sourceProvenance || null,sampleSong:sampleRecord.songLabel,roles:[],genres:[],taste:[],sampleUrl:restoredUrl(sampleRecord.blob),sampleDuration:sampleRecord.duration,sampleFeatures:sampleRecord.features,sampleProvenance:sampleRecord.sourceProvenance || null,identity:{status:'blocked',reason:'free-local-generative-model-not-connected'},...preferenceRecord?.preferences})
-      if (!(rangeRecord && sampleRecord) && demoScenario?.profile) setProfile(demoProfile())
       if (mixRecord) { setMix({...mixRecord,url:restoredUrl(mixRecord.blob)}); setMixStatus('complete'); setMixProgress(100) }
       const createdTrackEntries = await Promise.all(createdProjects.map(async project=>{
         const records = await loadProjectTracks(project.id)
@@ -2112,6 +2111,14 @@ export default function App() {
     bootstrap().catch(error=>{ const wasActive=active;active=false;releaseRestoredUrls(); console.error(error); if(wasActive)setTracksLoadError('저장한 데이터를 불러오지 못했어요. 원본을 유지하고 다시 시도해 주세요.') })
     return () => { active=false;releaseRestoredUrls() }
   },[tracksLoadAttempt])
+
+  useEffect(() => {
+    if(demoScenario && window.parent!==window) window.parent.postMessage({
+      type:'ieum-demo-profile-state',scene:demoScenario.id,
+      status:tracksLoadError?'error':tracksReady?'ready':'loading',
+      hasProfile:Boolean(profile),example:Boolean(profile?.demo)
+    },location.origin)
+  },[profile,tracksReady,tracksLoadError])
 
   useEffect(() => {
     window.__IEUM_V2__ = {
