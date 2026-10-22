@@ -1,0 +1,19 @@
+{
+  "deploymentId": "dpl_DxXksR48jD74scxbRxCy2eSmaWtN",
+  "commit": "1e33fcdb659873c08c09713708481974af64d96f",
+  "source": "git",
+  "state": "READY",
+  "url": "https://ieum-resonance-preview-qyb6vpfij-junes-lie.vercel.app/",
+  "paths": {
+    "/": 200,
+    "/repetition-candidate.html": 200
+  },
+  "htmlSHA256": "b53caf6c27a4f691d1fc81cae6fc19ca2ac98a958efe51df3690f7c78b30c521",
+  "matchesLocalQA": true,
+  "sameHTML": true,
+  "runtimeMarker": "resonance-entry-v1;siri-eased-3d82976",
+  "remoteAccess": "authenticated Vercel connector; unauthenticated curl still SSO 302",
+  "renderQA": "local HTTP, exact deployment artifact, Chromium SwiftShader 1100 DPR1 / 390 DPR2",
+  "oldDeploymentBodies": "blocked by authentication; metadata only",
+  "manualDeploymentCreates": 0
+}

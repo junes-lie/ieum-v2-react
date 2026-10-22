@@ -157,8 +157,12 @@
 - PC 전체 페이지와 모바일 viewport 캡처를 직접 확인했다. 좁은 화면에서 기존 18% 카메라 여유와 작은 발광 중심/약한 번짐은 유지된다. 수치 통과로 미적 완성을 판정하지 않는다. 캡처는 qa/renders/entry-1100.jpg·entry-390.jpg로 보존한다. 기존 banner의 generic sans-serif 한글은 이 서버 환경에서 일부 대체 글리프로 표시되며 본문 Pretendard와 캔버스는 정상이다. 이번 진입점 범위에서 폰트/조형을 재설계하지 않았다.
 - QA 중 접힌 설정을 열지 않은 검사 코드와 SwiftShader 연속 캡처/페이지 재진입의 timeout을 확인했다. 설정을 연 뒤 검증하고, 기본 경로를 실제 렌더하고 두 산출 HTML 바이트를 비교하는 방식으로 최종 진입점 검사를 완료했다. 중단된 music-box 전체 검사는 이번의 완주 결과로 기재하지 않는다. 원본 복구/모션 소스 보존 해시는 `qa/entry-preservation.json`에 기록한다.
 - 기본 URL 실제 오디오: `qa/entry-audio.cjs` / `qa/entry-audio-verification.json`. 1100/390에서 실제 3트랙 Web Audio source=3, 에너지 >.02, 각 색 높이장 내부 차이 >.01, 스파클 반응 >0, Siri 모션 uniform=1. 정지 후 source=0 및 모든 높이 배율=1 복귀. speed .05와 동일 입력 재현성·무음 감쇠 계산 검사도 통과했다. JS/WebGL 오류 0. 사람 보컬 청취/물리 iPhone/장시간 성능 검증은 이 작업에서 수행하지 않았다.
-- 배포: 이 변경·검증·캡처를 한 커밋으로 묶어 지정 feature 브랜치에 보존한다. Push로 발생하는 공명 프로젝트의 Git 자동 배포를 확인하며 API/CLI 중복 생성은 하지 않는다. 새 배포 기본 URL의 HTTP 본문이 인증에 막히면 READY 메타데이터만으로 원격 실행 검증 완료라고 보고하지 않는다. 최종 사용자 보고에서 실제 URL·커밋·배포/인증 차단 상태를 구분한다.
-- 다음 시작: 이 진입점 커밋의 자동 배포 SHA와 기본 /의 runtime marker·HTML 해시를 확인한다. 원격 인증이 계속 차단되면 사용자 세션의 Visit 확인이 남아 있다. 새 모션 설계/조형 변경은 이번 작업 범위가 아니며 최종 시각 승인도 미완료다.
+- **배포 검증 완료:** Git 자동 배포 `dpl_DxXksR48jD74scxbRxCy2eSmaWtN`, source=git, READY, 커밋 `1e33fcdb659873c08c09713708481974af64d96f`. 기본 주소 `https://ieum-resonance-preview-qyb6vpfij-junes-lie.vercel.app/`. 프로젝트 Production Branch가 지정 feature이므로 이 공명 전용 배포의 target은 production이며 React Production은 수정하지 않았다. 기존 Preview 세 개는 보존했다. API/CLI 배포 생성은 0회.
+- Vercel 전용 커넥터로 새 /와 /repetition-candidate.html 실제 응답을 취득했다. 모두 HTTP 200, runtime marker `resonance-entry-v1;siri-eased-3d82976` 존재. 두 본문과 로컬 QA 실행본의 SHA256이 모두 `b53caf6c27a4f691d1fc81cae6fc19ca2ac98a958efe51df3690f7c78b30c521`로 일치한다. JS·폰트가 내장된 동일 HTML이므로 외부 JS 버전 혼선이 없다. 기록 `qa/entry-deployment-verification.json`.
+- **검증 범위 구분:** 실제 렌더/조작/오디오 검사는 로컬 HTTP에서 배포와 바이트 동일한 산출물로 수행했다. 새 Preview 본문·버전은 인증된 커넥터로 확인했다. 일반 curl/새 브라우저 세션은 계속 SSO 302이므로 그 세션에서 Preview의 시각 렌더를 직접 확인했다고 주장하지 않는다. 예전 세 배포의 실제 HTML 본문은 여전히 인증에 막혔으며 READY 메타데이터만으로 상호 대체를 확정하지 않는다.
+- 최종 배포 결과를 기록하는 문서/JSON 전용 커밋은 `[resonance-docs-only]` 태그로 빌드를 건너뛰도록 이 프로젝트의 Ignored Build Step을 설정했다. 이 태그는 실행 코드 변경 커밋에 사용하지 않는다. 지정 브랜치 이외도 빌드를 건너뛴다. 원격 본문 확인 뒤에만 알 수 있는 배포 결과를 기록하기 위한 후속 문서 커밋이며 추가 실행본 배포를 만들지 않는다.
+- 다음 시작: 로그인된 사용자 Vercel Visit에서 기본 주소가 이 실험본인지 및 실제 iPhone에서 스파클/조작을 확인한다. 코드·기하·스파클·Siri/easing을 재설계하거나 과거 후보로 되돌리지 않는다. 사람 보컬/물리 기기 장시간 성능과 최종 시각 승인은 계속 미완료다.
+
 
 ## 5. 다음 시작 지점 / 범위
 
