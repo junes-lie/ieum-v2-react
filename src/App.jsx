@@ -1937,6 +1937,7 @@ export default function App() {
       partIndex:targetParts.findIndex(item=>item.id===part.id),
       participantId:CURRENT_USER_ID,
       participant:CURRENT_USER_NAME,
+      preferences:preferenceValues(profile),
       blob:draft.blob,
       audioSourceRef:draft.audioSourceRef || null,
       mimeType:draft.mimeType,

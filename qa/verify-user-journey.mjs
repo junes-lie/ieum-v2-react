@@ -63,6 +63,8 @@ try{
  localStorage.setItem('ieum-v2:user-state:v7',JSON.stringify({joined:true,joinedPart:'tenor',invited:true,invitedVocalId:'luna',projectLikes:[{projectId}],songSaves:[{songId:'a-thousand-years'}],vocalSaves:[{vocalId:'luna'}]}))
  await saveTrack(track('soprano'));await saveTrack(track('alto'))
  await saveTrack({id:profileId+':range',projectId:profileId,kind:'voice-range',range:'C3–G4',rangeData:{lowMidi:48,highMidi:67}})
+ const declaredPreferences={roles:['메인 멜로디'],genres:['팝'],taste:['잔잔함'],preferredSongIds:['a-thousand-years']}
+ await saveTrack({id:profileId+':preferences',projectId:profileId,kind:'voice-preferences',preferences:declaredPreferences})
  await saveTrack({id:profileId+':sample',projectId:profileId,kind:'voice-sample',blob,duration:7,songLabel:'QA personal sample',features})
  await saveTrack({id:draftId,projectId,audioSourceRef:currentAudioRef,partId:'tenor',kind:'temporary-recording',userId:'jisun',blob,features,duration:7,guides:{backing:false,parts:[false,false,false,false]}})
  const incompleteStored=[
@@ -144,6 +146,8 @@ try{
   assert.equal(await (await loadTrack(draftId)).blob.text(),await blob.text())
   assert.equal(await (await loadTrack(projectId+':tenor')).blob.text(),await blob.text())
   assert.equal((await loadTrack(projectId+':tenor')).layer.projectSeed,seed)
+  assert.deepEqual((await loadTrack(projectId+':tenor')).preferences,declaredPreferences,'Submission must retain declared Profile preferences for later harmony comparison')
+  assert.notEqual(state().projectTracks.tenor.preferences,state().profile,'Submitted metadata must not reuse a mutable Profile object')
   assert.equal(document.querySelector('[data-action="record-submit"]'),null)
   assert.deepEqual(globalThis.__qaDraftChanges,[],'Failed cleanup must not clear the persisted draft indicator')
   assert.equal(errors.length,1);assert.ok(errors[0].includes('Submitted Track preserved; draft cleanup pending'));errors.length=0
