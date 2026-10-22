@@ -35,3 +35,11 @@
  .demo-preview-caption{display:inline-block;vertical-align:top}.demo-music-entries,.demo-notes{display:inline-block;vertical-align:top;margin-right:14px}
  .demo-menu:has(details[open]){height:auto;max-height:45dvh}
 }
+
+/* A real phone is the app viewport, without presentation controls or a second bezel. */
+@media(max-width:600px){
+ .demo-stage{display:block;padding:0;background:#15110e;--demo-clearance:0px}
+ .demo-menu{display:none}
+ .demo-preview{width:100%;height:100%;max-width:none}
+ .demo-phone{height:100%;height:100dvh;border-radius:0;outline:0;box-shadow:none}
+}
