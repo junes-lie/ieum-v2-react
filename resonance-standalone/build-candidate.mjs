@@ -136,6 +136,13 @@ if(new URLSearchParams(location.search).get('composite')==='1'&&view){
  visual=visual.replace('vLane*3.', '(uSingleLayer>.5?vLane:(mod(floor(vLane*23.+.5),12.)/11.))*3.').replace('vLane*123.', '(uSingleLayer>.5?vLane:(mod(floor(vLane*23.+.5),12.)/11.))*123.');
  visual=visual.replace('CircleGeometry(.72,80)','CircleGeometry(.60,80)');
  await fs.writeFile(path.join(dir,'src/visuals.js'),visual);
+ // Entry defaults are shared by / and the preserved comparison path. Explicit old queries still win.
+ const optionsSource=`export function resonanceOptions(){const p=new URLSearchParams(location.search);for(const [k,v] of Object.entries({repetition:'1',composite:'1',compareMotion:'1',motionStudy:'box',heightStudy:'original'}))if(!p.has(k))p.set(k,v);return p;}\n`;
+ await fs.writeFile(path.join(dir,'src/entry-options.js'),optionsSource);
+ for(const name of ['app.js','profiles.js','visuals.js']){const file=path.join(dir,'src',name);let code=await fs.readFile(file,'utf8');code="import {resonanceOptions} from './entry-options.js';\n"+code.replaceAll('new URLSearchParams(location.search)','resonanceOptions()');await fs.writeFile(file,code);}
+ let entryApp=await fs.readFile(path.join(dir,'src/app.js'),'utf8');
+ entryApp+=`\nif(view&&resonanceOptions().get('composite')==='1'){const nav=document.createElement('nav');nav.setAttribute('aria-label','높이 비교');nav.style.cssText='display:flex;gap:8px;flex-wrap:wrap;margin:12px 0';for(const [label,value] of [['현재 높이','original'],['낮은 높이 비교','soft']]){const a=document.createElement('a'),url=new URL(location.href);url.searchParams.set('heightStudy',value);a.href=url.href;a.textContent=label;a.style.cssText='padding:8px 12px;color:inherit;border:1px solid #6c655b;border-radius:6px';if(resonanceOptions().get('heightStudy')===value)a.setAttribute('aria-current','page');nav.append(a);}const old=document.createElement('a');old.href='./IEUM-Resonance.html';old.textContent='기존 복구 실행본 ↗';old.style.cssText='padding:8px;color:inherit';nav.append(old);document.querySelector('#stage').before(nav);}\n`;
+ await fs.writeFile(path.join(dir,'src/app.js'),entryApp);
  const result=await build({entryPoints:[path.join(dir,'src/app.js')],nodePaths:[path.join(root,'node_modules')],bundle:true,format:'iife',minify:true,write:false,legalComments:'inline'});
  let html=await fs.readFile(path.join(root,'src/index.html'),'utf8');
  const font=await fs.readFile(path.join(root,'public/PretendardVariable.woff2'));
@@ -145,8 +152,11 @@ if(new URLSearchParams(location.search).get('composite')==='1'&&view){
  const licenses=['licenses/THREE-LICENSE.txt','licenses/Pitchy-MIT.txt','licenses/FFT-MIT.txt','licenses/Pretendard-OFL.txt','qa/experiments/music-box/siriwave-LICENSE.txt'];
  let notices='';for(const name of licenses)notices+='\n'+name+'\n'+await fs.readFile(path.join(root,name),'utf8');
  html=html.replace('</body>',()=>`<!-- Third-party notices\n${notices.replaceAll('--','—')}\n--></body>`);
+ html=html.replace('</head>','<meta name="ieum-runtime" content="resonance-entry-v1;siri-eased-3d82976"></head>');
  await fs.writeFile(path.join(root,'public/repetition-candidate.html'),html);
+ await fs.writeFile(path.join(root,'public/index.html'),html);
  await fs.copyFile(path.join(root,'qa/renders/approved-repetition-reference.png'),path.join(root,'public/repetition-reference.png'));
- console.log('Built public/repetition-candidate.html; restored default unchanged');
+ console.log('Built public/repetition-candidate.html; root and comparison are byte-identical; restored baseline preserved');
 } finally { await fs.rm(tmp,{recursive:true,force:true}); }
+
 

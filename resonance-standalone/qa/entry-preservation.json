@@ -1,0 +1,8 @@
+{
+  "src/app.js": "866150b72eaf2b2ca7efdcf7617a817a78c12ff8",
+  "src/profiles.js": "c4e1e962e65825ac702ec19dec7d18208f53db8d",
+  "src/visuals.js": "799043a162b6ee5a0e153b7bf2722733757fb226",
+  "qa/experiments/repetition-candidate/runtime.patch": "775b76e1aad5d8f57e74a57f880c012a00bf7954",
+  "qa/experiments/music-box/motion.mjs": "e5e3ec2f129b30c60994e97d0dacd8be648262cd",
+  "baselineHTMLSHA256": "ee51d9449b80eba332cecf43c61864f8df30bea6eeb5897f04a9fe6a33a0fd2c"
+}

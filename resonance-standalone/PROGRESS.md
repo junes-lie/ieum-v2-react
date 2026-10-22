@@ -1,10 +1,10 @@
 # IEUM Resonance — 현재 작업 상태
 
-최종 갱신: 2026-10-21 KST. **최신 사용자 결정: 2D·3D 모두 색마다 한 겹으로 통일. 선과 입자를 함께 사용한다. 시각 완성 승인은 아직 없다.**
+최종 갱신: 2026-10-22 KST. **최신 사용자 결정: 2D·3D 모두 색마다 한 겹으로 통일. 선과 입자를 함께 사용한다. 시각 완성 승인은 아직 없다.**
 
 ## 1. 현재 작업본
 
-- `/repetition-candidate.html?repetition=1&composite=1`: 세 색 합성. 각 색은 하나의 부모 폐곡선 계열 안에 24개 선과 입자로 구성된다. 색별 보기·대표 곡선/선과 입자·2D↔3D·오디오 조작 제공.
+- `/`와 `/repetition-candidate.html`: 같은 최신 실험 실행본. 쿼리 없이 세 색 합성·3D·현재 높이·SiriWave easing 모션 비교로 시작한다. 각 색은 하나의 부모 폐곡선 계열 안에 24개 선과 입자로 구성된다. 색별 보기·대표 곡선/선과 입자·2D↔3D·오디오 조작 제공.
 - 한 겹은 “선 한 줄”이 아니다. 동일한 큰 경로 안의 내부 결과 입자는 유지한다.
 - `/IEUM-Resonance.html`: 기존 복구 실행본. 이번 변경 범위 밖.
 - 예전 파랑 단독 비교·후보 링크는 역사적 비교 자료이며 최신 작업 시작점이 아니다.
@@ -144,6 +144,21 @@
 - 진폭 생애를 5차 smootherstep으로 변경했다. 원본 .02/frame에서 얻은 진폭별 ramp 시간을 유지하며 생성/목표 도달/감쇠 시작/소멸의 속도와 가속도를 연결한다. abs(sin)은 epsilon .06의 정규화된 부드러운 절댓값으로 바꿔 0 통과의 꺾임을 제거했다. speed .05, 굴곡별 다른 생애, 기존 높은 상한, 매듭/입자와 정지·재생 규칙은 유지했다.
 - `qa/music-box.cjs`: 생성·목표·소멸 경계 및 사인 0점의 기울기 검사, 높이 99%·동일입력 재현·무음 감쇠·PC/모바일 실제 WebGL/오디오·10초 자원 회귀. 기록 `qa/music-box-verification.json`. 검사는 headless Chromium/SwiftShader이며 실제 사용자 기기의 FPS 저하가 전혀 없음을 증명하지 않는다. 현재 원인 확인은 계산상의 불연속 두 곳이며 실기기 프레임 문제와 구별한다.
 - 다음 시작: 이번 easing 연결본에서 중간 걸림과 부드러운 부풀기/잦아들기를 평가한다. 실제 iPhone/사람 보컬/장시간 실기기·최종 시각 승인은 미완료다.
+
+## 4m. 배포 진입점·버전 정합성 복구 — 2026-10-22
+
+- 기준 HEAD `3d82976c961f0857b8d12f0f7a4b583bab9bfa3c`. 조형 또는 모션 재설계가 아닌 진입점 수정이다.
+- 원인: `vercel.json`의 빌드 명령이 `npm run build` 이후 `public/IEUM-Resonance.html`을 `public/index.html`로 복사했다. 복구 기본본과 최신 실험본은 다른 번들을 빌드하므로 같은 배포 SHA 안에서도 `/`와 실험 경로의 동작이 달랐다. 실험본도 composite/repetition 쿼리가 없으면 최신 합성 모드가 아니었다.
+- 변경: candidate 빌드가 동일 HTML을 `index.html`과 `repetition-candidate.html`에 함께 쓴다. 필수 모드 기본값은 두 경로에서 공통 함수로 제공하며 URL을 강제로 변경하지 않는다. 명시한 과거 쿼리는 기본값보다 우선한다. 기존 모션 비교와 색별 보기·2D/3D·입자·재생 UI를 유지하고 현재/낮은 높이 비교 및 복구 실행본 링크를 화면에 제공한다.
+- 보존: src, runtime.patch, 모션 커널, 스파클 셰이더와 형상 생성 로직은 변경하지 않았다. 복구 기본 HTML SHA256 `ee51d9449b80eba332cecf43c61864f8df30bea6eeb5897f04a9fe6a33a0fd2c` 일치. 역사적 비교·이미지·복구 파일은 삭제하지 않는다. 임시 로컬 복원은 qa/recover-polish로 실행본을 덮는 복구가 아니다.
+- 지정 배포 조사: evomkof2k=`87de00105817f665970877d90535a629512c4eb2`, 4unsu4pv2와 p58ztwbsj=`3d82976c961f0857b8d12f0f7a4b583bab9bfa3c`. 세 배포 모두 Vercel 메타데이터 READY; p58도 메타데이터상 남아 있다. 그러나 세 주소의 / 및 /repetition-candidate.html 본문은 Vercel 인증 302 및 공유 링크 거부로 취득하지 못했다. 배포 파일 트리도 404. 메타데이터만으로 실제 바이트 동일 또는 p58 대체 가능하다고 확정하지 않는다.
+- 프로젝트 설정: ieum-resonance-preview의 rootDirectory=resonance-standalone, buildCommand=npm run build, outputDirectory=public으로 명시하고 Ignored Build Step을 지정 브랜치 이외에는 빌드하지 않도록 설정했다. 이 디렉터리의 vercel.json도 해당 브랜치만 git.deploymentEnabled=true로 설정한다. 사용자 지정 Production Branch는 변경하지 않았다. 다른 프로젝트/React/main/Notion/Figma는 수정하지 않았다.
+- 진입점 회귀: `qa/entry.cjs` / `qa/entry-verification.json`. 실제 1100px DPR1·390px DPR2 기본 URL 렌더, 3색·개별 색 UI, 입자 ON/OFF, 2D↔3D 통과. 두 경로 HTML 바이트 동일, 런타임 HTML SHA256 `b53caf6c27a4f691d1fc81cae6fc19ca2ac98a958efe51df3690f7c78b30c521`. 기본 화면에서 3D·모션 비교·현재 높이·스파클이 쿼리 없이 활성화된다. 색별 24선 및 입자 978/950/863 보존. 두 viewport의 기하 지문 동일, JS/WebGL 오류 0.
+- PC 전체 페이지와 모바일 viewport 캡처를 직접 확인했다. 좁은 화면에서 기존 18% 카메라 여유와 작은 발광 중심/약한 번짐은 유지된다. 수치 통과로 미적 완성을 판정하지 않는다. 캡처는 qa/renders/entry-1100.jpg·entry-390.jpg로 보존한다. 기존 banner의 generic sans-serif 한글은 이 서버 환경에서 일부 대체 글리프로 표시되며 본문 Pretendard와 캔버스는 정상이다. 이번 진입점 범위에서 폰트/조형을 재설계하지 않았다.
+- QA 중 접힌 설정을 열지 않은 검사 코드와 SwiftShader 연속 캡처/페이지 재진입의 timeout을 확인했다. 설정을 연 뒤 검증하고, 기본 경로를 실제 렌더하고 두 산출 HTML 바이트를 비교하는 방식으로 최종 진입점 검사를 완료했다. 중단된 music-box 전체 검사는 이번의 완주 결과로 기재하지 않는다. 원본 복구/모션 소스 보존 해시는 `qa/entry-preservation.json`에 기록한다.
+- 기본 URL 실제 오디오: `qa/entry-audio.cjs` / `qa/entry-audio-verification.json`. 1100/390에서 실제 3트랙 Web Audio source=3, 에너지 >.02, 각 색 높이장 내부 차이 >.01, 스파클 반응 >0, Siri 모션 uniform=1. 정지 후 source=0 및 모든 높이 배율=1 복귀. speed .05와 동일 입력 재현성·무음 감쇠 계산 검사도 통과했다. JS/WebGL 오류 0. 사람 보컬 청취/물리 iPhone/장시간 성능 검증은 이 작업에서 수행하지 않았다.
+- 배포: 이 변경·검증·캡처를 한 커밋으로 묶어 지정 feature 브랜치에 보존한다. Push로 발생하는 공명 프로젝트의 Git 자동 배포를 확인하며 API/CLI 중복 생성은 하지 않는다. 새 배포 기본 URL의 HTTP 본문이 인증에 막히면 READY 메타데이터만으로 원격 실행 검증 완료라고 보고하지 않는다. 최종 사용자 보고에서 실제 URL·커밋·배포/인증 차단 상태를 구분한다.
+- 다음 시작: 이 진입점 커밋의 자동 배포 SHA와 기본 /의 runtime marker·HTML 해시를 확인한다. 원격 인증이 계속 차단되면 사용자 세션의 Visit 확인이 남아 있다. 새 모션 설계/조형 변경은 이번 작업 범위가 아니며 최종 시각 승인도 미완료다.
 
 ## 5. 다음 시작 지점 / 범위
 

@@ -1,0 +1,32 @@
+{
+  "htmlSHA256": "b53caf6c27a4f691d1fc81cae6fc19ca2ac98a958efe51df3690f7c78b30c521",
+  "checks": [
+    {
+      "width": 1100,
+      "rootAndComparisonHTMLEqual": true,
+      "colors": true,
+      "particles": true,
+      "transition": true,
+      "layerCounts": [
+        978,
+        950,
+        863
+      ],
+      "geometrySHA256": "c1fb79ec3a93021f353b8d0f5d1613a62eea13c2fb8e80edae832dded4ea3c60"
+    },
+    {
+      "width": 390,
+      "rootAndComparisonHTMLEqual": true,
+      "colors": true,
+      "particles": true,
+      "transition": true,
+      "layerCounts": [
+        978,
+        950,
+        863
+      ],
+      "geometrySHA256": "c1fb79ec3a93021f353b8d0f5d1613a62eea13c2fb8e80edae832dded4ea3c60"
+    }
+  ],
+  "errors": []
+}
