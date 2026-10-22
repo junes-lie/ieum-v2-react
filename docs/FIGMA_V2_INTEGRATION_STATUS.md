@@ -16,6 +16,8 @@
 
 - 사용자 최신 정정: 프로필 등록 완료 진입점은 완성 상태를 보여주는 데모이므로 음역·음색·역할·장르·취향 및 매칭 예시 %를 채움. Part Fit Tenor 96%/프로젝트 조화 92%, 후보 목록/상세/보컬 궁합과 정렬에 동일 예시 사용. demo=true+명시 버전이 있는 시연 Profile에만 적용하며 실제 등록 Profile 계산·실제 Track/음원/4-Part 구성은 유지. 기존 컴포넌트와 레이아웃 재사용. Node 실제 Profile 비적용·fixture 보존 및 Chromium 390/430 등록/미등록·매칭 흐름 검수 통과.
 
+- 상세 가로 슬라이드 공명 누락 수정: 기본 프로젝트에 빠졌던 Part 목록을 연결하고, 선택 여부와 무관하게 각 카드의 Project/Part/참여자/실제 Layer 또는 기존 예시 Layer를 렌더링. 저장 그래픽/실제 Layer 우선, 원본·제출 상태·레이아웃 유지. Node 통합 및 Chromium 390/430에서 두 카드 선택 전후 공명/동일 signature·생성 카드 접근 확인. 48px PNG의 파랑·코랄 입자도 확인. 유지 QA: qa/verify-detail-carousel-resonance-browser.mjs.
+
 ## 미완료
 - 22초 로컬 첫 검사에서 원본 길이 범위 실패 1회 발생. 계측 재검사와 공개 Pages 390/430은 통과했으나 간헐 길이 불일치의 원인은 미확정이며 안정성 완료로 표시하지 않음.
 - 기존 실제 4-Part 전체 녹음/Review/4/4 Auto Mix 회귀 및 장시간 안정성. 필요한 실제 제출 원본 없이 4/4나 완성으로 만들지 않는다. 이전 진단/원본은 `.git/ieum-integration-evidence-review-phase/`에 보존.
