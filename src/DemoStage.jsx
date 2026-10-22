@@ -1,72 +1,69 @@
 import React, {useEffect,useRef,useState} from 'react'
-import {DEMO_SCENARIOS,demoTrackDatabaseName} from './demoSession.js'
+import {DEMO_SCENARIOS} from './demoSession.js'
 import './demo-stage.css'
 
-const demoHref = id => `?demo=${id}`
-export function DemoLauncher() {
-  return <aside className="demo-launcher" aria-label="화면 시연 바로가기">
-    <span>IEUM · PRESENTATION</span><p>화면을 바로 확인하세요.</p>
-    <a href={demoHref('workspace')}>작업실 바로 보기 <span>↗</span></a>
-    <a href={demoHref('recording')}>녹음 화면 바로 보기 <span>↗</span></a>
-    <a href={demoHref('first-visit')}>전체 시연 메뉴 <span>↗</span></a>
-  </aside>
-}
+const savedEntry={id:'saved',label:'저장한 상태로 재방문',detail:'내 프로필·참여·임시 녹음·저장 목록 이어보기',flow:'Flow 3 · UF06 / UF10 / UF12'}
+const entries=[...DEMO_SCENARIOS.filter(item=>item.entry),savedEntry]
+const resolveEntry=id=>id==='saved'?savedEntry:DEMO_SCENARIOS.find(item=>item.id===id)||entries[0]
+const href=(id,run)=>`?demo=${id}${run?'&run='+run:''}`
+const safeRun=value=>/^[a-zA-Z0-9-]{1,80}$/.test(value||'')?value:null
+const newRun=item=>item.entry?crypto.randomUUID():null
 export default function DemoStage({initialScenario}) {
-  const [selected,setSelected]=useState(()=>DEMO_SCENARIOS.find(item=>item.id===initialScenario)||DEMO_SCENARIOS[0])
+  const [selected,setSelected]=useState(()=>resolveEntry(initialScenario))
+  const [run,setRun]=useState(()=>safeRun(new URLSearchParams(location.search).get('run'))||newRun(resolveEntry(initialScenario)))
   const [width,setWidth]=useState(430)
-  const [revision,setRevision]=useState(0)
-  const [resetting,setResetting]=useState(false)
   const [error,setError]=useState('')
-  const [profileState,setProfileState]=useState(null)
+  const [switching,setSwitching]=useState(false)
+  const [snapshot,setSnapshot]=useState(null)
   const frameRef=useRef(null)
+  const initialHash=useRef(location.hash)
+  useEffect(()=>{window.history.replaceState(window.history.state,'',href(selected.id,run))},[])
   useEffect(()=>{
     const receive=event=>{
-      const data=event.data
-      if(event.origin!==location.origin||event.source!==frameRef.current?.contentWindow||data?.type!=='ieum-demo-profile-state'||data.scene!==selected.id)return
-      setProfileState(data)
+      if(event.origin!==location.origin||event.source!==frameRef.current?.contentWindow||event.data?.type!=='ieum-demo-profile-state'||event.data.scene!==selected.id)return
+      setSnapshot(event.data)
     }
     window.addEventListener('message',receive)
     return()=>window.removeEventListener('message',receive)
-  },[selected.id])
+  },[selected.id,run])
   useEffect(()=>{
-    const restore=()=>setSelected(DEMO_SCENARIOS.find(item=>item.id===new URLSearchParams(location.search).get('demo'))||DEMO_SCENARIOS[0])
+    const restore=()=>{const params=new URLSearchParams(location.search);setSnapshot(null);setSelected(resolveEntry(params.get('demo')));setRun(safeRun(params.get('run')))}
     window.addEventListener('popstate',restore)
     return()=>window.removeEventListener('popstate',restore)
   },[])
-  const choose = item => {if(item.id!==selected.id)setProfileState(null);setSelected(item);setError('');window.history.pushState({},'',demoHref(item.id))}
-  // Only presentation databases/keys are affected by this explicit reset.
-  const reset = async () => {
-    setResetting(true);setError('');setProfileState(null)
-    try {
-      const frame=frameRef.current
-      if(frame)frame.src='about:blank'
-      await new Promise(resolve=>setTimeout(resolve,100))
-      await new Promise((resolve,reject)=>{
-        const request=indexedDB.deleteDatabase(demoTrackDatabaseName(selected.id))
-        request.onsuccess=resolve;request.onerror=()=>reject(request.error)
-        request.onblocked=()=>reject(Error('화면을 닫고 다시 시도해 주세요.'))
-      })
-      for(const storage of [localStorage,sessionStorage]){
-        for(const key of Object.keys(storage))if((selected.music?['music-a','music-b']:[selected.id]).some(id=>key.startsWith(`ieum-demo:${id}:`)))storage.removeItem(key)
-      }
-    } catch {setError('시연 초기화에 실패했어요. 다시 시도해 주세요.')}
-    finally {setRevision(value=>value+1);setResetting(false)}
+  const choose=async item=>{
+    if(switching)return
+    setSwitching(true);setError('')
+    try{
+      const prepare=frameRef.current?.contentWindow?.__IEUM_PREPARE_PRESENTATION_SWITCH__
+      if(prepare&&!await prepare()){setError('현재 녹음을 보관한 뒤 다시 선택해 주세요.');return}
+      const nextRun=newRun(item)
+      setSnapshot(null);setSelected(item);setRun(nextRun)
+      window.history.pushState({},'',href(item.id,nextRun))
+    }catch{setError('현재 작업을 보관하지 못했어요. 지금 화면을 유지합니다.')}
+    finally{setSwitching(false)}
   }
-  const currentProfileState=profileState?.scene===selected.id?profileState:null
+  const current=snapshot?.scene===selected.id?snapshot:null
+  const status=current?.status==='error'?'저장 상태를 확인하지 못했어요.':current?.status!=='ready'?'시작 상태 준비 중…':`${current.hasProfile?'프로필 있음':'프로필 없음'} · ${current.joined?'참여 확정':current.pendingInvitations?'받은 초대 대기':'미참여'}`
+  const screenNames={home:'홈',detail:'곡·프로젝트 상세',projects:'내 프로젝트',workspace:'작업실',record:'녹음·Review',voice:'목소리 등록',finder:'보컬 찾기',search:'검색',my:'내 목소리',collection:'컬렉션',complete:'완성곡','vocal-profile':'보컬 프로필','create-project':'새 프로젝트'}
+  const src=selected.id==='saved'?`?embedded=1${initialHash.current}`:`?scene=${selected.id}${run?'&run='+run:''}`
   return <main className="demo-stage">
-    <aside className="demo-menu">
+    <aside className="demo-menu" aria-label="유저플로우 진입점">
       <a className="demo-brand" href="./">IEUM<span>이음</span></a>
-      <p className="demo-eyebrow">VOICE TOGETHER</p>
-      <h1>시연할 순간을<br/>선택하세요.</h1>
-      <nav aria-label="시연 상황 선택">{DEMO_SCENARIOS.map((item,index)=><a key={item.id} href={demoHref(item.id)} aria-current={selected.id===item.id?'page':undefined} onClick={event=>{event.preventDefault();choose(item)}}><span>{String(index+1).padStart(2,'0')}</span><span><strong>{item.label}</strong><small>{item.detail}</small></span><b aria-hidden="true">↗</b></a>)}</nav>
-      <a className="demo-exit" href="./">일반 앱으로 돌아가기 ↗</a>
+      <p className="demo-eyebrow">USER FLOW</p>
+      <h1>어떤 상황에서<br/>시작할까요?</h1>
+      <nav aria-label="사용자 시작 상황">{entries.map((item,index)=><a key={item.id} href={href(item.id,null)} aria-current={selected.id===item.id?'page':undefined} aria-disabled={switching} onClick={event=>{event.preventDefault();choose(item)}}><span>{String(index+1).padStart(2,'0')}</span><span><strong>{item.label}</strong><small>{item.detail}</small></span></a>)}</nav>
+      <p className="demo-entry-note">상황을 선택하면 해당 시작 상태로 열려요.<br/>화면을 이동해도 이 메뉴는 유지됩니다.</p>
+      <details className="demo-music-entries"><summary>실제 음악 A/B 협업 시연</summary>{DEMO_SCENARIOS.filter(item=>item.music).map(item=><a key={item.id} href={href(item.id,null)} aria-current={selected.id===item.id?'page':undefined} onClick={event=>{event.preventDefault();choose(item)}}>{item.label}<small>{item.detail}</small></a>)}</details>
     </aside>
     <section className="demo-preview" aria-label={`${selected.label} 모바일 시연`}>
       <div className="demo-preview-caption"><span>{selected.label}</span><div aria-label="모바일 화면 폭">{[390,430].map(size=><button key={size} aria-pressed={width===size} onClick={()=>setWidth(size)}>{size}</button>)}</div></div>
-      <div className="demo-phone" style={{'--demo-width':`${width}px`}}><iframe ref={frameRef} key={`${selected.id}:${revision}`} title={`IEUM ${selected.label}`} src={`?scene=${selected.id}`} allow="microphone; autoplay" /></div>
+      <div className="demo-phone" style={{'--demo-width':`${width}px`}}><iframe ref={frameRef} key={`${selected.id}:${run||'saved'}`} title={`IEUM ${selected.label}`} src={src} allow="microphone; autoplay"/></div>
       <p className="demo-size">{width} × 932 · MOBILE WEB</p>
-      <p className="demo-size demo-profile-status" role="status" data-demo-profile-state={currentProfileState?.status==='ready'?(currentProfileState.hasProfile?'present':'absent'):currentProfileState?.status||'loading'}>{currentProfileState?.status==='error'?'프로필 상태를 확인하지 못했어요.':currentProfileState?.status!=='ready'?'저장된 프로필 확인 중…':currentProfileState.hasProfile?`현재 프로필 있음${currentProfileState.example?' · 시연 예시':' · 직접 등록'}`:'현재 프로필 없음 · 등록 전 탐색'}</p>
     </section>
-    <aside className="demo-notes"><p className="demo-eyebrow">NOW SHOWING</p><h2>{selected.label}</h2><p>{selected.detail}</p><hr/>{selected.music&&<p>① 음악 녹음 A를 끝내고 제출해 주세요.<br/>② 음악 녹음 B에서 다시 노래하고 제출하면 완성됩니다.<br/>같은 기기의 두 시연 역할이며 두 Track 모두 직접 녹음합니다. 화음 편곡이 아닌 유니즌입니다.</p>}<p>프레임 안에서 실제 버튼을 눌러<br/>다음 화면까지 이어갈 수 있어요.</p><p>녹음은 시작 버튼을 눌렀을 때<br/>마이크 권한을 요청합니다.</p><hr/><p>예시 프로필과 시연 음원을 사용합니다.<br/>기존 프로필·녹음과 별도로 보관됩니다.</p><button className="demo-reset-scene" onClick={reset} disabled={resetting}>{resetting?'초기화 중…':'이 상황 처음부터 다시 보기'}</button>{error&&<p role="alert">{error}</p>}<a href={`?scene=${selected.id}`} target="_blank" rel="noreferrer">현재 화면만 새 탭에서 열기 ↗</a></aside>
+    <aside className="demo-notes"><p className="demo-eyebrow">STARTING CONTEXT</p><h2>{selected.label}</h2><p>{selected.detail}</p><p className="demo-profile-status" role="status" data-demo-profile-state={current?.status==='ready'?(current.hasProfile?'present':'absent'):current?.status||'loading'}>{status}</p>{current?.status==='ready'&&<p data-demo-current-screen>현재 화면 · {screenNames[current.screen]||current.screen}</p>}
+      {selected.id==='saved'?<p>기존에 보관한 내 데이터를 그대로 이어갑니다. 임시 녹음과 제출 Track은 현재 저장 상태를 따릅니다.</p>:selected.music?<p>A와 B는 같은 기기의 두 시연 역할입니다. 각각 직접 녹음하고 제출해야 완성됩니다. A/B 전환은 같은 음악 프로젝트를 이어갑니다.</p>:<p>상황별 예시 데이터로 시작합니다. 다시 선택하면 새로 시작하며, 이전 시연과 기존 내 데이터는 지우지 않습니다.</p>}
+      <p>마이크는 녹음 시작을 누를 때만 열립니다.</p>{error&&<p role="alert">{error}</p>}
+    </aside>
   </main>
 }

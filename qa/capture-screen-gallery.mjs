@@ -17,6 +17,7 @@ const storage=process.env.IEUM_QA_STORAGE_STATE
 const label=process.env.IEUM_CAPTURE_LABEL||'실제 앱 화면 · QA 전용 브라우저'
 const revision=process.env.IEUM_CAPTURE_REVISION||'미지정'
 const scenes=[
+ ['01-first-visit','첫 방문 · 프로필 미등록 안내','home','first-visit'],
  ['01-home','홈','home','profile-ready'],
  ['01S-search','검색','search','search'],
  ['02-detail','곡·프로젝트 상세','detail','participate'],
@@ -29,6 +30,8 @@ const scenes=[
  ['06-recording','녹음 준비','record','recording'],
  ['07-complete','완성곡','complete','complete'],
  ['08-projects','내 프로젝트','projects','workspace'],
+ ['08-invitation','내 프로젝트 · 받은 초대','projects','invitation'],
+ ['02-invitation','상세 · 지정 초대에 응답','detail','invitation','received-invitation'],
  ['09-collection','컬렉션','collection','profile-ready'],
  ['10-my-voice','내 목소리','my','profile-ready'],
  ['01C-create-project','새 프로젝트','create-project','profile-ready'],
@@ -46,7 +49,8 @@ try{
   await context.addInitScript(()=>{if(!localStorage.getItem('ieum-v2:user-state:v7'))localStorage.setItem('ieum-v2:user-state:v7',JSON.stringify({joined:true,joinedPart:'tenor'}))})
   const page=await context.newPage();page.setDefaultTimeout(15000)
   // A share URL may establish a cookie, but is never copied to reports/logs.
-  await page.goto(base,{waitUntil:'domcontentloaded',timeout:60000})
+  const appEntry=new URL(base);appEntry.searchParams.set('embedded','1')
+  await page.goto(appEntry.href,{waitUntil:'domcontentloaded',timeout:60000})
   await page.waitForFunction(()=>window.__IEUM_V2__?.state)
   const clean=new URL(page.url());clean.search='';clean.hash=''
   for(const [id,title,screen,scene,action] of scenes){
@@ -55,7 +59,9 @@ try{
     const target=new URL(clean);target.searchParams.set('scene',scene)
     await page.goto(target.href,{waitUntil:'domcontentloaded',timeout:45000})
     await page.waitForFunction(()=>window.__IEUM_V2__?.state)
-    if(screen==='complete'){
+    if(action==='received-invitation'){
+     await page.locator('[data-action="open-received-invitation"]').click()
+    }else if(screen==='complete'){
      await page.evaluate(()=>{history.replaceState({ieumScreen:'home'},'','#home');dispatchEvent(new PopStateEvent('popstate',{state:history.state}))})
      await page.locator('.v2-completed-card').first().waitFor()
      await page.locator('.v2-completed-card').first().click()
