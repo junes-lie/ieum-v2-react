@@ -1,4 +1,5 @@
-import { readdir, readFile, writeFile } from 'node:fs/promises'
+import { readdir, readFile, writeFile, rename } from 'node:fs/promises'
+import { createHash } from 'node:crypto'
 import { join, extname } from 'node:path'
 
 // GitHub Pages serves this repository under /ieum-v2-react/, not at /.
@@ -9,6 +10,7 @@ const paths = ['audio/', 'artwork/', 'demo-stems/', 'figma/', 'resonance-referen
 const re = new RegExp('(["\\x27\\x60(=])\\/(' + paths.map(p => p.replaceAll('.', '\\.')).join('|') + ')', 'g')
 let files = 0
 let replacements = 0
+const renamedScripts = []
 
 async function walk(dir) {
   for (const item of await readdir(dir, { withFileTypes: true })) {
@@ -20,10 +22,30 @@ async function walk(dir) {
       replacements++
       return lead + prefix + suffix
     })
-    if (after !== before) { await writeFile(path, after); files++ }
+    if (after !== before) {
+      await writeFile(path, after)
+      files++
+      // Vite's original content hash is invalid after rewriting its output.
+      // Rename the rewritten JS so browsers cannot reuse an older cached bundle.
+      if (extname(item.name) === '.js') {
+        const digest = createHash('sha256').update(after).digest('hex').slice(0,12)
+        const next = item.name.replace(/\.js$/, `-pages-${digest}.js`)
+        await rename(path, join(dir, next))
+        renamedScripts.push([item.name, next])
+      }
+    }
   }
 }
 await walk('dist')
+if (renamedScripts.length) {
+  let html = await readFile('dist/index.html', 'utf8')
+  for (const [before, after] of renamedScripts) {
+    if (!html.includes(before)) throw new Error(`Rewritten JS not referenced in index.html: ${before}`)
+    html = html.replaceAll(before, after)
+  }
+  await writeFile('dist/index.html', html)
+}
+if (!renamedScripts.length) throw new Error('No rewritten JavaScript bundle; Pages URL check required')
 console.log('Pages public asset paths rewritten:', replacements, 'in', files, 'files')
 if (replacements === 0) {
   throw new Error('No public asset paths found; review the build before publishing')
