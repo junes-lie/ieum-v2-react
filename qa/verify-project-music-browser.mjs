@@ -25,7 +25,7 @@ try{
   const page=await context.newPage();page.setDefaultTimeout(20000)
   const errors=[];page.on('pageerror',e=>errors.push(e.message))
   page.on('console',m=>{if(m.type()==='error')errors.push(m.text())})
-  await page.goto(base);await page.waitForFunction(()=>window.__IEUM_V2__?.state)
+  await page.goto(new URL('?embedded=1',base).href);await page.waitForFunction(()=>window.__IEUM_V2__?.state)
   await page.evaluate(()=>localStorage.setItem('qa:original-user-sentinel','preserve'))
   const decoded=await page.evaluate(async()=>{
    const ctx=new AudioContext(),result=[]
