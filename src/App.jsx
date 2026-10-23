@@ -993,7 +993,9 @@ function VoiceSetup({ complete, go, back, existing, editMode, songSaves, returnT
   const [samplePlaying, setSamplePlaying] = useState(false)
   const [sampleGuidePlaying,setSampleGuidePlaying]=useState(false)
   const [sampleGuideVolume,setSampleGuideVolume]=useState(.5)
+  const sampleHasVocalGuide=Boolean(sampleSong.vocalGuideFile&&sampleSong.provenance.vocalGuideSha256)
   const sampleGuideEnabled=sampleGuideVolume>0
+  const sampleGuides=volume=>sampleHasVocalGuide?{backing:true,backingVolume:1,vocalVolume:volume,parts:[]}:{backing:volume>0,backingVolume:volume,parts:[]}
   const [sampleInput,setSampleInput]=useState({rms:0,peak:0})
   const sampleWaveformRef=useRef(null)
   const [sampleAudioFailure,setSampleAudioFailure]=useState(false)
@@ -1014,7 +1016,7 @@ function VoiceSetup({ complete, go, back, existing, editMode, songSaves, returnT
   const changeSampleGuideVolume = volume => {
     setSampleGuideVolume(volume)
     if(!['recording','paused'].includes(sampleStatus))return
-    try { updateRecordingGuides({backing:volume>0,backingVolume:volume,parts:[]}); setError('') }
+    try { updateRecordingGuides(sampleGuides(volume)); setError('') }
     catch(reason) { setSampleAudioFailure(true); setError(reason?.message || 'Guide를 재생하지 못했어요. 다시 선택해 주세요.') }
   }
   const finish=async value=>{
@@ -1093,14 +1095,14 @@ function VoiceSetup({ complete, go, back, existing, editMode, songSaves, returnT
     let loadingAudio=true
     try {
       setError('');setSaveFailure(false);setSampleAudioFailure(false);setSampleGuidePlaying(false)
-      const [backingBlob,preparationBlob]=await Promise.all([loadProvidedAudio(sampleSong.backingFile,sampleSong.provenance.backingSha256),loadProvidedAudio(sampleSong.leadInFile,sampleSong.provenance.leadIn.sha256)])
+      const [backingBlob,preparationBlob,vocalGuideBlob]=await Promise.all([loadProvidedAudio(sampleSong.backingFile,sampleSong.provenance.backingSha256),loadProvidedAudio(sampleSong.leadInFile,sampleSong.provenance.leadIn.sha256),sampleHasVocalGuide?loadProvidedAudio(sampleSong.vocalGuideFile,sampleSong.provenance.vocalGuideSha256):null])
       if(lifecycle!==sampleLifecycleRef.current)return
       loadingAudio=false
-      await requestMicrophone({voiceProcessing:sampleGuideEnabled ? true : null})
+      await requestMicrophone({voiceProcessing:sampleHasVocalGuide||sampleGuideEnabled ? true : null})
       if(lifecycle!==sampleLifecycleRef.current)return
       setPermission('granted');setSampleStatus('preparing');setSeconds(0);setLevel(0);setSampleInput({rms:0,peak:0});sampleWaveformRef.current=null
       setSampleCountdown(3)
-      await startRecording({onFrame:frame=>{sampleWaveformRef.current=frame.waveform;setSampleInput({rms:frame.rms||0,peak:frame.peak||0});setLevel(frame.level);setSeconds(frame.elapsedSec || 0)},guides:{backing:sampleGuideEnabled,backingVolume:sampleGuideVolume,parts:[]},guideTracks:[],backingBlob,preparationBlob,preparationDuration:sampleSong.leadInDuration,onPreparation:remaining=>{if(lifecycle===sampleLifecycleRef.current)setSampleCountdown(remaining)},duration:sampleSong.duration})
+      await startRecording({onFrame:frame=>{sampleWaveformRef.current=frame.waveform;setSampleInput({rms:frame.rms||0,peak:frame.peak||0});setLevel(frame.level);setSeconds(frame.elapsedSec || 0)},guides:sampleGuides(sampleGuideVolume),guideTracks:[],vocalGuideBlob,vocalGuideOffsetSec:sampleSong.vocalGuideOffsetSec??0,backingBlob,preparationBlob,preparationDuration:sampleSong.leadInDuration,onPreparation:remaining=>{if(lifecycle===sampleLifecycleRef.current)setSampleCountdown(remaining)},duration:sampleSong.duration})
       if(lifecycle!==sampleLifecycleRef.current){cancelRecording();stopMicrophone();return}
       setPermission('granted');setSampleStatus('recording');setSeconds(0)
       timer.current = window.setInterval(() => setSeconds(getRecordingTimeline().elapsedSec),1000)
@@ -1230,7 +1232,7 @@ function VoiceSetup({ complete, go, back, existing, editMode, songSaves, returnT
             {sampleStatus==='ready'&&<section className="project-reference" aria-label="샘플곡 미리 듣기"><Player figma splitTimeline metalControl source={sampleSong.audioFile} durationHint={sampleSong.duration} playing={sampleGuidePlaying} setPlaying={setSampleGuidePlaying} caption="샘플곡 미리 듣기"/></section>}
             <div className="recording-visual"><img className="v2-recording-thread-art" src="/artwork/figma-recording-thread.png" width="430" height="700" alt="" aria-hidden="true"/><ResonanceRecord projectId="voice-sample-stage" parts={[]} tracks={{}} layers={[]} seed={`voice-sample:${sampleSong.id}`} state={sampleLive?'recording':sampleStatus==='paused'?'paused':'rest'} level={level} label="샘플 녹음 배경 레코드 · 프로젝트 제출 아님" compact/><RecordingInflow active={sampleLive} partIndex={3} level={level} seed={`voice-sample:${sampleSong.id}`} waveformRef={sampleWaveformRef}/></div>
             <div className="recording-lyrics-scene"><div className="lyrics" aria-live="polite"><LiveLyricWave active={sampleLive} level={level} waveformRef={sampleWaveformRef}/>{sampleLyricLines.map((text,index)=><span key={index} data-sample-lyric={index===1||undefined} className={index===1?'active':''} aria-hidden={!text||undefined}>{text}</span>)}</div></div>
-            <label className="v2-guide-volume"><span><span>가이드<br/>반주</span><output>{Math.round(sampleGuideVolume*100)}%</output></span><input aria-label="샘플 가이드 반주 볼륨" type="range" min="0" max="100" step="1" value={Math.round(sampleGuideVolume*100)} style={{'--guide-volume':`${sampleGuideVolume*100}%`}} disabled={sampleBusy} onChange={event=>changeSampleGuideVolume(Number(event.target.value)/100)}/></label>
+            <label className="v2-guide-volume"><span><span>가이드<br/>{sampleHasVocalGuide?'보컬':'반주'}</span><output>{Math.round(sampleGuideVolume*100)}%</output></span><input aria-label={`샘플 가이드 ${sampleHasVocalGuide?'보컬':'반주'} 볼륨`} type="range" min="0" max="100" step="1" value={Math.round(sampleGuideVolume*100)} style={{'--guide-volume':`${sampleGuideVolume*100}%`}} disabled={sampleBusy} onChange={event=>changeSampleGuideVolume(Number(event.target.value)/100)}/></label>
             <div className="v2-instrument" data-instrument-state={sampleStatus} aria-busy={sampleBusy}>
               <div className="recording-timeline v2-instrument-readout" aria-label="샘플 녹음 시간과 입력 상태"><div className="v2-recording-time" data-state={sampleStatus}><span className="v2-recording-indicator" aria-hidden="true"/><span data-sample-entry>{sampleStatus==='recording'?'REC':sampleStatus==='paused'?'일시정지':sampleStatus==='preparing'?`준비 ${sampleCountdown??3}`:'준비'}</span><b data-sample-time>{fmt(seconds)} / {fmt(sampleSong.duration)}</b></div><div className="meter-row" role={sampleLive?'meter':undefined} aria-label={sampleLive?'마이크 입력 레벨':undefined} aria-valuemin={sampleLive?0:undefined} aria-valuemax={sampleLive?100:undefined} aria-valuenow={sampleLive?Math.round(Math.min(1,Math.max(0,level))*100):undefined}><span>MIC {sampleInput.rms>0?`${Math.max(-96,Math.round(20*Math.log10(sampleInput.rms)))} dBFS`:'— dBFS'}</span><b>{sampleLive?(sampleInput.peak>.9?'CLIP':level>.08?'GOOD':'LOW'):sampleStatus==='paused'?'일시정지':'대기'}</b></div></div>
               <div className="recorder-controls">

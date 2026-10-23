@@ -114,10 +114,20 @@
         "duration": 3,
         "method": "Exact float PCM excerpt of verified actual full-song separated backing; no fabricated metronome or vocals added",
         "beatAcceptance": "Pending; actual preceding music context, not confirmed beat count"
+      },
+      "vocalGuideSha256": "dafd068295ba4c4761f9106ad74891e6c0800ab25d82ccb87eae3f7f66d907b1",
+      "vocalGuideLineage": {
+        "projectRevision": "warm-unison-intro3-v1",
+        "sourceSha256": "7ef11d5e7d574134154c7fddc3022654feec474ac5cba70ed24c606232ca0eb9",
+        "offsetSec": 3,
+        "duration": 19,
+        "method": "Reuse the existing verified project vocal guide; skip its preceding 3-second preparation segment. No new separation or generated audio."
       }
     },
     "leadInFile": "/audio/ai-warm-direct-v1/lead-in.wav",
-    "leadInDuration": 3
+    "leadInDuration": 3,
+    "vocalGuideFile": "/audio/project-warm-unison-v1/provided-vocal.mp3",
+    "vocalGuideOffsetSec": 3
   },
   {
     "id": "ieum-ai-rain-v1-sample",
