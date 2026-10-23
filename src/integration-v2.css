@@ -565,3 +565,8 @@ html,.screen{scroll-padding-block-end:calc(92px + env(safe-area-inset-bottom))}
 /* Ready and live lyrics share one anchor; the record rises behind the panel. */
 .recording-v2-screen .lyrics,.recording-v2-screen:not([data-recording-status=review]) .lyrics,.recording-v2-screen:has(.project-reference) .lyrics{margin-top:16px}
 .recording-v2-screen:not([data-recording-status=review]) .recording-visual .record{top:max(100px,calc(100dvh - 672px))}
+
+/* Figma 1616:41508 / 1785:46797–46799: one continuous capsule,
+   not a sliced older SVG. Native border/padding preserve the 1px/2px insets. */
+.recording-v2-screen .record-review .review-actions .v2-take-retake::before{border:0;border-image:none;background:none}
+.recording-v2-screen .v2-take-retake>.v2-retake-metal-surface{position:absolute;inset:0;z-index:-1;pointer-events:none;box-sizing:border-box;border:1px solid transparent;padding:1px;border-radius:24px;background:linear-gradient(167.67552619563168deg,#39332a 3.3488%,#29241e 34.247%,#211d18 65.144%,#3e3428 91.628%) content-box,linear-gradient(168.50280245813315deg,#0e0b08 0%,#17130d 24.139%,#292118 50.003%,#524533 72.418%,#7d6b52 86.212%) padding-box,linear-gradient(163.15270096251732deg,#ebdbbf 1.4536%,#ad9c80 18.93%,#635745 43.204%,#6e5e4a 59.709%,#a68f70 81.07%,#e5d1ad 98.546%) border-box}
