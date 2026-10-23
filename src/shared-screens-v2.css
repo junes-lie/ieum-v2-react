@@ -491,3 +491,6 @@
 .recording-v2-screen .record-review .time-row{display:block;height:44px;min-height:44px;padding:0;}
 .recording-v2-screen .record-review .time-row input{position:absolute;left:0;top:0;height:44px;min-height:44px;margin:0;padding:0;}
 .recording-v2-screen .record-review .player-summary{position:absolute;left:0;top:-1px;}
+
+.detail-v2-screen .detail-fit-title{display:flex;flex-direction:column;gap:8px}
+.detail-v2-screen .detail-fit-title>p{margin:0;font:400 13px/19px var(--font-interface);color:var(--text-secondary)}

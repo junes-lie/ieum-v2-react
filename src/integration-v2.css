@@ -554,3 +554,14 @@ html,.screen{scroll-padding-block-end:calc(92px + env(safe-area-inset-bottom))}
 .home-v2-screen .v2-recommended-heading{display:flex;flex-direction:column;gap:8px;width:100%;}
 .home-v2-screen .v2-recommended-heading>.v2-section-note{margin:0;}
 .home-v2-screen .v2-recommended .v2-song-grid{width:100%;margin:0;grid-template-columns:repeat(3,min(119px,calc((100% - 24px)/3)));}
+
+/* User correction: align the seek itself with the 48px Player surface.
+   Keep clocks outside that row and preserve the 44px keyboard/touch target. */
+.workspace-v2-screen .split-timeline .time-row input{top:2px}
+.workspace-v2-screen .split-timeline .time-row .player-split-clock{margin-top:48px}
+.workspace-v2-screen .split-timeline .time-row:has(input:focus-visible)::after{top:10px}
+.workspace-v2-screen .split-timeline .time-row{min-height:64px}
+
+/* Ready and live lyrics share one anchor; the record rises behind the panel. */
+.recording-v2-screen .lyrics,.recording-v2-screen:not([data-recording-status=review]) .lyrics,.recording-v2-screen:has(.project-reference) .lyrics{margin-top:16px}
+.recording-v2-screen:not([data-recording-status=review]) .recording-visual .record{top:max(100px,calc(100dvh - 672px))}

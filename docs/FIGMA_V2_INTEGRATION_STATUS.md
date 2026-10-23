@@ -1,6 +1,7 @@
 # IEUM V2 통합 체크포인트 · 2026-10-23
 
 ## 완료
+- 사용자 추가 정정(기준b556771): Detail 음역 분석이 Part 미선택/참여 완료 상태에서 사라지던 조건을 제거했다. 선택 Part 또는 먼저 확인할 Part를 분석 참고 대상으로만 사용하며 참여 선택/제출/프로필 점수는 바꾸지 않는다. 미등록은 등록 안내, 실제 프로필은 실제 측정 비교, 기존 데모는 기존 예시 점수를 유지한다. 작업실48px 재생 버튼과44px seek 중심 차이8→0px, 시간은 seek 아래로 분리했다. 녹음 준비/진행 가사 공통 앵커를32px 올리고 준비 화면 첫 가사도 같은 중앙 슬롯에 표시한다. 배경700px Record는120px 올려 패널 위 노출을 늘렸다. 반주/가사 타이밍/원본 데이터와 하단 패널·Safe Area·Guide는 유지한다. 관련build 및 로컬390/430 렌더·좌표·합성 마이크 짧은 시작/정지/Review 확인, 미등록/Part 미선택 분석 표시 확인 통과. 전체 QA는 반복하지 않았다.
 - 기준ad2a785 다음 Completed Credits의 원본 차이를 수정했다. 최신1210:2256/2262/2261 전용 코드·inline 화면 기준으로 기존168px 라벨은 보존하고, CREDITS/참여자·시연 출처/키·날짜 부모를 분리했다. 제목 y39.5→10·중앙 정렬, 참여자 영역 y58.5→36, metadata y126·키/날짜11/16/.22를 복구했다. 실제 Track Credits는68x44 슬롯/열간16/행간0/역할11·이름13 타입을 원본에 맞췄으며 실제4인 완성 검수로 보고하지 않는다. 잘못 연결된336px 질감 PNG 대신 Figma1210:2261의 원본168x168 clean label SVG를 읽기 전용 export하여 Completed에만 연결했다. 기존PNG는 삭제하지 않는다. 460 Record/24·12 그룹/Player·버튼·공명·곡·기존 시연 음원/문구/제출0 보존. 관련build/로컬390·430 좌표·정렬·원본asset로드·실제캡처·런타임 오류 없음 통과. 이번표현수정과 무관한 전체QA·녹음·음원 재생 검사는 반복하지 않는다.
 - 기준951d43a 다음 Home1349:21199/21271 전용 최신 원본 코드·스크린샷과 실제390/430을 대조하여 카드 영역을 수정했다. 추천곡 제목·안내·미등록 CTA의 부모를 복구하고 내부8px/카드와20px를 별도로 유지한다. 430 원본 카드119px(이전119.328px)을 보존하고390에서만 가용 폭에 맞춘다. 최근 프로젝트 참여자22x16→24x24px·축소 제한 제거, 아이콘/참여자 문구 간격6→4px·OPEN 역할 내부4→5px을 복구했다. 72px 썸네일과56px Record/54px 슬리브, 곡명·재킷·실제 추천/미등록 분기·참여 데이터 보존. 관련build 및 두 폭/프로필 유무 해당 두 영역 렌더·좌표·정적 이미지로드·줄바꿈·런타임 오류 없음 확인. 이전 전체QA/44캡처/음원/녹음 검사는 반복하지 않았다.
 - 기준 dd38e58 다음 Detail 분석 영역의 실제 Figma 차이를 수정했다. 최신1713:43329/43310 전용 원본 코드·inline 화면 기준으로 하모니 캡션 좌우20px, 수치32px/Montserrat12·16·.24 및 근거 시작156px를 복구했다. 원래 시각화0/분석16/부모24 간격은 유지한다. 음역 그래프·음표·끝점을 함께 묶은 내부 축을 좌우10px에 두고1713:43318/43327의 원본14px SVG를 읽기 전용으로 내보내 연결했다. 평면 수치 바는 원본의72x12 recessed track/10px satin fill로 복구했다. 실제 음역·데모96/92 및 항목91/95/89·등록 전 분기·오디오/Track은 변경하지 않는다. build와 로컬390/430 해당 영역 캡처·좌표·줄바꿈·런타임 확인 통과. 무관한 전체QA·녹음/MP3 재검사는 반복하지 않는다.
@@ -19,5 +20,7 @@
 - 이번 Push의 Pages build/deploy·공개 commitSha·실제 JS/CSS/MP3 해시 및390/430 화면은 Push 뒤 자기 완료 기록과 대조한다. main·공명 독립 브랜치·Production·Notion/Figma는 변경하지 않고 수동/중복 배포하지 않는다.
 
 ## 다음 시작점
-- 최신 HEAD·소유 잠금·실제 프로세스를 대조하고 나머지 Home/VP/Completed 상태별 원본 차이부터 이어간다. 완료된 Completed Credits clean label/y10·36·126, Home 추천 부모/119px 카드/24px 참여자, Detail 내부축/캡션/수치, 음원/정렬/토글/그룹은 회귀 없이 반복하지 않는다. 이번 공개 Pages SHA/파일·390/430 결과와 자동 Preview는 자기 완료 기록 및 다음 체크포인트에서 대조한다.
+- 최신 HEAD·소유 잠금·실제 프로세스를 대조하고 사용자 수정 범위의 공개 결과를 확인한 뒤 나머지 VP 상태별 원본 차이부터 이어간다. 음역 분석 표시/작업실 중앙 정렬/녹음 가사·Record 상향을 회귀 없이 반복하지 않는다. 완료된 Completed Credits clean label/y10·36·126, Home 추천 부모/119px 카드/24px 참여자, Detail 내부축/캡션/수치, 음원/정렬/토글/그룹은 회귀 없이 반복하지 않는다. 이번 공개 Pages SHA/파일·390/430 결과와 자동 Preview는 자기 완료 기록 및 다음 체크포인트에서 대조한다.
 - 작업 /workspace/scratch/cad8a99a0a38/ieum-focus. 관련 QA `qa/verify-presentation-priority-browser.mjs`, 근거 /tmp/ieum-presentation-* 및 /tmp/ieum-home-preview-before. 관련 근거 /tmp/ieum-detail-analysis-*. 이번 근거 /tmp/ieum-home-cards-*. 이번 근거 /tmp/ieum-completed-credits-*. 자기 owner automation-completed-credits-cad8a99a0a38-1700만 대조하여 완료 기록으로 보존·해제한다.
+
+- 이번 근거 /tmp/ieum-layout-request-{before,after,range}. 자기 owner interactive-recording-layout-cad8a99a0a38만 대조해 완료 기록으로 보존·해제한다.
