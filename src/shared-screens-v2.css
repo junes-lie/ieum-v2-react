@@ -409,7 +409,7 @@
 .home-v2-screen .v2-recruitment{display:flex;flex-direction:column;gap:24px;}
 .home-v2-screen .v2-recruitment-heading{display:flex;flex-direction:column;gap:8px;width:100%;}
 .home-v2-screen .v2-recruitment-heading>.v2-section-note{margin:0;}
-.home-v2-screen .v2-recruitment-feature{display:flex;flex-direction:column;gap:35px;width:100%;}
+.home-v2-screen .v2-recruitment-feature{display:flex;flex-direction:column;gap:32px;width:100%;}
 .home-v2-screen .v2-recruitment-media,.home-v2-screen .v2-recruitment-player{display:flex;flex-direction:column;align-items:center;gap:0;width:100%;}
 .home-v2-screen .v2-recruitment .v2-carousel-nav{position:relative;z-index:3;display:grid;grid-template-columns:44px 70px 44px;gap:0;width:158px;height:48px;flex:none;padding:2px 0;margin:0 0 -12px;}
 .home-v2-screen .v2-carousel-nav>button{display:grid;place-items:center;width:44px;height:44px;min-height:44px;padding:0;}
