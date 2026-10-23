@@ -244,7 +244,7 @@
 .detail-v2-screen .detail-cover{position:relative;min-height:176px;isolation:isolate;display:flex;align-items:flex-end;padding:88px var(--detail-gutter) 8px;}
 .detail-v2-screen .detail-cover>.v2-song-artwork{position:absolute;inset:0;width:100%;height:100%;z-index:-2;border-radius:0;}
 .detail-v2-screen .detail-cover>.v2-song-artwork img{width:100%;height:100%;object-fit:cover;object-position:center 35%;}
-.detail-v2-screen .detail-cover:after{content:'';position:absolute;inset:0;background:linear-gradient(rgba(8,8,8,.1),rgba(8,8,8,.82));z-index:-1;}
+.detail-v2-screen .detail-cover:after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(21,17,14,.1) 0%,rgba(21,17,14,.2) 45%,rgba(21,17,14,.72) 75%,#15110e 100%);z-index:-1;}
 .detail-v2-screen .detail-cover .topbar{position:absolute;inset:0 0 auto;height:72px;min-height:72px;padding:14px 12px;grid-template-columns:44px 1fr 44px;}
 .detail-v2-screen .detail-cover .text-action{width:44px;height:44px;display:grid;place-items:center;padding:0;}
 .detail-v2-screen .detail-song-title{display:flex;flex-direction:column;gap:10px;min-width:0;}
@@ -293,10 +293,11 @@
 .detail-v2-screen .v2-review-play-surface svg{position:relative;}
 .detail-v2-screen .detail-mix-return{min-height:44px;border:0;background:none;color:var(--text-primary);font:400 12px/16px var(--font-interface);text-align:left;}
 .detail-v2-screen .detail-people,.detail-v2-screen .detail-open-parts{display:flex;flex-direction:column;gap:8px;}
-.detail-v2-screen .detail-member-list{display:flex;gap:12px;flex-wrap:wrap;}
-.detail-v2-screen .detail-member{min-width:0;flex:1 1 70px;}
-.detail-v2-screen .detail-member-name{display:flex;align-items:center;gap:6px;background:none;border:0;padding:0;text-align:left;color:inherit;min-height:44px;}
-.detail-v2-screen .detail-member-mark{display:grid;place-items:center;width:30px;height:36px;font:500 18px/24px var(--font-interface);}
+.detail-v2-screen .detail-member-list{display:flex;gap:8px;flex-wrap:wrap;}
+.detail-v2-screen .detail-member{min-width:0;flex:0 0 calc((100% - 16px)/3);}
+.detail-v2-screen .detail-member-name{display:flex;flex-direction:column;align-items:center;gap:4px;width:100%;background:none;border:0;padding:0;text-align:center;color:inherit;min-height:70px;}
+.detail-v2-screen .detail-member-mark{display:grid;place-items:center;width:40px;height:30px;font:500 18px/24px var(--font-interface);}
+.detail-v2-screen .detail-member-mark .v2-participant-knot{width:40px;height:30px;object-fit:contain;}
 .detail-v2-screen .detail-member-name>span:last-child{display:flex;flex-direction:column;}
 .detail-v2-screen .detail-member-name strong{font:500 12px/16px var(--font-interface);}
 .detail-v2-screen .detail-member-name small{font:500 11px/16px var(--font-functional-en);}
@@ -700,25 +701,25 @@
 
 /* AudioPlayer1926:46130: caption, seek and clocks share one48px timeline.
    Only revised callsites opt in; screen groups keep their own spacing. */
-:is(.workspace-v2-screen,.recording-v2-screen,.voice-screen) .audio-player.figma-player.v2-player-compact{position:relative;display:block;isolation:isolate;width:100%;height:48px;min-height:48px;margin:0;padding:0;gap:0;border:0;border-radius:0;background:none;box-shadow:none;}
-:is(.workspace-v2-screen,.recording-v2-screen,.voice-screen) .audio-player.figma-player.v2-player-compact>.play-btn{position:absolute;left:0;top:0;display:grid;place-items:center;width:48px;height:48px;min-height:48px;margin:0;padding:0;border:0;background:none;box-shadow:none;}
-:is(.workspace-v2-screen,.recording-v2-screen,.voice-screen) .audio-player.figma-player.v2-player-compact .v2-review-play-surface{position:absolute;inset:0;display:block;width:48px;height:48px;transform:none;pointer-events:none;}
-:is(.workspace-v2-screen,.recording-v2-screen,.voice-screen) .audio-player.figma-player.v2-player-compact .v2-review-play-surface>img{position:absolute;left:0;top:0;max-width:none;}
-:is(.workspace-v2-screen,.recording-v2-screen,.voice-screen) .audio-player.figma-player.v2-player-compact .v2-review-play-surface>svg{position:absolute;left:calc(50% + .4px);top:50%;width:14.4px;height:14.4px;transform:translate(-50%,-50%);color:#f1e8d8;}
-:is(.workspace-v2-screen,.recording-v2-screen,.voice-screen) .audio-player.figma-player.v2-player-compact>.time-row{position:absolute;left:64px;right:0;top:0;display:block;width:auto;height:48px;min-height:48px;margin:0;padding:0;gap:0;}
-:is(.workspace-v2-screen,.recording-v2-screen,.voice-screen) .audio-player.figma-player.v2-player-compact .player-caption{position:absolute;left:0;right:0;top:0;max-width:100%;height:16px;margin:0;font:500 12px/16px var(--font-functional-en);letter-spacing:.24px;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-:is(.workspace-v2-screen,.recording-v2-screen,.voice-screen) .audio-player.figma-player.v2-player-compact input[type=range]{position:absolute;left:0;top:2px;width:100%;height:44px;min-height:44px;margin:0;padding:0;}
-:is(.workspace-v2-screen,.recording-v2-screen,.voice-screen) .audio-player.figma-player.v2-player-compact input::-webkit-slider-runnable-track{height:3px;border-radius:1.5px;background:#4d4740;}
-:is(.workspace-v2-screen,.recording-v2-screen,.voice-screen) .audio-player.figma-player.v2-player-compact input::-moz-range-track{height:3px;border-radius:1.5px;background:#4d4740;}
-:is(.workspace-v2-screen,.recording-v2-screen,.voice-screen) .audio-player.figma-player.v2-player-compact input::-moz-range-progress{height:3px;background:#4d4740;}
-:is(.workspace-v2-screen,.recording-v2-screen,.voice-screen) .audio-player.figma-player.v2-player-compact input::-webkit-slider-thumb{width:7px;height:7px;margin-top:-2px;border:0;border-radius:50%;background:url('/artwork/figma-player-seek-thumb.svg') center / 7px 7px no-repeat;}
-:is(.workspace-v2-screen,.recording-v2-screen,.voice-screen) .audio-player.figma-player.v2-player-compact input::-moz-range-thumb{width:7px;height:7px;border:0;border-radius:50%;background:url('/artwork/figma-player-seek-thumb.svg') center / 7px 7px no-repeat;}
-:is(.workspace-v2-screen,.recording-v2-screen,.voice-screen) .audio-player.figma-player.v2-player-compact .time-row .player-split-clock{position:absolute;left:0;right:0;top:32px;display:block;width:auto;height:16px;min-height:16px;margin:0;padding:0;pointer-events:none;white-space:nowrap;font:500 12px/16px var(--font-functional-en);letter-spacing:.24px;color:var(--text-secondary);}
-:is(.workspace-v2-screen,.recording-v2-screen,.voice-screen) .audio-player.figma-player.v2-player-compact .player-split-clock>span:first-child{position:absolute;left:0;font:inherit;letter-spacing:inherit;color:inherit;}
-:is(.workspace-v2-screen,.recording-v2-screen,.voice-screen) .audio-player.figma-player.v2-player-compact .player-split-clock>span:last-child{position:absolute;right:0;font:inherit;letter-spacing:inherit;color:inherit;}
+:is(.workspace-v2-screen,.recording-v2-screen,.voice-screen,.detail-v2-screen) .audio-player.figma-player.v2-player-compact{position:relative;display:block;isolation:isolate;width:100%;height:48px;min-height:48px;margin:0;padding:0;gap:0;border:0;border-radius:0;background:none;box-shadow:none;}
+:is(.workspace-v2-screen,.recording-v2-screen,.voice-screen,.detail-v2-screen) .audio-player.figma-player.v2-player-compact>.play-btn{position:absolute;left:0;top:0;display:grid;place-items:center;width:48px;height:48px;min-height:48px;margin:0;padding:0;border:0;background:none;box-shadow:none;}
+:is(.workspace-v2-screen,.recording-v2-screen,.voice-screen,.detail-v2-screen) .audio-player.figma-player.v2-player-compact .v2-review-play-surface{position:absolute;inset:0;display:block;width:48px;height:48px;transform:none;pointer-events:none;}
+:is(.workspace-v2-screen,.recording-v2-screen,.voice-screen,.detail-v2-screen) .audio-player.figma-player.v2-player-compact .v2-review-play-surface>img{position:absolute;left:0;top:0;max-width:none;}
+:is(.workspace-v2-screen,.recording-v2-screen,.voice-screen,.detail-v2-screen) .audio-player.figma-player.v2-player-compact .v2-review-play-surface>svg{position:absolute;left:calc(50% + .4px);top:50%;width:14.4px;height:14.4px;transform:translate(-50%,-50%);color:#f1e8d8;}
+:is(.workspace-v2-screen,.recording-v2-screen,.voice-screen,.detail-v2-screen) .audio-player.figma-player.v2-player-compact>.time-row{position:absolute;left:64px;right:0;top:0;display:block;width:auto;height:48px;min-height:48px;margin:0;padding:0;gap:0;}
+:is(.workspace-v2-screen,.recording-v2-screen,.voice-screen,.detail-v2-screen) .audio-player.figma-player.v2-player-compact .player-caption{position:absolute;left:0;right:0;top:0;max-width:100%;height:16px;margin:0;font:500 12px/16px var(--font-functional-en);letter-spacing:.24px;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+:is(.workspace-v2-screen,.recording-v2-screen,.voice-screen,.detail-v2-screen) .audio-player.figma-player.v2-player-compact input[type=range]{position:absolute;left:0;top:2px;width:100%;height:44px;min-height:44px;margin:0;padding:0;}
+:is(.workspace-v2-screen,.recording-v2-screen,.voice-screen,.detail-v2-screen) .audio-player.figma-player.v2-player-compact input::-webkit-slider-runnable-track{height:3px;border-radius:1.5px;background:#4d4740;}
+:is(.workspace-v2-screen,.recording-v2-screen,.voice-screen,.detail-v2-screen) .audio-player.figma-player.v2-player-compact input::-moz-range-track{height:3px;border-radius:1.5px;background:#4d4740;}
+:is(.workspace-v2-screen,.recording-v2-screen,.voice-screen,.detail-v2-screen) .audio-player.figma-player.v2-player-compact input::-moz-range-progress{height:3px;background:#4d4740;}
+:is(.workspace-v2-screen,.recording-v2-screen,.voice-screen,.detail-v2-screen) .audio-player.figma-player.v2-player-compact input::-webkit-slider-thumb{width:7px;height:7px;margin-top:-2px;border:0;border-radius:50%;background:url('/artwork/figma-player-seek-thumb.svg') center / 7px 7px no-repeat;}
+:is(.workspace-v2-screen,.recording-v2-screen,.voice-screen,.detail-v2-screen) .audio-player.figma-player.v2-player-compact input::-moz-range-thumb{width:7px;height:7px;border:0;border-radius:50%;background:url('/artwork/figma-player-seek-thumb.svg') center / 7px 7px no-repeat;}
+:is(.workspace-v2-screen,.recording-v2-screen,.voice-screen,.detail-v2-screen) .audio-player.figma-player.v2-player-compact .time-row .player-split-clock{position:absolute;left:0;right:0;top:32px;display:block;width:auto;height:16px;min-height:16px;margin:0;padding:0;pointer-events:none;white-space:nowrap;font:500 12px/16px var(--font-functional-en);letter-spacing:.24px;color:var(--text-secondary);}
+:is(.workspace-v2-screen,.recording-v2-screen,.voice-screen,.detail-v2-screen) .audio-player.figma-player.v2-player-compact .player-split-clock>span:first-child{position:absolute;left:0;font:inherit;letter-spacing:inherit;color:inherit;}
+:is(.workspace-v2-screen,.recording-v2-screen,.voice-screen,.detail-v2-screen) .audio-player.figma-player.v2-player-compact .player-split-clock>span:last-child{position:absolute;right:0;font:inherit;letter-spacing:inherit;color:inherit;}
 /* Keep the44px hit target; only the seek lane receives a focus ring. */
-:is(.workspace-v2-screen,.recording-v2-screen,.voice-screen) .audio-player.figma-player.v2-player-compact input:focus-visible{outline:none;}
-:is(.workspace-v2-screen,.recording-v2-screen,.voice-screen) .audio-player.figma-player.v2-player-compact .time-row:has(input:focus-visible)::after{content:"";position:absolute;left:0;right:0;top:17px;height:14px;box-sizing:border-box;border:1px solid var(--text-primary);border-radius:3px;pointer-events:none;}
+:is(.workspace-v2-screen,.recording-v2-screen,.voice-screen,.detail-v2-screen) .audio-player.figma-player.v2-player-compact input:focus-visible{outline:none;}
+:is(.workspace-v2-screen,.recording-v2-screen,.voice-screen,.detail-v2-screen) .audio-player.figma-player.v2-player-compact .time-row:has(input:focus-visible)::after{content:"";position:absolute;left:0;right:0;top:17px;height:14px;box-sizing:border-box;border:1px solid var(--text-primary);border-radius:3px;pointer-events:none;}
 /* Preserve each screen's parent relationships around the shared player. */
 .workspace-v2-screen .current-mix:has(>.v2-player-compact)>.presentation-audio-note{display:block;margin-top:18px;font:500 11px/16px var(--font-interface);color:var(--text-secondary);}
 .recording-v2-screen .project-reference:has(>.v2-player-compact){height:130px;padding-top:12px;}
