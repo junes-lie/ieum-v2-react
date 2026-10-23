@@ -266,7 +266,7 @@
 .detail-v2-screen .detail-project-copy strong,.detail-v2-screen .detail-project-copy small{font:500 11px/16px var(--font-functional-en);letter-spacing:.02em;overflow-wrap:anywhere;}
 .detail-v2-screen .detail-project-copy strong{color:var(--text-primary);}
 .detail-v2-screen .detail-project-copy small{color:var(--text-secondary);}
-.detail-v2-screen .detail-project-check{position:absolute;right:10px;top:10px;width:18px;height:18px;border-radius:50%;display:grid;place-items:center;background:#dcccad;color:#302e29;}
+.detail-v2-screen .project-carousel>button.active .detail-project-check{position:absolute;right:10px;top:10px;width:18px;height:18px;border-radius:50%;display:grid;place-items:center;background:#dcccad;color:#25211C;}
 .detail-v2-screen .detail-selected{display:flex;flex-direction:column;gap:16px;}
 .detail-v2-screen .detail-selected-heading{display:flex;flex-direction:column;gap:6px;}
 .detail-v2-screen .detail-selected-heading p{font:500 12px/16px var(--font-interface);color:#dcccad;margin:0;}
