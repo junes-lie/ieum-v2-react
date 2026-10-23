@@ -191,9 +191,9 @@ function VoiceIdentity({ identity, suppliedPreview = false }) {
     return()=>{current=false;resource?.dispose()}
   },[selectorKey])
   const displayed=selectorKey?(stored?.key===selectorKey && !stored.result?.disposed?stored.result:null):identity
-  if (!displayed?.image && suppliedPreview && !selectorKey) return <figure className="voice-identity" data-artwork-kind="supplied-identicon" aria-label="프로필 매듭 미리보기">
-    <img src="/artwork/profile-knot.webp" alt="프로필 매듭 미리보기 · 제공된 이미지" />
-    <figcaption>제공된 매듭 이미지 · 개인 음성 기반 AI 생성 전</figcaption>
+  if (!displayed?.image && suppliedPreview && !selectorKey) return <figure className="voice-identity" data-artwork-kind="presentation-generated-identicon" aria-label="프로필 매듭 미리보기">
+    <img src="/artwork/identicon-teal-presentation.png" alt="내 프로필 매듭 · 시연용 이미지" style={{objectFit:'contain'}} />
+    <figcaption>시연용 매듭 이미지 · 개인 음성 기반 분석 결과 아님</figcaption>
   </figure>
   if (!displayed?.image) return <figure className="voice-identity pending" aria-label="Voice Identity 생성 대기">
     <div><span>VOICE IDENTITY</span><strong>{selectorKey?'저장 결과 확인':'생성형 AI 미검증'}</strong><small>{selectorKey?(stored?.key===selectorKey?'지정된 생성 결과를 확인하지 못했어요.':'지정된 생성 결과를 불러오고 있어요.'):'대표 Voice Sample은 저장됐지만 무료·로컬 생성 모델이 연결되지 않았습니다.'}</small></div>

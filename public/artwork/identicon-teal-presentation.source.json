@@ -1,7 +1,7 @@
 {
   "kind": "static-presentation-identicon",
   "generatedWith": "built-in image_gen",
-  "participant": "Min / Bass",
+  "participant": "나 / JISUN / Tenor",
   "notMeasuredVoiceIdentity": true,
   "file": "identicon-teal-presentation.png",
   "references": [
@@ -9,5 +9,6 @@
     "identicon-coral.png",
     "identicon-cream.png"
   ],
-  "prompt": "Refine image 1 only to match restrained small UI icons 2-4. Keep its teal interwoven nested fine-line knot concept, but make it much less white and less sparkly: reduce white highlight brightness and particle size by about half, eliminate large round glowing dots and bright diffuse cyan halo. Curves should be made of crisp thin sea-green parallel threads and densely tiny grains like references. Teal #2eb6ad as dominant color. Change overall silhouette to a low, wide asymmetric intertwined double-fold knot, with one small upper loop and a larger crossing lower loop, distinct from cream trefoil while preserving organic flowing continuous closed curves repeated inward. No solid glass/material surfaces, no thick shiny tubes. Transparent background and generous empty margins, no text, no other objects. Asset for a fourth Bass participant, matching density and brightness of the original reference icons at 48px."
+  "prompt": "Refine image 1 only to match restrained small UI icons 2-4. Keep its teal interwoven nested fine-line knot concept, but make it much less white and less sparkly: reduce white highlight brightness and particle size by about half, eliminate large round glowing dots and bright diffuse cyan halo. Curves should be made of crisp thin sea-green parallel threads and densely tiny grains like references. Teal #2eb6ad as dominant color. Change overall silhouette to a low, wide asymmetric intertwined double-fold knot, with one small upper loop and a larger crossing lower loop, distinct from cream trefoil while preserving organic flowing continuous closed curves repeated inward. No solid glass/material surfaces, no thick shiny tubes. Transparent background and generous empty margins, no text, no other objects. Asset for a fourth Bass participant, matching density and brightness of the original reference icons at 48px.",
+  "usageCorrection": "사용자 정정: 기존 프로필 등록 완료의 나/사용자 표시 전체. Min/Bass는 기존 크림 매듭 사용. 생성 당시 프롬프트는 원문 보존."
 }

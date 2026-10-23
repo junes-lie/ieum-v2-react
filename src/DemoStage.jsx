@@ -5,7 +5,7 @@ import './demo-stage.css'
 const savedEntry={id:'saved',label:'저장한 상태로 재방문',detail:'내 프로필·참여·임시 녹음·저장 목록 이어보기',flow:'Flow 3 · UF06 / UF10 / UF12'}
 const entries=[...DEMO_SCENARIOS.filter(item=>item.entry),savedEntry]
 // Phones present only the registered-profile entry; desktop keeps every scenario.
-const resolveEntry=id=>id==='finale'?DEMO_SCENARIOS.find(item=>item.id==='finale'):window.matchMedia('(max-width: 600px)').matches
+const resolveEntry=id=>window.matchMedia('(max-width: 600px)').matches
   ? DEMO_SCENARIOS.find(item=>item.id==='profile-ready')
   : id==='saved'?savedEntry:DEMO_SCENARIOS.find(item=>item.id===id)||entries[0]
 const href=(id,run)=>`?demo=${id}${run?'&run='+run:''}`

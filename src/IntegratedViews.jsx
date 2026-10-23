@@ -8,17 +8,17 @@ import figmaAssets from './figmaAssets.json' with { type: 'json' }
 const participantKnots = {
   yoonseul: '/artwork/identicon-blue.png',
   doyoon: '/artwork/identicon-coral.png',
-  jisun: '/artwork/identicon-cream.png',
-  min: '/artwork/identicon-teal-presentation.png'
+  jisun: '/artwork/identicon-teal-presentation.png',
+  min: '/artwork/identicon-cream.png'
 }
 
 export function ParticipantKnot({participantId,name}) {
   const src=participantKnots[participantId]
-  return src?<img className="v2-participant-knot" data-artwork-kind={participantId==='min'?'presentation-generated-identicon':'supplied-identicon'} src={src} width="128" height="128" alt=""/>:name?.slice(0,1)
+  return src?<img className="v2-participant-knot" data-artwork-kind={participantId==='jisun'?'presentation-generated-identicon':'supplied-identicon'} src={src} width="128" height="128" alt=""/>:name?.slice(0,1)
 }
 
 export function MyVoiceIcon({profile}) {
-  return <span className="v2-profile-icon" data-profile-state={profile?'present':'absent'} aria-hidden="true">{profile?<img src="/artwork/profile-knot.webp" alt="" width="26" height="26"/>:<Icon name="user" size={20}/>}</span>
+  return <span className="v2-profile-icon" data-profile-state={profile?'present':'absent'} aria-hidden="true">{profile?<img src="/artwork/identicon-teal-presentation.png" alt="" width="26" height="26"/>:<Icon name="user" size={20}/>}</span>
 }
 
 export function SongArtwork({song,className=''}) {
