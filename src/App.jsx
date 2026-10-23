@@ -869,6 +869,7 @@ function Detail({ go, back, song, profile, join, layers, projectTracks, songSave
   const metricScores=demoMatch?[demoMatch.timbre,demoMatch.role,demoMatch.taste]:['timbre','role','taste'].map(key=>harmony.metrics?.[key]?.score??null)
   const analysisFit=evaluatePartFit({rangeData:profile?.rangeData,part:analysisPart})
   const demoPartFit=demoMatch?profile.matchingPreview.parts[analysisPart?.id]:null
+  const partFitPercent=demoPartFit??analysisFit.coveragePercent
   const renderCarouselRecord = project => {
     const parts=project.id===PROJECT_ID?mainDisplayParts:(project.parts||[])
     const tracks=project.id===PROJECT_ID?mainTracks:(createdProjectTracks[project.id]||{})
@@ -890,8 +891,8 @@ function Detail({ go, back, song, profile, join, layers, projectTracks, songSave
         <div className="detail-selected"><div className="detail-selected-heading"><p>선택한 프로젝트</p><h2>{selectedProject.name}</h2></div><div className="detail-project-body"><div className="detail-record"><ResonanceRecord recordRef={selectedProject.voiceRecordRef} parts={displayParts} projectId={selectedProject.id} tracks={listenTracks} cataloguePreview={!isLiveProject&&!isCreatedProject} layers={projectLayers} active={staticActive} seed={selectedProject.seed}/><p aria-label={`${String(submitted).padStart(2,'0')}/${String(selectedProject.partCount).padStart(2,'0')} · ${selectedProject.status}`}>{selectedProject.key} · {submitted}/{selectedProject.partCount}</p><small>{keyLocked?'첫 녹음 시작 후 Key 고정':'첫 녹음 시작 전 조정 가능'}</small></div>{isLiveProject||isCreatedProject||selectedProject.audioSource?<CurrentMixPanel detailMode presentationPreview={isLiveProject?PRESENTATION_AUDIO:null} key={selectedProject.id} project={selectedProject} parts={displayParts} projectTracks={listenTracks} openVocalProfile={openVocalProfile} partAction={part=>(isLiveProject||selectedProject.audioSource)&&['open','recruiting'].includes(part.status)?{action:()=>setSelectedPartId(part.id),label:selectedPartId===part.id?'선택됨':'확인'}:{}}/>:<div className="detail-listening"><p>참여한 멤버 {members.length}명</p>{displayParts.map(part=><PartRow waveform={false} key={part.id} part={part} onParticipant={part.participantId?()=>openVocalProfile(part.participantId):undefined}/>)}</div>}</div></div>
       </section>
       {!profile&&!receivedInvitation&&openParts.length>0&&(!action||action.id==='voice-setup')?<section className="detail-profile-guide" data-testid="detail-profile-guide" aria-label="목소리 프로필 등록 안내"><h2>내 목소리를 아직 등록하지 않았어요.</h2><p>음역과 목소리 샘플을 등록해요. 약 1–2분 걸려요.</p><ProjectActionButton actionId="voice-setup" onClick={()=>go('voice')} label="내 목소리 알아보기"/><small>{chosen?`${chosen.name} Part를 확인하러 이 프로젝트로 돌아와요.`:'등록 후 이 곡과 프로젝트로 돌아와 빈 Part를 선택해요.'} 탐색과 듣기는 먼저 할 수 있어요.</small></section>:action&&<div className="detail-project-action"><ProjectActionButton actionId={action.id} onClick={action.click} label={action.label}/></div>}
-      {analysisPart&&<section className="fit-panel detail-fit" data-testid="part-fit" data-analysis-part={analysisPart.id}><div className="detail-fit-title"><p>음역대 분석 · {analysisPart.name}</p><div className="detail-fit-heading"><h2>이 파트를 부를 수 있나요?</h2><span>음역 적합 <b data-match-percent={demoPartFit!=null||undefined}>{demoPartFit!=null?`${demoPartFit}%`:profile?(analysisFit.requiredRange?'참고 비교':'정보 부족'):'등록 필요'}</b></span></div></div><DetailRangeComparison part={analysisPart} profile={profile}/><p>{demoMatch?`${analysisPart.name}의 요구 음역과 잘 맞고, 주로 부르는 구간도 편안해요.`:profile?analysisFit.reasons.join(' '):'음역과 목소리 샘플을 등록해요. 약 1–2분 걸려요.'}</p><small>음역 비교는 참고 정보예요. 요구 음역을 벗어나도 참여할 수 있어요.</small></section>}
-      {profile&&<section className="detail-harmony" data-harmony-method={demoMatch?'demo':harmony.method} data-harmony-status={harmonyLoading?'loading':harmony.status} data-harmony-source={harmony.provenance?.target?.kind}><div className="detail-harmony-visual"><h2>내 목소리가 더해지면</h2><figure><img src="/artwork/figma-detail-harmony.png" width="382" height="130" alt="목소리가 프로젝트에 연결되는 공명 일러스트"/><figcaption><span>나의 목소리{chosen?` · ${chosen.name}`:''}</span><span>프로젝트 하모니 · {harmonyMembers.map(part=>part.name).join(' + ')||'참여 대기'}</span></figcaption><small>{demoMatch?'시연 프로필 기준 · 매칭 예시':'결합 방식 예시 · 개인 분석 결과가 아니에요.'}</small></figure></div><div className="detail-harmony-analysis"><div className="detail-harmony-summary"><p>{chosen?`${harmonyMembers.length}명의 목소리에 ${chosen.name}를 더해요.`:'함께할 목소리의 조화를 확인해요.'}</p><span>참여 후 예상 조화 <b data-match-percent={Boolean(demoMatch)||undefined} data-harmony-score={!demoMatch&&harmony.score!=null?harmony.score:undefined} aria-live="polite">{demoMatch?`${demoMatch.overall}%`:harmonyLoading?'분석 중':harmony.score!=null?`${harmony.score}%`:'비교 데이터 부족'}</b></span></div><div className="detail-match-reasons">{(demoMatch?[['음색','맑은 중음이 기존 보컬의 따뜻한 음색과 자연스럽게 어울려요.'],['역할',`${chosen?.name||'Tenor'}가 멜로디와 화음 사이를 연결해요.`],['취향','발라드·팝과 어쿠스틱 취향을 함께 즐겨요.']]:harmony.reasons).map(([label,reason],index)=><div key={label} data-harmony-metric={['timbre','role','taste'][index]}><span>{label}</span><span className="detail-metric-track" aria-hidden="true">{metricScores[index]!=null&&<i style={{width:`${metricScores[index]}%`}}/>}</span><small data-harmony-value={demoMatch?undefined:metricScores[index]??undefined}>{metricScores[index]!=null?`${metricScores[index]}%`:'—'}</small><p>{!demoMatch&&index===0&&harmonyLoading?'프로젝트에 등록된 보컬 가이드를 분석하고 있어요.':!demoMatch&&index===0&&currentReference?.status==='error'&&metricScores[0]==null?'프로젝트 보컬 가이드를 불러오지 못했어요. 기존 녹음과 프로필은 유지됩니다.':reason}</p></div>)}{!demoMatch&&<small className="detail-harmony-calculation-note">{harmony.score!=null?`내 샘플 기준 참고 지수 · ${metricScores.filter(value=>value!=null).length}/3개 항목 비교. `:''}음색은 밝기·질감의 유사도, 역할·취향은 등록 정보의 일치도를 비교해요. 노래 실력이나 실제 합창 품질의 예측 확률은 아니에요.</small>}</div></div></section>}
+      {analysisPart&&<section className="fit-panel detail-fit" data-testid="part-fit" data-analysis-part={analysisPart.id}><div className="detail-fit-title"><p>음역대 분석 · {analysisPart.name}</p><div className="detail-fit-heading"><h2>이 파트를 부를 수 있나요?</h2><span>음역 적합 <b data-match-percent={demoPartFit!=null||undefined} data-range-percent={demoPartFit==null?analysisFit.coveragePercent??undefined:undefined} data-range-method={demoPartFit!=null?'demo':analysisFit.coveragePercent!=null?'required-semitone-coverage-v1':undefined} aria-live="polite">{partFitPercent!=null?`${partFitPercent}%`:profile?'정보 부족':'등록 필요'}</b></span></div></div><DetailRangeComparison part={analysisPart} profile={profile}/><p>{demoMatch?`${analysisPart.name}의 요구 음역과 잘 맞고, 주로 부르는 구간도 편안해요.`:profile?analysisFit.reasons.join(' '):'음역과 목소리 샘플을 등록해요. 약 1–2분 걸려요.'}</p><small>{demoPartFit!=null?'시연 프로필 기준 · 음역 적합 예시.':'현재 Key의 Part 요구 음역 중 내 측정 음역이 포함하는 비율이에요.'} 요구 음역을 벗어나도 참여할 수 있어요.</small></section>}
+      {profile&&<section className="detail-harmony" data-harmony-method={demoMatch?'demo':harmony.method} data-harmony-status={harmonyLoading?'loading':harmony.status} data-harmony-source={harmony.provenance?.target?.kind}><div className="detail-harmony-visual"><h2>내 목소리가 더해지면</h2><figure><img src="/artwork/figma-detail-harmony.png" width="382" height="130" alt="목소리가 프로젝트에 연결되는 공명 일러스트"/><figcaption><span>나의 목소리{chosen?` · ${chosen.name}`:''}</span><span>프로젝트 하모니 · {harmonyMembers.map(part=>part.name).join(' + ')||'참여 대기'}</span></figcaption><small>{demoMatch?'시연 프로필 기준 · 매칭 예시':'결합 방식 예시 · 개인 분석 결과가 아니에요.'}</small></figure></div><div className="detail-harmony-analysis"><div className="detail-harmony-summary"><p>{chosen?`${harmonyMembers.length}명의 목소리에 ${chosen.name}를 더해요.`:'함께할 목소리의 조화를 확인해요.'}</p><span>참여 후 예상 조화 <b data-match-percent={Boolean(demoMatch)||undefined} data-harmony-score={!demoMatch&&harmony.score!=null?harmony.score:undefined} aria-live="polite">{demoMatch?`${demoMatch.overall}%`:harmonyLoading?'분석 중':harmony.score!=null?`${harmony.score}%`:'비교 데이터 부족'}</b></span></div><div className="detail-match-reasons">{(demoMatch?[['음색','맑은 중음이 기존 보컬의 따뜻한 음색과 자연스럽게 어울려요.'],['역할',`${chosen?.name||'Tenor'}가 멜로디와 화음 사이를 연결해요.`],['취향','발라드·팝과 어쿠스틱 취향을 함께 즐겨요.']]:harmony.reasons).map(([label,reason],index)=><div key={label} data-harmony-metric={['timbre','role','taste'][index]}><span>{label}</span><span className="detail-metric-track" aria-hidden="true">{metricScores[index]!=null&&<i style={{width:`${metricScores[index]}%`}}/>}</span><small data-harmony-value={demoMatch?undefined:metricScores[index]??undefined} data-harmony-own-brightness={!demoMatch&&index===0&&metricScores[0]!=null?profile.sampleFeatures.brightness:undefined} data-harmony-own-roughness={!demoMatch&&index===0&&metricScores[0]!=null?profile.sampleFeatures.roughness:undefined} data-harmony-reference-brightness={!demoMatch&&index===0?harmony.metrics.timbre.target?.brightness:undefined} data-harmony-reference-roughness={!demoMatch&&index===0?harmony.metrics.timbre.target?.roughness:undefined} data-harmony-calculation={!demoMatch&&index===0&&metricScores[0]!=null?'round(100*(1-(abs(ownBrightness-referenceBrightness)+abs(ownRoughness-referenceRoughness))/2))':undefined}>{metricScores[index]!=null?`${metricScores[index]}%`:'—'}</small><p>{!demoMatch&&index===0&&harmonyLoading?'프로젝트에 등록된 보컬 가이드를 분석하고 있어요.':!demoMatch&&index===0&&currentReference?.status==='error'&&metricScores[0]==null?'프로젝트 보컬 가이드를 불러오지 못했어요. 기존 녹음과 프로필은 유지됩니다.':reason}</p></div>)}{!demoMatch&&<small className="detail-harmony-calculation-note">{harmony.score!=null?`내 샘플 기준 참고 지수 · ${metricScores.filter(value=>value!=null).length}/3개 항목 비교. `:''}음색은 밝기·질감의 유사도, 역할·취향은 등록 정보의 일치도를 비교해요. 노래 실력이나 실제 합창 품질의 예측 확률은 아니에요.</small>}</div></div></section>}
       <div className="detail-secondary"><p className="demo-disclosure">{demoScenario?.finale?FINALE_DISCLOSURE:demoMatch?'시연용 프로필·매칭 예시':isLiveProject?`${demoNames||'현재 없음'}: 실제 제출된 녹음만 표시합니다.`:isCreatedProject?'이 브라우저에 저장된 내 프로젝트입니다. 실제 서버 협업 연결은 아직 완료되지 않았습니다.':selectedProject.audioSource?'IEUM Originals · 실제 반주와 가사가 등록된 22초 유니즌 시연곡입니다.':'탐색용 Project 데이터입니다. 녹음 시연은 Original C · Quartet에서 제공합니다.'}</p></div>
     </main>
 
@@ -991,7 +992,10 @@ function VoiceSetup({ complete, go, back, existing, editMode, songSaves, returnT
   const [sampleStatus, setSampleStatus] = useState('ready')
   const [samplePlaying, setSamplePlaying] = useState(false)
   const [sampleGuidePlaying,setSampleGuidePlaying]=useState(false)
-  const [sampleGuideEnabled,setSampleGuideEnabled]=useState(true)
+  const [sampleGuideVolume,setSampleGuideVolume]=useState(.5)
+  const sampleGuideEnabled=sampleGuideVolume>0
+  const [sampleInput,setSampleInput]=useState({rms:0,peak:0})
+  const sampleWaveformRef=useRef(null)
   const [sampleAudioFailure,setSampleAudioFailure]=useState(false)
   const [sampleAction,setSampleAction]=useState(null)
   const [sampleBusy,setSampleBusy]=useState(false)
@@ -1007,10 +1011,10 @@ function VoiceSetup({ complete, go, back, existing, editMode, songSaves, returnT
   const savingRef=useRef(false)
   const sampleProfileHandoffRef=useRef(false)
   const savedSampleUrlsRef=useRef(new Set())
-  const changeSampleGuide = enabled => {
-    setSampleGuideEnabled(enabled)
-    if(sampleStatus!=='recording')return
-    try { updateRecordingGuides({backing:enabled,parts:[]}); setError('') }
+  const changeSampleGuideVolume = volume => {
+    setSampleGuideVolume(volume)
+    if(!['recording','paused'].includes(sampleStatus))return
+    try { updateRecordingGuides({backing:volume>0,backingVolume:volume,parts:[]}); setError('') }
     catch(reason) { setSampleAudioFailure(true); setError(reason?.message || 'Guide를 재생하지 못했어요. 다시 선택해 주세요.') }
   }
   const finish=async value=>{
@@ -1094,14 +1098,24 @@ function VoiceSetup({ complete, go, back, existing, editMode, songSaves, returnT
       loadingAudio=false
       await requestMicrophone({voiceProcessing:sampleGuideEnabled ? true : null})
       if(lifecycle!==sampleLifecycleRef.current)return
-      setPermission('granted');setSampleStatus('preparing');setSeconds(0)
+      setPermission('granted');setSampleStatus('preparing');setSeconds(0);setLevel(0);setSampleInput({rms:0,peak:0});sampleWaveformRef.current=null
       setSampleCountdown(3)
-      await startRecording({onFrame:frame=>{setLevel(frame.level);setSeconds(frame.elapsedSec || 0)},guides:{backing:sampleGuideEnabled,parts:[]},guideTracks:[],backingBlob,preparationBlob,preparationDuration:sampleSong.leadInDuration,onPreparation:remaining=>{if(lifecycle===sampleLifecycleRef.current)setSampleCountdown(remaining)},duration:sampleSong.duration})
+      await startRecording({onFrame:frame=>{sampleWaveformRef.current=frame.waveform;setSampleInput({rms:frame.rms||0,peak:frame.peak||0});setLevel(frame.level);setSeconds(frame.elapsedSec || 0)},guides:{backing:sampleGuideEnabled,backingVolume:sampleGuideVolume,parts:[]},guideTracks:[],backingBlob,preparationBlob,preparationDuration:sampleSong.leadInDuration,onPreparation:remaining=>{if(lifecycle===sampleLifecycleRef.current)setSampleCountdown(remaining)},duration:sampleSong.duration})
       if(lifecycle!==sampleLifecycleRef.current){cancelRecording();stopMicrophone();return}
       setPermission('granted');setSampleStatus('recording');setSeconds(0)
       timer.current = window.setInterval(() => setSeconds(getRecordingTimeline().elapsedSec),1000)
     } catch (e) {if(lifecycle!==sampleLifecycleRef.current)return;setSampleStatus('ready');if(loadingAudio){setSampleAudioFailure(true);setError(e.message)}else{setPermission(isMicrophonePermissionError(e)?'denied':'error');setError(microphoneErrorMessage(e))}}
     finally {sampleStartingRef.current=false;setSampleBusy(false);setSampleCountdown(null)}
+  }
+  const pauseSample = () => {
+    if(sampleBusy||getRecordingTimeline().state!=='recording')return
+    try{pauseRecording();clearInterval(timer.current);setSeconds(getRecordingTimeline().elapsedSec);setSampleStatus('paused');setError('')}
+    catch(reason){setError(reason.message)}
+  }
+  const resumeSample = () => {
+    if(sampleBusy||getRecordingTimeline().state!=='paused')return
+    try{resumeRecording();setSampleStatus('recording');setError('');timer.current=window.setInterval(()=>setSeconds(getRecordingTimeline().elapsedSec),100)}
+    catch(reason){setError(reason.message)}
   }
   const stopSample = async () => {
     if(sampleStoppingRef.current)return
@@ -1136,15 +1150,20 @@ function VoiceSetup({ complete, go, back, existing, editMode, songSaves, returnT
   const sampleSelection=step==='sample-select'
   const sampleStage=step==='sample'
   const sampleReview=sampleStage&&sampleStatus==='review'
+  const sampleScene=sampleStage&&!sampleReview
+  const sampleLive=sampleStatus==='recording'
+  const sampleLyricIndex=sampleStatus==='ready'||sampleStatus==='preparing'?0:Math.max(0,(sampleSong.lyrics||[]).findLastIndex(line=>seconds>=line.time))
+  const sampleLyricLines=[sampleSong.lyrics?.[sampleLyricIndex-1]?.text||'',sampleSong.lyrics?.[sampleLyricIndex]?.text||sampleSong.lyric||'',sampleSong.lyrics?.[sampleLyricIndex+1]?.text||'']
   const finalStage=step==='preferences'||step==='complete'
+  useLayoutEffect(()=>{scrollToTop()},[step,sampleReview])
   const measuredRangeValid=Number.isFinite(range?.lowMidi)&&Number.isFinite(range?.highMidi)&&range.lowMidi<=range.highMidi
   const measuredRangeAxis={low:Math.min(43,measuredRangeValid?range.lowMidi:43),high:Math.max(72,measuredRangeValid?range.highMidi:72)}
   const figmaSetupStep=step==='complete'?7:step==='preferences'?6:sampleStage?(sampleReview?5:4):rangeStage?2:sampleSelection?3:1
   const figmaSetupLabel=step==='complete'?'등록 완료':step==='preferences'?'보컬 성향':sampleStage?(sampleReview?'샘플 확인':'샘플 녹음'):rangeStage?'음역 측정':sampleSelection?'샘플곡 선택':'시작 안내'
-  return <div className="screen figma-v2 ds-v2-screen voice-screen" data-vp-step={step==='intro'&&editMode?'range-intro':step} data-sample-status={sampleStage?sampleStatus:undefined}>
-    <TopBar figmaHeader={initialIntro||rangeStage||sampleSelection||sampleStage||finalStage} title={initialIntro||rangeStage||sampleSelection||sampleStage||finalStage?'Voice Profile':['sample-select','sample','preferences','complete'].includes(step) ? 'VOICE PROFILE' : 'VOICE RANGE'} subtitle={initialIntro||rangeStage||sampleSelection||sampleStage||finalStage?`${figmaSetupStep} / 7 · ${figmaSetupLabel}`:undefined} back={() => {if(saving||sampleBusy)return;if(step==='sample'&&sampleStatus==='recording'){setSampleAction('stop');return}if(step==='sample')setStep('sample-select');else if(step==='sample-select'&&!editMode)setStep('range-result');else if(step==='complete')setStep(editMode?'sample':'preferences');else if(step==='preferences')setStep('sample');else back()}} meta={initialIntro||rangeStage||sampleSelection||sampleStage||finalStage?'':step === 'preferences' ? 'VP05A' : step === 'complete' ? 'READY' : ['sample-select','sample'].includes(step) ? 'PROFILE AUDIO' : 'RANGE CHECK'} />
+  return <div className={`screen figma-v2 ds-v2-screen voice-screen${sampleScene?' recording-screen recording-v2-screen v2-vp-recording-screen':''}`} data-recording-status={sampleScene?sampleStatus:undefined} data-vp-step={step==='intro'&&editMode?'range-intro':step} data-sample-status={sampleStage?sampleStatus:undefined}>
+    <TopBar figmaHeader={initialIntro||rangeStage||sampleSelection||sampleStage||finalStage} title={sampleScene?sampleSong.title:initialIntro||rangeStage||sampleSelection||sampleStage||finalStage?'Voice Profile':['sample-select','sample','preferences','complete'].includes(step) ? 'VOICE PROFILE' : 'VOICE RANGE'} subtitle={initialIntro||rangeStage||sampleSelection||sampleStage||finalStage?`${sampleScene?'Voice Profile · ':''}${figmaSetupStep} / 7 · ${figmaSetupLabel}`:undefined} back={() => {if(saving||sampleBusy)return;if(step==='sample'&&['recording','paused'].includes(sampleStatus)){setSampleAction('stop');return}if(step==='sample')setStep('sample-select');else if(step==='sample-select'&&!editMode)setStep('range-result');else if(step==='complete')setStep(editMode?'sample':'preferences');else if(step==='preferences')setStep('sample');else back()}} meta={initialIntro||rangeStage||sampleSelection||sampleStage||finalStage?'':step === 'preferences' ? 'VP05A' : step === 'complete' ? 'READY' : ['sample-select','sample'].includes(step) ? 'PROFILE AUDIO' : 'RANGE CHECK'} />
     <main className="voice-main">
-      {(initialIntro||rangeStage||sampleSelection||sampleStage||finalStage) && <>
+      {(initialIntro||rangeStage||sampleSelection||sampleReview||finalStage) && <>
         <div className="v2-vp-progress" role="progressbar" aria-label="Voice Profile 등록 단계" aria-valuemin={1} aria-valuemax={7} aria-valuenow={figmaSetupStep} aria-valuetext={`${figmaSetupStep} / 7 · ${figmaSetupLabel}`}>{Array.from({length:7},(_,index)=><i key={index} data-complete={index<figmaSetupStep} aria-hidden="true"/>)}</div>
       </>}
       {initialIntro && <>
@@ -1199,21 +1218,28 @@ function VoiceSetup({ complete, go, back, existing, editMode, songSaves, returnT
         </div>
         <div className="v2-vp-song-action"><button className="primary" data-action="sample-song-next" disabled={!sampleSong?.audioFile} onClick={()=>{setSampleGuidePlaying(false);setStep('sample')}}>{sampleSong.title} 녹음하기</button></div>
       </section>}
-      {step === 'sample' && <section className="sample-stage v2-vp-sample-stage">
-        <div className="v2-vp-sample-content">
-          <div className="voice-step-heading"><div className="voice-step-title"><h1>{sampleReview?<>녹음을 듣고<br/>확인해요.</>:sampleStatus==='recording'?<>대표 샘플을<br/>녹음하고 있어요.</>:<>대표 샘플을<br/>녹음해요.</>}</h1></div><p>{sampleReview?<>대표 샘플을 확인한 뒤 사용하거나,<br/>다시 부를 수 있어요.</>:sampleStatus==='recording'?`${sampleSong.title} · 지정 구간 ${sampleSong.duration}초`:<>3초 준비 표시 후 첫 가사를 부르세요.<br/>지정된 {sampleSong.duration}초 구간을 녹음합니다.</>}</p></div>
-          {sampleStatus==='ready'&&<Player figma metalControl source={sampleSong.audioFile} durationHint={sampleSong.duration} playing={sampleGuidePlaying} setPlaying={setSampleGuidePlaying} caption="첫 가사 진입 미리 듣기"/>}
+      {step === 'sample' && <section className={sampleScene?"v2-vp-recording-stage":"sample-stage v2-vp-sample-stage"}>
+        <div className={sampleScene?"v2-vp-recording-content":"v2-vp-sample-content"}>
+          {sampleReview&&<div className="voice-step-heading"><div className="voice-step-title"><h1>녹음을 듣고<br/>확인해요.</h1></div><p>대표 샘플을 확인한 뒤 사용하거나,<br/>다시 부를 수 있어요.</p></div>}
           {sampleReview?<>
-            <Player figma metalControl source={sampleDraft?.url} durationHint={sampleDraft?.duration} playing={samplePlaying} setPlaying={setSamplePlaying}/>
+            <Player figma splitTimeline metalControl source={sampleDraft?.url} durationHint={sampleDraft?.duration} playing={samplePlaying} setPlaying={setSamplePlaying}/>
             <div className="v2-vp-sample-info"><h2>대표 샘플 · {sampleSong.title}</h2><p>녹음 길이 {fmt(sampleDraft?.duration)}</p></div>
-            <div className="v2-vp-sample-info"><h2>Voice Identity · 준비 중</h2><p>샘플 저장과 공명 그래픽 생성은 별도로 표시해요.</p></div>
+            <div className="v2-vp-review-identity" aria-label="Voice Identicon 미리보기와 생성 상태"><VoiceIdentity suppliedPreview/><div className="v2-vp-sample-info"><h2>Voice Identicon</h2><p>시연용 매듭 미리보기예요.<br/>이 샘플 기반 생성은 준비 중이에요.</p></div></div>
           </>:<>
-            {sampleStatus!=='ready'&&<div className="v2-vp-sample-info"><h2>{sampleSong.title} · {sampleStatus==='recording'?'녹음 중':'녹음 준비'}</h2><p>{sampleStatus==='recording'?`REC ${fmt(seconds)} / ${fmt(sampleSong.duration)}`:`녹음 준비 · ${sampleCountdown??3}`}</p></div>}
-            <blockquote data-sample-lyric>“{sampleSong.lyrics?.[sampleStatus==='ready'?0:Math.max(0,sampleSong.lyrics.findLastIndex(line=>seconds>=line.time))]?.text||sampleSong.lyric}”</blockquote>
-            <div className="v2-vp-sample-input-controls">
-              <p className="record-status" role={sampleStatus==='recording'?'meter':'status'} aria-label={sampleStatus==='recording'?'마이크 입력 레벨':undefined} aria-valuemin={sampleStatus==='recording'?0:undefined} aria-valuemax={sampleStatus==='recording'?100:undefined} aria-valuenow={sampleStatus==='recording'?Math.round(Math.min(1,Math.max(0,level))*100):undefined} data-sample-entry>{sampleStatus==='preparing'?`녹음 준비 · ${sampleCountdown??3}`:sampleStatus==='recording'?`${level>.01?'입력 감지 중':'입력을 기다리고 있어요'} · ${fmt(seconds)} / ${fmt(sampleSong.duration)}`:`마이크 준비 · ${sampleSong.duration}초 지정 구간`}</p>
-              <label className="backing-guide"><span>Guide · 반주</span><input aria-label="Sample Guide 반주" type="checkbox" checked={sampleGuideEnabled} disabled={sampleBusy} onChange={event=>changeSampleGuide(event.target.checked)}/><i aria-hidden="true"/></label>
-              <div className="v2-vp-sample-record-control"><div className="record-control"><button className="record-btn" data-action={sampleStatus==='recording'?'sample-stop':'sample-start'} aria-label={sampleStatus==='recording'?'녹음 마치기':'녹음 시작'} disabled={sampleBusy} onClick={sampleStatus==='recording'?stopSample:startSample}><img className="v2-recording-surface" src={sampleStatus==='recording'?'/artwork/figma-recording-surface-96.svg':'/artwork/figma-recording-gold-96.png'} width="96" height="96" alt="" aria-hidden="true"/>{sampleStatus==='recording'?<Icon name="stop" size={30.545}/>:<img className="v2-start-symbol" src="/artwork/figma-recording-start.svg" width="24" height="24" alt="" aria-hidden="true"/>}</button><span>{sampleStatus==='recording'?'녹음 마치기':sampleBusy?'녹음 준비 중':'녹음 시작'}</span></div></div>
+            <div className="v2-vp-recording-guide-space" aria-hidden="true"/>
+            {sampleStatus==='ready'&&<section className="project-reference" aria-label="샘플곡 미리 듣기"><Player figma splitTimeline metalControl source={sampleSong.audioFile} durationHint={sampleSong.duration} playing={sampleGuidePlaying} setPlaying={setSampleGuidePlaying} caption="샘플곡 미리 듣기"/></section>}
+            <div className="recording-visual"><img className="v2-recording-thread-art" src="/artwork/figma-recording-thread.png" width="430" height="700" alt="" aria-hidden="true"/><ResonanceRecord projectId="voice-sample-stage" parts={[]} tracks={{}} layers={[]} seed={`voice-sample:${sampleSong.id}`} state={sampleLive?'recording':sampleStatus==='paused'?'paused':'rest'} level={level} label="샘플 녹음 배경 레코드 · 프로젝트 제출 아님" compact/><RecordingInflow active={sampleLive} partIndex={3} level={level} seed={`voice-sample:${sampleSong.id}`} waveformRef={sampleWaveformRef}/></div>
+            <div className="recording-lyrics-scene"><div className="lyrics" aria-live="polite"><LiveLyricWave active={sampleLive} level={level} waveformRef={sampleWaveformRef}/>{sampleLyricLines.map((text,index)=><span key={index} data-sample-lyric={index===1||undefined} className={index===1?'active':''} aria-hidden={!text||undefined}>{text}</span>)}</div></div>
+            <label className="v2-guide-volume"><span><span>가이드<br/>반주</span><output>{Math.round(sampleGuideVolume*100)}%</output></span><input aria-label="샘플 가이드 반주 볼륨" type="range" min="0" max="100" step="1" value={Math.round(sampleGuideVolume*100)} style={{'--guide-volume':`${sampleGuideVolume*100}%`}} disabled={sampleBusy} onChange={event=>changeSampleGuideVolume(Number(event.target.value)/100)}/></label>
+            <div className="v2-instrument" data-instrument-state={sampleStatus} aria-busy={sampleBusy}>
+              <div className="recording-timeline v2-instrument-readout" aria-label="샘플 녹음 시간과 입력 상태"><div className="v2-recording-time" data-state={sampleStatus}><span className="v2-recording-indicator" aria-hidden="true"/><span data-sample-entry>{sampleStatus==='recording'?'REC':sampleStatus==='paused'?'일시정지':sampleStatus==='preparing'?`준비 ${sampleCountdown??3}`:'준비'}</span><b data-sample-time>{fmt(seconds)} / {fmt(sampleSong.duration)}</b></div><div className="meter-row" role={sampleLive?'meter':undefined} aria-label={sampleLive?'마이크 입력 레벨':undefined} aria-valuemin={sampleLive?0:undefined} aria-valuemax={sampleLive?100:undefined} aria-valuenow={sampleLive?Math.round(Math.min(1,Math.max(0,level))*100):undefined}><span>MIC {sampleInput.rms>0?`${Math.max(-96,Math.round(20*Math.log10(sampleInput.rms)))} dBFS`:'— dBFS'}</span><b>{sampleLive?(sampleInput.peak>.9?'CLIP':level>.08?'GOOD':'LOW'):sampleStatus==='paused'?'일시정지':'대기'}</b></div></div>
+              <div className="recorder-controls">
+                {['ready','preparing'].includes(sampleStatus)?<div className="record-control"><button className="record-btn v2-record-gold" data-action="sample-start" aria-label="녹음 시작" disabled={sampleBusy} onClick={startSample}><img className="v2-recording-surface" src="/artwork/figma-recording-gold-96.png" width="96" height="96" alt="" aria-hidden="true"/><img className="v2-start-symbol" src="/artwork/figma-recording-start.svg" width="24" height="24" alt="" aria-hidden="true"/></button><span>{sampleBusy?'녹음 준비 중':'녹음 시작'}</span></div>:<>
+                  <div className="record-control"><button className="round-secondary" data-action="sample-restart" aria-label="다시 녹음" disabled={sampleBusy} onClick={()=>setSampleAction('discard')}><img className="v2-recording-surface" src="/artwork/figma-recording-surface-72.svg" width="72" height="72" alt="" aria-hidden="true"/><Icon name="restart" size={22.77}/></button><span>다시 녹음</span></div>
+                  <div className="record-control"><button className="record-btn v2-record-gold" data-action={sampleStatus==='paused'?'sample-resume':'sample-pause'} aria-label={sampleStatus==='paused'?'녹음 이어서':'녹음 일시정지'} disabled={sampleBusy} onClick={sampleStatus==='paused'?resumeSample:pauseSample}><img className="v2-recording-surface" src="/artwork/figma-recording-gold-96.png" width="96" height="96" alt="" aria-hidden="true"/><Icon name={sampleStatus==='paused'?'play':'pause'} size={25.344}/></button><span>{sampleStatus==='paused'?'이어서 녹음':'일시정지'}</span></div>
+                  <div className="record-control"><button className="round-secondary" data-action="sample-stop" aria-label="녹음 마치기" disabled={sampleBusy} onClick={stopSample}><img className="v2-recording-surface" src="/artwork/figma-recording-surface-72.svg" width="72" height="72" alt="" aria-hidden="true"/><Icon name="stop" size={19.008}/></button><span>정지</span></div>
+                </>}
+              </div>
             </div>
           </>}
         </div>
@@ -1236,10 +1262,11 @@ function VoiceSetup({ complete, go, back, existing, editMode, songSaves, returnT
             <VoiceIdentity identity={existing?.identity} suppliedPreview/>
             <dl><div><dt>편한 음역</dt><dd>{range?.label || existing?.range} · 이번 측정 값</dd></div><div><dt>대표 샘플</dt><dd>{sampleSong.title} · 녹음 {fmt(sampleDraft?.duration || existing?.sampleDuration || 0)}</dd></div></dl>
           </div>
-          <div className="v2-vp-return-context" aria-label="등록 후 돌아갈 화면">
-            <p>{returnTarget?'돌아갈 프로젝트':'돌아갈 화면'}</p><h2>{returnTarget?.songTitle || returnLabel}</h2>
-            <small>{returnTarget?`${returnTarget.projectName}${returnTarget.partName?' / '+returnTarget.partName:''}`:'등록한 음역과 대표 샘플'}</small>
-          </div>
+          <dl className="v2-vp-complete-preferences" aria-label="저장한 보컬 성향">
+            <div><dt>선호 역할</dt><dd>{preferences.roles.length?preferences.roles.join(' · '):'선택하지 않았어요'}</dd></div>
+            <div><dt>선호 장르</dt><dd>{preferences.genres.length?preferences.genres.join(' · '):'선택하지 않았어요'}</dd></div>
+            <div><dt>음악 취향</dt><dd>{preferences.taste.length>0&&<span>{preferences.taste.join(' · ')}</span>}{preferences.preferredSongIds.length>0&&<span>함께 부를 곡 · {preferences.preferredSongIds.map(id=>SONGS.find(song=>song.id===id)?.title).filter(Boolean).join(' · ')||'저장한 선택 곡'}</span>}{!preferences.taste.length&&!preferences.preferredSongIds.length&&'선택하지 않았어요'}</dd></div>
+          </dl>
           <p className="v2-vp-complete-note">{returnTarget?<>등록이 끝나도 자동으로 참여하지 않아요.<br/>Part의 조합을 확인한 뒤 직접 참여할 수 있어요.</>:<>등록한 정보는 내 목소리에서 확인하고<br/>필요할 때 다시 수정할 수 있어요.</>}</p>
         </div>
         <div className="v2-vp-final-actions"><button className="primary" data-action="profile-finish" disabled={saving} onClick={() => finish({ phase:editMode?undefined:'return-only', editMode, range:range?.label, rangeData:range, sample:sampleDraft, sampleSong, identity:{status:'blocked',reason:'free-local-generative-model-not-connected'} })}>{saving?'프로필을 저장하고 있어요.':returnTarget?.partName?`선택한 ${returnTarget.partName} 파트 확인하기`:`${returnLabel}로 돌아가기`}</button></div>

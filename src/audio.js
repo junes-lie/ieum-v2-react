@@ -235,6 +235,10 @@ export function backingPlaybackGain(buffer) {
   return gain
 }
 
+function recordingBackingGain(buffer,guides) {
+  return backingPlaybackGain(buffer)*Math.min(1,Math.max(0,Number.isFinite(guides?.backingVolume)?guides.backingVolume:1))
+}
+
 function scheduleBuffer(ctx, destination, buffer, start, sourceOffsetSec = 0, gainValue = .72, panValue = 0, registerPlayback = true) {
   const source = ctx.createBufferSource()
   const gain = ctx.createGain()
@@ -264,7 +268,7 @@ function scheduleRecordingGuides(offsetSec = 0) {
   const start = ctx.currentTime
   if (state.guides.backing) {
     if (state.decodedBacking) {
-      if (offsetSec < state.decodedBacking.duration) scheduleBuffer(ctx, ctx.destination, state.decodedBacking, start, offsetSec, backingPlaybackGain(state.decodedBacking))
+      if (offsetSec < state.decodedBacking.duration) scheduleBuffer(ctx, ctx.destination, state.decodedBacking, start, offsetSec, recordingBackingGain(state.decodedBacking,state.guides))
     }
   }
   const vocalVolume = Math.min(1,Math.max(0,Number(state.guides.vocalVolume ?? .5)))
@@ -345,7 +349,7 @@ export async function startRecording({ onFrame, guides = {backing:false,parts:[]
   runtime.syncOffsetSec = prepareSeconds ? 0 : Math.max(0, start - ctx.currentTime)
   runtime.recordingGuideState = { guides:{...guides,parts:[...guides.parts]}, decodedGuides, decodedVocalGuide, decodedBacking, duration:Math.max(.1,duration) }
   if (guides.backing) {
-    if (decodedBacking) scheduleBuffer(ctx, ctx.destination, decodedBacking, start, 0, backingPlaybackGain(decodedBacking))
+    if (decodedBacking) scheduleBuffer(ctx, ctx.destination, decodedBacking, start, 0, recordingBackingGain(decodedBacking,guides))
 
   }
   const guideVolume=Math.min(1,Math.max(0,Number(guides.vocalVolume ?? .5)))
@@ -358,7 +362,7 @@ export async function startRecording({ onFrame, guides = {backing:false,parts:[]
   if(prepareSeconds){
     runtime.preparationRecorder=recorder
     const playbackGeneration=runtime.playbackGeneration
-    if(guides.backing)scheduleBuffer(ctx,ctx.destination,decodedPreparation,preparationStart,0,backingPlaybackGain(decodedBacking))
+    if(guides.backing)scheduleBuffer(ctx,ctx.destination,decodedPreparation,preparationStart,0,recordingBackingGain(decodedBacking,guides))
     try {
       let lastCount
       while(ctx.currentTime<start){
@@ -513,7 +517,7 @@ export async function playCurrentMix({ included, tracks = [], backingBlob = null
   const actualDuration=sourceDuration || duration
   const start = ctx.currentTime + 0.08
   if (included.backing) {
-    if (decodedBacking) scheduleBuffer(ctx, ctx.destination, decodedBacking, start, 0, backingPlaybackGain(decodedBacking))
+    if (decodedBacking) scheduleBuffer(ctx, ctx.destination, decodedBacking, start, 0, recordingBackingGain(decodedBacking,guides))
 
   }
   for (const {track,buffer} of selected) {

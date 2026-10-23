@@ -18,10 +18,16 @@ function readRange(value) {
 // Range is a feasibility gate, never a singer's ability score.
 export function evaluatePartFit({rangeData,part,transposeSemitones=0}) {
   const measured = readRange(rangeData)
-  if (!measured) return {status:'profile-required',eligible:false,reasons:['편한 음역을 먼저 측정해 주세요.']}
+  if (!measured) return {status:'profile-required',eligible:false,coveragePercent:null,reasons:['편한 음역을 먼저 측정해 주세요.']}
   const base = readRange(part)
-  if (!base || !Number.isFinite(transposeSemitones)) return {status:'unavailable',eligible:false,reasons:['이 Part의 실제 요구 음역이 아직 준비되지 않았어요.']}
+  if (!base || !Number.isFinite(transposeSemitones)) return {status:'unavailable',eligible:false,coveragePercent:null,reasons:['이 Part의 실제 요구 음역이 아직 준비되지 않았어요.']}
   const requiredRange = {lowMidi:base.lowMidi+transposeSemitones,highMidi:base.highMidi+transposeSemitones}
+  const requiredSpan=requiredRange.highMidi-requiredRange.lowMidi+1
+  if (!Number.isFinite(requiredRange.lowMidi) || !Number.isFinite(requiredRange.highMidi) || !Number.isFinite(requiredSpan)) return {status:'unavailable',eligible:false,coveragePercent:null,reasons:['이 Part의 실제 요구 음역이 아직 준비되지 않았어요.']}
+  // Inclusive semitone coverage of the Part requirement, not singing ability,
+  // correctness or an AI probability. Preserve measured/shifted endpoints.
+  const coveredSpan=Math.max(0,Math.min(measured.highMidi,requiredRange.highMidi)-Math.max(measured.lowMidi,requiredRange.lowMidi)+1)
+  const coveragePercent=Math.round(Math.max(0,Math.min(100,coveredSpan/requiredSpan*100)))
   const lowMargin = requiredRange.lowMidi-measured.lowMidi
   const highMargin = measured.highMidi-requiredRange.highMidi
   const eligible = lowMargin>=0 && highMargin>=0
@@ -31,7 +37,7 @@ export function evaluatePartFit({rangeData,part,transposeSemitones=0}) {
   const tessituraFit = tessitura ? comfortableRange.lowMidi<=tessitura.lowMidi+transposeSemitones && comfortableRange.highMidi>=tessitura.highMidi+transposeSemitones : null
   if (tessituraFit!==null) reasons.push(tessituraFit?'주로 부르는 구간도 측정된 편한 음역 안에 있어요.':'주로 부르는 구간은 측정된 편한 음역과 일부 겹치지 않아요.')
   const feasible = eligible && tessituraFit !== false
-  return {status:feasible?'eligible':'ineligible',eligible:feasible,lowMargin,highMargin,requiredRange,tessituraFit,reasons}
+  return {status:feasible?'eligible':'ineligible',eligible:feasible,coveragePercent,lowMargin,highMargin,requiredRange,tessituraFit,reasons}
 }
 
 export const rangeGate = evaluatePartFit
