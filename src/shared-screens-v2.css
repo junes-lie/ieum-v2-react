@@ -739,3 +739,21 @@
 .voice-screen .v2-vp-preferences-stage .preference-saved-filter{min-height:48px;padding:12px 24px;border-radius:24px;font:400 15px/22px var(--font-interface);}
 .recording-v2-screen .record-review .review-actions .v2-take-submit::before{border-image-source:url('/artwork/figma-project-gold-current.svg');}
 .recording-v2-screen .v2-instrument[data-instrument-state=submitting] .v2-take-submit::before{border-image-source:url('/artwork/figma-project-gold-current.svg');}
+
+/* Current requested action groups: contents hug, with equal 48px controls. */
+.voice-screen .v2-vp-smoky{display:inline-flex;align-items:center;justify-content:center;gap:8px;}
+.voice-screen .v2-vp-song-action>.v2-project-action{width:100%;min-height:52px;display:flex;align-items:center;justify-content:center;gap:8px;}
+.voice-screen .v2-vp-song-action>.v2-project-action>svg{position:relative;z-index:1;flex:none;}
+.recording-v2-screen .record-review .review-actions{width:fit-content;max-width:100%;display:flex;flex-wrap:nowrap;gap:12px;align-self:center;}
+.recording-v2-screen .record-review .review-actions button{display:inline-flex;align-items:center;justify-content:center;flex:0 1 149px;width:149px;max-width:149px;height:48px;min-height:48px;padding:0 10px;gap:8px;white-space:nowrap;}
+.recording-v2-screen .record-review .review-actions button>svg,.recording-v2-screen .record-review .review-actions button>img{flex:none;}
+.recording-v2-screen .project-reference:has(>.v2-player-compact){height:auto;min-height:0;padding:12px 16px;background:var(--bg-elevated,#1c1815);border-radius:10px;z-index:5;left:40px;right:40px;bottom:calc(202px + env(safe-area-inset-bottom,0px));}
+.recording-v2-screen .lyrics>.v2-lyric-wave{display:block;opacity:.55;}
+.recording-v2-screen .lyrics>span:not(.v2-lyric-wave){text-shadow:0 1px 5px #15110e,0 0 12px #15110e;}
+.detail-harmony-visual figure>img{display:block;width:100%;height:auto;object-fit:contain;}
+/* Recording contexts do not expose global navigation. */
+body:has(.v2-vp-recording-screen)>.bottom-nav,body:has(.voice-screen[data-sample-status=review])>.bottom-nav,body:has(.v2-vp-recording-screen) .bottom-nav,body:has(.voice-screen[data-sample-status=review]) .bottom-nav{display:none;}
+.v2-vp-recording-screen{padding-bottom:env(safe-area-inset-bottom,0px);}
+
+.v2-project-action[data-button-action=Record]>.v2-project-action-surface{border-image-source:url('/artwork/figma-record-gold-current.svg');}
+.voice-screen.v2-vp-recording-screen{height:100dvh;padding-bottom:env(safe-area-inset-bottom,0px);}

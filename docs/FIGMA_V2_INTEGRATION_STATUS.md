@@ -18,11 +18,18 @@
 - 변경 관련 build/Node 음역·조화·반주 gain 검사와 로컬 native390/430 짧은 합성 마이크 흐름을 확인했다. 공개 확인은 배포 후 자기 완료 기록에 남긴다. 해당 VP 준비/녹음/일시정지/재개/반주 gain50→100 실제2배/Review청취·다시부르기취소/실제샘플저장/완료요약/Detail 실측퍼센트·음색원시입력 재계산/reload·원본SHA/Track0/참여없음만 검수한다. 전체QA/44캡처/전곡·물리마이크 검수로 확대하지 않는다. 기존 별도 stop-retry QA는 Windows Playwright 경로 오류로 시작하지 못했으며 통과로 계산하지 않는다.
 - 기존 정정 보존: profile-ready 단일 진입, 자기청록·윤슬파랑/도윤코랄/Min크림·내Tenor오른쪽·직접 Review 제출 후에만 자기공명, 멤버/아이콘/공명수·작은공명 최소184raster/softlimit2.8, Home8/32·첫방문6초/하트, Detail체크#25211C/음역항상, Review금속/Player중심·모든Part토글·Back·원본데이터/실제Track청취우선. 준비3Track은 동일 보컬 재사용 시연 예시다. 제공MP3 9,177,424bytes/397.224초/SHA256 `1f2270ac18af16028e0a86488ce88898a652c5fa13895d4db18948acc5a4f4c4`는 변경하지 않았다. 이번 Push/Pages 파일SHA/공개검수와 자동Preview는 자기 완료 기록에서 대조한다.
 
+## 2026-10-24 최신 요청 반영
+- VP03 정상 안내를 지정 구간 청취·선택 문구로 교체하고 공통 Gold Record 버튼/마이크 아이콘을 연결했다. Workspace도 같은 공통 Record variant를 사용한다. VP02 재측정·VP05 다시 부르기에 기존 Restart 아이콘을 연결했다.
+- Project Review 두 조작은 149px 기준/Hug 묶음·12px 간격·48px 동일 높이로 정렬하고 제출 중에도 크기·중복 제출 방지를 유지한다. 업로드 아이콘은 유지한다. 녹음 데이터의 envelope로 Review 파형을 표시하며 내부 음색/특징 해시는 숨기고 실측 품질 안내만 남긴다.
+- VP05도 기존 compact AudioPlayer를 사용한다. VP04 준비/녹음에는 Player를 추가하지 않았다. 프로젝트 준비 미리듣기는 배경보다 위에 배치한다. 녹음 컨텍스트의 하단 전역 내비게이션은 숨긴다.
+- 사용자 정정: 녹음 배경은 아트워크로 교체하지 않았다. Detail 이미지는 Figma 추출을 중단하고 기존에 주신 투명 PNG 원본(2048×682)을 바이트 그대로 연결했다. 재생성·축소 저장·색상 제한은 없다.
+- 관련 build 및 390/430 짧은 합성 마이크 전체 등록→원래 Detail/Part 복귀→직접 Tenor 참여→Review 직접 제출→브라우저 AutoMix/완성곡을 검수한다. 준비 3Track은 기존 보컬 재사용 시연 예시이며 독립 4인·물리 마이크·서버 인수로 확대하지 않는다. 공개 검증 결과는 자기 완료 기록에 보존한다.
+
 ## 미완료
 - `overallProductAcceptance=false`. 참고 계산은 사람의 청감으로 검증된 조화 모델/서버AI가 아니다. 실제 독립4인/물리마이크·이어폰·공유/인증/Appremote/다중사용자·장시간 안정성 및 과거430 시작 timeout·길이 편차·MyVoice pointer/OpenParts Enter 지연은 미해결이다. 실제 기준 보컬이 없는 프로젝트에는 종합 지수를 만들지 않는다.
 - 기타 상태별 최신 Figma 시각·모션 인수는 남았다. 이번 Player/녹음 검수는 짧은 합성 마이크이며 물리기기/서버 계정 등록 인수가 아니다. 이전 Completed 검수는 공개 예시 완성곡이며 실제 독립4인 완성 인수가 아니다. VP Review의 매듭은 제공 시연 미리보기이며 샘플 기반 실제 Identity 생성은 연결 전이다. 샘플 전체음원/반주를 보컬 stem으로 위장하지 않는다. CC0 독립 확인/정식 서비스의 적법 stem 확보는 미완료다.
 - Preview 브라우저는 기존 외부 Sentry telemetry 내용/전송 승인 미확인 자동 검토 차단을 존중해 재실행하지 않는다. 읽기전용 정적 확인만 한다. 기존 전체 Node render의 fixture.parts 누락/PartFit 숨김 구기대도 전체 통과로 표시하지 않는다.
 
 ## 다음 시작점
-- 최신 HEAD/owner/활성 실행을 대조한 뒤 편집 가능 수정안 `1867:43994`에서 이후 변경된 화면별 실제 차이를 반영한다. 사용자 최신 지시대로 Figma 수정 반영에 집중한다. VP04 독립 Player 제거·공통 compact Player·first-visit 준비3Track 정정은 유지하고 Home 공개예시 3D 카드/크롭과 최신 Detail Player/참여자/커버는 반영했다. VP06 등록 완료 요약/성향 카드/Gold CTA는 최신 원본으로 반영했다. 다음 실제 차이는 VP05A `1885:44804`의 Selected 원형: Figma #262220 표면/크림1.5px border/원래 크기인데 React 공통 선택 규칙이 크림 채움·scale(1.025)·체크를 추가한다. 해당 VP 단계에만 원본 선택 상태를 반영하고 다른 Profile 편집 화면을 일괄 변경하지 않는다. 새 진입점·새 앱·수동 중복배포를 만들지 않는다. 이미 반영한 Completed 버튼/Player·실측 퍼센트·프로젝트 비교·VP01~06·공명/멤버/음원/그룹은 회귀 근거 없이 반복 구현하지 않는다.
+- 최신 HEAD/owner/활성 실행을 대조한 뒤 편집 가능 수정안 `1867:43994`에서 이후 변경된 화면별 실제 차이를 반영한다. 사용자 최신 지시대로 Figma 수정 반영에 집중한다. VP04 독립 Player 제거·공통 compact Player·first-visit 준비3Track 정정은 유지하고 Home 공개예시 3D 카드/크롭과 최신 Detail Player/참여자/커버는 반영했다. VP06 등록 완료 요약/성향 카드/Gold CTA는 최신 원본으로 반영했다. VP05A 선택/검색·Review 가이드 및 이번 사용자 요청은 반영했다. 이후 새로 지적된 차이만 수정한다. 새 진입점·새 앱·수동 중복배포를 만들지 않는다. 이미 반영한 Completed 버튼/Player·실측 퍼센트·프로젝트 비교·VP01~06·공명/멤버/음원/그룹은 회귀 근거 없이 반복 구현하지 않는다.
 - 작업 `/workspace/scratch/cad8a99a0a38/ieum-home`(기존 경로 정리 후 최신 원격 독립 체크아웃); 관련 QA `qa/verify-vp-nickname-browser.mjs`, `qa/verify-vp-intro-browser.mjs`, `qa/verify-profile-store.mjs`; 근거 `/tmp/ieum-vp-nickname-local`, `/tmp/ieum-vp-nickname-intro`, 공개 후 `/tmp/ieum-vp-nickname-public`. 초기 QA의 녹음 시간 대기는 이전 Review 선택자를 녹음 중에도 사용한 검사 오류로, 현재 `[data-sample-time]`으로 수정했다. 실제 앱 안정성 해결로 확대하지 않는다. 자기 owner `automation-vp-nickname-cad8a99a0a38-0400`만 완료 기록을 보존하고 해제한다.
