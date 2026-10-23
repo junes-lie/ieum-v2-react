@@ -1,6 +1,7 @@
 # IEUM V2 통합 체크포인트 · 2026-10-23
 
 ## 완료
+- 기준 dd38e58 다음 Detail 분석 영역의 실제 Figma 차이를 수정했다. 최신1713:43329/43310 전용 원본 코드·inline 화면 기준으로 하모니 캡션 좌우20px, 수치32px/Montserrat12·16·.24 및 근거 시작156px를 복구했다. 원래 시각화0/분석16/부모24 간격은 유지한다. 음역 그래프·음표·끝점을 함께 묶은 내부 축을 좌우10px에 두고1713:43318/43327의 원본14px SVG를 읽기 전용으로 내보내 연결했다. 평면 수치 바는 원본의72x12 recessed track/10px satin fill로 복구했다. 실제 음역·데모96/92 및 항목91/95/89·등록 전 분기·오디오/Track은 변경하지 않는다. build와 로컬390/430 해당 영역 캡처·좌표·줄바꿈·런타임 확인 통과. 무관한 전체QA·녹음/MP3 재검사는 반복하지 않는다.
 - 추가 사용자 정정(기준 eb0372f): Detail/녹음 Review의 재생 버튼과 seek 자체의 중심을 같은 y로 맞췄다. 시간·설명은 별도 위치이며44px seek 터치 영역과 기존 표면 크기는 보존한다. 작업실 현재 Mix에도 Detail과 같은 제공 MP3를 연결했다. 제출 Track이 없을 때만 ‘시연용 예시 완성 음원’으로 재생하며 실제 Track의 Mix/토글/제출 수·원본 데이터는 변경하지 않는다. 관련 build/Node 단일 렌더 및390/430 실제 재생/일시정지/탐색과 중심 좌표를 확인한다. 이전 전체 검사는 반복하지 않는다.
 - 기준 원격 cde6f63b3fde822ca5295d7e22260fb57e1d71a7. 이전 Home57/351/434/563 그룹·24/-12/35 간격, 다섯 화면 좌표, 데모96/92%·프로필/Back·원본 Track/AI3곡/공명/4Part를 보존했다. 무관한 전체 QA·44캡처는 반복하지 않았다.
 - Home 최신 Figma1700:60957·1369:21136의 누락된 미리듣기를 복구했다. 고정255px 턴테이블의 (205.5,197)에30px 원본 금속 표면을 두고44px 터치 영역만 확장했다. 등록 원곡 예시와 실제 제출 Track의 청취를 구분하고 음원이 없는 프로젝트는 비활성이다. 프로젝트 변경/화면 이탈/늦은 준비 응답은 소유 요청과 Blob URL을 정리한다. 기존 Workspace Player 위치는 바꾸지 않았다.
@@ -16,5 +17,5 @@
 - 이번 Push의 Pages build/deploy·공개 commitSha·실제 JS/CSS/MP3 해시 및390/430 화면은 Push 뒤 자기 완료 기록과 대조한다. main·공명 독립 브랜치·Production·Notion/Figma는 변경하지 않고 수동/중복 배포하지 않는다.
 
 ## 다음 시작점
-- 최신 HEAD·소유 잠금·실제 프로세스를 대조하고 공개 변경 범위부터 이어간다. 위 변경을 회귀 없이 반복하지 말고 나머지 발표 동선의 실제 시각 차이와 권리/물리기기/공유 인수만 남은 범위로 진행한다.
-- 작업 /workspace/scratch/cad8a99a0a38/ieum-focus. 관련 QA `qa/verify-presentation-priority-browser.mjs`, 근거 /tmp/ieum-presentation-* 및 /tmp/ieum-home-preview-before. 자기 owner interactive-player-align-cad8a99a0a38만 대조하여 완료 기록으로 보존·해제한다.
+- 최신 HEAD·소유 잠금·실제 프로세스를 대조하고 나머지 Home/VP/Completed 상태별 원본 차이부터 이어간다. 완료된 Detail 내부축/캡션/수치, 음원/정렬/토글/그룹은 회귀 없이 반복하지 않는다. 이번 공개 Pages SHA/파일·390/430 결과와 자동 Preview는 자기 완료 기록 및 다음 체크포인트에서 대조한다.
+- 작업 /workspace/scratch/cad8a99a0a38/ieum-focus. 관련 QA `qa/verify-presentation-priority-browser.mjs`, 근거 /tmp/ieum-presentation-* 및 /tmp/ieum-home-preview-before. 관련 근거 /tmp/ieum-detail-analysis-*. 자기 owner automation-detail-analysis-cad8a99a0a38-1502만 대조하여 완료 기록으로 보존·해제한다.
