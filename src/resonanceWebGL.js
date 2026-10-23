@@ -385,7 +385,9 @@ void main(){
       +texture2D(uField3,vFieldUV).rgb*uFieldEnabled.w)/fieldCount;
     fieldGain=.8+dot(generated,vec3(.2126,.7152,.0722))*.8;
   }
-  gl_FragColor=vec4(colorFor(vPart)*vBrightness*fieldGain*mix(1.55,2.4,uPointMode)*alpha,alpha);
+  // One soft highlight limit across every screen; preserve visible threads without unbounded white glow.
+  float light=2.8*(1.-exp(-vBrightness*fieldGain*.65));
+  gl_FragColor=vec4(colorFor(vPart)*light*alpha,alpha);
 }`
 
 const materialPaints = new WeakMap()

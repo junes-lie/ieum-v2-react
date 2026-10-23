@@ -3,6 +3,7 @@ import Icon from './Icons.jsx'
 import {songArtwork} from './songArtwork.js'
 import {openProjectRangeAvailability} from './matching.js'
 import figmaAssets from './figmaAssets.json' with { type: 'json' }
+import {CURRENT_USER_ID} from './catalog.js'
 
 // Figma display assets plus the requested presentation knot; never a measured Voice Identity.
 const participantKnots = {
@@ -12,9 +13,16 @@ const participantKnots = {
   min: '/artwork/identicon-cream.png'
 }
 
-export function ParticipantKnot({participantId,name}) {
-  const src=participantKnots[participantId]
-  return src?<img className="v2-participant-knot" data-artwork-kind={participantId==='jisun'?'presentation-generated-identicon':'supplied-identicon'} src={src} width="128" height="128" alt=""/>:name?.slice(0,1)
+// Participant colors stay attached to people when display order changes.
+const colorKnots={'#3b82f6':'blue','#f16f61':'coral','#d6b895':'cream','#2eb6ad':'teal-presentation'}
+const participantColors={yoonseul:'#3b82f6',doyoon:'#f16f61',min:'#d6b895',jisun:'#2eb6ad'}
+export const participantColor=part=>participantColors[part.participantId]||part.color
+export function recordPalettePart(part){
+  return {'#3b82f6':'soprano','#f16f61':'alto','#d6b895':'tenor','#2eb6ad':'bass'}[participantColor(part)]||part.id
+}
+export function ParticipantKnot({participantId,name,color}) {
+  const src=participantKnots[participantId] || (colorKnots[color]?`/artwork/identicon-${colorKnots[color]}.png`:null)
+  return src?<img className="v2-participant-knot" data-artwork-kind={participantId==='jisun'?'presentation-generated-identicon':'supplied-identicon'} src={src} width="128" height="128" alt=""/>:<span className="v2-participant-placeholder" aria-label={name||'참여자'}><Icon name="user" size={16}/></span>
 }
 
 export function MyVoiceIcon({profile}) {
@@ -61,7 +69,7 @@ export function recruitmentPreviewLayers(project) {
   let hash=2166136261
   for(const char of String(project.seed||project.id))hash=Math.imul(hash^char.charCodeAt(0),16777619)>>>0
   return project.parts.map((part,index)=>{
-    if(!part.participant&&!part.participantId)return null
+    if((!part.participant&&!part.participantId)||part.participantId===CURRENT_USER_ID)return null
     const seed=(hash+Math.imul(index+1,2654435761))>>>0
     return {partId:part.id,seed,spread:.08+(seed%130)/1000,turbulence:.35+(seed%95)/100,
       opacity:.34,drift:.18+(seed%30)/100,continuity:.35+(seed%60)/100,
@@ -78,7 +86,7 @@ export function PartModules({parts,projectTracks,included,onToggle,onPlay,onPart
   return <div className="v2-part-modules" style={{'--part-count':parts.length}} aria-label="파트별 참여 상태와 듣기">{parts.map((part,index)=>{
     const track=projectTracks[part.id],own=part.participantId===currentUserId
     const action=partAction?.(part)||{}
-    const identity=<><span className={`v2-voice-slot ${part.participant?"":"v2-open-voice-slot"}`} style={{color:part.color}} aria-hidden="true">{part.participant?<ParticipantKnot participantId={part.participantId} name={part.participant}/>:<Icon name="plus" size={22}/>}</span><span className="v2-part-name-role"><strong>{own?'내 파트':part.participant||'OPEN'}</strong><span className="v2-part-role">{part.name}</span></span></>
+    const identity=<><span className={`v2-voice-slot ${part.participant?"":"v2-open-voice-slot"}`} style={{color:part.color}} aria-hidden="true">{part.participant?<ParticipantKnot participantId={part.participantId} name={part.participant} color={participantColor(part)}/>:<Icon name="plus" size={22}/>}</span><span className="v2-part-name-role"><strong>{own?'내 파트':part.participant||'OPEN'}</strong><span className="v2-part-role">{part.name}</span></span></>
     return <section className="v2-part-module" key={part.id} data-part={part.id}>
       {part.participantId&&!own?<button className="v2-part-identity v2-part-person" onClick={()=>onParticipant(part.participantId)} aria-label={part.participant+' 보컬 프로필'}>{identity}</button>:action.action?<button className="v2-part-identity v2-part-person" onClick={action.action} aria-label={part.name+' 보컬 찾기'}>{identity}</button>:<div className="v2-part-identity">{identity}</div>}
       <div className="v2-part-channel"><small>{track?'제출됨':own?(hasDraft?'임시 보관':'녹음 대기'):part.invitationStatus==='sent'?'초대 대기':part.participant?'Track 대기':'모집 중'}</small>
@@ -88,11 +96,11 @@ export function PartModules({parts,projectTracks,included,onToggle,onPlay,onPart
 }
 
 export function MonitoringModule({title,participantId,role,checked,onChange,guide=false,color}) {
-  return <label className="v2-monitor-module"><span className="v2-monitor-symbol" style={{color}} aria-hidden="true">{guide?<img src="/artwork/guide-keyboard.svg" alt="" width="46" height="32"/>:<ParticipantKnot participantId={participantId} name={title}/>}</span><span>{title}</span><small>{role}</small><span className="v2-toggle"><input type="checkbox" aria-label={guide?'Guide 반주':`${title} · ${role} 함께 듣기`} checked={checked} onChange={onChange}/><i/></span></label>
+  return <label className="v2-monitor-module"><span className="v2-monitor-symbol" style={{color}} aria-hidden="true">{guide?<img src="/artwork/guide-keyboard.svg" alt="" width="46" height="32"/>:<ParticipantKnot participantId={participantId} name={title} color={color}/>}</span><span>{title}</span><small>{role}</small><span className="v2-toggle"><input type="checkbox" aria-label={guide?'Guide 반주':`${title} · ${role} 함께 듣기`} checked={checked} onChange={onChange}/><i/></span></label>
 }
 
 export function HomeView({header,profile,startVoiceSetup,entries,songs,renderRecord,renderPreview,openSong,openProject,openSearch,openCreateProject,formatDuration}) {
-  const recruiting=entries.filter(entry=>!entry.complete&&entry.openParts.length)
+  const recruiting=entries.filter(entry=>!entry.complete&&entry.openParts.length).sort((a,b)=>Number(Boolean(b.project.presentationFinale))-Number(Boolean(a.project.presentationFinale)))
   const completed=entries.filter(entry=>entry.complete)
   const hasRange=Number.isFinite(profile?.rangeData?.lowMidi)&&Number.isFinite(profile?.rangeData?.highMidi)
   const songOptions=songs.map(song=>({song,projects:entries.filter(entry=>entry.song.id===song.id&&!entry.publicExample)}))
@@ -129,10 +137,10 @@ export function HomeView({header,profile,startVoiceSetup,entries,songs,renderRec
             {recruiting.length>1&&<button className="v2-carousel-neighbor v2-carousel-neighbor-previous" aria-label={`이전 프로젝트 선택: ${previous.song.title}`} onClick={()=>change(-1)}/>}
             <div className="v2-recruit-record" data-project-id={selected.project.id}><TurntableFrame control={renderPreview?.(selected)}>{slides.map(({slot,position,entry})=><RecordSlide key={position} projectId={entry.project.id} slot={slot}>{renderRecord(entry,{recruitment:true})}</RecordSlide>)}</TurntableFrame></div>
             {recruiting.length>1&&<button className="v2-carousel-neighbor v2-carousel-neighbor-next" aria-label={`다음 프로젝트 선택: ${next.song.title}`} onClick={()=>change(1)}/>}
-          </div><div className="v2-recruit-info"><SongArtwork song={selected.song} className="v2-recruit-jacket"/><div className="v2-recruit-copy"><h3 lang={/[가-힣]/.test(selected.song.title)?'ko':'en'}>{selected.song.title}</h3><p><span className="v2-recruit-open">OPEN · {selected.openParts.map(part=>part.name).join(' · ')}</span><span>{selected.partCount-selected.openParts.length}명 참여</span></p></div></div></div></div><ProjectActionButton onClick={()=>open(selected)}/></div>:<p className="empty-proof">현재 모집 중인 프로젝트가 없어요.</p>}
+          </div><div className="v2-recruit-info"><SongArtwork song={selected.song} className="v2-recruit-jacket"/><div className="v2-recruit-copy"><h3 lang={/[가-힣]/.test(selected.song.title)?'ko':'en'}>{selected.song.title}</h3><p><span className="v2-recruit-open">OPEN · {selected.openParts.map(part=>part.name).join(' · ')}</span><span>{selected.participantCount}명 참여</span></p></div></div></div></div><ProjectActionButton onClick={()=>open(selected)}/></div>:<p className="empty-proof">현재 모집 중인 프로젝트가 없어요.</p>}
       </section>
       <section className="v2-recommended" data-recommendation-mode={personalized?'range':'general'}><div className="v2-recommended-heading"><SectionHeading title="어떤 곡으로 시작할까요" onAction={()=>openSearch('songs')}/><p className="v2-section-note">{!hasRange?'Voice Profile을 만들면 내 음역 기준으로 추천해요.':personalized?`${profile.demo?'시연 프로필의':'등록된'} 음역 안에 OPEN Part가 있는 곡이에요.`:'현재 확인된 내 음역 추천이 없어 전체 곡을 보여드려요.'}</p>{!profile&&startVoiceSetup&&<button className="v2-onboarding-text-action" data-action="home-voice-setup" onClick={startVoiceSetup}>내 목소리 알아보기 →</button>}</div><div className="v2-song-grid">{recommended.slice(0,3).map(({song,projects,matching})=><button className="v2-song-card" key={song.id} onClick={()=>openSong(song.id)}><SongArtwork song={song} className="v2-cover-slot"/><strong>{song.title}</strong><small>{song.artist}</small><small className="v2-song-count">{personalized?`내 음역 OPEN · 프로젝트 ${matching}`:`프로젝트 ${projects.length}`}</small></button>)}</div></section>
-      <section className="v2-recent"><SectionHeading title="최근 열린 프로젝트"/><div className="v2-project-rows">{[...entries.filter(entry=>entry.isCreated),...entries.filter(entry=>!entry.isCreated&&!entry.publicExample)].slice(0,3).map(entry=><button className="v2-project-row" data-project-id={entry.project.id} key={entry.project.id} onClick={()=>open(entry)}><div className="v2-project-thumbnail"><div className="v2-thumbnail-record">{renderRecord(entry)}</div><SongArtwork song={entry.song} className="v2-thumbnail-sleeve"/></div><span><strong lang={/[가-힣]/.test(entry.song.title)?'ko':'en'}>{entry.song.title}</strong><small>{entry.song.artist}</small><small className="v2-project-count" aria-label={`${entry.partCount-entry.openParts.length}명 참여 · ${entry.submitted}/${entry.partCount} 제출`}><span className="v2-recent-voices" aria-hidden="true">{entry.project.parts.filter(part=>part.participant||part.participantId).slice(0,4).map(part=><ParticipantKnot key={part.id} participantId={part.participantId} name={part.participant}/>)}</span>{entry.partCount-entry.openParts.length}명 참여</small></span><span className="v2-open-roles"><small>{entry.complete?'COMPLETE':'OPEN'}</small>{entry.complete?'완성곡':entry.openParts.map(part=>part.name).join(' · ')||'녹음 중'}</span></button>)}</div></section>
+      <section className="v2-recent"><SectionHeading title="최근 열린 프로젝트"/><div className="v2-project-rows">{[...entries.filter(entry=>entry.isCreated),...entries.filter(entry=>!entry.isCreated&&!entry.publicExample)].slice(0,3).map(entry=><button className="v2-project-row" data-project-id={entry.project.id} key={entry.project.id} onClick={()=>open(entry)}><div className="v2-project-thumbnail"><div className="v2-thumbnail-record">{renderRecord(entry)}</div><SongArtwork song={entry.song} className="v2-thumbnail-sleeve"/></div><span><strong lang={/[가-힣]/.test(entry.song.title)?'ko':'en'}>{entry.song.title}</strong><small>{entry.song.artist}</small><small className="v2-project-count" aria-label={`${entry.participantCount}명 참여 · ${entry.submitted}/${entry.partCount} 제출`}><span className="v2-recent-voices" aria-hidden="true">{entry.project.parts.filter(part=>part.participant||part.participantId).slice(0,4).map(part=><ParticipantKnot key={part.id} participantId={part.participantId} name={part.participant} color={participantColor(part)}/>)}</span>{entry.participantCount}명 참여</small></span><span className="v2-open-roles"><small>{entry.complete?'COMPLETE':'OPEN'}</small>{entry.complete?'완성곡':entry.openParts.map(part=>part.name).join(' · ')||'녹음 중'}</span></button>)}</div></section>
       <section className="v2-completed"><SectionHeading title="완성곡 둘러보기" onAction={()=>openSearch('completed')}/><div className="v2-completed-carousel">{completed.length?completed.map(entry=>{
         const duration=Number.isFinite(entry.mix?.duration)&&entry.mix.duration>0?formatDuration(entry.mix.duration):'—'
         return <button className="v2-completed-card" key={entry.project.id} data-project-id={entry.project.id} onClick={()=>openProject(entry)}>

@@ -1,6 +1,8 @@
 # IEUM V2 통합 체크포인트 · 2026-10-23
 
 ## 완료
+- 사용자 참여/공명 정정(기준fe3e79c): 등록완료 시연의 Workspace에서 내 Tenor를 맨 오른쪽에 표시한다. 데이터의 Part ID·원본 Track 순서는 유지하고 시연 표시만 참여 순서로 정리한다. 사람별 아이덴티콘 색과 공명 palette를 같은 기준으로 연결해 Min은 크림/나는 청록이며, 내 제출 전에는 카탈로그 예시·녹음·Review에도 내 공명 Layer를 주입하지 않는다. 마지막 직접 제출 뒤 저장된 Tenor Track에만 청록이 추가된다. Home 첫 모집은 해당 Quartet을 우선하며, 참여 인원은 실제 표시할 멤버로 계산한다. 제출 Track의 participantId/이름·초대 수락 멤버도 같은 discovery 데이터에 반영한다. 최근 프로젝트 모든 행에서 멤버 수만큼 기존 컬러 매듭과 공명을 표시하고, 카탈로그 예시 그래픽은 실제 제출과 구분한다. 사람별 색은 표시 순서가 바뀌어도 고정된다. WebGL 하이라이트는 화면별 증폭 대신 공통 soft limit 2.8로 흰색 번짐을 낮추되 선·입자 조형/모션은 보존한다. 관련 build/Node 참여인원과 제출 구분/390·430 직접 짧은 합성마이크 제출 전3색→Review3색→제출후4색·최근목록3/1/1 아이콘/공명 일치·reload4명 확인. 마지막 광량 조정은 별도430 실제 캡처로 확인하며 기존 전체QA는 반복하지 않는다. 제공3개 준비 Track은 동일 보컬 시연 예시라는 기존 출처를 유지한다.
+
 - 사용자 최신 정정(기준cdb795b): 잘못 추가한 별도 finale 진입점을 제거하고 기존 ‘프로필 등록 완료’의 Home 시작에 세 준비 Track/내 마지막 Tenor 제출 시연을 적용했다. 프로필·96/92 예시 점수와 기존 등록/미등록 진입은 유지한다. Home 상단 MyVoiceIcon, 내 Part/참여자·모니터링의 jisun 아이콘, My Voice/VP 완료의 제공 미리보기 등 ‘나/사용자’ 표시를 새 청록 매듭으로 통일했다. Min/Bass는 기존 크림 매듭을 사용하며 윤슬 파랑·도윤 코랄은 보존한다. 실제 측정 생성 이미지/selector 결과는 덮어쓰지 않는다. 세 준비 Track은 동일 제공 보컬의 명시적 시연 예시이고 내 Tenor는 직접 Review 제출 전까지 비어 있다. 일반 실사용 데이터와 다른 프로젝트·원본 MP3는 변경하지 않는다. 변경범위만390/430 Home→Detail→Workspace·My Voice의 이미지와 기존 등록완료 시연 흐름을 확인한다.
 - 사용자 추가 정정(기준6eb8f4): 최신 Figma Review1610:41661의 Restart1616:41508/표면1785:46797–46799를 전용 도구로 읽고 수정된 연속 금속 캡슐을 반영했다. 이전 sliced SVG 대신 원본의 rim/bevel/face 세 gradient·1px/2px inset·24px radius를 CSS 배경 레이어로 연결했다. 기존48px 높이/18px rotate-right/라벨15·22/8px 간격/실제 확인·취소·재녹음 동작 보존. 기존SVG/다른버튼/녹음중 원형다시녹음은 변경하지 않는다. build 및390/430 합성마이크 짧은녹음→Review/대상캡처/확인취소로Take유지/재녹음확인으로Ready복귀·제출0통과. 전체QA 반복 없음. 근거 /tmp/ieum-retake-*.
 - 사용자 체크 색 정정(기준c72d1bb): `.detail-project-check` 안쪽 체크를 #25211C로 적용했다. 기존 active 카드의 span 공통규칙이 체크 색을 크림색으로 덮는 우선순위 충돌을 실제 computed fill로 재현하고 선택 카드 내 체크에만 구체적 selector를 적용했다. 바깥 원 #DCCCAD/18px/위치·카드·데이터는 유지한다. build·로컬390/430 체크 color/실제SVG fill rgb(37,33,28)·바깥 원 rgb(220,204,173)·대상캡처 통과. 전체QA 반복 없음. 근거 /tmp/ieum-check-color-*; 자기owner interactive-check-color-cad8a99a0a38만 보존·해제한다.
@@ -32,4 +34,4 @@
 
 - 이번 근거 /tmp/ieum-range-return-*; 자기 owner interactive-range-return-cad8a99a0a38만 대조해 완료 기록으로 보존·해제한다.
 
-- 이번 근거 /tmp/ieum-profile-entry-*; 자기owner interactive-profile-entry-cad8a99a0a38만 대조하여 완료기록으로 보존·해제한다.
+- 이번 근거 /tmp/ieum-members-*; 자기owner interactive-member-consistency-cad8a99a0a38만 대조하여 완료기록으로 보존·해제한다.
