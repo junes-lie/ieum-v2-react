@@ -1,6 +1,7 @@
 # IEUM V2 통합 체크포인트 · 2026-10-24
 
 ## 완료
+- 기준 `7ea90b3`에서 최신 편집 가능 Completed `1888:48486`의 버튼/Player를 반영했다. 제목→24px→72px 패널 안의 공통48px Player, 버튼/seek 중심 일치·44px hit·하단 좌우 시간(12/16/.24)을 복구했다. 반응 버튼은 원본 `1310:3479` Smoky SVG의44px/내부8px 묶음이며16px 아래48px Gold CTA는 기존 공통 컴포넌트를 재사용한다. 390px에 남아 있던20px 여백과 제목 order 상속을 해당 화면에 한정해24px/원래 순서로 수정했다. 로컬390/430 실제 캡처/좌표·표면 로드·native 재생/일시정지/Seek·focus/blur 시간 PNG 동일·좋아요 저장/reload·클립보드 공유/기존 복귀·원본 음원SHA/Track0을 확인했다. 기존460Record/168Credits·출처·실제 완성곡/시연 분기·하단탭은 유지한다. 공개 배포 검수는 자기 완료 기록에 남긴다.
 - 기준 `de782b7`의 누락을 수정했다. 같은 ‘오늘 같은 날’의 기존 프로젝트 분리 보컬 `provided-vocal.mp3`(SHA256 `dafd068295ba4c4761f9106ad74891e6c0800ab25d82ccb87eae3f7f66d907b1`)을 샘플송에도 연결했다. 22초 프로젝트의 준비3초를 건너뛴19초 샘플 구간이며 초기/볼륨변경/재개에 같은3초 offset을 적용한다. UI는 가이드 보컬,0–100은 보컬만 제어하고 반주는 같은 볼륨으로 계속 재생한다. 다른 두 샘플의 음원/반주·기존 Project 기본offset0·원본/Track은 유지한다. 새 생성/분리/스템 파일 추가는 없다. 원본 SHA/계보 Node·build와 로컬390/430 native 짧은 합성마이크에서 실제 분리 보컬 시작offset3·gain50/0/100·반주gain불변·pause/resume offset차3·Review/Track0을 확인했다. 이전 ‘샘플에는 분리 보컬이 없다’는 일괄 설명은 연결 누락을 잘못 설명한 것이므로 정정한다.
 - 기준 `97ff11fe36fbe1fbd684b82352d38446e889c6e1`에서 실제 음역 적합 백분율을 연결했다. `evaluatePartFit.coveragePercent`는 현재 Key의 Part 요구 범위와 내 저장된 측정 범위의 반음 기준 포함 비율(양끝 포함)을 계산한다. 전체100/겹침없음0/정보없음null이며 측정 범위를 임의 확장하지 않는다. 캡처의 F♯3–D5 대 C3–G4는14/20=70%다. Detail의 ‘참고 비교’를 실제 퍼센트로 바꾸고 계산 의미를 표시했다. 기존 tessitura/참여 허용·실제 요구 음역·데모96%는 보존한다.
 - 프로젝트↔사람 음색 계산의 값과 원시 입력을 `data-harmony-value/own-brightness/own-roughness/reference-brightness/reference-roughness/calculation`에 연결했다. 표시값을 임의80으로 고정하지 않는다. 기존 식은100×(1−밝기/거칠기 절대차 평균)이며 Node와 native 브라우저에서 저장 샘플 입력으로 재계산해 표시값과 대조한다. 역할은 등록 멜로디/화음과 선호 역할의 겹침100/0, 취향은 등록 곡/장르/명시 취향 비교다. 실제 음색이 없으면 종합은 없고 선택하지 않은 항목은 제외한다. 검증된AI·실력·합창 품질의 확률로 보고하지 않는다.
@@ -11,9 +12,9 @@
 
 ## 미완료
 - `overallProductAcceptance=false`. 참고 계산은 사람의 청감으로 검증된 조화 모델/서버AI가 아니다. 실제 독립4인/물리마이크·이어폰·공유/인증/Appremote/다중사용자·장시간 안정성 및 과거430 시작 timeout·길이 편차·MyVoice pointer/OpenParts Enter 지연은 미해결이다. 실제 기준 보컬이 없는 프로젝트에는 종합 지수를 만들지 않는다.
-- 최신 Completed 금속/Smoky 버튼·Player/time와 기타 상태별 시각·모션 인수는 남았다. VP Review의 매듭은 제공 시연 미리보기이며 샘플 기반 실제 Identity 생성은 연결 전이다. 샘플 전체음원/반주를 보컬 stem으로 위장하지 않는다. CC0 독립 확인/정식 서비스의 적법 stem 확보는 미완료다.
+- 기타 상태별 최신 Figma 시각·모션 인수는 남았다. 이번 Completed 검수는 기존 공개 예시 완성곡이며 실제 독립4인 완성 인수가 아니다. VP Review의 매듭은 제공 시연 미리보기이며 샘플 기반 실제 Identity 생성은 연결 전이다. 샘플 전체음원/반주를 보컬 stem으로 위장하지 않는다. CC0 독립 확인/정식 서비스의 적법 stem 확보는 미완료다.
 - Preview 브라우저는 기존 외부 Sentry telemetry 내용/전송 승인 미확인 자동 검토 차단을 존중해 재실행하지 않는다. 읽기전용 정적 확인만 한다. 기존 전체 Node render의 fixture.parts 누락/PartFit 숨김 구기대도 전체 통과로 표시하지 않는다.
 
 ## 다음 시작점
-- 최신 HEAD/owner/활성 실행을 대조한 뒤 최신 Completed 버튼/Player/time의 실제 차이부터 수정한다. 새 진입점·새 앱·수동 중복배포를 만들지 않는다. 이미 통과한 실측 퍼센트·프로젝트 비교·VP01~06·공명/멤버/음원/그룹을 회귀 근거 없이 반복 구현하지 않는다.
-- 작업 `/workspace/scratch/cad8a99a0a38/ieum-focus`; 관련 QA `qa/verify-sample-vocal-guide-browser.mjs`, `qa/verify-part-range-percent.mjs`, `qa/verify-vp-recorder-browser.mjs`, `qa/vp-registration-summary-assertions.mjs`; 근거 `/tmp/ieum-sample-guide-local`, 공개 후 `/tmp/ieum-sample-guide-public`; 이전 근거 `/tmp/ieum-vp-scene-public`. 자기 owner `interactive-sample-guide-cad8a99a0a38`만 완료 기록을 보존하고 해제한다.
+- 최신 HEAD/owner/활성 실행을 대조한 뒤 편집 가능 수정안 `1867:43994`에서 이후 변경된 화면별 실제 차이를 반영한다. 사용자 최신 지시대로 Figma 수정 반영에 집중한다. 새 진입점·새 앱·수동 중복배포를 만들지 않는다. 이미 반영한 Completed 버튼/Player·실측 퍼센트·프로젝트 비교·VP01~06·공명/멤버/음원/그룹은 회귀 근거 없이 반복 구현하지 않는다.
+- 작업 `/workspace/scratch/cad8a99a0a38/ieum-focus`; 관련 QA `qa/verify-completed-controls-browser.mjs`; 근거 `/tmp/ieum-completed-controls-local`, 공개 후 `/tmp/ieum-completed-controls-public`; 이전 근거 `/tmp/ieum-sample-guide-public`. 자기 owner `automation-completed-controls-cad8a99a0a38-0255`만 완료 기록을 보존하고 해제한다.
