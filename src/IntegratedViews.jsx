@@ -4,16 +4,17 @@ import {songArtwork} from './songArtwork.js'
 import {openProjectRangeAvailability} from './matching.js'
 import figmaAssets from './figmaAssets.json' with { type: 'json' }
 
-// Approved Figma display artwork; never persisted as a measured Voice Identity.
+// Figma display assets plus the requested presentation knot; never a measured Voice Identity.
 const participantKnots = {
   yoonseul: '/artwork/identicon-blue.png',
   doyoon: '/artwork/identicon-coral.png',
-  jisun: '/artwork/identicon-cream.png'
+  jisun: '/artwork/identicon-cream.png',
+  min: '/artwork/identicon-teal-presentation.png'
 }
 
 export function ParticipantKnot({participantId,name}) {
   const src=participantKnots[participantId]
-  return src?<img className="v2-participant-knot" data-artwork-kind="supplied-identicon" src={src} width="128" height="128" alt=""/>:name?.slice(0,1)
+  return src?<img className="v2-participant-knot" data-artwork-kind={participantId==='min'?'presentation-generated-identicon':'supplied-identicon'} src={src} width="128" height="128" alt=""/>:name?.slice(0,1)
 }
 
 export function MyVoiceIcon({profile}) {

@@ -1,6 +1,7 @@
 # IEUM V2 통합 체크포인트 · 2026-10-23
 
 ## 완료
+- 사용자 발표 시연 정정(기준ba5fd91): 기존 실사용/다른 시나리오와 저장소가 분리된 finale 진입점을 추가했다. 오늘 같은 날에 윤슬/Soprano·도윤/Alto·Min/Bass 세 준비 Track과 내 Tenor OPEN으로 시작한다. 세 준비 Track은 동일 기존 provided-vocal.mp3를 재사용한 명시적 시연 fixture이며 실제 세 사람의 독립 녹음으로 표시하지 않는다. 원본 Track 생성 검증을 완화하지 않고 별도 fixture provenance/origin을 사용한다. 내 Tenor는 기존 마이크/Review/직접제출을 거쳐야 하며 그 전까지3/4, 이후 기존 browser AutoMix 완료 시에만4/4/Completed가 된다. 동일 MP3/기존 AI3곡/실사용 데이터는 변경하지 않았다. 기본 이미지 생성 도구로 기존 파랑/코랄/크림 reference와 같은 선·입자 계열의 청록 정적 매듭을 만들고 Min 표시 에셋으로 연결했다. 실제 측정 VoiceIdentity가 아니며 source.json에 생성모드·프롬프트를 기록했다. 로컬390/430 실제 합성마이크22초전체→Review→직접제출→브라우저Mix→완성곡 실제재생/reload원본hash·완성복구/일반시나리오0제출불변 통과. 실제다중사용자/물리마이크/서버AI 인수 아님.
 - 사용자 추가 정정(기준6eb8f4): 최신 Figma Review1610:41661의 Restart1616:41508/표면1785:46797–46799를 전용 도구로 읽고 수정된 연속 금속 캡슐을 반영했다. 이전 sliced SVG 대신 원본의 rim/bevel/face 세 gradient·1px/2px inset·24px radius를 CSS 배경 레이어로 연결했다. 기존48px 높이/18px rotate-right/라벨15·22/8px 간격/실제 확인·취소·재녹음 동작 보존. 기존SVG/다른버튼/녹음중 원형다시녹음은 변경하지 않는다. build 및390/430 합성마이크 짧은녹음→Review/대상캡처/확인취소로Take유지/재녹음확인으로Ready복귀·제출0통과. 전체QA 반복 없음. 근거 /tmp/ieum-retake-*.
 - 사용자 체크 색 정정(기준c72d1bb): `.detail-project-check` 안쪽 체크를 #25211C로 적용했다. 기존 active 카드의 span 공통규칙이 체크 색을 크림색으로 덮는 우선순위 충돌을 실제 computed fill로 재현하고 선택 카드 내 체크에만 구체적 selector를 적용했다. 바깥 원 #DCCCAD/18px/위치·카드·데이터는 유지한다. build·로컬390/430 체크 color/실제SVG fill rgb(37,33,28)·바깥 원 rgb(220,204,173)·대상캡처 통과. 전체QA 반복 없음. 근거 /tmp/ieum-check-color-*; 자기owner interactive-check-color-cad8a99a0a38만 보존·해제한다.
 - 사용자 제공 CSS 정정(기준a01ff85): Home `.v2-recruit-info`의 margin을 `8px auto 0`, `.v2-recruitment-feature`의 gap을 `32px`로 적용했다. 기존left/center/12px/fit-content/max-width100% 및flex-column/width100%는 유지한다. build·390/430 실제 렌더에서 computed style과 서로 다른 두 프로젝트의 Hug/가용폭·가로 넘침 없음 확인 통과. 무관한 전체QA는 반복하지 않는다. 근거 /tmp/ieum-home-css-*; 자기owner interactive-home-css-cad8a99a0a38만 완료기록으로 보존·해제한다.
@@ -30,3 +31,5 @@
 - 이번 근거 /tmp/ieum-layout-request-{before,after,range}. 자기 owner interactive-recording-layout-cad8a99a0a38만 대조해 완료 기록으로 보존·해제한다.
 
 - 이번 근거 /tmp/ieum-range-return-*; 자기 owner interactive-range-return-cad8a99a0a38만 대조해 완료 기록으로 보존·해제한다.
+
+- 이번 근거 /tmp/ieum-finale-*; 자기owner interactive-finale-cad8a99a0a38만 대조하여 완료기록으로 보존·해제한다.

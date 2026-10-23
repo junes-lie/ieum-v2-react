@@ -1,6 +1,7 @@
 import samples from './providedSamples.json' with {type:'json'}
 // Presentation fixtures use separate storage. Never seed the real user's profile.
 export const DEMO_SCENARIOS = [
+  {id:"finale",label:"발표 · 마지막 Track 완성",detail:"오늘 같은 날 · 준비된 시연 Track 3개 + 내 마지막 녹음",screen:"detail",profile:true,entry:true,finale:true},
   {id:'first-visit',label:'프로필 미등록',detail:'첫 방문 · 프로필과 참여 프로젝트 없음',flow:'Flow 1 · UF01 / UF03',screen:'home',profile:false,entry:true},
   {id:'profile-ready',label:'프로필 등록 완료',detail:'목소리 준비됨 · OPEN Part 직접 참여',flow:'Flow 2A · UF01',screen:'home',profile:true,entry:true},
   {id:'invitation',label:'프로젝트 초대받음',detail:'받은 초대 확인 · 지정 Part 수락 또는 거절',flow:'Flow 2B · UF02',screen:'projects',profile:true,receivedInvitation:true,entry:true},

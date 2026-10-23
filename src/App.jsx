@@ -8,6 +8,7 @@ import { ProjectActionButton,HomeView,PartModules,MonitoringModule,ParticipantKn
 import {discoveryProjects,matchesGenre} from './discovery.js'
 import {PUBLIC_COMPLETIONS,publicResultIdFromNavigation} from './publicCompletions.js'
 import {PRESENTATION_AUDIO} from './presentationAudio.js'
+import {ensureFinaleTracks,isFinaleFixture,FINALE_DISCLOSURE} from './presentationFinale.js'
 import { PITCH_ANALYSIS_VERSION } from './pitch.js'
 import { prepareVoiceRangeRecord, prepareVoiceSampleRecord, voiceSourceRevision } from './profileSource.js'
 import { loadMeasuredProfileIdentityInput } from './voiceIdentitySources.js'
@@ -84,6 +85,7 @@ const PROJECT_ID = PROJECT.id
 const PROJECT_SEED = PROJECT.seed
 const SONG_ID = 'a-thousand-years'
 const PARTS = PROJECT.parts
+if(demoScenario?.finale)Object.assign(PARTS.find(part=>part.id==='bass'),{participantId:'min',participant:'Min',status:'accepted'})
 const USER_PART_ID = 'tenor'
 
 const SONGS = [
@@ -880,7 +882,7 @@ function Detail({ go, back, song, profile, join, layers, projectTracks, songSave
       {!profile&&!receivedInvitation&&openParts.length>0&&(!action||action.id==='voice-setup')?<section className="detail-profile-guide" data-testid="detail-profile-guide" aria-label="목소리 프로필 등록 안내"><h2>내 목소리를 아직 등록하지 않았어요.</h2><p>음역과 목소리 샘플을 등록해요. 약 1–2분 걸려요.</p><ProjectActionButton actionId="voice-setup" onClick={()=>go('voice')} label="내 목소리 알아보기"/><small>{chosen?`${chosen.name} Part를 확인하러 이 프로젝트로 돌아와요.`:'등록 후 이 곡과 프로젝트로 돌아와 빈 Part를 선택해요.'} 탐색과 듣기는 먼저 할 수 있어요.</small></section>:action&&<div className="detail-project-action"><ProjectActionButton actionId={action.id} onClick={action.click} label={action.label}/></div>}
       {analysisPart&&<section className="fit-panel detail-fit" data-testid="part-fit" data-analysis-part={analysisPart.id}><div className="detail-fit-title"><p>음역대 분석 · {analysisPart.name}</p><div className="detail-fit-heading"><h2>이 파트를 부를 수 있나요?</h2><span>음역 적합 <b data-match-percent={demoPartFit!=null||undefined}>{demoPartFit!=null?`${demoPartFit}%`:profile?(analysisFit.requiredRange?'참고 비교':'정보 부족'):'등록 필요'}</b></span></div></div><DetailRangeComparison part={analysisPart} profile={profile}/><p>{demoMatch?`${analysisPart.name}의 요구 음역과 잘 맞고, 주로 부르는 구간도 편안해요.`:profile?analysisFit.reasons.join(' '):'음역과 목소리 샘플을 등록해요. 약 1–2분 걸려요.'}</p><small>음역 비교는 참고 정보예요. 요구 음역을 벗어나도 참여할 수 있어요.</small></section>}
       {profile&&<section className="detail-harmony"><div className="detail-harmony-visual"><h2>내 목소리가 더해지면</h2><figure><img src="/artwork/figma-detail-harmony.png" width="382" height="130" alt="목소리가 프로젝트에 연결되는 공명 일러스트"/><figcaption><span>나의 목소리{chosen?` · ${chosen.name}`:''}</span><span>프로젝트 하모니 · {members.map(part=>part.name).join(' + ')||'참여 대기'}</span></figcaption><small>{demoMatch?'시연 프로필 기준 · 매칭 예시':'결합 방식 예시 · 개인 분석 결과가 아니에요.'}</small></figure></div><div className="detail-harmony-analysis"><div className="detail-harmony-summary"><p>{chosen?`${members.length}명의 목소리에 ${chosen.name}를 더해요.`:'함께할 목소리의 조화를 확인해요.'}</p><span>참여 후 예상 조화 <b data-match-percent={Boolean(demoMatch)||undefined}>{demoMatch?`${demoMatch.overall}%`:harmony.status==='compared'?`${harmony.compared}명 음색 비교`:'비교 데이터 부족'}</b></span></div><div className="detail-match-reasons">{(demoMatch?[['음색','맑은 중음이 기존 보컬의 따뜻한 음색과 자연스럽게 어울려요.'],['역할',`${chosen?.name||'Tenor'}가 멜로디와 화음 사이를 연결해요.`],['취향','발라드·팝과 어쿠스틱 취향을 함께 즐겨요.']]:harmony.reasons).map(([label,reason],index)=><div key={label}><span>{label}</span><span className="detail-metric-track" aria-hidden="true">{demoMatch&&<i style={{width:`${[demoMatch.timbre,demoMatch.role,demoMatch.taste][index]}%`}}/>}</span><small>{demoMatch?`${[demoMatch.timbre,demoMatch.role,demoMatch.taste][index]}%`:'—'}</small><p>{reason}</p></div>)}</div></div></section>}
-      <div className="detail-secondary"><p className="demo-disclosure">{demoMatch?'시연용 프로필·매칭 예시':isLiveProject?`${demoNames||'현재 없음'}: 실제 제출된 녹음만 표시합니다.`:isCreatedProject?'이 브라우저에 저장된 내 프로젝트입니다. 실제 서버 협업 연결은 아직 완료되지 않았습니다.':selectedProject.audioSource?'IEUM Originals · 실제 반주와 가사가 등록된 22초 유니즌 시연곡입니다.':'탐색용 Project 데이터입니다. 녹음 시연은 Original C · Quartet에서 제공합니다.'}</p></div>
+      <div className="detail-secondary"><p className="demo-disclosure">{demoScenario?.finale?FINALE_DISCLOSURE:demoMatch?'시연용 프로필·매칭 예시':isLiveProject?`${demoNames||'현재 없음'}: 실제 제출된 녹음만 표시합니다.`:isCreatedProject?'이 브라우저에 저장된 내 프로젝트입니다. 실제 서버 협업 연결은 아직 완료되지 않았습니다.':selectedProject.audioSource?'IEUM Originals · 실제 반주와 가사가 등록된 22초 유니즌 시연곡입니다.':'탐색용 Project 데이터입니다. 녹음 시연은 Original C · Quartet에서 제공합니다.'}</p></div>
     </main>
 
   </div>
@@ -1166,7 +1168,7 @@ function Workspace({ go, back, project = PROJECT, song, isCreated = false, owner
   }
   return <div className="screen figma-v2 workspace-screen workspace-v2-screen" data-screen-id="03">
     <TopBar figmaHeader title="IEUM" back={back||(() => isCreated ? go('projects') : go('detail'))} action={<img src={figmaAssets.imgFaFaHeart1} alt="" aria-hidden="true"/>} actionLabel={projectLiked?'프로젝트 Like 취소':'프로젝트 Like'} actionPressed={projectLiked} actionId="toggle-project-like" onAction={toggleProjectLike} />
-    <main>
+    <main>{project.presentationFinale&&<p className="presentation-fixture-note">시연용 준비 Track 3개 · 내 마지막 Track은 직접 녹음·제출해요.</p>}
       <div className="title-row"><div><h1 data-title-language={/[가-힣]/.test(song?.title || project.name)?'kr':'en'}>{song?.title || project.name}</h1><p className="workspace-project-name">{project.key || 'C major'} · {submitted}/{projectParts.length} 제출됨</p></div></div>
       {completionDelayed&&<section className="completion-delay-banner" role="status" data-state="completion-delayed"><strong>내 녹음을 이어갈 차례예요.</strong><p>마지막 유효 활동 후 7일이 지났습니다. 미완료된 내 Part를 제출하면 프로젝트가 다시 진행돼요.</p></section>}
 
@@ -1683,7 +1685,7 @@ function Complete({ go, back, publicResult, mix, layers, projectTracks, project 
       <p className="final-player-label">{hasPlayed?'다시 재생':'완성곡 재생'}</p>
       </div>
 
-      <p className="demo-disclosure">{publicResult?publicResult.disclosure:project.audioSource?(project.demo?'같은 기기의 시연 A/B가 직접 녹음한 유니즌과 AI 원곡의 반주입니다.':'직접 제출한 마이크 녹음과 등록된 원곡 반주입니다.'):'Credits의 LOCAL DEMO 표시는 흐름 검증용 합성 Stem이며 실제 참여자의 사람 녹음이 아님을 뜻합니다.'}</p>
+      <p className="demo-disclosure">{project.presentationFinale?FINALE_DISCLOSURE:publicResult?publicResult.disclosure:project.audioSource?(project.demo?'같은 기기의 시연 A/B가 직접 녹음한 유니즌과 AI 원곡의 반주입니다.':'직접 제출한 마이크 녹음과 등록된 원곡 반주입니다.'):'Credits의 LOCAL DEMO 표시는 흐름 검증용 합성 Stem이며 실제 참여자의 사람 녹음이 아님을 뜻합니다.'}</p>
       {!publicResult&&<p className="ai-boundary">현재 Record는 제출 Track 특징 기반 시각화이며, 생성형 AI 서비스는 아직 연결되지 않았어요.</p>}
       <div className="complete-actions"><button className="secondary" aria-pressed={projectLiked} data-action="toggle-project-like" onClick={toggleProjectLike}><img src={figmaAssets.imgFaFaHeart} alt="" aria-hidden="true"/>{projectLiked?'마음에 들어요 · 저장됨':'마음에 들어요'}</button><button className="secondary" data-action="share" onClick={share}><img src={figmaAssets.imgFaFaLink} alt="" aria-hidden="true"/>링크 공유</button><button className="primary" onClick={()=>go(publicResult?'home':'projects')}>{publicResult?'완성곡 둘러보기':'내 프로젝트'}</button></div>
       {shareState==='unavailable'&&<p className="share-result" role="status">이 완성곡은 현재 기기에 저장되어 있어요. 서버 연결 후 결과 링크를 공유할 수 있습니다.</p>}{shareState==='done'&&<p className="share-result" role="status">공유 또는 링크 복사를 완료했어요.</p>}{shareState==='error'&&<p className="share-result error" role="alert">이 브라우저에서는 공유를 열 수 없어요.</p>}
@@ -1858,7 +1860,7 @@ export default function App() {
   const invitedPerson = PERSON_BY_ID[invitedVocalId] || PERSON_BY_ID.luna
   const selectedVocalTrack = Object.values(projectTracks).find(track => (track.participantId || personFromName(track.participant)?.id) === selectedVocalId)
   const activeCreatedProject = createdProjects.find(project=>project.id===activeCreatedProjectId) || null
-  const mainProject = {...PROJECT,...SONGS[0].projects.find(project=>project.id===PROJECT_ID)}
+  const mainProject = {...PROJECT,...SONGS[0].projects.find(project=>project.id===PROJECT_ID),presentationFinale:Boolean(demoScenario?.finale)}
   const activeProject = activeCreatedProject || mainProject
   const activeSong = SONGS.find(song=>song.id===(activeCreatedProject?.songId || SONG_ID)) || SONGS[0]
   const activeParts = activeProject.parts || PARTS
@@ -2217,12 +2219,13 @@ export default function App() {
     }
     const bootstrap = async () => {
       setTracksLoadError('')
-      const [projectStored, profileStored] = await Promise.all([
+      const [loadedProjectStored, profileStored] = await Promise.all([
         loadProjectTracks(PROJECT_ID),
         loadProjectTracks(PROFILE_PROJECT_ID)
       ])
+      const projectStored=demoScenario?.finale?await ensureFinaleTracks(mainProject,loadedProjectStored):loadedProjectStored
       const stored = await Promise.all(projectStored
-        .filter(track => track.origin === 'live-microphone-recording' && submittedProjectTracks(PROJECT,{[track.partId]:track}).length)
+        .filter(track => (track.origin === 'live-microphone-recording'||(demoScenario?.finale&&isFinaleFixture(track))) && submittedProjectTracks(PROJECT,{[track.partId]:track}).length)
         .map(async track => ({
           ...await refreshTrackAnalysis(track,PROJECT_SEED),
           participantId:track.participantId || personFromName(track.participant)?.id || null
