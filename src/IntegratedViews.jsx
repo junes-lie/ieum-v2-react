@@ -38,8 +38,8 @@ export function TurntableFrame({children,playing,onPlay,canPlay,control}) {
   return <div className="v2-turntable-frame"><img className="v2-turntable-housing" src="/artwork/turntable-housing.webp" width="900" height="900" alt="" decoding="async"/><div className="v2-turntable-live-record">{children}</div>{control}{onPlay&&<button className="v2-turntable-play" data-action="turntable-play" disabled={!canPlay} onClick={onPlay} aria-label={playing?'현재 듣기 일시정지':'현재 듣기 재생'}><img src={canPlay?'/artwork/figma-player-gold-current.svg':'/artwork/figma-player-play-surface.svg'} width="48" height="48" alt="" aria-hidden="true"/><Icon name={playing?'pause':'play'} size={14.4}/></button>}</div>
 }
 
-export function ProjectActionButton({onClick,label="프로젝트 보기 →",actionId="open-parts"}) {
-  return <button className="primary v2-project-action" data-action={actionId} data-figma-node="1583:54015" onClick={onClick}><span className="v2-project-action-surface" aria-hidden="true"/><span className="v2-project-action-label">{label}</span></button>
+export function ProjectActionButton({onClick,label="프로젝트 보기 →",actionId="open-parts",disabled=false}) {
+  return <button className="primary v2-project-action" data-action={actionId} data-figma-node="1583:54015" disabled={disabled} onClick={onClick}><span className="v2-project-action-surface" aria-hidden="true"/><span className="v2-project-action-label">{label}</span></button>
 }
 
 function RecordSlide({projectId,slot,children}) {

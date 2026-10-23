@@ -1268,19 +1268,19 @@ function VoiceSetup({ complete, go, back, existing, editMode, songSaves, returnT
       </section>}
       {step === 'complete' && <section className="voice-complete-stage v2-vp-complete-stage">
         <div className="v2-vp-complete-content">
-          <div className="voice-step-heading"><div className="voice-step-title"><h1>목소리 준비를<br/>마쳤어요.</h1></div><p>{returnTarget?<>선택했던 Part로 돌아가<br/>음역과 조합을 확인해 보세요.</>:<>등록한 음역과 대표 샘플을<br/>확인해 보세요.</>}</p></div>
+          <div className="voice-step-heading"><div className="voice-step-title"><h1>목소리 준비를<br/>마쳤어요.</h1></div><p>등록한 목소리와 성향을 확인해 보세요.</p></div>
           <div className="v2-vp-complete-summary">
             <VoiceIdentity identity={existing?.identity} suppliedPreview/>
-            <dl><div><dt>편한 음역</dt><dd>{range?.label || existing?.range} · 이번 측정 값</dd></div><div><dt>대표 샘플</dt><dd>{sampleSong.title} · 녹음 {fmt(sampleDraft?.duration || existing?.sampleDuration || 0)}</dd></div></dl>
+            <dl><div className="v2-vp-complete-name"><dt>닉네임</dt><dd>{nickname.trim() || existing?.name || "—"}</dd></div><div className="v2-vp-complete-range"><dt>편한 음역</dt><dd>{range?.label || existing?.range || "—"}</dd></div><div className="v2-vp-complete-sample"><dt>대표 샘플</dt><dd>{sampleSong.title} · {fmt(sampleDraft?.duration || existing?.sampleDuration || 0)}</dd></div></dl>
           </div>
           <dl className="v2-vp-complete-preferences" aria-label="저장한 보컬 성향">
             <div><dt>선호 역할</dt><dd>{preferences.roles.length?preferences.roles.join(' · '):'선택하지 않았어요'}</dd></div>
             <div><dt>선호 장르</dt><dd>{preferences.genres.length?preferences.genres.join(' · '):'선택하지 않았어요'}</dd></div>
             <div><dt>음악 취향</dt><dd>{preferences.taste.length>0&&<span>{preferences.taste.join(' · ')}</span>}{preferences.preferredSongIds.length>0&&<span>함께 부를 곡 · {preferences.preferredSongIds.map(id=>SONGS.find(song=>song.id===id)?.title).filter(Boolean).join(' · ')||'저장한 선택 곡'}</span>}{!preferences.taste.length&&!preferences.preferredSongIds.length&&'선택하지 않았어요'}</dd></div>
           </dl>
-          <p className="v2-vp-complete-note">{returnTarget?<>등록이 끝나도 자동으로 참여하지 않아요.<br/>Part의 조합을 확인한 뒤 직접 참여할 수 있어요.</>:<>등록한 정보는 내 목소리에서 확인하고<br/>필요할 때 다시 수정할 수 있어요.</>}</p>
+          <p className="v2-vp-complete-note">{returnTarget?<>선택한 Part로 돌아가 조합을 확인한 뒤<br/>직접 참여할 수 있어요.</>:<>등록한 정보는 내 목소리에서 확인하고<br/>필요할 때 다시 수정할 수 있어요.</>}</p>
         </div>
-        <div className="v2-vp-final-actions"><button className="primary" data-action="profile-finish" disabled={saving} onClick={() => finish({ phase:editMode?undefined:'return-only', editMode, range:range?.label, rangeData:range, sample:sampleDraft, sampleSong, identity:{status:'blocked',reason:'free-local-generative-model-not-connected'} })}>{saving?'프로필을 저장하고 있어요.':returnTarget?.partName?`선택한 ${returnTarget.partName} 파트 확인하기`:`${returnLabel}로 돌아가기`}</button></div>
+        <div className="v2-vp-final-actions"><ProjectActionButton actionId="profile-finish" disabled={saving} onClick={() => finish({ phase:editMode?undefined:'return-only', editMode, range:range?.label, rangeData:range, sample:sampleDraft, sampleSong, identity:{status:'blocked',reason:'free-local-generative-model-not-connected'} })} label={saving?'프로필을 저장하고 있어요.':returnTarget?.partName?`선택한 ${returnTarget.partName} 파트 확인하기`:`${returnLabel}로 돌아가기`}/></div>
       </section>}
       {error && (saveFailure||sampleAudioFailure?<div className="permission-error" role="alert"><span>{error}</span></div>:<MicrophonePermissionNotice error={error} permissionDenied={permission==='denied'} onRetry={step==='sample'?startSample:startRange}/>)}
       {sampleAction && <RecordingConfirmation onCancel={()=>{pendingSampleSong.current=null;setSampleAction(null)}}><p className="kicker">VOICE SAMPLE</p><h2 id="record-confirm-title">{sampleAction.startsWith('discard')?'지금 샘플을 지우고 다시 부를까요?':'녹음을 끝내고 확인할까요?'}</h2><p>기존 프로필의 샘플과 프로젝트 Track은 그대로 유지됩니다.</p><div className="review-actions"><button className="primary" disabled={sampleBusy} onClick={()=>{pendingSampleSong.current=null;setSampleAction(null)}}>{sampleAction.startsWith('discard')?'지금 샘플 유지':'계속 녹음'}</button><button className="secondary" disabled={sampleBusy} data-action={`confirm-sample-${sampleAction.startsWith('discard')?'discard':'stop'}`} onClick={sampleAction.startsWith('discard')?()=>{retrySample();if(pendingSampleSong.current){setSampleSong(pendingSampleSong.current);pendingSampleSong.current=null}setSampleAction(null)}:stopSample}>{sampleAction.startsWith('discard')?'지우고 다시 부르기':'녹음 끝내고 확인하기'}</button></div></RecordingConfirmation>}

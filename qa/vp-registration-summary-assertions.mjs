@@ -19,8 +19,8 @@ export async function verifyCompletePreferences(page,width,{roles=[],genres=[],t
   return{summary:box(summary),identity:box(summary.querySelector('.voice-identity')),preferences:box(preferences),rows:[...preferences.children].map(n=>({box:box(n),title:box(n.querySelector('dt')),value:box(n.querySelector('dd')),text:n.querySelector('dd').textContent})),returnCard:Boolean(root.querySelector('.v2-vp-return-context')),width:document.body.scrollWidth}
  })
  assert.equal(actual.returnCard,false);assert.equal(actual.width,width);near(actual.identity.w,144);near(actual.identity.h,144);near(actual.preferences.y-actual.summary.bottom,32);assert.equal(actual.rows.length,3)
- for(const row of actual.rows)near(row.value.y-row.title.bottom,6)
- for(let index=1;index<actual.rows.length;index++)near(actual.rows[index].box.y-actual.rows[index-1].box.bottom,20)
+ for(const row of actual.rows){near(row.title.w,64);near(row.value.x-row.title.right,16);near(row.value.y,row.title.y)}
+ for(let index=1;index<actual.rows.length;index++)near(actual.rows[index].box.y-actual.rows[index-1].box.bottom,16)
  for(const [index,values]of [roles,genres,[...taste,...songTitles]].entries()){
   if(!values.length)assert.equal(actual.rows[index].text,'선택하지 않았어요')
   for(const value of values)assert.ok(actual.rows[index].text.includes(value),`Missing saved preference ${value}`)
