@@ -6,7 +6,7 @@ import {saveTracks} from './trackStore.js'
 export const FINALE_DISCLOSURE='발표 시연 · 세 준비 Track은 동일한 제공 보컬을 재사용한 예시입니다. 내 마지막 Track만 직접 녹음하며, 완성 음원은 이 예시 Track들과 내 녹음의 브라우저 Mix입니다. 실제 세 사람의 독립 녹음이나 서버 AI 결과가 아닙니다.'
 export const isFinaleFixture=track=>track?.origin==='presentation-provided-vocal-fixture'&&track.demo===true&&track.sourceProvenance?.version==='ieum-presentation-fixture-v1'
 
-// Called only in the existing profile-ready demo's separately named IndexedDB.
+// Called only in the existing first-visit/profile-ready demos' separate IndexedDBs.
 // Never overwrite a stored Part and never prefill the current user's Tenor.
 export async function ensureFinaleTracks(project,stored){
   if(!project.presentationFinale)return stored

@@ -1,7 +1,7 @@
 import samples from './providedSamples.json' with {type:'json'}
 // Presentation fixtures use separate storage. Never seed the real user's profile.
 export const DEMO_SCENARIOS = [
-  {id:'first-visit',label:'프로필 미등록',detail:'첫 방문 · 프로필과 참여 프로젝트 없음',flow:'Flow 1 · UF01 / UF03',screen:'home',profile:false,entry:true},
+  {id:'first-visit',label:'프로필 미등록',detail:'첫 방문 · 프로필과 참여 프로젝트 없음',flow:'Flow 1 · UF01 / UF03',screen:'home',profile:false,entry:true,finale:true},
   {id:'profile-ready',label:'프로필 등록 완료',detail:'목소리 준비됨 · OPEN Part 직접 참여',flow:'Flow 2A · UF01',screen:'home',profile:true,entry:true,finale:true},
   {id:'invitation',label:'프로젝트 초대받음',detail:'받은 초대 확인 · 지정 Part 수락 또는 거절',flow:'Flow 2B · UF02',screen:'projects',profile:true,receivedInvitation:true,entry:true},
   {id:'workspace',label:'프로젝트 참여 중',detail:'내 Part 배정됨 · 아직 내 녹음 미제출',flow:'Flow 2C / 2D · UF05 / UF09',screen:'workspace',profile:true,joined:true,entry:true},
