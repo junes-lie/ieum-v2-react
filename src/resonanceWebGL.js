@@ -572,7 +572,13 @@ export function createResonanceRenderer({ canvas, materialCanvas, slots, project
     const size = canvas.clientWidth
     if (size < 8) return false
     const ratio = Math.min(window.devicePixelRatio || 1, 2)
-    const pixels = Math.round(size * ratio)
+    // A 48/56px thumbnail cannot rasterize the same filaments at 1px without
+    // piling their light into an opaque white ring. Render small records at
+    // the Detail record's 184px reference size, then let the canvas's existing
+    // CSS box downsample it. This preserves relative thread width and light
+    // coverage across Home, carousel, Search and collection thumbnails without
+    // changing voice geometry, palette, shader exposure or larger scenes.
+    const pixels = Math.round(Math.max(size, 184) * ratio)
     if (canvas.width !== pixels || canvas.height !== pixels) {
       canvas.width = pixels
       canvas.height = pixels
