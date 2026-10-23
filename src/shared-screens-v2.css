@@ -453,7 +453,19 @@
 .complete-screen>main{padding-top:47px!important;padding-bottom:calc(100px + env(safe-area-inset-bottom,0px))!important;}
 .complete-screen .complete-record{order:0;flex:none;width:460px;height:460px;margin:0 0 -31px;}
 .complete-screen .complete-record>.record{width:460px!important;height:460px;max-width:none;}
-.complete-screen .record-center-credits{left:230px;top:230px;}
+/* 1210:2262: these three groups share the168px label coordinate system. */
+.complete-screen .record-center-credits{left:230px;top:230px;width:168px;height:168px;min-height:168px;padding:0;display:block;text-align:center;color:#aaa59d;}
+.complete-screen .record-center-credits>span{position:absolute;left:6px;top:10px;width:156px;font:500 12px/16px var(--font-functional-en);letter-spacing:.24px;color:inherit;}
+.complete-screen .record-center-credits>.complete-credit-members{position:absolute;left:8px;top:36px;width:152px;display:grid;grid-template-columns:68px 68px;column-gap:16px;row-gap:0;}
+.complete-screen .complete-credit-members>button{width:68px;height:44px;min-height:44px;padding:0;justify-content:flex-start;gap:2px;color:inherit;}
+.complete-screen .complete-credit-members>button small{font:500 11px/16px var(--font-functional-en);letter-spacing:.22px;color:inherit;}
+.complete-screen .complete-credit-members>button strong{height:16px;font:400 13px/19px var(--font-interface);letter-spacing:0;color:inherit;}
+.complete-screen .record-center-credits>.complete-credit-example{display:flex;flex-direction:column;justify-content:center;align-items:center;height:88px;gap:2px;}
+.complete-screen .record-center-credits>.complete-credit-example>strong{font:500 12px/16px var(--font-functional-en);color:inherit;}
+.complete-screen .record-center-credits>.complete-credit-example>small{font:400 11px/16px var(--font-interface);color:inherit;}
+.complete-screen .record-center-credits>.complete-credit-meta{position:absolute;left:34px;top:126px;width:100px;display:flex;flex-direction:column;gap:0;}
+.complete-screen .record-center-credits>.complete-credit-meta>:is(small,time){font:500 11px/16px var(--font-functional-en);letter-spacing:.22px;color:inherit;}
+
 .complete-screen .complete-listening-group{order:1;position:relative;display:flex;flex-direction:column;gap:24px;}
 .complete-screen .complete-title{display:flex;flex-direction:column;gap:8px;padding:0;}
 .complete-screen .complete-title h1{font:400 56px/60px var(--font-expression-en);letter-spacing:0;margin:0;}
