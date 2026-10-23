@@ -214,15 +214,15 @@
 .home-v2-screen .v2-project-row strong{font:500 18px/24px var(--font-functional-en);letter-spacing:0}
 .home-v2-screen .v2-project-row strong:lang(ko){font-family:var(--font-interface);font-weight:600;letter-spacing:-.09px}
 .home-v2-screen .v2-project-row .v2-project-count{font-size:11px;line-height:16px}
-.home-v2-screen .v2-project-row .v2-open-roles{flex:0 0 76px;overflow-wrap:anywhere;letter-spacing:.24px}
+.home-v2-screen .v2-project-row .v2-open-roles{flex:0 0 76px;gap:5px;overflow-wrap:anywhere;letter-spacing:.24px}
 .home-v2-screen .v2-project-row .v2-open-roles small{font-size:11px;letter-spacing:.22px}
 .home-v2-screen .v2-thumbnail-record{left:14px}
 .home-v2-screen .v2-thumbnail-sleeve{border:.5px solid var(--line-default);border-radius:1.8px}
 
 /* Discovery headings keep the original 30px rhythm around native 44px actions. */
-.v2-recommended>.v2-section-heading,.v2-completed>.v2-section-heading{position:relative;min-height:30px;padding-right:74px}
-.v2-recommended>.v2-section-heading h2,.v2-completed>.v2-section-heading h2{font-size:24px}
-.v2-recommended>.v2-section-heading button,.v2-completed>.v2-section-heading button{position:absolute;right:0;top:-7px;height:44px}
+.v2-recommended-heading>.v2-section-heading,.v2-completed>.v2-section-heading{position:relative;min-height:30px;padding-right:74px}
+.v2-recommended-heading>.v2-section-heading h2,.v2-completed>.v2-section-heading h2{font-size:24px}
+.v2-recommended-heading>.v2-section-heading button,.v2-completed>.v2-section-heading button{position:absolute;right:0;top:-7px;height:44px}
 .home-v2-screen .v2-song-card .v2-song-count{font-size:11px;line-height:16px}
 .home-v2-screen .v2-completed{--discovery-inset:24px}
 .home-v2-screen .v2-completed>.v2-section-heading{padding-right:calc(var(--discovery-inset) + 74px)}
@@ -443,9 +443,9 @@ html,.screen{scroll-padding-block-end:calc(92px + env(safe-area-inset-bottom))}
 .home-v2-screen .v2-recruitment,.home-v2-screen .v2-recommended,.home-v2-screen .v2-recent,.home-v2-screen .v2-completed{padding-top:48px}
 .home-v2-screen .v2-hero-copy{position:absolute;top:88px;right:auto;left:59.07%;margin:0;width:40.93%;overflow:visible}
 .home-v2-screen .v2-hero-artwork{top:16px}
-.v2-recent-voices{display:inline-flex;align-items:center;gap:4px;max-width:90px}
-.v2-recent-voices .v2-participant-knot{width:22px;height:16px;object-fit:contain}
-.home-v2-screen .v2-project-count{display:flex;align-items:center;gap:6px}
+.v2-recent-voices{display:inline-flex;flex:none;align-items:center;gap:4px}
+.v2-recent-voices .v2-participant-knot{flex:none;width:24px;height:24px;object-fit:contain}
+.home-v2-screen .v2-project-count{display:flex;align-items:center;gap:4px}
 .workspace-v2-screen>main{padding-top:16px!important}
 .workspace-v2-screen .title-row h1{font-size:56px;line-height:60px}
 .workspace-v2-screen .title-row h1[data-title-language=kr]{font:500 32px/40px var(--font-interface)}
@@ -547,3 +547,10 @@ html,.screen{scroll-padding-block-end:calc(92px + env(safe-area-inset-bottom))}
 .recording-v2-screen .recording-lyrics-scene .v2-guide-volume input{flex:0 1 160px;min-height:32px;background-size:4px calc(100% - 10px)}
 .recording-v2-screen .recording-lyrics-scene .v2-guide-volume>span>span,.recording-v2-screen .recording-lyrics-scene .v2-guide-volume output{flex-shrink:0}
 @media(max-width:429px){.recording-v2-screen .recording-lyrics-scene .v2-guide-volume{right:-4px}}
+
+/* Home1349:21199: the heading content hugs; the card group follows at20px.
+   The reference cards are119px at430; only a narrower viewport reduces them. */
+.home-v2-screen .v2-recommended{display:flex;flex-direction:column;gap:20px;}
+.home-v2-screen .v2-recommended-heading{display:flex;flex-direction:column;gap:8px;width:100%;}
+.home-v2-screen .v2-recommended-heading>.v2-section-note{margin:0;}
+.home-v2-screen .v2-recommended .v2-song-grid{width:100%;margin:0;grid-template-columns:repeat(3,min(119px,calc((100% - 24px)/3)));}
