@@ -494,3 +494,9 @@
 
 .detail-v2-screen .detail-fit-title{display:flex;flex-direction:column;gap:8px}
 .detail-v2-screen .detail-fit-title>p{margin:0;font:400 13px/19px var(--font-interface);color:var(--text-secondary)}
+
+/* Range-only return is an alternative to the existing Sample Song action. */
+.voice-screen .range-next-actions{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;margin-top:24px}
+.voice-screen .range-next-actions>button{width:100%;min-height:56px;padding:10px 12px;font:500 13px/19px var(--font-interface);white-space:normal}
+.voice-screen .range-next-actions>button:only-child{grid-column:1/-1}
+.voice-screen .range-retry{margin-top:12px;width:100%}
