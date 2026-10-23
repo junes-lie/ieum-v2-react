@@ -8,6 +8,11 @@ export const WARM_ARRANGEMENT = Object.freeze({
   backingSha256:'8120a09591a030c6e04019e6aa7bd5c44c29eac36df20617da489932c311c5e1',
   referenceFile:'/audio/project-warm-unison-v1/reference.mp3',
   referenceSha256:'b1c604ebffb9acb51ed385a0fbbdc2646db4cc7381c74211fef7d50caf5c73a3',
+  harmonyVocalFile:'/audio/project-warm-unison-v1/provided-vocal.mp3',
+  harmonyVocalSha256:'dafd068295ba4c4761f9106ad74891e6c0800ab25d82ccb87eae3f7f66d907b1',
+  // This registered arrangement has both voices sing the same melody.
+  // SATB register names alone never imply a Lead/Harmony preference.
+  musicalRole:'메인 멜로디',
   keyStatus:'original-untransposed; tonal key unconfirmed',
   sourceStart:28.7,sourceEnd:50.7,lyricOffset:3,
   lineage:{sampleId:'ieum-ai-warm-direct-v1-sample',

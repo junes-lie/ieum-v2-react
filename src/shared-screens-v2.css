@@ -334,6 +334,8 @@
 .detail-v2-screen .detail-harmony-summary p{font:400 15px/22px var(--font-interface);margin:0;}
 .detail-v2-screen .detail-harmony-summary span{font:400 13px/19px var(--font-interface);}
 .detail-v2-screen .detail-harmony-summary b{color:#dcccad;font-weight:500;}
+.detail-v2-screen .detail-harmony-summary b[data-harmony-score]{font:400 36px/40px var(--font-expression-en);}
+.detail-v2-screen .detail-harmony-calculation-note{display:block;color:var(--text-secondary);font:400 11px/16px var(--font-interface);margin-top:8px;}
 .detail-v2-screen .detail-match-reasons{display:flex;flex-direction:column;gap:4px;margin-top:-8px;}
 .detail-v2-screen .detail-match-reasons>div{display:grid;grid-template-columns:28px 72px 32px minmax(0,1fr);gap:8px;align-items:center;padding:8px 0;font:400 13px/19px var(--font-interface);}
 .detail-v2-screen .detail-metric-track{position:relative;height:12px;overflow:hidden;border:1px solid rgba(130,122,110,.7);border-radius:6px;background:#4f4d47;}
@@ -543,6 +545,18 @@
 .voice-screen .v2-vp-range-actions>.primary{width:100%;min-height:52px;margin:0;padding:12px;font:500 15px/22px var(--font-interface);}
 .voice-screen .v2-vp-range-stage .v2-vp-smoky{position:relative;isolation:isolate;width:100%;min-height:48px;margin:0;padding:12px;font:500 15px/22px var(--font-interface);border:0;border-radius:24px;background:none;box-shadow:none;color:#f1e8d8;}
 .voice-screen .v2-vp-smoky::before{display:none;}
+.voice-screen .v2-vp-measured-range{display:flex;align-items:center;gap:12px;width:min(100%,358px);min-height:43px;}
+.voice-screen .v2-vp-measured-range>span{flex:0 0 56px;font:400 13px/19px var(--font-interface);color:var(--text-secondary);}
+.voice-screen .v2-vp-measured-axis{position:relative;flex:1;min-width:0;height:43px;}
+.voice-screen .v2-vp-measured-plot{position:absolute;inset:0 10px;}
+.voice-screen .v2-vp-measured-plot>i{position:absolute;top:21px;left:0;right:0;height:7px;border-radius:3.5px;background:rgba(56,54,48,.65);}
+.voice-screen .v2-vp-measured-plot>b{position:absolute;top:20px;left:var(--range-start);width:calc(var(--range-end) - var(--range-start));height:9px;border-radius:4.5px;background:linear-gradient(to bottom,rgba(219,207,181,.7),#dbcfb5 45%,rgba(219,207,181,.8));}
+.voice-screen .v2-vp-measured-note{position:absolute;top:0;transform:translateX(-50%);white-space:nowrap;font:500 11px/16px var(--font-functional-en);letter-spacing:.22px;color:var(--text-secondary);}
+.voice-screen .v2-vp-measured-note.low{left:var(--range-start);}.voice-screen .v2-vp-measured-note.high{left:var(--range-end);}
+.voice-screen .v2-vp-measured-endpoint{position:absolute;top:-1.5px;max-width:none;}
+.voice-screen .v2-vp-measured-endpoint.low{left:-7px;}.voice-screen .v2-vp-measured-endpoint.high{right:-7px;}
+.voice-screen .v2-vp-range-next-row{display:flex;align-items:stretch;gap:12px;width:100%;}
+.voice-screen .v2-vp-range-next-row>button{flex:1;min-width:0;width:auto!important;min-height:52px!important;margin:0;padding:12px 6px!important;white-space:normal;font:500 15px/22px var(--font-interface);}
 
 /* VP03 1883:44239: heading, list, eligibility and player are distinct groups. */
 .voice-screen .v2-vp-song-stage{display:flex;flex:1;flex-direction:column;width:100%;max-width:none;margin:0;}
