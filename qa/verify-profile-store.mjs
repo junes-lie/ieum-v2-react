@@ -57,6 +57,20 @@ assert.equal(await (await loadTrack(sample.id)).blob.text(),'New sample')
 await assert.rejects(()=>saveTracks([]));await assert.rejects(()=>saveTracks([{id:'invalid'}]))
 console.log('Profile store: failed sample write rolls back range and sample; no partial initial registration; successful retry commits both.')
 
+const nickname={id:'profile:name',projectId:'profile',kind:'voice-profile-name',name:'원래 이름'}
+await saveTracks([nickname])
+try {
+ IDBObjectStore.prototype.put=function(record){if(record.kind==='voice-profile-name')throw new Error('QA nickname write failure');return put.call(this,record)}
+ await assert.rejects(()=>saveTracks([{...range,range:'Pending range'},{...sample,blob:new Blob(['Pending sample'])},{...nickname,name:'새 이름'}]),/QA nickname write failure/)
+ assert.equal((await loadTrack(range.id)).range,'New range')
+ assert.equal(await (await loadTrack(sample.id)).blob.text(),'New sample')
+ assert.equal((await loadTrack(nickname.id)).name,'원래 이름')
+} finally {IDBObjectStore.prototype.put=put}
+await saveTracks([{...range,range:'Named range'},sample,{...nickname,name:'새 이름'}])
+assert.equal((await loadTrack(nickname.id)).name,'새 이름')
+assert.equal((await loadTrack(range.id)).range,'Named range')
+console.log('Nickname metadata: a failed name write preserves existing range/sample/name together; retry persists the typed name.')
+
 const combinedRevision=await voiceSourceRevision(preparedRange.sourceProvenance,prepared.sourceProvenance)
 assert.match(combinedRevision,/^ieum-voice-source-set-v1:[a-f0-9]{64}$/)
 assert.equal(combinedRevision,await voiceSourceRevision((await loadTrack(preparedRange.id)).sourceProvenance,(await loadTrack(prepared.id)).sourceProvenance))

@@ -738,7 +738,7 @@ function HomeProjectPreview({entry}) {
 }
 
 function Home({ startVoiceSetup, mainProject = PROJECT, openSong, openMyVoice, openSearch, layers, projectTracks, profile, mix, openCreateProject, openComplete, createdProjects = [], createdProjectTracks = {}, createdMixes = {}, openCreatedProject, joined = false, joinedPart = USER_PART_ID, candidateAccepted = false, invitedPerson }) {
-  const entries=discoveryProjects({songs:SONGS,mainProject,mainTracks:projectTracks,mainMix:mix,createdProjects,createdTracks:createdProjectTracks,createdMixes,joined,joinedPart,candidateAccepted,invitedPerson,publicResults:PUBLIC_COMPLETIONS})
+  const entries=discoveryProjects({songs:SONGS,mainProject,mainTracks:projectTracks,mainMix:mix,createdProjects,createdTracks:createdProjectTracks,createdMixes,joined,joinedPart,currentUserName:profile?.name || CURRENT_USER_NAME,candidateAccepted,invitedPerson,publicResults:PUBLIC_COMPLETIONS})
   const renderRecord=(entry,{recruitment=false}={})=>{
     const preview=entry.publicExample||(!entry.isCreated&&!entry.project.voiceRecordRef&&!entry.submitted)
     const recordLayers=preview?recruitmentPreviewLayers(entry.project):entry.project.parts.map(part=>entry.tracks[part.id]?.layer||null)
@@ -830,7 +830,7 @@ function Detail({ go, back, song, profile, join, layers, projectTracks, songSave
   const mainDisplayParts = PARTS.map(part => {
       const track=mainTracks[part.id]
       if(track)return {...part,participantId:track.participantId || personFromName(track.participant)?.id,participant:track.participant,status:'submitted',duration:fmt(track.duration),demo:track.demo,disclosure:track.disclosure}
-      if(joined && part.id===joinedPart)return {...part,participantId:CURRENT_USER_ID,participant:CURRENT_USER_NAME,status:'ready'}
+      if(joined && part.id===joinedPart)return {...part,participantId:CURRENT_USER_ID,participant:profile?.name || CURRENT_USER_NAME,status:'ready'}
       if(candidateAccepted && part.id==='bass' && invitedPerson)return {...part,participantId:invitedPerson.id,participant:invitedPerson.name,status:'accepted'}
       return part
     })
@@ -936,7 +936,7 @@ function CreateProject({ back, complete, initialSongId, draft, rememberDraft, pr
     status:'RECRUITING',
     seed:`ieum:${songId}:${Date.now()}`,
     ownerPartId:ownerPart.id,
-    parts:availableParts.map(part=>({...part,participantId:part.id===ownerPart.id?CURRENT_USER_ID:null,participant:part.id===ownerPart.id?'JISUN':null,status:part.id===ownerPart.id?'ready':'open',duration:null})),
+    parts:availableParts.map(part=>({...part,participantId:part.id===ownerPart.id?CURRENT_USER_ID:null,participant:part.id===ownerPart.id?(profile?.name || CURRENT_USER_NAME):null,status:part.id===ownerPart.id?'ready':'open',duration:null})),
     createdAt:new Date().toISOString()
     })
   }
@@ -979,6 +979,9 @@ function MicrophonePermissionNotice({ error, onRetry, permissionDenied = true })
 }
 
 function VoiceSetup({ complete, go, back, existing, editMode, songSaves, returnTarget, returnLabel }) {
+  const [nickname,setNickname]=useState(existing?.name || '')
+  const [nicknameError,setNicknameError]=useState('')
+  const nicknameInput=useRef(null)
   const [step, setStep] = useState(editMode==='sample'?'sample-select':'intro')
   const [permission, setPermission] = useState('idle')
   const [level, setLevel] = useState(0)
@@ -1024,7 +1027,7 @@ function VoiceSetup({ complete, go, back, existing, editMode, songSaves, returnT
     const lifecycle=sampleLifecycleRef.current
     if(value.sample?.url)sampleProfileHandoffRef.current=true
     savingRef.current=true;setSaving(true);setError('');setSaveFailure(false)
-    try{const result=await complete(value);if(value.sample?.url)savedSampleUrlsRef.current.add(value.sample.url);return result || true}catch(reason){
+    try{const result=await complete({...value,name:nickname.trim()});if(value.sample?.url)savedSampleUrlsRef.current.add(value.sample.url);return result || true}catch(reason){
       if(value.sample?.url)sampleProfileHandoffRef.current=false
       if(lifecycle!==sampleLifecycleRef.current){if(value.sample?.url)URL.revokeObjectURL(value.sample.url);return}
       setSaveFailure(true);setError(reason?.message || '프로필 저장 실패: 기존 프로필을 유지합니다.')
@@ -1047,6 +1050,7 @@ function VoiceSetup({ complete, go, back, existing, editMode, songSaves, returnT
   const confidenceSamples = useRef([])
 
   const startRange = async () => {
+    if(!editMode&&!nickname.trim()){setNicknameError('닉네임을 입력해 주세요.');nicknameInput.current?.focus();return}
     if(rangeStartingRef.current)return
     rangeStartingRef.current=true
     try {
@@ -1169,9 +1173,15 @@ function VoiceSetup({ complete, go, back, existing, editMode, songSaves, returnT
         <div className="v2-vp-progress" role="progressbar" aria-label="Voice Profile 등록 단계" aria-valuemin={1} aria-valuemax={7} aria-valuenow={figmaSetupStep} aria-valuetext={`${figmaSetupStep} / 7 · ${figmaSetupLabel}`}>{Array.from({length:7},(_,index)=><i key={index} data-complete={index<figmaSetupStep} aria-hidden="true"/>)}</div>
       </>}
       {initialIntro && <>
-        <section className="setup-copy v2-vp-intro">
+        <form className="setup-copy v2-vp-intro" onSubmit={event=>{event.preventDefault();startRange()}}>
           <div className="v2-vp-intro-content">
             <div className="voice-step-heading"><div className="voice-step-title"><h1>편한 음역을<br/>측정해요.</h1></div><p>낮은 음부터 높은 음까지 편하게 소리 내주세요.<br/>음역을 확인한 뒤 대표 샘플과 보컬 성향을 등록해요.</p></div>
+            <div className="v2-vp-nickname">
+              <label htmlFor="voice-profile-nickname">닉네임 <span aria-hidden="true">*</span></label>
+              <input ref={nicknameInput} id="voice-profile-nickname" name="nickname" autoComplete="nickname" required aria-invalid={nicknameError?true:undefined} aria-describedby={nicknameError?'voice-profile-nickname-help voice-profile-nickname-error':'voice-profile-nickname-help'} value={nickname} onInvalid={()=>setNicknameError('닉네임을 입력해 주세요.')} onChange={event=>{setNickname(event.target.value);setNicknameError('')}}/>
+              <p id="voice-profile-nickname-help">함께 부르는 사람들에게 이 이름으로 보여요.</p>
+              {nicknameError&&<p id="voice-profile-nickname-error" role="alert">{nicknameError}</p>}
+            </div>
             <div className="v2-vp-registration-steps" aria-label="목소리 등록 과정">
               <div><h2>01  편한 음역 측정</h2><p>약 30초 · 마이크로 낮은 음과 높은 음 확인</p></div>
               <div><h2>02  대표 샘플 녹음</h2><p>샘플곡을 고르고 지정 구간 부르기</p></div>
@@ -1179,8 +1189,8 @@ function VoiceSetup({ complete, go, back, existing, editMode, songSaves, returnT
             </div>
             <p className="permission-primer">처음 한 번 마이크 권한을 허용하면<br/>바로 측정을 시작합니다.</p>
           </div>
-          <div className="v2-vp-intro-action"><button className="primary" data-action="range-start" onClick={startRange}>마이크 허용하고 음역 측정 시작</button></div>
-        </section>
+          <div className="v2-vp-intro-action"><button className="primary" type="submit" data-action="range-start">마이크 허용하고 음역 측정 시작</button></div>
+        </form>
       </>}
       {step==='intro'&&editMode&&<section className="setup-copy"><div className="voice-step-heading"><div className="voice-step-title"><p className="kicker">About 30 seconds</p><h1>편한 음역을<br/>측정해요.</h1></div><p>별도 곡을 녹음하지 않습니다. 낮은 음부터 높은 음까지 편하게 소리 내면 음정 표본만 측정합니다.</p></div><p className="permission-primer">처음 한 번만 브라우저의 마이크 권한 창이 열립니다. 허용하면 바로 측정을 시작합니다.</p><button className="primary" data-action="range-start" onClick={startRange}>마이크 허용하고 음역 측정 시작</button></section>}
       {step === 'range-running' && <section className="measurement v2-vp-range-stage">
@@ -1280,7 +1290,7 @@ function VoiceSetup({ complete, go, back, existing, editMode, songSaves, returnT
   </div>
 }
 
-function Workspace({ go, back, project = PROJECT, song, isCreated = false, ownerPartId, findVocal, joined, invited, invitedPerson, candidateAccepted, candidateArrivalStatus, projectTracks, layers, recordPart, projectLiked, toggleProjectLike, openVocalProfile, mix, mixStatus = 'idle', retryAutoMix, completionDelayed = false, hasDraft = false }) {
+function Workspace({ go, back, userName = CURRENT_USER_NAME, project = PROJECT, song, isCreated = false, ownerPartId, findVocal, joined, invited, invitedPerson, candidateAccepted, candidateArrivalStatus, projectTracks, layers, recordPart, projectLiked, toggleProjectLike, openVocalProfile, mix, mixStatus = 'idle', retryAutoMix, completionDelayed = false, hasDraft = false }) {
   const [mixPlaying,setMixPlaying]=useState(false)
   const finalTracks=useMemo(()=>Object.fromEntries(submittedProjectTracks(project,projectTracks).map(track=>[track.partId,track])),
     [project.id,project.partIds?.join(':') || project.parts?.map(part=>part.id).join(':'),projectTracks])
@@ -1293,8 +1303,8 @@ function Workspace({ go, back, project = PROJECT, song, isCreated = false, owner
     if (track) return {...part, participantId:track.participantId || personFromName(track.participant)?.id, participant:track.participant, status:'submitted', duration:fmt(track.duration), demo:track.demo, disclosure:track.disclosure}
     const pendingInvites = (part.invitations||[]).filter(invitation=>invitation.status==='sent')
     if (pendingInvites.length && !part.participantId) return {...part,participant:null,status:'open',invitationStatus:'sent'}
-    if (isCreated && part.id === ownerPartId) return {...part,participantId:CURRENT_USER_ID,participant:CURRENT_USER_NAME,status:'ready'}
-    if (!isCreated && part.id === ownerPartId && joined) return {...part,participantId:CURRENT_USER_ID,participant:CURRENT_USER_NAME,status:'ready'}
+    if (isCreated && part.id === ownerPartId) return {...part,participantId:CURRENT_USER_ID,participant:userName,status:'ready'}
+    if (!isCreated && part.id === ownerPartId && joined) return {...part,participantId:CURRENT_USER_ID,participant:userName,status:'ready'}
     if (part.id === 'bass' && candidateAccepted) return {...part,participantId:invitedPerson.id,participant:invitedPerson.name,status:'accepted'}
     return part.status==='submitted' ? {...part,status:part.participantId?'ready':'open',duration:null} : part
   }).sort((a,b)=>project.presentationFinale?Number(a.participantId===CURRENT_USER_ID)-Number(b.participantId===CURRENT_USER_ID):0)
@@ -2087,12 +2097,14 @@ export default function App() {
   }
   const completeProfile = async value => {
     if(value.phase==='return-only'){back(voiceReturnScreen);stopMicrophone();return}
+    const profileName=value.name?.trim() || profile?.name || CURRENT_USER_NAME
+    const nameRecord={id:PROFILE_PROJECT_ID+':name',projectId:PROFILE_PROJECT_ID,kind:'voice-profile-name',name:profileName}
     if(value.phase==='range-only'&&value.rangeData){
       const record=await prepareVoiceRangeRecord({id:RANGE_RECORD_ID,projectId:PROFILE_PROJECT_ID,kind:'voice-range',range:value.range,rangeData:value.rangeData,createdAt:new Date().toISOString(),origin:'measured-pitch-range'})
       const existingProfile=profile&&!profile.demo?profile:null
       const sourceRevision=await voiceSourceRevision(record.sourceProvenance,existingProfile?.sampleProvenance)
-      await saveTrack(record)
-      setProfile({...existingProfile,name:existingProfile?.name||'JISUN',voiceType:null,voiceSourceRevision:sourceRevision,range:record.range,rangeData:record.rangeData,rangeProvenance:record.sourceProvenance,identity:existingProfile?.identity||{status:'blocked',reason:'voice-sample-not-recorded'}})
+      await saveTracks([record,nameRecord])
+      setProfile({...existingProfile,name:profileName,voiceType:null,voiceSourceRevision:sourceRevision,range:record.range,rangeData:record.rangeData,rangeProvenance:record.sourceProvenance,identity:existingProfile?.identity||{status:'blocked',reason:'voice-sample-not-recorded'}})
       setVoiceEditMode(null);back(voiceReturnScreen);stopMicrophone();return true
     }
     if(value.phase==='preferences-save'){
@@ -2108,8 +2120,8 @@ export default function App() {
     const sourceRevision=await voiceSourceRevision(rangeRecord.sourceProvenance,sampleRecord.sourceProvenance)
     const storedPreferences=await loadTrack(PROFILE_PROJECT_ID+':preferences')
     const preferences=value.preferences || storedPreferences?.preferences || {roles:[],genres:[],taste:[],preferredSongIds:[]}
-    await saveTracks([rangeRecord,sampleRecord])
-    setProfile({name:'JISUN',voiceSourceRevision:sourceRevision,voiceType:null,range:value.range,rangeData:rangeRecord.rangeData,rangeProvenance:rangeRecord.sourceProvenance,sampleSong:sampleRecord.songLabel,sampleUrl:value.sample.url,sampleDuration:value.sample.duration,sampleFeatures:sampleRecord.features,sampleProvenance:sampleRecord.sourceProvenance,...preferences,identity:value.identity})
+    await saveTracks([rangeRecord,sampleRecord,nameRecord])
+    setProfile({name:profileName,voiceSourceRevision:sourceRevision,voiceType:null,range:value.range,rangeData:rangeRecord.rangeData,rangeProvenance:rangeRecord.sourceProvenance,sampleSong:sampleRecord.songLabel,sampleUrl:value.sample.url,sampleDuration:value.sample.duration,sampleFeatures:sampleRecord.features,sampleProvenance:sampleRecord.sourceProvenance,...preferences,identity:value.identity})
     if(value.phase==='sample-save'){stopMicrophone();return preferences}
     back(voiceReturnScreen); stopMicrophone()
   }
@@ -2154,7 +2166,7 @@ export default function App() {
       partId:part.id,
       partIndex:targetParts.findIndex(item=>item.id===part.id),
       participantId:CURRENT_USER_ID,
-      participant:CURRENT_USER_NAME,
+      participant:profile?.name || CURRENT_USER_NAME,
       preferences:preferenceValues(profile),
       blob:draft.blob,
       audioSourceRef:draft.audioSourceRef || null,
@@ -2377,10 +2389,11 @@ export default function App() {
       const rangeRecord = profileStored.find(item=>item.kind==='voice-range')
       const sampleRecord = profileStored.find(item=>item.kind==='voice-sample' && item.blob)
       const preferenceRecord=profileStored.find(item=>item.kind==='voice-preferences')
+      const nameRecord=profileStored.find(item=>item.kind==='voice-profile-name')
       const mixRecord = projectStored.find(item=>item.kind==='auto-mix' && item.blob)
       const restoredSourceRevision=rangeRecord && sampleRecord ? await voiceSourceRevision(rangeRecord.sourceProvenance,sampleRecord.sourceProvenance) : null
       if(!active)return
-      if (rangeRecord) setProfile({name:'JISUN',voiceSourceRevision:restoredSourceRevision,voiceType:null,range:rangeRecord.range,rangeData:rangeRecord.rangeData,rangeProvenance:rangeRecord.sourceProvenance || null,roles:[],genres:[],taste:[],...(sampleRecord?{sampleSong:sampleRecord.songLabel,sampleUrl:restoredUrl(sampleRecord.blob),sampleDuration:sampleRecord.duration,sampleFeatures:sampleRecord.features,sampleProvenance:sampleRecord.sourceProvenance || null}:{}),identity:{status:'blocked',reason:sampleRecord?'free-local-generative-model-not-connected':'voice-sample-not-recorded'},...preferenceRecord?.preferences})
+      if (rangeRecord) setProfile({name:nameRecord?.name || CURRENT_USER_NAME,voiceSourceRevision:restoredSourceRevision,voiceType:null,range:rangeRecord.range,rangeData:rangeRecord.rangeData,rangeProvenance:rangeRecord.sourceProvenance || null,roles:[],genres:[],taste:[],...(sampleRecord?{sampleSong:sampleRecord.songLabel,sampleUrl:restoredUrl(sampleRecord.blob),sampleDuration:sampleRecord.duration,sampleFeatures:sampleRecord.features,sampleProvenance:sampleRecord.sourceProvenance || null}:{}),identity:{status:'blocked',reason:sampleRecord?'free-local-generative-model-not-connected':'voice-sample-not-recorded'},...preferenceRecord?.preferences})
       if (mixRecord && !projectStored.some(track=>track.origin==='local-formant-singing-demo') && !(mixRecord.inputManifest?.tracks || []).some(track=>track.origin==='local-formant-singing-demo')) { setMix({...mixRecord,url:restoredUrl(mixRecord.blob)}); setMixStatus('complete'); setMixProgress(100) }
       const createdTrackEntries = await Promise.all(createdProjects.map(async project=>{
         const records = await loadProjectTracks(project.id)
@@ -2434,7 +2447,7 @@ export default function App() {
 
   if (!tracksReady) return <div className="screen"><TopBar meta="TRACKS LOADING"/><main className="loading-state"><p>{tracksLoadError || '실제 Track 분석값을 불러오는 중…'}</p>{tracksLoadError&&<div role="alert"><button className="secondary" data-action="tracks-load-retry" onClick={()=>{if(persisted.storageReadFailed)window.location.reload();else setTracksLoadAttempt(value=>value+1)}}>저장한 데이터 다시 불러오기</button></div>}</main></div>
 
-  const discoveryEntries=discoveryProjects({songs:SONGS,mainProject,mainTracks:projectTracks,mainMix:mix,createdProjects,createdTracks:createdProjectTracks,createdMixes,joined,joinedPart,candidateAccepted,invitedPerson,publicResults:PUBLIC_COMPLETIONS})
+  const discoveryEntries=discoveryProjects({songs:SONGS,mainProject,mainTracks:projectTracks,mainMix:mix,createdProjects,createdTracks:createdProjectTracks,createdMixes,joined,joinedPart,currentUserName:profile?.name || CURRENT_USER_NAME,candidateAccepted,invitedPerson,publicResults:PUBLIC_COMPLETIONS})
   const returnProjectCandidate=[...selectedSong.projects,...createdProjects].find(item=>item.id===selectedProjectId)||selectedSong.projects[0]
   const voiceReturnProject=returnProjectCandidate?.id===PROJECT_ID?mainProject:returnProjectCandidate
   const voiceReturnPartId=detailContext.current[voiceReturnProject?.id] || (voiceReturnProject?.id===PROJECT_ID?readNavigationHint(`ieum:detail:${selectedSong.id}:part`,USER_PART_ID):'')
@@ -2442,12 +2455,12 @@ export default function App() {
   let content
   if (screen==='home') content=<Home invitedPerson={invitedPerson} startVoiceSetup={()=>go('voice')} openMyVoice={()=>go('my')} openSearch={openSearch} mainProject={mainProject} createdProjects={createdProjects} createdProjectTracks={createdProjectTracks} createdMixes={createdMixes} openCreatedProject={openCreatedProject} joined={joined} joinedPart={joinedPart} candidateAccepted={candidateAccepted} openSong={openSong} layers={layers} projectTracks={projectTracks} profile={profile} mix={mix} openCreateProject={()=>startCreateProject(null)} openComplete={openDiscoveredComplete}/>
   else if (screen==='search') content=<SearchScreen entries={discoveryEntries} context={searchContext} openSong={openSong} openCreatedProject={openCreatedProject} openComplete={openDiscoveredComplete} openMyVoice={()=>go('my')} openSearch={openSearch} createdProjects={createdProjects} profile={profile}/>
-  else if (screen==='detail') content=<Detail key={selectedInvitationId || 'discovery'} receivedInvitation={receivedInvitations.find(item=>item.id===selectedInvitationId)} respondToInvitation={respondToInvitation} invitationError={invitationError} go={go} back={()=>back('home')} song={selectedSong} profile={profile} join={join} layers={layers} projectTracks={projectTracks} songSaved={songSaved} toggleSongSave={toggleSongSave} openVocalProfile={openVocalProfile} createdProjects={createdProjects} createdProjectTracks={createdProjectTracks} createdMixes={createdMixes} onCreateProject={startCreateProject} onOpenCreatedProject={openCreatedProject} openMainWorkspace={openMainWorkspace} mainMix={mix} mainKeyLocked={mainKeyLocked} joined={joined} joinedPart={joinedPart} candidateAccepted={candidateAccepted} invitedPerson={invitedPerson} initialProjectId={selectedProjectId} onSelectProject={setSelectedProjectId} detailContext={detailContext} joinRegistered={(project,partId)=>{if(!profile||!project.audioSource||createdProjects.some(p=>p.id===project.id))return;const part=project.parts.find(p=>p.id===partId);if(!part||part.participantId)return;createProject({...project,ownerPartId:partId,parts:project.parts.map(p=>p.id===partId?{...p,participantId:CURRENT_USER_ID,participant:CURRENT_USER_NAME,status:'ready'}:p)})}}/>
+  else if (screen==='detail') content=<Detail key={selectedInvitationId || 'discovery'} receivedInvitation={receivedInvitations.find(item=>item.id===selectedInvitationId)} respondToInvitation={respondToInvitation} invitationError={invitationError} go={go} back={()=>back('home')} song={selectedSong} profile={profile} join={join} layers={layers} projectTracks={projectTracks} songSaved={songSaved} toggleSongSave={toggleSongSave} openVocalProfile={openVocalProfile} createdProjects={createdProjects} createdProjectTracks={createdProjectTracks} createdMixes={createdMixes} onCreateProject={startCreateProject} onOpenCreatedProject={openCreatedProject} openMainWorkspace={openMainWorkspace} mainMix={mix} mainKeyLocked={mainKeyLocked} joined={joined} joinedPart={joinedPart} candidateAccepted={candidateAccepted} invitedPerson={invitedPerson} initialProjectId={selectedProjectId} onSelectProject={setSelectedProjectId} detailContext={detailContext} joinRegistered={(project,partId)=>{if(!profile||!project.audioSource||createdProjects.some(p=>p.id===project.id))return;const part=project.parts.find(p=>p.id===partId);if(!part||part.participantId)return;createProject({...project,ownerPartId:partId,parts:project.parts.map(p=>p.id===partId?{...p,participantId:CURRENT_USER_ID,participant:profile.name,status:'ready'}:p)})}}/>
   else if (screen==='song-browser') content=<SongBrowser back={()=>back('collection')} openSong={openSong} songSaves={songSaves} toggleSongSave={toggleSongSave} createdProjects={createdProjects} onCreateProject={startCreateProject}/>
   else if (screen==='create-project') content=<CreateProject profile={profile} draft={createProjectDrafts.current[createDraftKey]} rememberDraft={rememberCreateProjectDraft} setupVoice={()=>go('voice')} key={createDraftKey} back={()=>back(createProjectSongId?'detail':'home')} complete={createProject} initialSongId={createProjectSongId}/>
   else if (screen==='voice') content=<VoiceSetup key={voiceEditMode || "setup"} existing={profile} editMode={voiceEditMode} songSaves={songSaves} returnLabel={{my:'내 목소리',home:'홈',detail:'프로젝트 상세','vocal-profile':'보컬 프로필','create-project':'프로젝트 만들기'}[voiceReturnScreen] || '이전 화면'} returnTarget={voiceReturnTarget} go={go} back={()=>{setVoiceEditMode(null);back(voiceReturnScreen)}} complete={completeProfile}/>
   else if (screen==='complete' && publicResult) content=<Complete key={publicResult.project.id} go={go} back={()=>back('home')} publicResult={publicResult} project={publicResult.project} song={publicResult.song} mix={publicResult.mix} layers={recruitmentPreviewLayers(publicResult.project)} projectTracks={{}} projectLiked={projectLikes.some(item=>item.projectId===publicResult.project.id)} toggleProjectLike={()=>setProjectLikes(current=>current.some(item=>item.projectId===publicResult.project.id)?current.filter(item=>item.projectId!==publicResult.project.id):[...current,{projectId:publicResult.project.id,savedAt:new Date().toISOString()}])} openVocalProfile={openVocalProfile}/>
-  else if (screen==='workspace' || (screen==='complete' && !activeComplete)) content=<Workspace go={go} back={()=>back('detail')} project={activeProject} song={activeSong} isCreated={Boolean(activeCreatedProject)} ownerPartId={activeCreatedProject?.ownerPartId || joinedPart} findVocal={openFinder} joined={joined} invited={invited} invitedPerson={invitedPerson} candidateAccepted={candidateAccepted} candidateArrivalStatus={candidateArrivalStatus} projectTracks={activeTracks} layers={activeLayers} recordPart={recordPart} projectLiked={activeProjectLiked} toggleProjectLike={toggleActiveProjectLike} openVocalProfile={openVocalProfile} mix={activeMix} mixStatus={activeMixStatus} retryAutoMix={retryAutoMix} completionDelayed={delayedProjectIds.includes(activeProject.id)} hasDraft={Boolean(draftKeys[`${activeProject.id}:${activeCreatedProject?.ownerPartId||joinedPart}`])}/>
+  else if (screen==='workspace' || (screen==='complete' && !activeComplete)) content=<Workspace go={go} userName={profile?.name || CURRENT_USER_NAME} back={()=>back('detail')} project={activeProject} song={activeSong} isCreated={Boolean(activeCreatedProject)} ownerPartId={activeCreatedProject?.ownerPartId || joinedPart} findVocal={openFinder} joined={joined} invited={invited} invitedPerson={invitedPerson} candidateAccepted={candidateAccepted} candidateArrivalStatus={candidateArrivalStatus} projectTracks={activeTracks} layers={activeLayers} recordPart={recordPart} projectLiked={activeProjectLiked} toggleProjectLike={toggleActiveProjectLike} openVocalProfile={openVocalProfile} mix={activeMix} mixStatus={activeMixStatus} retryAutoMix={retryAutoMix} completionDelayed={delayedProjectIds.includes(activeProject.id)} hasDraft={Boolean(draftKeys[`${activeProject.id}:${activeCreatedProject?.ownerPartId||joinedPart}`])}/>
   else if (screen==='finder') content=<Finder project={activeProject} song={activeSong} tracks={activeTracks} profile={profile} back={()=>back('workspace')} preferences={finderPreferences[finderContextKey]} updatePreferences={patch=>setFinderPreferences(current=>({...current,[finderContextKey]:{...current[finderContextKey],...patch}}))} invite={canSendInvite?invite:null} invitedVocalIds={activeCreatedProject?(activeFinderPart?.invitations||[]).map(item=>item.vocalId):(invited?[invitedVocalId]:[])} part={activeFinderPart} vocalSaves={vocalSaves} toggleVocalSave={toggleVocalSave} openVocalProfile={openVocalProfile} selectedVocalId={selectedMatchVocalId} setSelectedVocalId={setSelectedMatchVocalId}/>
   else if (screen==='vocal-profile') content=<OtherVocalProfile profile={profile} setupVoice={()=>go('voice')} vocal={selectedVocal} back={()=>back('collection')} saved={vocalSaves.some(item=>item.vocalId===selectedVocalId)} toggleSave={toggleVocalSave} sampleUrl={selectedVocal?.sampleUrl} sampleDuration={selectedVocal?.sampleDuration}/>
   else if (screen==='record') content=<Recorder go={target=>{

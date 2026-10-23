@@ -517,6 +517,10 @@
 .voice-screen .v2-vp-progress i[data-complete=true]{background:var(--text-primary);}
 .voice-screen .v2-vp-intro{display:flex;flex:1;flex-direction:column;}
 .voice-screen .v2-vp-intro-content{display:flex;flex-direction:column;gap:32px;}
+.voice-screen .v2-vp-nickname{display:flex;flex-direction:column;gap:8px;min-width:0;}
+.voice-screen .v2-vp-nickname>label{font:400 14px/22px var(--font-interface);color:var(--text-primary);}
+.voice-screen #voice-profile-nickname{display:block;width:100%;min-width:0;height:48px;padding:11px 15px;border:1px solid #4b4540;border-radius:6px;background:var(--bg-elevated);font:400 16px/24px var(--font-interface);color:var(--text-primary);}
+.voice-screen .v2-vp-nickname>p{margin:0;font:400 12px/18px var(--font-interface);letter-spacing:-.06px;color:var(--text-secondary);}
 .voice-screen .v2-vp-registration-steps{display:flex;flex-direction:column;gap:24px;}
 .voice-screen .v2-vp-registration-steps>div{display:flex;flex-direction:column;gap:6px;}
 .voice-screen .v2-vp-registration-steps h2{margin:0;font:600 18px/24px var(--font-interface);letter-spacing:-.09px;white-space:pre-wrap;}
