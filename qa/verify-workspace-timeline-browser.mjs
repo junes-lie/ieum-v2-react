@@ -58,14 +58,32 @@ try{
    await button.click();await page.waitForFunction(()=>document.querySelector('#current-mix audio')?.paused)
    const seek=page.locator('#current-mix input[aria-label="재생 위치"]')
    await seek.focus();await page.keyboard.press('ArrowRight');assert.ok(Number(await seek.inputValue())>0)
+   assert.equal(await seek.evaluate(n=>n.matches(':focus-visible')),true)
+   const focusGeometry=await seek.evaluate(n=>{
+    const row=n.parentElement,clock=row.querySelector('.player-split-clock'),r=row.getBoundingClientRect(),c=clock.getBoundingClientRect(),s=getComputedStyle(row,'::after')
+    return {hitHeight:n.getBoundingClientRect().height,clockTop:c.top-r.top,clockHeight:c.height,indicator:s.content,indicatorTop:parseFloat(s.top),indicatorHeight:parseFloat(s.height),inputOutline:getComputedStyle(n).outlineStyle}
+   })
+   const clock=page.locator('#current-mix .player-split-clock')
+   const focusedClock=await clock.screenshot({path:`${output}/clock-focused-${width}.png`})
    await page.locator('#current-mix').screenshot({path:`${output}/player-${width}.png`})
+   await seek.blur()
+   const blurredClock=await clock.screenshot({path:`${output}/clock-blurred-${width}.png`})
+   await page.locator('#current-mix').screenshot({path:`${output}/player-blurred-${width}.png`})
+   const focusResult={...focusGeometry,clockPixelsUnchanged:focusedClock.equals(blurredClock)}
+   await writeFile(`${output}/focus-${width}.json`,JSON.stringify(focusResult,null,2))
+   assert.equal(focusGeometry.hitHeight,44,'Keep the native 44px touch target')
+   assert.equal(focusResult.clockPixelsUnchanged,true,'Keyboard focus must not paint over clock glyphs')
+   assert.equal(focusGeometry.inputOutline,'none')
+   assert.notEqual(focusGeometry.indicator,'none','Keyboard focus remains visible around the seek area')
+   assert.ok(focusGeometry.indicatorTop>=0&&focusGeometry.indicatorTop+focusGeometry.indicatorHeight<=focusGeometry.clockTop)
+   assert.equal(await seek.evaluate(n=>getComputedStyle(n.parentElement,'::after').content),'none','Blur removes only the focus indicator')
    await page.screenshot({path:`${output}/workspace-submitted-${width}.png`,fullPage:true})
    const retained=await page.evaluate(async()=>{const s=window.__IEUM_V2__.state,t=s.activeTracks.tenor;return {hash:Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',await t.blob.arrayBuffer())),v=>v.toString(16).padStart(2,'0')).join(''),bytes:t.blob.size,tracks:Object.keys(s.activeTracks),mix:Boolean(s.activeMix?.blob)}})
    assert.equal(retained.hash,original.hash);assert.equal(retained.bytes,original.bytes);assert.deepEqual(retained.tracks,['tenor']);assert.equal(retained.mix,false)
    await page.evaluate(()=>{for(const n of document.querySelectorAll('#current-mix :is(p,strong,span,b)'))if([...n.childNodes].some(c=>c.nodeType===Node.TEXT_NODE&&c.textContent.trim())){const st=getComputedStyle(n),size=parseFloat(st.fontSize),line=parseFloat(st.lineHeight);n.style.fontSize=size*2+'px';if(Number.isFinite(line))n.style.lineHeight=line*2+'px'}})
    assert.equal(await page.evaluate(()=>document.body.scrollWidth),width)
    assert.ok(await page.evaluate(()=>{const m=document.querySelector('#current-mix').getBoundingClientRect(),clock=document.querySelector('.player-split-clock').getBoundingClientRect();return clock.bottom<=m.bottom}))
-   assert.deepEqual(errors,[]);results.push({width,geometry,original,retained,keyboardPlayback:true,selectionRebuild:true,textStress:true})
+   assert.deepEqual(errors,[]);results.push({width,geometry,focusResult,original,retained,keyboardPlayback:true,selectionRebuild:true,textStress:true})
    console.log('PASS',width,'Figma 80px transport / 48px play / 64px seek inset, native microphone submission and toggle playback preserve original; remains 1/4')
   }finally{await context.close()}
  }

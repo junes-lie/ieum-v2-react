@@ -46,6 +46,6 @@ UI QA 완료 시 `npm run qa:capture`를 실행하고, 실제 대상 버전을 �
 
 `node qa/verify-review-save-order-browser.mjs`는 기존 4-Part 프로젝트의 22초 반주와 합성 마이크 녹음으로 임시 저장 완료를 지연시킨다. 저장 대기 중 Review 디코딩이 시작되지 않는지, 완료 후 미리듣기·내 Tenor 제출·새로고침 원본 해시가 유지되는지 390/430에서 검사한다. `PLAYWRIGHT_MODULE_PATH`, `CHROMIUM_EXECUTABLE_PATH`, `IEUM_BASE_URL`, `IEUM_QA_OUTPUT`, `IEUM_QA_WIDTHS`를 지원한다. 실제 사람·4인 협업·물리 마이크 검증이 아니며 1/4를 완성으로 바꾸지 않는다.
 
-`node qa/verify-workspace-timeline-browser.mjs`는 최신 Figma 1623:41443의 80px Current Mix 그룹과 48px 금속 재생 버튼·seek/시간 위치를 검사한다. 빈 프로젝트에서는 재생을 비활성화하며, native 합성 마이크로 직접 녹음·제출한 Tenor 하나로 키보드 재생/탐색·Mix 포함 토글·원본 해시·200% 텍스트를 검증한다. 테스트용 제출 Track을 미리 주입하지 않으며 1/4는 미완성이다. 위 휴대용 환경변수와 공개 Pages 하위 경로를 지원한다.
+`node qa/verify-workspace-timeline-browser.mjs`는 최신 Figma 1623:41443의 80px Current Mix 그룹과 48px 금속 재생 버튼·seek/시간 위치를 검사한다. 빈 프로젝트에서는 재생을 비활성화하며, native 합성 마이크로 직접 녹음·제출한 Tenor 하나로 키보드 재생/탐색·Mix 포함 토글·원본 해시·200% 텍스트를 검증한다. 44px native seek target을 유지하고 키보드 focus/blur 전후 clock PNG bytes가 같으며 포커스 테두리가 28px seek 영역 안에 표시·해제되는지 검사한다. 테스트용 제출 Track을 미리 주입하지 않으며 1/4는 미완성이다. 위 휴대용 환경변수와 공개 Pages 하위 경로를 지원한다.
 
 `node qa/verify-recording-load-browser.mjs`는 일반 모션에서 250ms 간격의 실제 screenshot readback을 요청하며 22초 반주·합성 마이크·pause/resume을 수행한다. 실제 완료한 캡처 수, MediaRecorder 이벤트, Web Audio/벽시계, WebGL draw, long task, 원본 bytes/hash/길이를 함께 보존한다. `IEUM_QA_REPEATS`로 폭별 반복 수를 지정할 수 있다. 단일 통과를 장시간 부하 안정성으로 확대하지 않으며 원본을 자르거나 타이밍을 수정하지 않는다.
