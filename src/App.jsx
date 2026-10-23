@@ -1465,6 +1465,7 @@ function Recorder({ go, submit, onRecordingStart, partId, projectTracks, layers,
   const [reviewPlaying, setReviewPlaying] = useState(false)
   const [referencePlaying,setReferencePlaying]=useState(false)
   const [reviewMix,setReviewMix]=useState(null)
+  const [reviewGuideSource,setReviewGuideSource]=useState(null)
   const [error, setError] = useState('')
   const [permissionDenied,setPermissionDenied] = useState(false)
   const [microphoneFailure,setMicrophoneFailure] = useState(false)
@@ -1658,6 +1659,15 @@ function Recorder({ go, submit, onRecordingStart, partId, projectTracks, layers,
       .catch(reason=>{if(active)setError(reason.message)})
     return()=>{active=false;if(url)URL.revokeObjectURL(url)}
   },[status,draftSaving,draft?.blob,project.audioSource?.revision])
+  useEffect(()=>{
+    if(status!=='review'||!project.audioSource?.vocalGuideFile)return
+    let active=true,url
+    setReviewGuideSource(null)
+    loadProvidedAudio(project.audioSource.vocalGuideFile,project.audioSource.vocalGuideSha256).then(blob=>{
+      url=URL.createObjectURL(blob);if(active)setReviewGuideSource(url);else URL.revokeObjectURL(url)
+    }).catch(reason=>{if(active)setError(reason.message)})
+    return()=>{active=false;if(url)URL.revokeObjectURL(url)}
+  },[status,project.audioSource?.revision,project.audioSource?.vocalGuideFile])
   return <div className="screen figma-v2 recording-screen recording-v2-screen" data-screen-id="06" data-recording-status={status}>
     <TopBar figmaHeader title={<h1 lang={/[가-힣]/.test(project.songTitle || project.name || '내 Part 녹음')?'ko':'en'}>{project.songTitle || project.name || '내 Part 녹음'}</h1>} subtitle={`${currentPart.name} · ${status==='review'?'녹음 확인':status==='recording'?'녹음 중':status==='paused'?'일시정지':'녹음 준비'}`} back={leave}/>
     <main>
@@ -1673,13 +1683,13 @@ function Recorder({ go, submit, onRecordingStart, partId, projectTracks, layers,
       <div className="recording-lyrics-scene">
       <div className="lyrics" aria-live="polite"><LiveLyricWave active={status==='recording'&&lyricIndex>=0} level={level} waveformRef={waveformRef}/>{visibleLyrics.map((text,index)=><span key={index} className={index===1?'active':''} aria-hidden={!text||undefined}>{text}</span>)}</div>
       </div>
-      {status!=='review'&&<label className="v2-guide-volume"><span><span>가이드 보컬</span><output>{Math.round(guides.vocalVolume*100)}%</output></span><input aria-label="가이드 보컬 볼륨" type="range" min="0" max="100" step="1" value={Math.round(guides.vocalVolume*100)} style={{'--guide-volume':`${guides.vocalVolume*100}%`}} onChange={event=>setGuides({...guides,vocalVolume:Number(event.target.value)/100})}/></label>}
+      {<label className="v2-guide-volume"><span><span>가이드 보컬</span><output>{Math.round(guides.vocalVolume*100)}%</output></span><input aria-label="가이드 보컬 볼륨" disabled={status==='review'&&!reviewGuideSource} title={status==='review'&&!project.audioSource?.vocalGuideFile?'이 프로젝트에는 등록된 가이드 보컬이 없어요.':undefined} type="range" min="0" max="100" step="1" value={Math.round(guides.vocalVolume*100)} style={{'--guide-volume':`${guides.vocalVolume*100}%`}} onChange={event=>setGuides({...guides,vocalVolume:Number(event.target.value)/100})}/></label>}
       <div className="v2-instrument" data-instrument-state={submitting?'submitting':status} aria-busy={submitting}><div className="recording-timeline v2-instrument-readout" hidden={status==='review'} aria-label="녹음 시간과 입력 상태"><div className="v2-recording-time" data-state={status}><span className="v2-recording-indicator" aria-hidden="true"/><span data-recording-readout>{status==='recording'?'REC':status==='paused'?'일시정지':status==='review'?'확인':'준비'}</span><b>{fmt(seconds)} / {fmt(recordingWindow)}</b></div><div className="meter-row"><span>MIC {inputRms>0?`${Math.max(-96,Math.round(20*Math.log10(inputRms)))} dBFS`:"— dBFS"}</span><b className={peak>.9?'v2-input-clipping':''}>{peak>.9?'CLIP':level>.08?'GOOD':'LOW'}</b></div></div>{noiseFloor>0&&<p className={`noise-status ${noiseFloor>.08?'warning':''}`}>주변 소음 · {noiseFloor>.08?'높음 — Review에서 다시 녹음을 선택할 수 있어요.':'양호'} ({Math.round(noiseFloor*100)}%)</p>}
 
       {error && (microphoneFailure&&status!=='review'?<MicrophonePermissionNotice error={error} onRetry={begin} permissionDenied={permissionDenied}/>:<div className="permission-error" role="alert"><span>{error}</span>{restoreState==='error'&&<button className="secondary" data-action="draft-restore-retry" onClick={()=>{setRestoreState('loading');setRestoreAttempt(value=>value+1)}}>저장한 녹음 다시 불러오기</button>}</div>)}
       {status === 'review' ? <><section className="record-review" aria-label="녹음 확인과 제출">
         <div className="v2-take-status" aria-live="polite"><span>{submitting?'녹음을 제출하고 있어요.':'녹음 확인'}</span>{!submitting&&<span>{fmt(draft?.duration)}</span>}</div>
-        <Player source={project.audioSource?reviewMix?.url:draft?.url} durationHint={reviewMix?.duration||draft?.duration} playing={reviewPlaying} setPlaying={setReviewPlaying} figma splitTimeline compact caption={project.audioSource?'내 녹음과 반주 들어보기':'내 녹음 들어보기'} disabled={submitting||(Boolean(project.audioSource)&&!reviewMix)} metalControl/>
+        <Player guideSource={reviewGuideSource} guideVolume={guides.vocalVolume} source={project.audioSource?reviewMix?.url:draft?.url} durationHint={reviewMix?.duration||draft?.duration} playing={reviewPlaying} setPlaying={setReviewPlaying} figma splitTimeline compact caption={project.audioSource?'내 녹음과 반주 들어보기':'내 녹음 들어보기'} disabled={submitting||(Boolean(project.audioSource)&&!reviewMix)||(Boolean(project.audioSource?.vocalGuideFile)&&!reviewGuideSource)} metalControl/>
         <div className="review-actions">{!submitting&&<button className="secondary v2-take-retake" data-action="record-retry" disabled={recordingBusy} onClick={()=>setConfirmAction('retry')}><span className="v2-retake-metal-surface" aria-hidden="true"/><Icon name="restart" size={18}/><span>다시 녹음</span></button>}<button className="primary v2-take-submit" data-action="record-submit" disabled={submitting||recordingBusy} onClick={send}><img src="/artwork/figma-recording-upload.svg" width="18" height="18" alt="" aria-hidden="true"/><span>{submitting?'제출 중…':'녹음 제출'}</span></button></div>
         </section><div className="v2-take-quality"><h2>{draft?.features?.peak > .92 ? '일부 구간이 너무 크게 녹음됐어요.' : noiseFloor>.08?'주변 소음이 함께 녹음됐을 수 있어요.':'제출할 Track을 확인해 주세요.'}</h2><p>{noiseFloor>.08?'다시 녹음을 권하지만 제출을 막지는 않습니다. 제출 후 기본 노이즈 정리를 적용합니다. ':''}{draft?.features ? `에너지 ${Math.round(draft.features.energy*100)} · 밝기 ${Math.round(draft.features.brightness*100)} · 거칠기 ${Math.round(draft.features.roughness*100)} · 특징 ${draft.features.fingerprint}` : '오디오 분석을 완료하지 못했지만 재생 후 제출할 수 있어요.'}</p></div></>
       : <div className="recorder-controls">
@@ -1695,10 +1705,11 @@ function Recorder({ go, submit, onRecordingStart, partId, projectTracks, layers,
   </div>
 }
 
-function Player({ source, playing, setPlaying, hideControl = false, duration: durationProp = 18, durationHint, figma = false, caption, splitTimeline = false, compact = false, disabled = false, metalControl = false }) {
+function Player({ guideSource, guideVolume=0, source, playing, setPlaying, hideControl = false, duration: durationProp = 18, durationHint, figma = false, caption, splitTimeline = false, compact = false, disabled = false, metalControl = false }) {
   const [time, setTime] = useState(0)
   const [mediaDuration, setMediaDuration] = useState(durationHint || durationProp)
   const audioRef = useRef(null)
+  const guideRef = useRef(null)
   const duration = Number.isFinite(mediaDuration) && mediaDuration > 0 ? mediaDuration : durationProp
   useEffect(() => {
     setTime(0)
@@ -1714,12 +1725,20 @@ function Player({ source, playing, setPlaying, hideControl = false, duration: du
     }
     if(playing)setPlaying(false)
   }, [playing,duration,source,setPlaying])
+  const syncGuide=time=>{const guide=guideRef.current;if(guide&&Number.isFinite(time)&&Math.abs(guide.currentTime-time)>.1)guide.currentTime=time}
+  useEffect(()=>{
+    const guide=guideRef.current;if(!guide||!guideSource)return
+    guide.volume=.58*Math.min(1,Math.max(0,guideVolume));syncGuide(audioRef.current?.currentTime||0)
+    if(playing&&guideVolume>0)guide.play().catch(()=>setPlaying(false));else guide.pause()
+    return()=>guide.pause()
+  },[playing,guideVolume,guideSource,source])
   const seek = value => {
     setTime(value)
+    syncGuide(value)
     if (audioRef.current) audioRef.current.currentTime = value
   }
   const formatTime = value => splitTimeline && !(compact&&caption) ? fmt(value).replace(/^0(?=\d:)/,'') : fmt(value)
-  return <div className={`audio-player${figma?' figma-player':''}${splitTimeline?' split-timeline':''}${compact?' v2-player-compact':''}`}><div className="time-row">{splitTimeline?<>{compact&&caption&&<span className="player-caption">{caption}</span>}<span className="player-split-clock"><span>{formatTime(time)}</span><span>{formatTime(source?duration:0)}</span></span></>:figma?caption?<span className="player-summary"><span className="player-caption">{caption}</span><span className="player-clock">{formatTime(time)} / {formatTime(duration)}</span></span>:<span className="player-clock">{formatTime(time)} / {formatTime(duration)}</span>:<span>{formatTime(time)}</span>}<input aria-label="재생 위치" aria-valuetext={splitTimeline?`${formatTime(time)} / ${formatTime(source?duration:0)}`:undefined} style={splitTimeline?{'--playback-progress':`${Math.min(time/duration,1)*100}%`}:undefined} type="range" min="0" max={duration} step=".1" disabled={disabled||!source} value={Math.min(time,duration)} onChange={e=>seek(Number(e.target.value))}/>{!figma&&<span>{formatTime(duration)}</span>}</div>{!hideControl&&<button className="play-btn" data-action={splitTimeline?'current-mix-play':undefined} disabled={disabled||!source} aria-label={splitTimeline?(playing?'현재 듣기 일시정지':'현재 듣기 재생'):(playing?'일시정지':'재생')} onClick={()=>setPlaying(!playing)}>{metalControl?<span className="v2-review-play-surface" aria-hidden="true"><img src="/artwork/figma-player-play-surface.svg" width="48" height="48" alt=""/><Icon name={playing?'pause':'play'} size={14.4}/></span>:figma&&!playing?<img src={figmaAssets.imgFaFaPlay} alt="" aria-hidden="true"/>:<Icon name={playing?'pause':'play'} size={figma?20:26}/>}</button>}{source && <audio ref={audioRef} src={source} onLoadedMetadata={e=>Number.isFinite(e.currentTarget.duration)&&setMediaDuration(e.currentTarget.duration)} onTimeUpdate={e=>setTime(e.currentTarget.currentTime)} onEnded={()=>setPlaying(false)} />}</div>
+  return <div className={`audio-player${figma?' figma-player':''}${splitTimeline?' split-timeline':''}${compact?' v2-player-compact':''}`}><div className="time-row">{splitTimeline?<>{compact&&caption&&<span className="player-caption">{caption}</span>}<span className="player-split-clock"><span>{formatTime(time)}</span><span>{formatTime(source?duration:0)}</span></span></>:figma?caption?<span className="player-summary"><span className="player-caption">{caption}</span><span className="player-clock">{formatTime(time)} / {formatTime(duration)}</span></span>:<span className="player-clock">{formatTime(time)} / {formatTime(duration)}</span>:<span>{formatTime(time)}</span>}<input aria-label="재생 위치" aria-valuetext={splitTimeline?`${formatTime(time)} / ${formatTime(source?duration:0)}`:undefined} style={splitTimeline?{'--playback-progress':`${Math.min(time/duration,1)*100}%`}:undefined} type="range" min="0" max={duration} step=".1" disabled={disabled||!source} value={Math.min(time,duration)} onChange={e=>seek(Number(e.target.value))}/>{!figma&&<span>{formatTime(duration)}</span>}</div>{!hideControl&&<button className="play-btn" data-action={splitTimeline?'current-mix-play':undefined} disabled={disabled||!source} aria-label={splitTimeline?(playing?'현재 듣기 일시정지':'현재 듣기 재생'):(playing?'일시정지':'재생')} onClick={()=>setPlaying(!playing)}>{metalControl?<span className="v2-review-play-surface" aria-hidden="true"><img src="/artwork/figma-player-play-surface.svg" width="48" height="48" alt=""/><Icon name={playing?'pause':'play'} size={14.4}/></span>:figma&&!playing?<img src={figmaAssets.imgFaFaPlay} alt="" aria-hidden="true"/>:<Icon name={playing?'pause':'play'} size={figma?20:26}/>}</button>}{source && <audio ref={audioRef} src={source} onLoadedMetadata={e=>Number.isFinite(e.currentTarget.duration)&&setMediaDuration(e.currentTarget.duration)} onTimeUpdate={e=>{setTime(e.currentTarget.currentTime);syncGuide(e.currentTarget.currentTime)}} onEnded={()=>setPlaying(false)} />}{guideSource&&<audio ref={guideRef} data-review-vocal-guide src={guideSource} preload="metadata" onError={()=>setPlaying(false)}/>}</div>
 }
 
 function CurrentMixPanel({ parts, projectTracks, project, mix, mixStatus, retryAutoMix, openVocalProfile, onPlayingChange, partAction, completionDelayed, waveform = true, title = 'Parts · Tracks', emptyMessage, moduleProps, stage, detailMode = false, presentationPreview }) {

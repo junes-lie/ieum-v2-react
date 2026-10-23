@@ -729,3 +729,13 @@
 .recording-v2-screen .project-reference:has(>.v2-player-compact){height:130px;padding-top:12px;}
 .recording-v2-screen .record-review:has(>.v2-player-compact){justify-content:flex-start;padding-top:20.78125px;padding-bottom:20.796875px;}
 .recording-v2-screen .record-review:has(>.v2-player-compact)>.review-actions{margin-top:10.421875px;}
+
+/* VP05A original choices: selection changes outline, never circle geometry. */
+.voice-screen .v2-vp-preferences-stage .preference-circle{background:#262220;border-color:#4b4540;color:var(--text-primary);}
+.voice-screen .v2-vp-preferences-stage .preference-circle[aria-pressed=true]{background:#262220;border:1.5px solid var(--text-primary);color:var(--text-primary);transform:none;box-shadow:none;}
+.voice-screen .v2-vp-preferences-stage .preference-check{display:none;}
+.voice-screen .v2-vp-preferences-stage .preference-search{font:400 14px/22px var(--font-interface);}
+.voice-screen .v2-vp-preferences-stage .preference-search input{height:48px;min-height:48px;padding:11px 15px;border:1px solid #4b4540;border-radius:6px;background:#1c1815;font:400 16px/24px var(--font-interface);}
+.voice-screen .v2-vp-preferences-stage .preference-saved-filter{min-height:48px;padding:12px 24px;border-radius:24px;font:400 15px/22px var(--font-interface);}
+.recording-v2-screen .record-review .review-actions .v2-take-submit::before{border-image-source:url('/artwork/figma-project-gold-current.svg');}
+.recording-v2-screen .v2-instrument[data-instrument-state=submitting] .v2-take-submit::before{border-image-source:url('/artwork/figma-project-gold-current.svg');}
