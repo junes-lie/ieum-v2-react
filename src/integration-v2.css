@@ -229,6 +229,9 @@
 .home-v2-screen .v2-completed>.v2-section-heading button{right:var(--discovery-inset)}
 .home-v2-screen .v2-completed-card{--completed-card-width:min(368px,calc(100vw - 48px));flex-basis:var(--completed-card-width);display:grid;grid-template-columns:calc(var(--completed-card-width)*212/368) minmax(0,1fr);gap:12px;padding-right:15px;min-height:196px}
 .home-v2-screen .v2-completed-card>div{height:194px;display:grid;place-items:center}
+.home-v2-screen .v2-completed-public-example{border:0;padding-right:16px;box-shadow:inset 0 0 0 .5px var(--line-strong);overflow:hidden}
+.home-v2-screen .v2-completed-public-example>.v2-completed-example-artwork{position:relative;height:196px;display:block;overflow:hidden}
+.home-v2-screen .v2-completed-example-artwork>img{position:absolute;left:-16px;top:-16px;width:228px;height:228px;max-width:none;object-fit:cover}
 .home-v2-screen .v2-completed-card .record{width:100%;max-width:194px}
 .home-v2-screen .v2-completed-card>span{gap:6px}
 .home-v2-screen .v2-completed-card strong{font:500 18px/24px var(--font-functional-en);letter-spacing:0}
