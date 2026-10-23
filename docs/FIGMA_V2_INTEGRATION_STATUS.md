@@ -1,6 +1,7 @@
 # IEUM V2 통합 체크포인트 · 2026-10-23
 
 ## 완료
+- 추가 사용자 정정(기준 eb0372f): Detail/녹음 Review의 재생 버튼과 seek 자체의 중심을 같은 y로 맞췄다. 시간·설명은 별도 위치이며44px seek 터치 영역과 기존 표면 크기는 보존한다. 작업실 현재 Mix에도 Detail과 같은 제공 MP3를 연결했다. 제출 Track이 없을 때만 ‘시연용 예시 완성 음원’으로 재생하며 실제 Track의 Mix/토글/제출 수·원본 데이터는 변경하지 않는다. 관련 build/Node 단일 렌더 및390/430 실제 재생/일시정지/탐색과 중심 좌표를 확인한다. 이전 전체 검사는 반복하지 않는다.
 - 기준 원격 cde6f63b3fde822ca5295d7e22260fb57e1d71a7. 이전 Home57/351/434/563 그룹·24/-12/35 간격, 다섯 화면 좌표, 데모96/92%·프로필/Back·원본 Track/AI3곡/공명/4Part를 보존했다. 무관한 전체 QA·44캡처는 반복하지 않았다.
 - Home 최신 Figma1700:60957·1369:21136의 누락된 미리듣기를 복구했다. 고정255px 턴테이블의 (205.5,197)에30px 원본 금속 표면을 두고44px 터치 영역만 확장했다. 등록 원곡 예시와 실제 제출 Track의 청취를 구분하고 음원이 없는 프로젝트는 비활성이다. 프로젝트 변경/화면 이탈/늦은 준비 응답은 소유 요청과 Blob URL을 정리한다. 기존 Workspace Player 위치는 바꾸지 않았다.
 - 제공 첨부 `천천히 물드는 우리(1).mp3`를 변경 없이 `public/audio/presentation/slowly-coloring-us.mp3`에 추가했다. 9,177,424bytes /397.224초 /SHA256 1f2270ac18af16028e0a86488ce88898a652c5fa13895d4db18948acc5a4f4c4. `src/presentationAudio.js`에 사용자 제공·발표 전용 완성 예시·CC0 미확인·출처 메타데이터를 기록했다. 새 생성/보컬 분리/재믹싱을 하지 않았다.
@@ -16,4 +17,4 @@
 
 ## 다음 시작점
 - 최신 HEAD·소유 잠금·실제 프로세스를 대조하고 공개 변경 범위부터 이어간다. 위 변경을 회귀 없이 반복하지 말고 나머지 발표 동선의 실제 시각 차이와 권리/물리기기/공유 인수만 남은 범위로 진행한다.
-- 작업 /workspace/scratch/cad8a99a0a38/ieum-focus. 관련 QA `qa/verify-presentation-priority-browser.mjs`, 근거 /tmp/ieum-presentation-* 및 /tmp/ieum-home-preview-before. 자기 owner automation-home-preview-cad8a99a0a38-1302만 대조하여 완료 기록으로 보존·해제한다.
+- 작업 /workspace/scratch/cad8a99a0a38/ieum-focus. 관련 QA `qa/verify-presentation-priority-browser.mjs`, 근거 /tmp/ieum-presentation-* 및 /tmp/ieum-home-preview-before. 자기 owner interactive-player-align-cad8a99a0a38만 대조하여 완료 기록으로 보존·해제한다.
