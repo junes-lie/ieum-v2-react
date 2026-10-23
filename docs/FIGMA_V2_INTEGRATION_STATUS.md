@@ -1,6 +1,7 @@
 # IEUM V2 통합 체크포인트 · 2026-10-23
 
 ## 완료
+- 기준624e1e1의 최신 Figma1856:44920/1349:21126/1860:43998 변경을 반영했다. 첫 방문 안내의 제목·설명 부모(16px)와70px 원형 버튼을43px 그룹 간격/아래 정렬로 복구하고, 별도 목적지 문구/완성곡 CTA를 제거했다. 원본 문자 SVG만6초 linear infinite 회전·중앙 화살표 고정이며, native 클릭/Enter/Space로 같은 모집 영역에 스크롤·포커스한다. 모션 감소 시 회전과 smooth scroll을 정지한다. 두 홈의 Intro는(430 기준)239/88·191px 부모/우24px·본문167x44 및12px 간격·15/22 크림색을 복구하고310x160 방사형 scrim을 원본172/116에 두었다.390은 오른쪽 anchor와 콘텐츠 높이를 유지한다. Detail 하트는 원본44px Default 윤곽/Selected 채움 SVG, Pressed 그림90%/72%를 기존 곡 저장 로직·aria-pressed/상태별 이름에 연결했다. 기존 자기 이미지·참여순서·제출 후 공명·음원/Track 데이터는 변경하지 않았다. build/저장 API Node 검사 및 로컬390/430 두 홈·native 스크롤/키보드/모션 감소·하트 누름/선택해제/reload 유지·실제 캡처가 통과했다. 공개 검수는 이 Push의 완료 기록과 대조한다.
 - 사용자 참여/공명 정정(기준fe3e79c): 등록완료 시연의 Workspace에서 내 Tenor를 맨 오른쪽에 표시한다. 데이터의 Part ID·원본 Track 순서는 유지하고 시연 표시만 참여 순서로 정리한다. 사람별 아이덴티콘 색과 공명 palette를 같은 기준으로 연결해 Min은 크림/나는 청록이며, 내 제출 전에는 카탈로그 예시·녹음·Review에도 내 공명 Layer를 주입하지 않는다. 마지막 직접 제출 뒤 저장된 Tenor Track에만 청록이 추가된다. Home 첫 모집은 해당 Quartet을 우선하며, 참여 인원은 실제 표시할 멤버로 계산한다. 제출 Track의 participantId/이름·초대 수락 멤버도 같은 discovery 데이터에 반영한다. 최근 프로젝트 모든 행에서 멤버 수만큼 기존 컬러 매듭과 공명을 표시하고, 카탈로그 예시 그래픽은 실제 제출과 구분한다. 사람별 색은 표시 순서가 바뀌어도 고정된다. WebGL 하이라이트는 화면별 증폭 대신 공통 soft limit 2.8로 흰색 번짐을 낮추되 선·입자 조형/모션은 보존한다. 관련 build/Node 참여인원과 제출 구분/390·430 직접 짧은 합성마이크 제출 전3색→Review3색→제출후4색·최근목록3/1/1 아이콘/공명 일치·reload4명 확인. 마지막 광량 조정은 별도430 실제 캡처로 확인하며 기존 전체QA는 반복하지 않는다. 제공3개 준비 Track은 동일 보컬 시연 예시라는 기존 출처를 유지한다.
 
 - 사용자 최신 정정(기준cdb795b): 잘못 추가한 별도 finale 진입점을 제거하고 기존 ‘프로필 등록 완료’의 Home 시작에 세 준비 Track/내 마지막 Tenor 제출 시연을 적용했다. 프로필·96/92 예시 점수와 기존 등록/미등록 진입은 유지한다. Home 상단 MyVoiceIcon, 내 Part/참여자·모니터링의 jisun 아이콘, My Voice/VP 완료의 제공 미리보기 등 ‘나/사용자’ 표시를 새 청록 매듭으로 통일했다. Min/Bass는 기존 크림 매듭을 사용하며 윤슬 파랑·도윤 코랄은 보존한다. 실제 측정 생성 이미지/selector 결과는 덮어쓰지 않는다. 세 준비 Track은 동일 제공 보컬의 명시적 시연 예시이고 내 Tenor는 직접 Review 제출 전까지 비어 있다. 일반 실사용 데이터와 다른 프로젝트·원본 MP3는 변경하지 않는다. 변경범위만390/430 Home→Detail→Workspace·My Voice의 이미지와 기존 등록완료 시연 흐름을 확인한다.
@@ -22,11 +23,13 @@
 - 변경 부분만 Node 단일 React 렌더 검사/build 및 실제390/430 브라우저로 확인했다. MP3 원본 hash/397초 metadata·재생/일시정지/키보드Seek·프로젝트 분리, Home30/44px/실제 원곡 재생·전환 중지, 합성 마이크 VP 측정→샘플→Review→성향→복귀, 실제 Profile 점수 미생성, 짧은 녹음 Review→Tenor 직접 제출→토글 실제 Mix 변경·1/4 유지, Completed 기존 시연곡을 확인했다. MP3 외 원본 데이터를 새 음원으로 덮어쓰지 않았다.
 
 ## 미완료
+- 기존 Node 단일 렌더 검사는 QA static Project fixture에 parts가 없어 recruitmentPreviewLayers에서 실패한다. 수정 전624e1e1의 App/IntegratedViews로도 같은 오류를 재현했다. 이번 브라우저/빌드 통과를 해당 전체 Node 검사 통과로 표시하지 않는다. 초기 Headless PNG 촬영/hover stable 대기 지연도 일반 안정성 해결로 확대하지 않는다.
 - overallProductAcceptance=false. 이번 수정은 발표 동선의 구체적 그룹/조작/음원 연결이며 전 화면 모든 상태·전체 에셋·공명 조형/모션의 픽셀 인수는 아니다. 물리 마이크·이어폰·실제4인 전체 제출/완성·서버AI·다중사용자·장시간 부하/과거430 시작 timeout 및 길이 편차 해결은 미완료다.
 - CC0는 독립 검증하지 않았다. 발표용 완성 예시는 정식 제품의 반주/원곡 보컬 분리 또는 적법한 독립 stem 확보를 대체하지 않는다. 실제 인증/공유/App remote 연결은 여전히 준비 상태다.
 - 이번 Push의 Pages build/deploy·공개 commitSha·실제 JS/CSS/MP3 해시 및390/430 화면은 Push 뒤 자기 완료 기록과 대조한다. main·공명 독립 브랜치·Production·Notion/Figma는 변경하지 않고 수동/중복 배포하지 않는다.
 
 ## 다음 시작점
+- 이번 홈/하트의 Pages SHA·실제 JS/CSS/SVG와 자동 Preview를 확인한 뒤 남은 VP 상태별 원본 차이로 이어간다. 첫 방문70px 아래 정렬/6초 문자만 회전·히어로167px 본문/scrim·44px 하트 상태를 회귀 없이 반복 구현하지 않는다. 관련 QA qa/verify-home-heart-browser.mjs, 근거 /tmp/ieum-home-heart-*; 자기 owner interactive-figma-home-heart-cad8a99a0a38만 완료 기록으로 보존·해제한다.
 - 최신 HEAD·소유 잠금·실제 프로세스를 대조하고 사용자 수정 범위의 공개 결과를 확인한 뒤 나머지 VP 상태별 원본 차이부터 이어간다. 음역 분석 표시/작업실 중앙 정렬/녹음 가사·Record 상향을 회귀 없이 반복하지 않는다. 완료된 Completed Credits clean label/y10·36·126, Home 추천 부모/119px 카드/24px 참여자, Detail 내부축/캡션/수치, 음원/정렬/토글/그룹은 회귀 없이 반복하지 않는다. 이번 공개 Pages SHA/파일·390/430 결과와 자동 Preview는 자기 완료 기록 및 다음 체크포인트에서 대조한다.
 - 작업 /workspace/scratch/cad8a99a0a38/ieum-focus. 관련 QA `qa/verify-presentation-priority-browser.mjs`, 근거 /tmp/ieum-presentation-* 및 /tmp/ieum-home-preview-before. 관련 근거 /tmp/ieum-detail-analysis-*. 이번 근거 /tmp/ieum-home-cards-*. 이번 근거 /tmp/ieum-completed-credits-*. 자기 owner automation-completed-credits-cad8a99a0a38-1700만 대조하여 완료 기록으로 보존·해제한다.
 

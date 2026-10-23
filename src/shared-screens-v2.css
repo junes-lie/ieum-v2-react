@@ -361,9 +361,11 @@
 /* Measured against 1349:21126, 1377:23033 and 1754:45723. Keep the
    independently positioned hero copy, scene art and controls in their own slots. */
 .home-v2-screen .v2-hero>.topbar{height:72px;min-height:72px;padding:14px 20px 14px 24px;}
-.home-v2-screen .v2-hero-copy{display:flex;flex-direction:column;gap:12px;width:280px;padding:0;}
-.home-v2-screen .v2-hero-copy h1{width:278px;margin:0;}
-.home-v2-screen .v2-hero-copy p{width:240px;margin:0;}
+.home-v2-screen .v2-hero-copy{display:flex;flex-direction:column;gap:12px;top:88px;left:auto;right:0;width:191px;margin:0;padding:0 24px 0 0;}
+.home-v2-screen .v2-hero-copy h1{width:153px;margin:0;}
+.home-v2-screen .v2-hero-copy p{width:167px;margin:0;color:var(--text-primary);font:400 15px/22px var(--font-interface);letter-spacing:0;white-space:nowrap;}
+/* Figma 1859:43994/43995: the copy and its radial scrim share a right anchor. */
+.home-v2-screen .v2-hero-copy-scrim{position:absolute;z-index:0;pointer-events:none;top:116px;right:-52px;width:310px;height:160px;background:radial-gradient(ellipse 155px 80px at 50% 50%,rgba(21,17,14,.96) 0%,rgba(21,17,14,.88) 55%,rgba(21,17,14,0) 100%);}
 .figma-v2.search-v2-screen>.topbar{height:74px;min-height:74px;padding:17px 14px 13px 24px;}
 .search-v2-screen>.topbar .topbar-center{align-self:start;margin-top:7px;}
 .recording-v2-screen .topbar-center{width:280px;max-width:100%;justify-self:center;}
@@ -500,3 +502,7 @@
 .voice-screen .range-next-actions>button{width:100%;min-height:56px;padding:10px 12px;font:500 13px/19px var(--font-interface);white-space:normal}
 .voice-screen .range-next-actions>button:only-child{grid-column:1/-1}
 .voice-screen .range-retry{margin-top:12px;width:100%}
+
+/* IEUM/Current/IconButton/Heart (1860:43998). Scale the artwork, never the 44px hit area. */
+.detail-v2-screen .topbar [data-action="toggle-song-save"] .v2-heart-art{display:block;width:44px;height:44px;max-width:none;transform-origin:center;}
+.detail-v2-screen .topbar [data-action="toggle-song-save"]:active .v2-heart-art{transform:scale(.9);opacity:.72;}
