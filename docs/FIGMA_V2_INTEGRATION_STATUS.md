@@ -1,17 +1,19 @@
 # IEUM V2 통합 체크포인트 · 2026-10-23
 
 ## 완료
-- 기준 원격 a5843fa883871cd96a2061ecb8e15229d7091803. 기존 다섯 화면390/430 좌표10개·Node QA·합성 마이크 짧은 직접 제출/재생/탐색/토글/원본 hash·focus/blur PNG 동일 통과는 유지한다. Pages Actions39889305726 build/deploy success와 실제 JS48c4561bac2d/CSS eee0294f6ea3 해시는 이전 종료 근거와 대조한다.
-- 이번 P0: 전용 Remote로 최신 Home1349:21126·모집1349:21247·1700:60957 원본 코드/구조/스크린샷을 다시 읽었다. 기존 React는 모집 조작부35px/382px, 조작부-레코드16px, 곡 정보-버튼16px으로 원본의 묶음과 달랐다. 제목+설명(57px), 탐색+레코드+정보(351px), 미디어+버튼(434px)을 별도 부모로 복구했다. 제목 다음24·조작부48/158·레코드와12px 겹침·곡 정보 다음35·전체 모집563px을390/430에서 맞췄다.
-- 문자 ‹/› 대신 기존 Figma44×44 공통 화살표 SVG를 재사용했다. 가운데70px은 카운터 슬롯이며 균등 분배하지 않는다. 겹치는12px 안에서도 화살표44px 터치 영역이 레코드 탐색에 가려지지 않게 했다. 기존255px 턴테이블·172px 이웃·56px 곡 재킷·자료별 Hug 폭과 한국어 줄바꿈을 보존한다.
-- Node 전체 QA/build,390/430 실제 브라우저에서6개 모집 프로젝트 순환·프로젝트별 원본 곡 재킷·곡 정보-버튼35px·원본 Track/참여 상태 불변·Detail 진입/Back·200% 텍스트의 내용 증가 통과. 프로필 미등록 진입의 사람 아이콘·스크롤 탐색 안내도 통과했다. QA는 qa/verify-home-section-rhythm-browser.mjs이며 오래된32px 패딩/16px 버튼 간격 검사를 최신 원본으로 갱신했다.
-- 오늘 같은 날·기존4Part/참여자·원본 Track·AI3곡·저장 데이터·공명·프로필 등록 완료 데모96/92%·실제 Profile 분기를 보존한다. main·공명 독립 브랜치·Vercel Production·원본 에셋/데이터·Notion/Figma는 변경하지 않는다.
+- 기준 원격 cde6f63b3fde822ca5295d7e22260fb57e1d71a7. 이전 Home57/351/434/563 그룹·24/-12/35 간격, 다섯 화면 좌표, 데모96/92%·프로필/Back·원본 Track/AI3곡/공명/4Part를 보존했다. 무관한 전체 QA·44캡처는 반복하지 않았다.
+- Home 최신 Figma1700:60957·1369:21136의 누락된 미리듣기를 복구했다. 고정255px 턴테이블의 (205.5,197)에30px 원본 금속 표면을 두고44px 터치 영역만 확장했다. 등록 원곡 예시와 실제 제출 Track의 청취를 구분하고 음원이 없는 프로젝트는 비활성이다. 프로젝트 변경/화면 이탈/늦은 준비 응답은 소유 요청과 Blob URL을 정리한다. 기존 Workspace Player 위치는 바꾸지 않았다.
+- 제공 첨부 `천천히 물드는 우리(1).mp3`를 변경 없이 `public/audio/presentation/slowly-coloring-us.mp3`에 추가했다. 9,177,424bytes /397.224초 /SHA256 1f2270ac18af16028e0a86488ce88898a652c5fa13895d4db18948acc5a4f4c4. `src/presentationAudio.js`에 사용자 제공·발표 전용 완성 예시·CC0 미확인·출처 메타데이터를 기록했다. 새 생성/보컬 분리/재믹싱을 하지 않았다.
+- 기존 Quartet Detail의 `현재 MIX 듣기` Player에 제출 Track이 없을 때만 위 MP3를 연결했다. 화면에 곡명과 ‘시연용 예시 완성 음원’을 명시하며 실제 제출 수·Credits·Auto Mix·프로젝트 원곡 등록/저장값은 변경하지 않는다. 제출 Track이 있으면 그 실제 청취를 우선하고 다른 프로젝트에는 적용하지 않는다.
+- VP01–06·VP05A의 제목/설명 부모를 분리해8/12px 관계를 정리하고 기존 타이포·금속 Player/48px 조작·샘플곡84px 선택 카드를 재사용했다. 성향 원형들의 서로 다른 크기/배치와 실제 측정·샘플 저장·원래 Part 복귀를 유지했다. 최신 Figma1210:2256을 읽고 Completed의460px 비대칭 Record·곡명+Player24px·조작 그룹12px을 분리하고72px Player 안의 금속 표면/아이콘 정렬을 수정했다. 원본 VP atlas530:142는 이미지 참고이며 전 VP 픽셀 일치로 보고하지 않는다.
+- 최신 사용자 정정: `v2-part-module` 토글은 미제출 상태에서도 표시한다. 모든 파트에 토글을 유지하고 미제출은 꺼짐/비활성, 제출 Track만 포함/제외할 수 있다. 기존 Compact 원본 설명의 Own/Open ‘status only’보다 현재 정정을 우선했다.
+- 변경 부분만 Node 단일 React 렌더 검사/build 및 실제390/430 브라우저로 확인했다. MP3 원본 hash/397초 metadata·재생/일시정지/키보드Seek·프로젝트 분리, Home30/44px/실제 원곡 재생·전환 중지, 합성 마이크 VP 측정→샘플→Review→성향→복귀, 실제 Profile 점수 미생성, 짧은 녹음 Review→Tenor 직접 제출→토글 실제 Mix 변경·1/4 유지, Completed 기존 시연곡을 확인했다. MP3 외 원본 데이터를 새 음원으로 덮어쓰지 않았다.
 
 ## 미완료
-- overallProductAcceptance=false. Home 모집 그룹의 좌표/간격 검증이며 전체 상태·모든 에셋·공명 조형/모션의 픽셀 인수는 아니다. 원본의30px 턴테이블 미리듣기 조작은 현재 Home에 없으며 실제 소스/재생 상태와 연결 여부를 다음에 진단한다. 장식용 가짜 재생 버튼으로 채우지 않는다. 실제 한국어 곡명/미제출 상태와 Figma 예시 내용 차이는 유지한다.
-- 이번 커밋의 기존 Pages build/deploy·공개 commitSha·실제 HTML 참조 JS/CSS hash·공개390/430 결과는 Push 뒤 종료 기록과 대조한다. 한 번 Push하며 수동/중복 배포하지 않는다.
-- 이전430 녹음 시작 대기 실패·길이 편차·장시간 부하, 실제 인증/공유/App remote 연결, 기존4인 실제 전체 제출/완성, 물리 마이크·기기·이어폰·서버AI·다중사용자 인수는 미완료다. 가짜 Track/4/4/완성곡/분석 점수를 만들지 않는다.
+- overallProductAcceptance=false. 이번 수정은 발표 동선의 구체적 그룹/조작/음원 연결이며 전 화면 모든 상태·전체 에셋·공명 조형/모션의 픽셀 인수는 아니다. 물리 마이크·이어폰·실제4인 전체 제출/완성·서버AI·다중사용자·장시간 부하/과거430 시작 timeout 및 길이 편차 해결은 미완료다.
+- CC0는 독립 검증하지 않았다. 발표용 완성 예시는 정식 제품의 반주/원곡 보컬 분리 또는 적법한 독립 stem 확보를 대체하지 않는다. 실제 인증/공유/App remote 연결은 여전히 준비 상태다.
+- 이번 Push의 Pages build/deploy·공개 commitSha·실제 JS/CSS/MP3 해시 및390/430 화면은 Push 뒤 자기 완료 기록과 대조한다. main·공명 독립 브랜치·Production·Notion/Figma는 변경하지 않고 수동/중복 배포하지 않는다.
 
 ## 다음 시작점
-- 최신 원격 HEAD·소유 잠금·실제 프로세스를 대조한 뒤 Home 미리듣기 및 나머지 상태별 크롭/에셋/타입·공명 원본 차이를 이어서 진단한다. 이번 그룹/좌표와 이전에 통과한 Player·데모·Back·44캡처를 회귀 근거 없이 재구현하지 않는다.
-- 작업 /workspace/scratch/cad8a99a0a38/ieum-focus, 근거 /tmp/ieum-home-group-*와 유지 QA. 자기 owner automation-home-groups-cad8a99a0a38-1155만 대조해 완료 기록으로 보존·해제한다.
+- 최신 HEAD·소유 잠금·실제 프로세스를 대조하고 공개 변경 범위부터 이어간다. 위 변경을 회귀 없이 반복하지 말고 나머지 발표 동선의 실제 시각 차이와 권리/물리기기/공유 인수만 남은 범위로 진행한다.
+- 작업 /workspace/scratch/cad8a99a0a38/ieum-focus. 관련 QA `qa/verify-presentation-priority-browser.mjs`, 근거 /tmp/ieum-presentation-* 및 /tmp/ieum-home-preview-before. 자기 owner automation-home-preview-cad8a99a0a38-1302만 대조하여 완료 기록으로 보존·해제한다.

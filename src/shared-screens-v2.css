@@ -412,3 +412,58 @@
 .home-v2-screen .v2-carousel-next-arrow{transform:rotate(180deg);}
 .home-v2-screen .v2-carousel-nav>span{font:500 12px/16px var(--font-functional-en);letter-spacing:.24px;text-align:center;color:var(--text-secondary);}
 .home-v2-screen .v2-recruitment-feature>.v2-project-action{margin:0;}
+/* Figma 1369:21136: 30px surface at (205.5,197) in the fixed 255px deck.
+   The centred 44px hit area has no role in the media group's spacing. */
+.home-v2-screen .v2-home-preview{position:absolute;z-index:2;left:198.5px;top:190px;display:grid;place-items:center;width:44px;height:44px;min-height:44px;padding:0;border:0;border-radius:50%;background:none;color:#ece6dc;box-shadow:none;}
+.home-v2-screen .v2-home-preview-surface{position:relative;display:grid;place-items:center;width:30px;height:30px;border-radius:50%;pointer-events:none;}
+.home-v2-screen .v2-home-preview-surface>img{position:absolute;left:0;top:0;transform:scale(.625);transform-origin:top left;}
+.home-v2-screen .v2-home-preview-surface>svg{position:relative;transform:translateX(.3px);}
+.home-v2-screen .v2-home-preview:disabled{opacity:.38;}
+.home-v2-screen .v2-home-preview:focus-visible{outline:0;}
+.home-v2-screen .v2-home-preview:focus-visible .v2-home-preview-surface{outline:2px solid var(--text-primary);outline-offset:2px;}
+.home-v2-screen .v2-home-preview-error{position:absolute;z-index:3;left:8px;right:8px;bottom:0;padding:4px 8px;background:var(--bg-black);font:400 12px/16px var(--font-interface);}
+/* Supporting Voice Profile stages reuse the approved title/body/control roles.
+   Only the heading parent owns 8/12px rhythm; each stage keeps its own layout. */
+.voice-screen .voice-main{min-height:calc(100dvh - 72px - 76px - env(safe-area-inset-bottom,0px));padding-top:32px!important;padding-bottom:32px!important;}
+.voice-screen .voice-step-heading{display:flex;flex-direction:column;gap:12px;}
+.voice-screen .voice-step-title{display:flex;flex-direction:column;gap:8px;}
+.voice-screen .voice-step-heading :is(h1,p){margin:0;}
+.voice-screen .voice-step-heading h1{font:500 32px/40px var(--font-interface);letter-spacing:-.32px;}
+.voice-screen .voice-step-heading>.voice-step-title>.kicker{font:500 10px/16px var(--font-functional-en);letter-spacing:.2px;color:var(--text-secondary);}
+.voice-screen .voice-step-heading>p{font:400 15px/22px var(--font-interface);color:var(--text-secondary);}
+.voice-screen .permission-primer{padding:0;margin:24px 0 0;font:400 13px/19px var(--font-interface)!important;}
+.voice-screen .setup-copy>.primary{margin-top:32px;}
+.voice-screen .sample-select-stage>.voice-step-heading+p{margin:16px 0 0;font:400 13px/19px var(--font-interface);color:var(--text-secondary);}
+.voice-screen .sample-song-list{display:flex;flex-direction:column;gap:8px;margin:24px 0;}
+.voice-screen .sample-song-list>button{padding:12px;gap:4px 12px;min-height:84px;border:1px solid var(--line-default);border-radius:6px;background:var(--bg-elevated);}
+.voice-screen .sample-song-list>button.active{border-color:#dcccad;background:var(--bg-strong);box-shadow:inset 0 -2px 8px rgba(237,214,166,.12);}
+.voice-screen .sample-song-list>button>span{font:500 18px/24px var(--font-interface);}
+.voice-screen .sample-song-list>button>small{font:400 13px/19px var(--font-interface);}
+.voice-screen .sample-select-stage>.primary{margin-top:24px;}
+.voice-screen .voice-preferences-stage>.review-actions{margin-top:32px;}
+.voice-screen .sample-stage>.review-actions{margin-top:24px;}
+.voice-screen .sample-proof{justify-content:flex-start;flex-wrap:wrap;gap:8px 16px;font:500 11px/16px var(--font-functional-en);}
+/* Figma 1210:2256: the fixed 460px record crops beyond the right viewport.
+   Title + player form one listening group; actions remain a separate group. */
+.complete-screen>main{padding-top:47px!important;padding-bottom:calc(100px + env(safe-area-inset-bottom,0px))!important;}
+.complete-screen .complete-record{order:0;flex:none;width:460px;height:460px;margin:0 0 -31px;}
+.complete-screen .complete-record>.record{width:460px!important;height:460px;max-width:none;}
+.complete-screen .record-center-credits{left:230px;top:230px;}
+.complete-screen .complete-listening-group{order:1;position:relative;display:flex;flex-direction:column;gap:24px;}
+.complete-screen .complete-title{display:flex;flex-direction:column;gap:8px;padding:0;}
+.complete-screen .complete-title h1{font:400 56px/60px var(--font-expression-en);letter-spacing:0;margin:0;}
+.complete-screen .complete-title h1[data-title-language=kr]{font:500 32px/40px var(--font-interface);letter-spacing:-.32px;}
+.complete-screen .complete-title>p{font:400 13px/19px var(--font-interface);margin:0;}
+.complete-screen .complete-badge{align-self:flex-start;font:500 11px/16px var(--font-interface);}
+.complete-screen .complete-listening-group>.audio-player{margin:0;min-height:72px;padding:12px;border:1px solid rgba(198,182,154,.4);border-radius:18px;}
+.complete-screen .complete-actions{order:2;margin:12px 0 0!important;gap:8px;}
+.complete-screen .complete-actions>.secondary{min-height:44px;padding:10px 12px;font:400 15px/22px var(--font-interface);}
+.voice-screen .play-btn:has(.v2-review-play-surface),.complete-screen .play-btn:has(.v2-review-play-surface){display:grid;place-items:center;padding:0;background:none;box-shadow:none;}
+.voice-screen .v2-review-play-surface,.complete-screen .v2-review-play-surface{display:block;position:relative;width:48px;height:48px;pointer-events:none;}
+.voice-screen .v2-review-play-surface>img,.complete-screen .v2-review-play-surface>img{position:absolute;inset:0;transform:none;}
+.voice-screen .v2-review-play-surface>svg,.complete-screen .v2-review-play-surface>svg{position:absolute;left:calc(50% + .4px);top:50%;transform:translate(-50%,-50%);}
+.complete-screen .complete-listening-group>.audio-player{height:72px;align-items:center;}
+.complete-screen .complete-listening-group .time-row{display:block;position:relative;height:48px;}
+.complete-screen .complete-listening-group .player-clock{position:absolute;left:0;top:4px;}
+.complete-screen .complete-listening-group input[type=range]{position:absolute;left:0;top:15px;width:100%;}
+.complete-screen .topbar-center{font:600 18px/24px var(--font-interface);letter-spacing:-.09px;}
