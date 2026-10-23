@@ -631,19 +631,7 @@
 .v2-vp-recording-screen .v2-instrument-readout{width:100%;max-width:302px;}
 .v2-vp-recording-screen .recorder-controls{justify-content:center;gap:24px;}
 .v2-vp-recording-screen .record-control>span{font:400 13.2px/19.36px var(--font-interface);}
-.v2-vp-recording-screen .v2-vp-recording-content>.project-reference{position:absolute;top:auto;bottom:201.76px;left:24px;right:64px;margin:0;z-index:2;}
-.v2-vp-recording-screen .project-reference .figma-player{height:48px;min-height:48px;margin:0;padding:0;background:none;border:0;}
-.v2-vp-recording-screen .project-reference .figma-player>.play-btn{position:absolute;top:0;left:0;width:48px;height:48px;margin:0;}
-.v2-vp-recording-screen .project-reference .time-row{position:absolute;left:64px;right:0;top:0;width:auto;height:48px;min-height:48px;margin:0;padding:0;}
-.v2-vp-recording-screen .project-reference .player-summary{position:absolute;inset:0 0 auto;height:16px;}
-.v2-vp-recording-screen .project-reference .player-caption{position:static;font:500 12px/16px var(--font-functional-en);letter-spacing:.24px;}
-.v2-vp-recording-screen .project-reference input[type=range]{position:absolute;left:0;top:2px;width:100%;height:44px;margin:0;padding:0;}
-.v2-vp-recording-screen .project-reference .player-split-clock{position:absolute;left:0;right:0;top:32px;margin:0;height:16px;font:500 12px/16px var(--font-functional-en);}
-.v2-vp-recording-screen .project-reference .player-split-clock>span:first-child{position:absolute;left:0;}
-.v2-vp-recording-screen .project-reference .player-split-clock>span:last-child{position:absolute;right:0;}
-.v2-vp-recording-screen .project-reference input::-webkit-slider-runnable-track{height:3px;background:#4d4740;}
-.v2-vp-recording-screen .project-reference input::-webkit-slider-thumb{width:7px;height:7px;margin-top:-2px;}
-@media(max-height:780px){.v2-vp-recording-screen .v2-vp-recording-content>.v2-guide-volume{top:min(218px,calc(100% - 418px));}.v2-vp-recording-screen .v2-vp-recording-content>.recording-lyrics-scene{top:92px;}.v2-vp-recording-screen .project-reference .player-caption{display:none;}}
+@media(max-height:780px){.v2-vp-recording-screen .v2-vp-recording-content>.v2-guide-volume{top:min(218px,calc(100% - 418px));}.v2-vp-recording-screen .v2-vp-recording-content>.recording-lyrics-scene{top:92px;}}
 
 /* VP05A 1885:44789 / VP06 1885:44967: preserve nested 12/32/6/20px groups. */
 .voice-screen :is(.v2-vp-preferences-stage,.v2-vp-complete-stage){display:flex;flex:1;flex-direction:column;width:100%;max-width:none;margin:0;}
