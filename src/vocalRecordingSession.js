@@ -9,9 +9,9 @@ export function createVocalRecordingSession(engine=audio) {
       if(starting||stopping)return false
       starting=true;volumeChangedDuringStart=false
       const token=++generation
-      currentGuides=engine.recordingGuides({vocalAvailable:Boolean(options.vocalGuideBlob)})
+      currentGuides=engine.recordingGuides({parts:options.monitorParts||[],vocalAvailable:Boolean(options.vocalGuideBlob)})
       try {
-        await engine.startRecording({...options,guides:currentGuides,guideTracks:[]})
+        await engine.startRecording({...options,guides:currentGuides,guideTracks:options.monitoringTracks||[]})
         if(token!==generation){engine.cancelRecording();engine.stopMicrophone();return false}
         // A slider change during asynchronous audio setup must not be lost.
         if(volumeChangedDuringStart)engine.updateRecordingGuides(currentGuides)
@@ -25,6 +25,11 @@ export function createVocalRecordingSession(engine=audio) {
       if(starting)volumeChangedDuringStart=true
       if(!starting&&['recording','paused'].includes(engine.getRecordingTimeline().state)&&currentGuides)engine.updateRecordingGuides(currentGuides)
       return volume
+    },
+    setParts(parts) {
+      if(currentGuides)currentGuides={...currentGuides,parts:[...parts]}
+      if(starting)volumeChangedDuringStart=true
+      if(!starting&&currentGuides&&['recording','paused'].includes(engine.getRecordingTimeline().state))engine.updateRecordingGuides(currentGuides)
     },
     pause() {if(stopping||starting)return;engine.pauseRecording()},
     resume() {if(stopping||starting)return;engine.resumeRecording()},

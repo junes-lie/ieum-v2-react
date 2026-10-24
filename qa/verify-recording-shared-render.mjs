@@ -18,15 +18,17 @@ try{
  const {Recorder,VoiceSetupQA}=await import('../src/'+output('App.jsx'))
  const {WARM_PROJECT}=await import('../src/projectMusic.js')
  const noop=()=>{}
- for(const tracks of [{},{'voice-a':{partId:'voice-a',projectId:WARM_PROJECT.id,kind:'temporary-recording',blob:new Blob(['take']),duration:4}}]){
+ const submitted={'voice-a':{id:WARM_PROJECT.id+':voice-a',partId:'voice-a',projectId:WARM_PROJECT.id,kind:'project-track',submissionStatus:'success',participant:'Participant A',blob:new Blob(['submitted']),duration:4}}
+ for(const tracks of [submitted,{}, {'voice-a':{partId:'voice-a',projectId:WARM_PROJECT.id,kind:'temporary-recording',blob:new Blob(['take']),duration:4}}]){
   const html=renderToStaticMarkup(React.createElement(Recorder,{project:WARM_PROJECT,parts:WARM_PROJECT.parts,projectTracks:tracks,layers:[],partId:'voice-b',go:noop,submit:noop}))
   assert.ok(html.includes('가이드 보컬 볼륨'))
-  assert.ok(!html.includes('v2-monitoring-row'),'No independent participant playback controls')
+  assert.ok(html.includes('v2-monitoring-row'),'Participant monitoring UI is preserved')
   assert.ok(html.includes('aria-orientation="vertical"'))
+  if(tracks===submitted){assert.ok(html.includes('Participant A'));assert.ok(html.includes('Voice A'));assert.ok(html.includes('role="switch"')||html.includes('type="checkbox"'))}
  }
  for(const existing of [null,{name:'Registered',rangeData:{lowMidi:48,highMidi:72},roles:[],genres:[],taste:[]}]){
   const html=renderToStaticMarkup(React.createElement(VoiceSetupQA,{existing,complete:noop,go:noop,back:noop,songSaves:[]}))
   assert.ok(html.length>0)
  }
- console.log('PASS actual Recorder/VoiceSetup Node render: registered/unregistered setup, project with/without draft, shared slider, no independent participant controls')
+ console.log('PASS actual Recorder/VoiceSetup Node render: registered/unregistered setup, project with/without draft, shared slider, participant monitoring UI retained')
 }finally{await Promise.all(files.map(name=>unlink(new URL('../src/'+output(name),import.meta.url)).catch(()=>{})))}

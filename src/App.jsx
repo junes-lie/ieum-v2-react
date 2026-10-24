@@ -1453,9 +1453,10 @@ function Recorder({ go, submit, onRecordingStart, partId, projectTracks, layers,
   const recordingWindow = Math.max(18,...Object.values(finalTracks).map(track=>track.duration || 0),project.recordingDuration || 0)
   const currentPart = parts.find(part => part.id === partId) || parts[0]
   const currentIndex = parts.findIndex(part => part.id === currentPart.id)
+  const guideTracks=parts.flatMap((part,partIndex)=>part.id!==currentPart.id&&finalTracks[part.id]?[{...finalTracks[part.id],partIndex}]:[])
   const recordingSession=useRef(null)
   if(!recordingSession.current)recordingSession.current=createVocalRecordingSession()
-  const [guides, setGuides] = useState(()=>recordingGuides({vocalAvailable:Boolean(project.audioSource?.vocalGuideFile)}))
+  const [guides, setGuides] = useState(()=>recordingGuides({parts:parts.map(part=>part.id!==partId),vocalAvailable:Boolean(project.audioSource?.vocalGuideFile)}))
   const [status, setStatus] = useState('ready')
   const [seconds, setSeconds] = useState(0)
   const [level, setLevel] = useState(0)
@@ -1507,7 +1508,7 @@ function Recorder({ go, submit, onRecordingStart, partId, projectTracks, layers,
       audioReady=true
       if(!startingRef.current)return
       inputLevels.current=[]
-      const started=await recordingSession.current.start({ onFrame: frame => { waveformRef.current=frame.waveform;setInputRms(frame.rms || 0);setLevel(frame.level); setPeak(frame.peak); setSeconds(frame.elapsedSec || 0);inputLevels.current.push(frame.level) }, vocalGuideBlob, backingBlob, backingReferenceBlob, duration:recordingWindow })
+      const started=await recordingSession.current.start({ onFrame: frame => { waveformRef.current=frame.waveform;setInputRms(frame.rms || 0);setLevel(frame.level); setPeak(frame.peak); setSeconds(frame.elapsedSec || 0);inputLevels.current.push(frame.level) }, vocalGuideBlob, monitoringTracks:guideTracks,monitorParts:guides.parts, backingBlob, backingReferenceBlob, duration:recordingWindow })
       if(!started||!recorderActiveRef.current||!startingRef.current)return
       onRecordingStart?.(); setStatus('recording'); setSeconds(0); timer.current = window.setInterval(() => setSeconds(getRecordingTimeline().elapsedSec), 100)
     } catch (e) { if(!startingRef.current)return;setMicrophoneFailure(audioReady); setPermissionDenied(audioReady&&isMicrophonePermissionError(e)); setError(audioReady?microphoneErrorMessage(e):e.message); setStatus('ready') }
@@ -1647,6 +1648,17 @@ function Recorder({ go, submit, onRecordingStart, partId, projectTracks, layers,
     <TopBar figmaHeader title={<h1 lang={/[가-힣]/.test(project.songTitle || project.name || '내 Part 녹음')?'ko':'en'}>{project.songTitle || project.name || '내 Part 녹음'}</h1>} subtitle={`${currentPart.name} · ${status==='review'?'녹음 확인':status==='recording'?'녹음 중':status==='paused'?'일시정지':'녹음 준비'}`} back={leave}/>
     <main>
       <span className="recording-clock" data-state={status} data-recording-entry>{currentPart.name} 녹음 · {status==='recording'?'REC':status==='paused'?'PAUSED':status==='review'?'REVIEW':'READY'} · {fmt(seconds)}{entryPrompt&&` · ${entryPrompt}`}</span>
+      <section className="guide-panel v2-monitoring" aria-label="듣기 전용 Guide">
+        <div className="v2-monitoring-row">{guideTracks.map(track=>{
+          const part=parts.find(item=>item.id===track.partId),index=track.partIndex
+          return <MonitoringModule key={track.id} title={track.participant} participantId={track.participantId} role={part.name} color={part.color} checked={Boolean(guides.parts[index])} onChange={event=>{
+            const next=[...guides.parts];next[index]=event.target.checked
+            try{recordingSession.current.setParts(next);setGuides(current=>({...current,parts:next}));setError('')}
+            catch(reason){setError(reason.message)}
+          }}/>
+        })}</div>
+        <p className="guide-device-note">Guide는 듣기용입니다. 이어폰을 사용하면 내 입력만 선명하게 녹음할 수 있어요.</p>
+      </section>
       {status==='ready'&&project.audioSource?.referenceFile&&<section className="project-reference" aria-label="멜로디 미리듣기"><Player source={project.audioSource.referenceFile} durationHint={project.audioSource.duration} playing={referencePlaying} setPlaying={setReferencePlaying} figma splitTimeline compact metalControl caption="멜로디 미리듣기 · 먼저 들어보세요"/></section>}
       <div className="recording-visual"><img className="v2-recording-thread-art" src="/artwork/figma-recording-thread.png" width="430" height="700" alt="" aria-hidden="true"/><ResonanceRecord recordRef={project.voiceRecordRef} parts={parts} tracks={finalTracks} projectId={project.id} layers={finalLayers} activePartIndex={currentIndex} state={status === 'recording' ? 'recording' : status==='paused'?'paused':'rest'} level={level} seed={project.seed} compact /><RecordingInflow active={status==='recording'} partIndex={['soprano','alto','tenor','bass'].indexOf(recordPalettePart({...currentPart,participantId:CURRENT_USER_ID}))} level={level} seed={project.seed} waveformRef={waveformRef}/></div>
       {!project.lyrics?.length&&<p className="lyric-source-note">실제 곡 가사와 반주가 아직 등록되지 않았어요.</p>}
