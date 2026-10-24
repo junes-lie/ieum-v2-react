@@ -24,3 +24,11 @@ Unmodified variable fonts downloaded from the official Google Fonts repository:
 | --- | --- | --- | --- |
 | Montserrat-Variable.ttf | https://raw.githubusercontent.com/google/fonts/main/ofl/montserrat/Montserrat%5Bwght%5D.ttf | 0f7b311b2f3279e4eef9b2f968bcdbab6e28f4daeb1f049f4f278a902bcd82f7 | Montserrat-OFL.txt |
 | CormorantGaramond-Variable.ttf | https://raw.githubusercontent.com/google/fonts/main/ofl/cormorantgaramond/CormorantGaramond%5Bwght%5D.ttf | b20b7d9626dd956b2c5e558692ad328b1f19e3275e2782db4fa07670d83f35e0 | CormorantGaramond-OFL.txt |
+
+## Credit participant names — 태-흘림L
+
+- Designer: 태시스템 (TAE System & Typefaces Co.)
+- Official source and license: https://free.taefont.com/
+- Webfont source: https://cdn.jsdelivr.net/gh/sweetherofonts/fontshero_pack4/tsthlml/tsthlml-Regular.woff2
+- Loaded as IEUM Tae Heullim, 400 normal; only completed credit participant names.
+- Existing font sizes and layout are retained. Font file is loaded externally and is not copied into the repository.
