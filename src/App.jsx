@@ -84,7 +84,8 @@ const PROJECT_ID = PROJECT.id
 const PROJECT_SEED = PROJECT.seed
 const SONG_ID = 'a-thousand-years'
 const PARTS = PROJECT.parts
-if(demoScenario?.finale)Object.assign(PARTS.find(part=>part.id==='bass'),{participantId:'min',participant:'Min',status:'accepted'})
+PROJECT.presentationFinale=true
+Object.assign(PARTS.find(part=>part.id==='bass'),{participantId:'min',participant:'Min',status:'accepted'})
 const USER_PART_ID = 'tenor'
 
 const SONGS = [
@@ -891,7 +892,7 @@ function Detail({ go, back, song, profile, join, layers, projectTracks, songSave
       {!profile&&!receivedInvitation&&openParts.length>0&&(!action||action.id==='voice-setup')?<section className="detail-profile-guide" data-testid="detail-profile-guide" aria-label="목소리 프로필 등록 안내"><h2>내 목소리를 아직 등록하지 않았어요.</h2><p>음역과 목소리 샘플을 등록해요. 약 1–2분 걸려요.</p><ProjectActionButton actionId="voice-setup" onClick={()=>go('voice')} label="내 목소리 알아보기"/><small>{chosen?`${chosen.name} Part를 확인하러 이 프로젝트로 돌아와요.`:'등록 후 이 곡과 프로젝트로 돌아와 빈 Part를 선택해요.'} 탐색과 듣기는 먼저 할 수 있어요.</small></section>:action&&<div className="detail-project-action"><ProjectActionButton actionId={action.id} onClick={action.click} label={action.label}/></div>}
       {analysisPart&&<section className="fit-panel detail-fit" data-testid="part-fit" data-analysis-part={analysisPart.id}><div className="detail-fit-title"><p>음역대 분석 · {analysisPart.name}</p><div className="detail-fit-heading"><h2>이 파트를 부를 수 있나요?</h2><span>음역 적합 <b data-match-percent={demoPartFit!=null||undefined} data-range-percent={demoPartFit==null?analysisFit.coveragePercent??undefined:undefined} data-range-method={demoPartFit!=null?'demo':analysisFit.coveragePercent!=null?'required-semitone-coverage-v1':undefined} aria-live="polite">{partFitPercent!=null?`${partFitPercent}%`:profile?'정보 부족':'등록 필요'}</b></span></div></div><DetailRangeComparison part={analysisPart} profile={profile}/><p>{demoMatch?`${analysisPart.name}의 요구 음역과 잘 맞고, 주로 부르는 구간도 편안해요.`:profile?analysisFit.reasons.join(' '):'음역과 목소리 샘플을 등록해요. 약 1–2분 걸려요.'}</p><small>{demoPartFit!=null?'시연 프로필 기준 · 음역 적합 예시.':'현재 Key의 Part 요구 음역 중 내 측정 음역이 포함하는 비율이에요.'} 요구 음역을 벗어나도 참여할 수 있어요.</small></section>}
       {profile&&<section className="detail-harmony" data-harmony-method={demoMatch?'demo':harmony.method} data-harmony-status={harmonyLoading?'loading':harmony.status} data-harmony-source={harmony.provenance?.target?.kind}><div className="detail-harmony-visual"><h2>내 목소리가 더해지면</h2><figure><img src="/artwork/figma-detail-harmony-original.png" width="2048" height="682" alt="목소리가 프로젝트에 연결되는 공명 일러스트"/><figcaption><span>나의 목소리{chosen?` · ${chosen.name}`:''}</span><span>프로젝트 하모니 · {harmonyMembers.map(part=>part.name).join(' + ')||'참여 대기'}</span></figcaption><small>{demoMatch?'시연 프로필 기준 · 매칭 예시':'결합 방식 예시 · 개인 분석 결과가 아니에요.'}</small></figure></div><div className="detail-harmony-analysis"><div className="detail-harmony-summary"><p>{chosen?`${harmonyMembers.length}명의 목소리에 ${chosen.name}를 더해요.`:'함께할 목소리의 조화를 확인해요.'}</p><span>참여 후 예상 조화 <b data-match-percent={Boolean(demoMatch)||undefined} data-harmony-score={!demoMatch&&harmony.score!=null?harmony.score:undefined} aria-live="polite">{demoMatch?`${demoMatch.overall}%`:harmonyLoading?'분석 중':harmony.score!=null?`${harmony.score}%`:'비교 데이터 부족'}</b></span></div><div className="detail-match-reasons">{(demoMatch?[['음색','맑은 중음이 기존 보컬의 따뜻한 음색과 자연스럽게 어울려요.'],['역할',`${chosen?.name||'Tenor'}가 멜로디와 화음 사이를 연결해요.`],['취향','발라드·팝과 어쿠스틱 취향을 함께 즐겨요.']]:harmony.reasons).map(([label,reason],index)=><div key={label} data-harmony-metric={['timbre','role','taste'][index]}><span>{label}</span><span className="detail-metric-track" aria-hidden="true">{metricScores[index]!=null&&<i style={{width:`${metricScores[index]}%`}}/>}</span><small data-harmony-value={demoMatch?undefined:metricScores[index]??undefined} data-harmony-own-brightness={!demoMatch&&index===0&&metricScores[0]!=null?profile.sampleFeatures.brightness:undefined} data-harmony-own-roughness={!demoMatch&&index===0&&metricScores[0]!=null?profile.sampleFeatures.roughness:undefined} data-harmony-reference-brightness={!demoMatch&&index===0?harmony.metrics.timbre.target?.brightness:undefined} data-harmony-reference-roughness={!demoMatch&&index===0?harmony.metrics.timbre.target?.roughness:undefined} data-harmony-calculation={!demoMatch&&index===0&&metricScores[0]!=null?'round(100*(1-(abs(ownBrightness-referenceBrightness)+abs(ownRoughness-referenceRoughness))/2))':undefined}>{metricScores[index]!=null?`${metricScores[index]}%`:'—'}</small><p>{!demoMatch&&index===0&&harmonyLoading?'프로젝트에 등록된 보컬 가이드를 분석하고 있어요.':!demoMatch&&index===0&&currentReference?.status==='error'&&metricScores[0]==null?'프로젝트 보컬 가이드를 불러오지 못했어요. 기존 녹음과 프로필은 유지됩니다.':reason}</p></div>)}{!demoMatch&&<small className="detail-harmony-calculation-note">{harmony.score!=null?`내 샘플 기준 참고 지수 · ${metricScores.filter(value=>value!=null).length}/3개 항목 비교. `:''}음색은 밝기·질감의 유사도, 역할·취향은 등록 정보의 일치도를 비교해요. 노래 실력이나 실제 합창 품질의 예측 확률은 아니에요.</small>}</div></div></section>}
-      <div className="detail-secondary"><p className="demo-disclosure">{demoScenario?.finale?FINALE_DISCLOSURE:demoMatch?'시연용 프로필·매칭 예시':isLiveProject?`${demoNames||'현재 없음'}: 실제 제출된 녹음만 표시합니다.`:isCreatedProject?'이 브라우저에 저장된 내 프로젝트입니다. 실제 서버 협업 연결은 아직 완료되지 않았습니다.':selectedProject.audioSource?'IEUM Originals · 실제 반주와 가사가 등록된 22초 유니즌 시연곡입니다.':'탐색용 Project 데이터입니다. 녹음 시연은 Original C · Quartet에서 제공합니다.'}</p></div>
+      <div className="detail-secondary"><p className="demo-disclosure">{isLiveProject?FINALE_DISCLOSURE:demoMatch?'시연용 프로필·매칭 예시':isLiveProject?`${demoNames||'현재 없음'}: 실제 제출된 녹음만 표시합니다.`:isCreatedProject?'이 브라우저에 저장된 내 프로젝트입니다. 실제 서버 협업 연결은 아직 완료되지 않았습니다.':selectedProject.audioSource?'IEUM Originals · 실제 반주와 가사가 등록된 22초 유니즌 시연곡입니다.':'탐색용 Project 데이터입니다. 녹음 시연은 Original C · Quartet에서 제공합니다.'}</p></div>
     </main>
 
   </div>
@@ -1997,7 +1998,7 @@ export default function App() {
   const invitedPerson = PERSON_BY_ID[invitedVocalId] || PERSON_BY_ID.luna
   const selectedVocalTrack = Object.values(projectTracks).find(track => (track.participantId || personFromName(track.participant)?.id) === selectedVocalId)
   const activeCreatedProject = createdProjects.find(project=>project.id===activeCreatedProjectId) || null
-  const mainProject = {...PROJECT,...SONGS[0].projects.find(project=>project.id===PROJECT_ID),presentationFinale:Boolean(demoScenario?.finale)}
+  const mainProject = {...PROJECT,...SONGS[0].projects.find(project=>project.id===PROJECT_ID),presentationFinale:true}
   const activeProject = activeCreatedProject || mainProject
   const activeSong = SONGS.find(song=>song.id===(activeCreatedProject?.songId || SONG_ID)) || SONGS[0]
   const activeParts = activeProject.parts || PARTS
@@ -2362,9 +2363,9 @@ export default function App() {
         loadProjectTracks(PROJECT_ID),
         loadProjectTracks(PROFILE_PROJECT_ID)
       ])
-      const projectStored=demoScenario?.finale?await ensureFinaleTracks(mainProject,loadedProjectStored):loadedProjectStored
+      const projectStored=await ensureFinaleTracks(mainProject,loadedProjectStored)
       const stored = await Promise.all(projectStored
-        .filter(track => (track.origin === 'live-microphone-recording'||(demoScenario?.finale&&isFinaleFixture(track))) && submittedProjectTracks(PROJECT,{[track.partId]:track}).length)
+        .filter(track => (track.origin === 'live-microphone-recording'||isFinaleFixture(track)) && submittedProjectTracks(PROJECT,{[track.partId]:track}).length)
         .map(async track => ({
           ...await refreshTrackAnalysis(track,PROJECT_SEED),
           participantId:track.participantId || personFromName(track.participant)?.id || null

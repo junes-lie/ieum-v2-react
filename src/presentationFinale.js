@@ -6,15 +6,15 @@ import {saveTracks} from './trackStore.js'
 export const FINALE_DISCLOSURE='발표 시연 · 세 준비 Track은 동일한 제공 보컬을 재사용한 예시입니다. 내 마지막 Track만 직접 녹음하며, 완성 음원은 이 예시 Track들과 내 녹음의 브라우저 Mix입니다. 실제 세 사람의 독립 녹음이나 서버 AI 결과가 아닙니다.'
 export const isFinaleFixture=track=>track?.origin==='presentation-provided-vocal-fixture'&&track.demo===true&&track.sourceProvenance?.version==='ieum-presentation-fixture-v1'
 
-// Called only in the existing first-visit/profile-ready demos' separate IndexedDBs.
+// The same main presentation project is prepared in every entry storage, including saved state.
 // Never overwrite a stored Part and never prefill the current user's Tenor.
-export async function ensureFinaleTracks(project,stored){
+export async function ensureFinaleTracks(project,stored,io={loadProvidedAudio,analyzeBlob,saveTracks}){
   if(!project.presentationFinale)return stored
-  const missing=project.parts.filter(part=>part.id!=='tenor'&&!stored.some(track=>track.id===`${project.id}:${part.id}`))
+  const missing=project.parts.filter(part=>part.id!=='tenor'&&!stored.some(track=>track.id===`${project.id}:${part.id}`&&(track.origin==='live-microphone-recording'||isFinaleFixture(track))))
   if(!missing.length)return stored
   const source=project.audioSource
-  const blob=await loadProvidedAudio(source.vocalGuideFile,source.vocalGuideSha256)
-  const {features,duration}=await analyzeBlob(blob)
+  const blob=await io.loadProvidedAudio(source.vocalGuideFile,source.vocalGuideSha256)
+  const {features,duration}=await io.analyzeBlob(blob)
   const records=missing.map(part=>({
     id:`${project.id}:${part.id}`,projectId:project.id,partId:part.id,kind:'project-track',submissionStatus:'success',
     participantId:part.participantId,participant:part.participant,origin:'presentation-provided-vocal-fixture',demo:true,
@@ -22,6 +22,11 @@ export async function ensureFinaleTracks(project,stored){
     audioSourceRef:projectAudioReference(project),features,layer:buildVoiceLayer(project.seed,part.id,features),
     createdAt:new Date().toISOString(),sourceProvenance:{version:'ieum-presentation-fixture-v1',purpose:'provided-vocal-example',revision:source.revision,audioSha256:source.vocalGuideSha256,byteLength:blob.size}
   }))
-  await saveTracks(records)
-  return [...stored,...records]
+  // Older synthetic placeholders must not block the prepared baseline. Keep
+  // their exact payload under an archive key before replacing the active slot.
+  const replacedIds=new Set(records.map(record=>record.id))
+  const prior=stored.filter(record=>replacedIds.has(record.id))
+  const archives=prior.map(record=>({...record,id:`${record.id}:before-prepared-v1`,archivedOriginalId:record.id,kind:'presentation-prior-record'}))
+  await io.saveTracks([...archives,...records])
+  return [...stored.filter(record=>!replacedIds.has(record.id)),...archives,...records]
 }

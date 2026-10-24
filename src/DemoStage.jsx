@@ -2,7 +2,7 @@ import React, {useEffect,useRef,useState} from 'react'
 import {DEMO_SCENARIOS} from './demoSession.js'
 import './demo-stage.css'
 
-const savedEntry={id:'saved',label:'저장한 상태로 재방문',detail:'내 프로필·참여·임시 녹음·저장 목록 이어보기',flow:'Flow 3 · UF06 / UF10 / UF12'}
+const savedEntry={id:'saved',finale:true,label:'저장한 상태로 재방문',detail:'내 프로필·참여·임시 녹음·저장 목록 이어보기',flow:'Flow 3 · UF06 / UF10 / UF12'}
 const entries=[...DEMO_SCENARIOS.filter(item=>item.entry),savedEntry]
 // Phones present only the registered-profile entry; desktop keeps every scenario.
 const resolveEntry=id=>window.matchMedia('(max-width: 600px)').matches
@@ -61,7 +61,7 @@ export default function DemoStage({initialScenario}) {
       <p className="demo-profile-status" role="status" data-demo-profile-state={current?.status==='ready'?(current.hasProfile?'present':'absent'):current?.status||'loading'}>{status}</p>
       {error&&<p role="alert">{error}</p>}
       <details className="demo-notes"><summary>현재 상태</summary><p>{selected.detail}</p>{current?.status==='ready'&&<p data-demo-current-screen>현재 화면 · {screenNames[current.screen]||current.screen}</p>}
-      {selected.id==='saved'?<p>기존에 보관한 내 데이터를 그대로 이어갑니다. 임시 녹음과 제출 Track은 현재 저장 상태를 따릅니다.</p>:selected.finale?<p>세 준비 Track은 동일 제공 보컬을 재사용한 시연 예시입니다. 내 마지막 녹음은 직접 제출하며, 네 Track이 저장돼야 브라우저 Mix가 완성됩니다.</p>:selected.music?<p>A와 B는 같은 기기의 두 시연 역할입니다. 각각 직접 녹음하고 제출해야 완성됩니다. A/B 전환은 같은 음악 프로젝트를 이어갑니다.</p>:<p>상황별 예시 데이터로 시작합니다. 다시 선택하면 새로 시작하며, 이전 시연과 기존 내 데이터는 지우지 않습니다.</p>}
+      {selected.id==='saved'?<p>기존 내 녹음·임시저장은 이어가며, 오늘 같은 날 4인 시연 프로젝트의 누락된 준비 Track만 채웁니다.</p>:selected.finale?<p>세 준비 Track은 동일 제공 보컬을 재사용한 시연 예시입니다. 내 마지막 녹음은 직접 제출하며, 네 Track이 저장돼야 브라우저 Mix가 완성됩니다.</p>:selected.music?<p>A와 B는 같은 기기의 두 시연 역할입니다. 각각 직접 녹음하고 제출해야 완성됩니다. A/B 전환은 같은 음악 프로젝트를 이어갑니다.</p>:<p>상황별 예시 데이터로 시작합니다. 다시 선택하면 새로 시작하며, 이전 시연과 기존 내 데이터는 지우지 않습니다.</p>}
       <p>마이크는 녹음 시작을 누를 때만 열립니다.</p>
       </details>
     </aside>
