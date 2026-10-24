@@ -275,6 +275,30 @@ export function stopGuides() {
   runtime.playback.splice(0).forEach(node => { try { node.stop() } catch {} })
 }
 
+// Prepared presentation Tracks reuse the supplied guide bytes. They must
+// share its mute/level instead of leaking the same voice through another path.
+export function recordingVoicePlan(state,offsetSec=0) {
+  const volume=Math.min(1,Math.max(0,Number(state.guides.vocalVolume??.5)))
+  const selected=state.decodedGuides.filter(({track,buffer})=>state.guides.parts[Number(track.partIndex)]&&offsetSec+(track.syncOffsetMs||0)/1000<buffer.duration)
+  const duplicate=track=>Boolean(state.vocalGuideSha256)&&track.origin==='presentation-provided-vocal-fixture'&&track.sourceProvenance?.audioSha256===state.vocalGuideSha256
+  const copies=selected.filter(({track})=>duplicate(track))
+  const guideOffset=offsetSec+(state.vocalGuideOffsetSec??0)
+  const hasGuide=state.decodedVocalGuide&&guideOffset<state.decodedVocalGuide.duration
+  const sharedGain=vocalGuideGain(volume)/Math.max(1,copies.length+Number(Boolean(hasGuide)))
+  const plan=[]
+  if(hasGuide&&volume>0)plan.push({buffer:state.decodedVocalGuide,offset:guideOffset,gain:sharedGain,pan:0,kind:'provided-guide'})
+  for(const {track,buffer} of selected){
+    const same=duplicate(track)
+    if(same&&volume===0)continue
+    plan.push({buffer,offset:offsetSec+(track.syncOffsetMs||0)/1000,gain:same?sharedGain:.29/Math.max(1,state.decodedGuides.length),pan:same?0:(Number(track.partIndex)-1.5)*.12,kind:same?'provided-guide-copy':'participant'})
+  }
+  return plan
+}
+function scheduleRecordingVoices(state,start,offsetSec=0) {
+  const ctx=context()
+  for(const voice of recordingVoicePlan(state,offsetSec))scheduleBuffer(ctx,ctx.destination,voice.buffer,start,voice.offset,voice.gain,voice.pan)
+}
+
 function scheduleRecordingGuides(offsetSec = 0) {
   const state = runtime.recordingGuideState
   if (!state) return
@@ -286,14 +310,7 @@ function scheduleRecordingGuides(offsetSec = 0) {
       if (offsetSec < state.decodedBacking.duration) scheduleBuffer(ctx, ctx.destination, state.decodedBacking, start, offsetSec, recordingBackingGain(state.decodedBacking,state.guides,state.decodedBackingReference))
     }
   }
-  const vocalVolume = Math.min(1,Math.max(0,Number(state.guides.vocalVolume ?? .5)))
-  const vocalOffsetSec=offsetSec+(state.vocalGuideOffsetSec??0)
-  if(state.decodedVocalGuide && vocalVolume>0 && vocalOffsetSec<state.decodedVocalGuide.duration) scheduleBuffer(ctx,ctx.destination,state.decodedVocalGuide,start,vocalOffsetSec,vocalGuideGain(vocalVolume))
-  state.decodedGuides.forEach(({track,buffer}) => {
-    const index = Number(track.partIndex)
-    const sourceOffset = offsetSec + (track.syncOffsetMs || 0) / 1000
-    if (state.guides.parts[index] && sourceOffset < buffer.duration) scheduleBuffer(ctx, ctx.destination, buffer, start, sourceOffset, .29 / Math.max(1,state.decodedGuides.length), (index - 1.5) * .12)
-  })
+  scheduleRecordingVoices(state,start,offsetSec)
 }
 
 function trackSourceOffset(track, buffer) {
@@ -304,7 +321,7 @@ function trackSourceOffset(track, buffer) {
   return milliseconds / 1000
 }
 
-export async function startRecording({ onFrame, guides = {backing:false,parts:[]}, guideTracks = [], vocalGuideBlob = null, vocalGuideOffsetSec = 0, backingBlob = null, backingReferenceBlob = null, preparationBlob = null, preparationDuration = 0, onPreparation, duration = 35 }) {
+export async function startRecording({ onFrame, guides = {backing:false,parts:[]}, guideTracks = [], vocalGuideBlob = null, vocalGuideOffsetSec = 0, vocalGuideSha256 = null, backingBlob = null, backingReferenceBlob = null, preparationBlob = null, preparationDuration = 0, onPreparation, duration = 35 }) {
   if (runtime.preparationRecorder || (runtime.recorder && runtime.recorder.state !== 'inactive')) throw new Error('이미 녹음 중이에요.')
   const generation=runtime.microphoneGeneration
   const hasSpeakerGuides = Boolean(guides?.backing || guides?.parts?.some(Boolean))
@@ -368,17 +385,12 @@ export async function startRecording({ onFrame, guides = {backing:false,parts:[]
   const preparationStart=ctx.currentTime+.035
   const start = preparationStart + prepareSeconds
   runtime.syncOffsetSec = prepareSeconds ? 0 : Math.max(0, start - ctx.currentTime)
-  runtime.recordingGuideState = { guides:{...guides,parts:[...guides.parts]}, decodedGuides, decodedVocalGuide, vocalGuideOffsetSec, decodedBacking, decodedBackingReference, duration:Math.max(.1,duration) }
+  runtime.recordingGuideState = { guides:{...guides,parts:[...guides.parts]}, decodedGuides, decodedVocalGuide, vocalGuideOffsetSec, vocalGuideSha256, decodedBacking, decodedBackingReference, duration:Math.max(.1,duration) }
   if (guides.backing) {
     if (decodedBacking) scheduleBuffer(ctx, ctx.destination, decodedBacking, start, 0, recordingBackingGain(decodedBacking,guides,decodedBackingReference))
 
   }
-  const guideVolume=Math.min(1,Math.max(0,Number(guides.vocalVolume ?? .5)))
-  if(decodedVocalGuide && guideVolume>0) scheduleBuffer(ctx,ctx.destination,decodedVocalGuide,start,vocalGuideOffsetSec,vocalGuideGain(guideVolume))
-  decodedGuides.forEach(({track,buffer}) => {
-    const index = Number(track.partIndex)
-    if (guides.parts[index]) scheduleBuffer(ctx, ctx.destination, buffer, start, (track.syncOffsetMs || 0) / 1000, .29 / Math.max(1,decodedGuides.length), (index - 1.5) * .12)
-  })
+  scheduleRecordingVoices(runtime.recordingGuideState,start)
   if(prepareSeconds){
     runtime.preparationRecorder=recorder
     const playbackGeneration=runtime.playbackGeneration

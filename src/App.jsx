@@ -1103,7 +1103,7 @@ function VoiceSetup({ complete, go, back, existing, editMode, songSaves, returnT
       if(lifecycle!==sampleLifecycleRef.current)return
       setPermission('granted');setSampleStatus('preparing');setSeconds(0);setLevel(0);setSampleInput({rms:0,peak:0});sampleWaveformRef.current=null
       setSampleCountdown(3)
-      const started=await sampleSession.current.start({onFrame:frame=>{sampleWaveformRef.current=frame.waveform;setSampleInput({rms:frame.rms||0,peak:frame.peak||0});setLevel(frame.level);setSeconds(frame.elapsedSec || 0)},vocalGuideBlob,vocalGuideOffsetSec:sampleSong.vocalGuideOffsetSec??0,backingBlob,preparationBlob,preparationDuration:sampleSong.leadInDuration,onPreparation:remaining=>{if(lifecycle===sampleLifecycleRef.current)setSampleCountdown(remaining)},duration:sampleSong.duration})
+      const started=await sampleSession.current.start({onFrame:frame=>{sampleWaveformRef.current=frame.waveform;setSampleInput({rms:frame.rms||0,peak:frame.peak||0});setLevel(frame.level);setSeconds(frame.elapsedSec || 0)},vocalGuideBlob,vocalGuideSha256:sampleSong.provenance.vocalGuideSha256,vocalGuideOffsetSec:sampleSong.vocalGuideOffsetSec??0,backingBlob,preparationBlob,preparationDuration:sampleSong.leadInDuration,onPreparation:remaining=>{if(lifecycle===sampleLifecycleRef.current)setSampleCountdown(remaining)},duration:sampleSong.duration})
       if(!started||lifecycle!==sampleLifecycleRef.current){sampleSession.current.cancel();return}
       setPermission('granted');setSampleStatus('recording');setSeconds(0)
       timer.current = window.setInterval(() => setSeconds(getRecordingTimeline().elapsedSec),1000)
@@ -1508,7 +1508,7 @@ function Recorder({ go, submit, onRecordingStart, partId, projectTracks, layers,
       audioReady=true
       if(!startingRef.current)return
       inputLevels.current=[]
-      const started=await recordingSession.current.start({ onFrame: frame => { waveformRef.current=frame.waveform;setInputRms(frame.rms || 0);setLevel(frame.level); setPeak(frame.peak); setSeconds(frame.elapsedSec || 0);inputLevels.current.push(frame.level) }, vocalGuideBlob, monitoringTracks:guideTracks,monitorParts:guides.parts, backingBlob, backingReferenceBlob, duration:recordingWindow })
+      const started=await recordingSession.current.start({ onFrame: frame => { waveformRef.current=frame.waveform;setInputRms(frame.rms || 0);setLevel(frame.level); setPeak(frame.peak); setSeconds(frame.elapsedSec || 0);inputLevels.current.push(frame.level) }, vocalGuideBlob,vocalGuideSha256:project.audioSource?.vocalGuideSha256, monitoringTracks:guideTracks,monitorParts:guides.parts, backingBlob, backingReferenceBlob, duration:recordingWindow })
       if(!started||!recorderActiveRef.current||!startingRef.current)return
       onRecordingStart?.(); setStatus('recording'); setSeconds(0); timer.current = window.setInterval(() => setSeconds(getRecordingTimeline().elapsedSec), 100)
     } catch (e) { if(!startingRef.current)return;setMicrophoneFailure(audioReady); setPermissionDenied(audioReady&&isMicrophonePermissionError(e)); setError(audioReady?microphoneErrorMessage(e):e.message); setStatus('ready') }
