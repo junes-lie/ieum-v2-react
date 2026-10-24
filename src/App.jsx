@@ -4,6 +4,7 @@ import {demoScenario,demoStorageKey,demoProfile,demoReceivedInvitation,demoMatch
 import {WARM_SONG,WARM_ARRANGEMENT,WARM_LYRICS,musicDemoProject} from './projectMusic.js'
 import VoicePreferenceChoices, {preferenceValues} from './VoicePreferenceChoices.jsx'
 import Icon from './Icons.jsx'
+import GuideVolumeSlider from './GuideVolumeSlider.js'
 import { ProjectActionButton,HomeView,PartModules,MonitoringModule,ParticipantKnot,MyVoiceIcon,SongArtwork,TurntableFrame,recruitmentPreviewLayers,recordPalettePart,participantColor} from './IntegratedViews.jsx'
 import {discoveryProjects,matchesGenre} from './discovery.js'
 import {PUBLIC_COMPLETIONS,publicResultIdFromNavigation} from './publicCompletions.js'
@@ -38,7 +39,7 @@ import {
   stopRecording,
   getRecordingTimeline,
   loadProvidedAudio,
-  updateRecordingGuides
+  updateRecordingGuides, getGuideVolume, setGuideVolume, recordingGuides
 } from './audio.js'
 import { loadProjectBacking, projectAudioReference, assertProjectTrackAudio, recordingEntryPrompt } from './projectAudio.js'
 import { readLocalUserState, writeLocalUserState } from './projectService.js'
@@ -995,10 +996,9 @@ function VoiceSetup({ complete, go, back, existing, editMode, songSaves, returnT
   const [sampleStatus, setSampleStatus] = useState('ready')
   const [samplePlaying, setSamplePlaying] = useState(false)
   const [sampleGuidePlaying,setSampleGuidePlaying]=useState(false)
-  const [sampleGuideVolume,setSampleGuideVolume]=useState(.5)
+  const [sampleGuideVolume,setSampleGuideVolume]=useState(getGuideVolume)
   const sampleHasVocalGuide=Boolean(sampleSong.vocalGuideFile&&sampleSong.provenance.vocalGuideSha256)
-  const sampleGuideEnabled=sampleHasVocalGuide&&sampleGuideVolume>0
-  const sampleGuides=volume=>({backing:true,backingVolume:1,vocalVolume:sampleHasVocalGuide?volume:0,parts:[]})
+  const sampleGuides=volume=>({...recordingGuides({vocalAvailable:sampleHasVocalGuide}),vocalVolume:sampleHasVocalGuide?volume:0})
   const [sampleInput,setSampleInput]=useState({rms:0,peak:0})
   const sampleWaveformRef=useRef(null)
   const [sampleAudioFailure,setSampleAudioFailure]=useState(false)
@@ -1018,7 +1018,7 @@ function VoiceSetup({ complete, go, back, existing, editMode, songSaves, returnT
   const savedSampleUrlsRef=useRef(new Set())
   const changeSampleGuideVolume = volume => {
     if(!sampleHasVocalGuide)return
-    setSampleGuideVolume(volume)
+    setSampleGuideVolume(setGuideVolume(volume))
     if(!['recording','paused'].includes(sampleStatus))return
     try { updateRecordingGuides(sampleGuides(volume)); setError('') }
     catch(reason) { setSampleAudioFailure(true); setError(reason?.message || 'Guide를 재생하지 못했어요. 다시 선택해 주세요.') }
@@ -1103,7 +1103,6 @@ function VoiceSetup({ complete, go, back, existing, editMode, songSaves, returnT
       const [backingBlob,preparationBlob,vocalGuideBlob]=await Promise.all([loadProvidedAudio(sampleSong.backingFile,sampleSong.provenance.backingSha256),loadProvidedAudio(sampleSong.leadInFile,sampleSong.provenance.leadIn.sha256),sampleHasVocalGuide?loadProvidedAudio(sampleSong.vocalGuideFile,sampleSong.provenance.vocalGuideSha256):null])
       if(lifecycle!==sampleLifecycleRef.current)return
       loadingAudio=false
-      await requestMicrophone({voiceProcessing:sampleHasVocalGuide||sampleGuideEnabled ? true : null})
       if(lifecycle!==sampleLifecycleRef.current)return
       setPermission('granted');setSampleStatus('preparing');setSeconds(0);setLevel(0);setSampleInput({rms:0,peak:0});sampleWaveformRef.current=null
       setSampleCountdown(3)
@@ -1160,7 +1159,9 @@ function VoiceSetup({ complete, go, back, existing, editMode, songSaves, returnT
   const sampleScene=sampleStage&&!sampleReview
   const sampleLive=sampleStatus==='recording'
   const sampleLyricIndex=sampleStatus==='ready'||sampleStatus==='preparing'?0:Math.max(0,(sampleSong.lyrics||[]).findLastIndex(line=>seconds>=line.time))
-  const sampleLyricLines=[sampleSong.lyrics?.[sampleLyricIndex-1]?.text||'',sampleSong.lyrics?.[sampleLyricIndex]?.text||sampleSong.lyric||'',sampleSong.lyrics?.[sampleLyricIndex+1]?.text||'']
+  const sampleLyricLines=sampleStatus==='preparing'
+    ? ['',String(sampleCountdown??3),sampleSong.lyrics?.[0]?.text||sampleSong.lyric||'']
+    : [sampleSong.lyrics?.[sampleLyricIndex-1]?.text||'',sampleSong.lyrics?.[sampleLyricIndex]?.text||sampleSong.lyric||'',sampleSong.lyrics?.[sampleLyricIndex+1]?.text||'']
   const finalStage=step==='preferences'||step==='complete'
   useLayoutEffect(()=>{scrollToTop()},[step,sampleReview])
   const measuredRangeValid=Number.isFinite(range?.lowMidi)&&Number.isFinite(range?.highMidi)&&range.lowMidi<=range.highMidi
@@ -1242,7 +1243,7 @@ function VoiceSetup({ complete, go, back, existing, editMode, songSaves, returnT
             <div className="v2-vp-recording-guide-space" aria-hidden="true"/>
             <div className="recording-visual"><img className="v2-recording-thread-art" src="/artwork/figma-recording-thread.png" width="430" height="700" alt="" aria-hidden="true"/><ResonanceRecord projectId="voice-sample-stage" parts={[]} tracks={{}} layers={[]} seed={`voice-sample:${sampleSong.id}`} state={sampleLive?'recording':sampleStatus==='paused'?'paused':'rest'} level={level} label="샘플 녹음 배경 레코드 · 프로젝트 제출 아님" compact/><RecordingInflow active={sampleLive} partIndex={3} level={level} seed={`voice-sample:${sampleSong.id}`} waveformRef={sampleWaveformRef}/></div>
             <div className="recording-lyrics-scene"><div className="lyrics" aria-live="polite"><LiveLyricWave active={sampleLive} level={level} waveformRef={sampleWaveformRef}/>{sampleLyricLines.map((text,index)=><span key={index} data-sample-lyric={index===1||undefined} className={index===1?'active':''} aria-hidden={!text||undefined}>{text}</span>)}</div></div>
-            <label className="v2-guide-volume"><span><span>가이드<br/>보컬</span><output>{sampleHasVocalGuide?`${Math.round(sampleGuideVolume*100)}%`:"—"}</output></span><input aria-label="샘플 가이드 보컬 볼륨" title={!sampleHasVocalGuide?'이 샘플곡에는 분리된 가이드 보컬이 등록되지 않았어요. 반주는 기본 제공돼요.':undefined} type="range" min="0" max="100" step="1" value={Math.round(sampleGuideVolume*100)} style={{'--guide-volume':`${sampleGuideVolume*100}%`}} disabled={sampleBusy||!sampleHasVocalGuide} onChange={event=>changeSampleGuideVolume(Number(event.target.value)/100)}/></label>
+            <label className="v2-guide-volume"><span><span>가이드<br/>보컬</span><output>{sampleHasVocalGuide?`${Math.round(sampleGuideVolume*100)}%`:"—"}</output></span><GuideVolumeSlider aria-label="샘플 가이드 보컬 볼륨" title={!sampleHasVocalGuide?'이 샘플곡에는 분리된 가이드 보컬이 등록되지 않았어요. 반주는 기본 제공돼요.':undefined} value={sampleGuideVolume} disabled={sampleBusy||!sampleHasVocalGuide} onValueChange={changeSampleGuideVolume}/></label>
             <div className="v2-instrument" data-instrument-state={sampleStatus} aria-busy={sampleBusy}>
               <div className="recording-timeline v2-instrument-readout" aria-label="샘플 녹음 시간과 입력 상태"><div className="v2-recording-time" data-state={sampleStatus}><span className="v2-recording-indicator" aria-hidden="true"/><span data-sample-entry>{sampleStatus==='recording'?'REC':sampleStatus==='paused'?'일시정지':sampleStatus==='preparing'?`준비 ${sampleCountdown??3}`:'준비'}</span><b data-sample-time>{fmt(seconds)} / {fmt(sampleSong.duration)}</b></div><div className="meter-row" role={sampleLive?'meter':undefined} aria-label={sampleLive?'마이크 입력 레벨':undefined} aria-valuemin={sampleLive?0:undefined} aria-valuemax={sampleLive?100:undefined} aria-valuenow={sampleLive?Math.round(Math.min(1,Math.max(0,level))*100):undefined}><span>MIC {sampleInput.rms>0?`${Math.max(-96,Math.round(20*Math.log10(sampleInput.rms)))} dBFS`:'— dBFS'}</span><b>{sampleLive?(sampleInput.peak>.9?'CLIP':level>.08?'GOOD':'LOW'):sampleStatus==='paused'?'일시정지':'대기'}</b></div></div>
               <div className="recorder-controls">
@@ -1456,7 +1457,7 @@ function Recorder({ go, submit, onRecordingStart, partId, projectTracks, layers,
   const currentPart = parts.find(part => part.id === partId) || parts[0]
   const currentIndex = parts.findIndex(part => part.id === currentPart.id)
   const guideTracks = parts.flatMap((part,partIndex)=>part.id!==currentPart.id && finalTracks[part.id]?[{...finalTracks[part.id],partIndex}]:[])
-  const [guides, setGuides] = useState({ backing:true, parts:parts.map(part=>part.id!==partId), vocalVolume:.5 })
+  const [guides, setGuides] = useState(()=>recordingGuides({parts:parts.map(part=>part.id!==partId),vocalAvailable:Boolean(project.audioSource?.vocalGuideFile)}))
   const [status, setStatus] = useState('ready')
   const [seconds, setSeconds] = useState(0)
   const [level, setLevel] = useState(0)
@@ -1502,15 +1503,15 @@ function Recorder({ go, submit, onRecordingStart, partId, projectTracks, layers,
       setError(''); setMicrophoneFailure(false); setPermissionDenied(false);setReferencePlaying(false)
       document.querySelectorAll('audio').forEach(audio=>audio.pause())
       const backingBlob=await loadProjectBacking(project)
+      const backingReferenceBlob=project.audioSource?.backingLevelReferenceFile?await loadProvidedAudio(project.audioSource.backingLevelReferenceFile,project.audioSource.backingLevelReferenceSha256):backingBlob
       const vocalGuideBlob=project.audioSource?.vocalGuideFile?await loadProvidedAudio(project.audioSource.vocalGuideFile,project.audioSource.vocalGuideSha256):null
       if(!backingBlob)throw new Error('이 프로젝트에는 실제 반주가 아직 없어요. 오늘 같은 날 프로젝트에서 녹음해 주세요.')
       if(!startingRef.current)return
       recordingSourceRef.current=projectAudioReference(project)
       audioReady=true
-      await requestMicrophone({ voiceProcessing:(guides.backing || guides.parts.some(Boolean)) ? true : null })
       if(!startingRef.current)return
       inputLevels.current=[]
-      await startRecording({ onFrame: frame => { waveformRef.current=frame.waveform;setInputRms(frame.rms || 0);setLevel(frame.level); setPeak(frame.peak); setSeconds(frame.elapsedSec || 0);inputLevels.current.push(frame.level) }, guides, guideTracks, vocalGuideBlob, backingBlob, duration:recordingWindow })
+      await startRecording({ onFrame: frame => { waveformRef.current=frame.waveform;setInputRms(frame.rms || 0);setLevel(frame.level); setPeak(frame.peak); setSeconds(frame.elapsedSec || 0);inputLevels.current.push(frame.level) }, guides, guideTracks, vocalGuideBlob, backingBlob, backingReferenceBlob, duration:recordingWindow })
       onRecordingStart?.(); setStatus('recording'); setSeconds(0); timer.current = window.setInterval(() => setSeconds(getRecordingTimeline().elapsedSec), 100)
     } catch (e) { if(!startingRef.current)return;setMicrophoneFailure(audioReady); setPermissionDenied(audioReady&&isMicrophonePermissionError(e)); setError(audioReady?microphoneErrorMessage(e):e.message); setStatus('ready') }
     finally {startingRef.current=false;setRecordingBusy(false)}
@@ -1621,7 +1622,7 @@ function Recorder({ go, submit, onRecordingStart, partId, projectTracks, layers,
       if(stored.kind!=='temporary-recording' || stored.projectId!==project.id || stored.partId!==currentPart.id ||
         !(stored.blob instanceof Blob) || !stored.blob.size)throw new Error('Stored recording does not match the selected Project and Part')
       const restored={...stored,url:URL.createObjectURL(stored.blob)}
-      if(stored.guides)setGuides({...stored.guides,backing:true,vocalVolume:Number.isFinite(stored.guides.vocalVolume)?stored.guides.vocalVolume:.5})
+      if(stored.guides)setGuides({...stored.guides,backing:true,vocalVolume:getGuideVolume()})
       setDraft({...restored,id:draftId,userId:CURRENT_USER_ID}); setSeconds(restored.duration||0); setNoiseFloor(restored.noiseFloor||0); setStatus('review'); onDraftChange?.(true)
     }).then(()=>{if(active)setRestoreState('ready')}).catch(()=>{
       if(active){setRestoreState('error');setError('저장한 녹음을 불러오지 못했어요. 원본을 확인한 뒤 다시 녹음할 수 있어요.')}
@@ -1684,7 +1685,7 @@ function Recorder({ go, submit, onRecordingStart, partId, projectTracks, layers,
       <div className="recording-lyrics-scene">
       <div className="lyrics" aria-live="polite"><LiveLyricWave active={status==='recording'||status==='review'} level={status==='review'?(draft?.features?.energy||0):level} waveformRef={waveformRef} envelope={status==='review'?draft?.features?.envelope:undefined}/>{visibleLyrics.map((text,index)=><span key={index} className={index===1?'active':''} aria-hidden={!text||undefined}>{text}</span>)}</div>
       </div>
-      {<label className="v2-guide-volume"><span><span>가이드 보컬</span><output>{Math.round(guides.vocalVolume*100)}%</output></span><input aria-label="가이드 보컬 볼륨" disabled={status==='review'&&!reviewGuideSource} title={status==='review'&&!project.audioSource?.vocalGuideFile?'이 프로젝트에는 등록된 가이드 보컬이 없어요.':undefined} type="range" min="0" max="100" step="1" value={Math.round(guides.vocalVolume*100)} style={{'--guide-volume':`${guides.vocalVolume*100}%`}} onChange={event=>setGuides({...guides,vocalVolume:Number(event.target.value)/100})}/></label>}
+      {<label className="v2-guide-volume"><span><span>가이드 보컬</span><output>{Math.round(guides.vocalVolume*100)}%</output></span><GuideVolumeSlider aria-label="가이드 보컬 볼륨" disabled={!project.audioSource?.vocalGuideFile || (status==='review'&&!reviewGuideSource)} title={status==='review'&&!project.audioSource?.vocalGuideFile?'이 프로젝트에는 등록된 가이드 보컬이 없어요.':undefined} value={guides.vocalVolume} onValueChange={value=>setGuides(current=>({...current,vocalVolume:setGuideVolume(value)}))}/></label>}
       <div className="v2-instrument" data-instrument-state={submitting?'submitting':status} aria-busy={submitting}><div className="recording-timeline v2-instrument-readout" hidden={status==='review'} aria-label="녹음 시간과 입력 상태"><div className="v2-recording-time" data-state={status}><span className="v2-recording-indicator" aria-hidden="true"/><span data-recording-readout>{status==='recording'?'REC':status==='paused'?'일시정지':status==='review'?'확인':'준비'}</span><b>{fmt(seconds)} / {fmt(recordingWindow)}</b></div><div className="meter-row"><span>MIC {inputRms>0?`${Math.max(-96,Math.round(20*Math.log10(inputRms)))} dBFS`:"— dBFS"}</span><b className={peak>.9?'v2-input-clipping':''}>{peak>.9?'CLIP':level>.08?'GOOD':'LOW'}</b></div></div>{noiseFloor>0&&<p className={`noise-status ${noiseFloor>.08?'warning':''}`}>주변 소음 · {noiseFloor>.08?'높음 — Review에서 다시 녹음을 선택할 수 있어요.':'양호'} ({Math.round(noiseFloor*100)}%)</p>}
 
       {error && (microphoneFailure&&status!=='review'?<MicrophonePermissionNotice error={error} onRetry={begin} permissionDenied={permissionDenied}/>:<div className="permission-error" role="alert"><span>{error}</span>{restoreState==='error'&&<button className="secondary" data-action="draft-restore-retry" onClick={()=>{setRestoreState('loading');setRestoreAttempt(value=>value+1)}}>저장한 녹음 다시 불러오기</button>}</div>)}

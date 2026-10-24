@@ -757,3 +757,7 @@ body:has(.v2-vp-recording-screen)>.bottom-nav,body:has(.voice-screen[data-sample
 
 .v2-project-action[data-button-action=Record]>.v2-project-action-surface{border-image-source:url('/artwork/figma-record-gold-current.svg');}
 .voice-screen.v2-vp-recording-screen{height:100dvh;padding-bottom:env(safe-area-inset-bottom,0px);}
+
+/* Shared recording slider: keep the visual rail, enlarge only the hit area. */
+.recording-v2-screen .v2-guide-volume{z-index:6;}
+.recording-v2-screen .v2-guide-volume input{width:44px;touch-action:none;}

@@ -1,6 +1,21 @@
 import { analyzeAudioBuffer } from './voiceAnalysis.js'
 import { estimatePitch } from './pitch.js'
 
+// Session preference shared by profile and project recording entries.
+let guideVolumePreference = .5
+export function getGuideVolume() { return guideVolumePreference }
+export function setGuideVolume(value) {
+  guideVolumePreference = Number.isFinite(value) ? Math.min(1,Math.max(0,value)) : .5
+  return guideVolumePreference
+}
+export function recordingGuides({parts=[],vocalAvailable=true}={}) {
+  return {backing:true,backingVolume:1,parts:[...parts],vocalVolume:vocalAvailable?getGuideVolume():0}
+}
+
+export function vocalGuideGain(volume) {
+  return .58 * Math.min(1,Math.max(0,volume))
+}
+
 const AudioContextClass = window.AudioContext || window.webkitAudioContext
 const OfflineAudioContextClass = window.OfflineAudioContext || window.webkitOfflineAudioContext
 
@@ -235,8 +250,8 @@ export function backingPlaybackGain(buffer) {
   return gain
 }
 
-function recordingBackingGain(buffer,guides) {
-  return backingPlaybackGain(buffer)*Math.min(1,Math.max(0,Number.isFinite(guides?.backingVolume)?guides.backingVolume:1))
+function recordingBackingGain(buffer,guides,reference=buffer) {
+  return backingPlaybackGain(reference)*Math.min(1,Math.max(0,Number.isFinite(guides?.backingVolume)?guides.backingVolume:1))
 }
 
 function scheduleBuffer(ctx, destination, buffer, start, sourceOffsetSec = 0, gainValue = .72, panValue = 0, registerPlayback = true) {
@@ -268,16 +283,16 @@ function scheduleRecordingGuides(offsetSec = 0) {
   const start = ctx.currentTime
   if (state.guides.backing) {
     if (state.decodedBacking) {
-      if (offsetSec < state.decodedBacking.duration) scheduleBuffer(ctx, ctx.destination, state.decodedBacking, start, offsetSec, recordingBackingGain(state.decodedBacking,state.guides))
+      if (offsetSec < state.decodedBacking.duration) scheduleBuffer(ctx, ctx.destination, state.decodedBacking, start, offsetSec, recordingBackingGain(state.decodedBacking,state.guides,state.decodedBackingReference))
     }
   }
   const vocalVolume = Math.min(1,Math.max(0,Number(state.guides.vocalVolume ?? .5)))
   const vocalOffsetSec=offsetSec+(state.vocalGuideOffsetSec??0)
-  if(state.decodedVocalGuide && vocalVolume>0 && vocalOffsetSec<state.decodedVocalGuide.duration) scheduleBuffer(ctx,ctx.destination,state.decodedVocalGuide,start,vocalOffsetSec,.58*vocalVolume)
+  if(state.decodedVocalGuide && vocalVolume>0 && vocalOffsetSec<state.decodedVocalGuide.duration) scheduleBuffer(ctx,ctx.destination,state.decodedVocalGuide,start,vocalOffsetSec,vocalGuideGain(vocalVolume))
   state.decodedGuides.forEach(({track,buffer}) => {
     const index = Number(track.partIndex)
     const sourceOffset = offsetSec + (track.syncOffsetMs || 0) / 1000
-    if (state.guides.parts[index] && vocalVolume > 0 && sourceOffset < buffer.duration) scheduleBuffer(ctx, ctx.destination, buffer, start, sourceOffset, .58 * vocalVolume, (index - 1.5) * .12)
+    if (state.guides.parts[index] && sourceOffset < buffer.duration) scheduleBuffer(ctx, ctx.destination, buffer, start, sourceOffset, .29 / Math.max(1,state.decodedGuides.length), (index - 1.5) * .12)
   })
 }
 
@@ -289,7 +304,7 @@ function trackSourceOffset(track, buffer) {
   return milliseconds / 1000
 }
 
-export async function startRecording({ onFrame, guides = {backing:false,parts:[]}, guideTracks = [], vocalGuideBlob = null, vocalGuideOffsetSec = 0, backingBlob = null, preparationBlob = null, preparationDuration = 0, onPreparation, duration = 35 }) {
+export async function startRecording({ onFrame, guides = {backing:false,parts:[]}, guideTracks = [], vocalGuideBlob = null, vocalGuideOffsetSec = 0, backingBlob = null, backingReferenceBlob = null, preparationBlob = null, preparationDuration = 0, onPreparation, duration = 35 }) {
   if (runtime.preparationRecorder || (runtime.recorder && runtime.recorder.state !== 'inactive')) throw new Error('이미 녹음 중이에요.')
   const generation=runtime.microphoneGeneration
   const hasSpeakerGuides = Boolean(guides?.backing || guides?.parts?.some(Boolean))
@@ -301,7 +316,7 @@ export async function startRecording({ onFrame, guides = {backing:false,parts:[]
     throw error
   }
   const ctx = context()
-  let decodedGuides, decodedVocalGuide, decodedBacking, decodedPreparation
+  let decodedGuides, decodedVocalGuide, decodedBacking, decodedBackingReference, decodedPreparation
   try {
     await ctx.resume()
     decodedGuides = await Promise.all(guideTracks.filter(track => track?.blob).map(async track => {
@@ -312,6 +327,7 @@ export async function startRecording({ onFrame, guides = {backing:false,parts:[]
     decodedVocalGuide = vocalGuideBlob ? await decodeBlob(ctx,vocalGuideBlob) : null
     if(!Number.isFinite(vocalGuideOffsetSec)||vocalGuideOffsetSec<0||(decodedVocalGuide&&vocalGuideOffsetSec>=decodedVocalGuide.duration))throw new Error('보컬 가이드 시작 구간이 올바르지 않아요.')
     decodedBacking = backingBlob ? await decodeBlob(ctx, backingBlob) : null
+    decodedBackingReference = backingReferenceBlob ? await decodeBlob(ctx,backingReferenceBlob) : decodedBacking
     decodedPreparation = preparationBlob ? await decodeBlob(ctx, preparationBlob) : null
     if(decodedPreparation && (!decodedBacking || preparationDuration!==3 || Math.abs(decodedPreparation.duration-preparationDuration)>.02))throw new Error('준비 반주 구간이 올바르지 않아요.')
   } catch (error) {
@@ -321,6 +337,9 @@ export async function startRecording({ onFrame, guides = {backing:false,parts:[]
   }
   assertMicrophoneSession(generation,stream)
   if(runtime.preparationRecorder || (runtime.recorder&&runtime.recorder.state!=='inactive'))throw new Error('이미 녹음 중이에요.')
+  // All entry points stop earlier previews before scheduling one recording bed.
+  document.querySelectorAll('audio').forEach(audio=>audio.pause())
+  stopGuides()
   let recorder
   try {
   const chunks = []
@@ -349,22 +368,21 @@ export async function startRecording({ onFrame, guides = {backing:false,parts:[]
   const preparationStart=ctx.currentTime+.035
   const start = preparationStart + prepareSeconds
   runtime.syncOffsetSec = prepareSeconds ? 0 : Math.max(0, start - ctx.currentTime)
-  runtime.recordingGuideState = { guides:{...guides,parts:[...guides.parts]}, decodedGuides, decodedVocalGuide, vocalGuideOffsetSec, decodedBacking, duration:Math.max(.1,duration) }
+  runtime.recordingGuideState = { guides:{...guides,parts:[...guides.parts]}, decodedGuides, decodedVocalGuide, vocalGuideOffsetSec, decodedBacking, decodedBackingReference, duration:Math.max(.1,duration) }
   if (guides.backing) {
-    if (decodedBacking) scheduleBuffer(ctx, ctx.destination, decodedBacking, start, 0, recordingBackingGain(decodedBacking,guides))
+    if (decodedBacking) scheduleBuffer(ctx, ctx.destination, decodedBacking, start, 0, recordingBackingGain(decodedBacking,guides,decodedBackingReference))
 
   }
   const guideVolume=Math.min(1,Math.max(0,Number(guides.vocalVolume ?? .5)))
-  if(decodedVocalGuide && guideVolume>0) scheduleBuffer(ctx,ctx.destination,decodedVocalGuide,start,vocalGuideOffsetSec,.58*guideVolume)
+  if(decodedVocalGuide && guideVolume>0) scheduleBuffer(ctx,ctx.destination,decodedVocalGuide,start,vocalGuideOffsetSec,vocalGuideGain(guideVolume))
   decodedGuides.forEach(({track,buffer}) => {
     const index = Number(track.partIndex)
-    const volume = Math.min(1,Math.max(0,Number(guides.vocalVolume ?? .5)))
-    if (guides.parts[index] && volume > 0) scheduleBuffer(ctx, ctx.destination, buffer, start, (track.syncOffsetMs || 0) / 1000, .58 * volume, (index - 1.5) * .12)
+    if (guides.parts[index]) scheduleBuffer(ctx, ctx.destination, buffer, start, (track.syncOffsetMs || 0) / 1000, .29 / Math.max(1,decodedGuides.length), (index - 1.5) * .12)
   })
   if(prepareSeconds){
     runtime.preparationRecorder=recorder
     const playbackGeneration=runtime.playbackGeneration
-    if(guides.backing)scheduleBuffer(ctx,ctx.destination,decodedPreparation,preparationStart,0,recordingBackingGain(decodedBacking,guides))
+    if(guides.backing)scheduleBuffer(ctx,ctx.destination,decodedPreparation,preparationStart,0,recordingBackingGain(decodedBacking,guides,decodedBackingReference))
     try {
       let lastCount
       while(ctx.currentTime<start){

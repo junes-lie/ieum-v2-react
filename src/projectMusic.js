@@ -5,6 +5,8 @@ export const WARM_ARRANGEMENT = Object.freeze({
   kind:'project-arrangement',songId:WARM_SONG_ID,key:'원키',revision:'warm-unison-intro3-v1',duration:22,
   sourceSha256:'7ef11d5e7d574134154c7fddc3022654feec474ac5cba70ed24c606232ca0eb9',
   backingFile:'/audio/project-warm-unison-v1/backing.mp3',
+  backingLevelReferenceFile:'/audio/ai-warm-direct-v1/backing.mp3',
+  backingLevelReferenceSha256:'6bc86dc622c9dcc25f2496f59986009531389c07e01760339c6e3c315afbd736',
   backingSha256:'8120a09591a030c6e04019e6aa7bd5c44c29eac36df20617da489932c311c5e1',
   referenceFile:'/audio/project-warm-unison-v1/reference.mp3',
   referenceSha256:'b1c604ebffb9acb51ed385a0fbbdc2646db4cc7381c74211fef7d50caf5c73a3',
