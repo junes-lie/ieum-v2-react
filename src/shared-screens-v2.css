@@ -764,3 +764,26 @@ body:has(.v2-vp-recording-screen)>.bottom-nav,body:has(.voice-screen[data-sample
 /* Shared recording slider: keep the visual rail, enlarge only the hit area. */
 .recording-v2-screen .v2-guide-volume{z-index:6;}
 .recording-v2-screen .v2-guide-volume input{width:44px;touch-action:none;}
+
+/* Home 1888:44968: section boundaries own the 60px rhythm; headings hug copy. */
+.home-v2-screen>main{display:flex;flex-direction:column;gap:60px;padding:60px 0!important;}
+.home-v2-screen>main>:is(.v2-first-visit-guide,.v2-recruitment,.v2-recommended,.v2-recent){margin:0;padding:0 24px;}
+.home-v2-screen>main>.v2-completed{margin:0;padding:0 0 32px 24px;}
+.home-v2-screen .v2-first-visit-row{grid-template-columns:minmax(0,269px) 70px;column-gap:24px;justify-content:space-between;}
+.home-v2-screen .v2-first-visit-copy{gap:8px;}
+.home-v2-screen .v2-recruitment{gap:0;}
+.home-v2-screen .v2-recruitment-feature{gap:20px;}
+.home-v2-screen .v2-recruitment-feature>.v2-project-action{margin:0;}
+.home-v2-screen .v2-recommended-heading{gap:12px;}
+.home-v2-screen .v2-home-section-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;width:100%;min-height:0;padding:0;}
+.home-v2-screen .v2-heading-copy{display:flex;flex-direction:column;gap:4px;min-width:0;}
+.home-v2-screen .v2-home-section-heading h2{margin:0;font:500 24px/30px var(--font-interface);letter-spacing:-.12px;}
+.home-v2-screen .v2-heading-copy>.v2-section-note{margin:0;font:400 13px/19px var(--font-interface);}
+.home-v2-screen .v2-recommended .v2-heading-copy{max-width:300px;}
+.home-v2-screen .v2-completed>.v2-home-section-heading{width:calc(100% - 24px);padding:0;}
+.home-v2-screen .v2-scroll-control{flex:none;min-width:70px;min-height:70px;cursor:pointer;}
+.home-v2-screen .v2-scroll-art{position:relative;display:block;width:70px;height:70px;pointer-events:none;}
+.home-v2-screen .v2-home-section-heading>.v2-scroll-control-right{position:relative;inset:auto;display:grid;place-items:center;width:40px;min-width:40px;height:40px;min-height:40px;padding:0;}
+.home-v2-screen .v2-scroll-control-right .v2-scroll-art{transform:rotate(-90deg) scale(calc(40/70));transform-origin:center;}
+.home-v2-screen .v2-profile-register{position:relative;isolation:isolate;align-self:flex-start;width:max-content;max-width:100%;height:44px;min-height:44px;padding:0 24.5px;border:0;border-radius:999px;background:none;box-shadow:none;font:400 15px/22px var(--font-interface);color:var(--text-primary);}
+.home-v2-screen .v2-profile-register:before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;border-style:solid;border-color:transparent;border-width:0 24px;border-image:url('/artwork/completed-smoky-surface.svg') 0 24 fill / 0 24px / 0 stretch;}
