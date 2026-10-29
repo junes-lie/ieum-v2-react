@@ -12,23 +12,23 @@ const input={profile,parts,tracks,project,song,selectedPart:parts[2],currentUser
 const before=structuredClone(input)
 const result=evaluateProjectHarmony(input)
 assert.equal(result.method,PROJECT_HARMONY_METHOD)
-assert.equal(result.status,'compared');assert.equal(result.compared,2)
+assert.equal(result.status,'evidence-only');assert.equal(result.compared,2)
 assert.deepEqual(result.metrics.timbre.target,{brightness:.5,roughness:.5},'Compare against the PROJECT aggregate, not independent person pairs')
-assert.equal(result.metrics.timbre.score,95)
+assert.equal(result.metrics.timbre.score,null)
 assert.equal(result.metrics.role.score,100,'Registered unison arrangement declares melody; no pitch-register inference')
 assert.equal(result.metrics.taste.score,50,'One of the two project genre tags matches')
-assert.equal(result.score,82,'Equal mean of the three available reference indices, rounded only for display')
-assert.deepEqual(result.coverage,{available:3,total:3,keys:['timbre','role','taste']})
+assert.equal(result.score,null,'No unvalidated overall score from preference overlap and spectral similarity')
+assert.deepEqual(result.coverage,{available:2,total:3,keys:['role','taste']})
 assert.equal(result.provenance.target.kind,'submitted-track-aggregate')
 assert.ok(!result.reasons[0][1].includes('민')&&!result.reasons[0][1].includes('윤'),'Project-level explanation does not turn into a person comparison')
 assert.deepEqual(input,before,'Profile, Project, Tracks and registration metadata stay immutable')
 
 const changedDistribution={...tracks,a:track('a','one',features(.4,.6),hash('a')),b:track('b','two',features(.6,.4),hash('b'))}
-assert.equal(evaluateProjectHarmony({...input,tracks:changedDistribution}).metrics.timbre.score,95,'Same project centroid gives the same project comparison')
+assert.equal(evaluateProjectHarmony({...input,tracks:changedDistribution}).metrics.timbre.score,null,'Same centroid does not establish ensemble quality')
 const opposite=evaluateProjectHarmony({...input,profile:{...profile,sampleFeatures:features(0,0)},tracks:{a:track('a','one',features(1,1),hash('a'))}})
-assert.equal(opposite.metrics.timbre.score,0,'Descriptor distance covers the full declared 0–100 scale')
+assert.equal(opposite.metrics.timbre.score,null,'Dissimilarity is not a penalty or a harmony score')
 const same=evaluateProjectHarmony({...input,profile:{...profile,sampleFeatures:features(.5,.5)}})
-assert.equal(same.metrics.timbre.score,100)
+assert.equal(same.metrics.timbre.score,null)
 const dedup=evaluateProjectHarmony({...input,tracks:{...tracks,b:{...tracks.a,id:'project:b',partId:'b',participantId:'two'}}})
 assert.equal(dedup.compared,1,'Identical audio bytes copied to two Parts count as one source')
 assert.deepEqual(dedup.metrics.timbre.target,{brightness:.2,roughness:.8})
@@ -36,10 +36,10 @@ assert.deepEqual(result.provenance.target.audioSha256,[hash('a'),hash('b')],'The
 
 const reference={kind:'project-vocal-reference',features:features(.6,.5),projectId:'project',songId:'song',key:'원키',revision:'registered-v1',audioSha256:hash('f'),sourceFile:'/audio/registered-vocal.mp3'}
 const referenceResult=evaluateProjectHarmony({...input,tracks:{},projectReference:reference})
-assert.equal(referenceResult.metrics.timbre.score,100)
+assert.equal(referenceResult.metrics.timbre.score,null)
 assert.equal(referenceResult.provenance.target.kind,'project-vocal-reference')
 assert.match(referenceResult.reasons[0][1],/등록된 보컬 가이드/)
-assert.equal(evaluateProjectHarmony({...input,projectReference:reference}).metrics.timbre.score,95,'Actual project Track aggregate takes precedence over a guide')
+assert.equal(evaluateProjectHarmony({...input,projectReference:reference}).metrics.timbre.score,null,'No harmony score even with genuine Tracks')
 for(const patch of [{projectId:'other'},{songId:'other'},{key:'D'},{revision:'old'},{audioSha256:hash('e')},{sourceFile:'/wrong.mp3'},{kind:'mix'},{features:features(NaN,.5)}]){
  assert.equal(evaluateProjectHarmony({...input,tracks:{},projectReference:{...reference,...patch}}).metrics.timbre.score,null,'Foreign/stale/invalid reference cannot supply a real timbre index')
 }
@@ -49,12 +49,12 @@ for(const patch of [{kind:'voice-sample'},{songId:'other'},{key:'D'}])assert.equ
 for(const patch of [{demo:true},{origin:'presentation-provided-vocal-fixture'},{projectId:'other'},{partId:'wrong'},{id:'wrong'},{participantId:'wrong'},{submissionStatus:'pending'},{kind:'recording-draft'},{features:features(Infinity,.2)},{sourceProvenance:{audioSha256:'not-a-hash'}},{audioSourceRef:null},{audioSourceRef:{...tracks.a.audioSourceRef,key:'D'}},{audioSourceRef:{...tracks.a.audioSourceRef,revision:'stale'}},{audioSourceRef:{...tracks.a.audioSourceRef,sourceSha256:hash('f')}}]){
  assert.equal(evaluateProjectHarmony({...input,tracks:{a:{...tracks.a,...patch}}}).compared,0,'Only identity-bound, real submitted analysis contributes to the project')
 }
-assert.equal(evaluateProjectHarmony({...input,tracks:{a:{...tracks.a,demo:true}},projectReference:reference}).metrics.timbre.score,100,'Presentation fixtures never masquerade as independent measured people; declared guide fallback is explicit')
+assert.equal(evaluateProjectHarmony({...input,tracks:{a:{...tracks.a,demo:true}},projectReference:reference}).metrics.timbre.score,null,'Presentation fixtures never masquerade as independent measured people; declared guide fallback is explicit')
 
 const noPrefs=evaluateProjectHarmony({...input,profile:{sampleFeatures:features(.6,.5)}})
-assert.equal(noPrefs.score,95,'Unconfigured optional preferences do not penalize the profile')
-assert.equal(noPrefs.status,'partial')
-assert.deepEqual(noPrefs.coverage,{available:1,total:3,keys:['timbre']})
+assert.equal(noPrefs.score,null,'Unconfigured optional preferences do not penalize the profile')
+assert.equal(noPrefs.status,'evidence-only')
+assert.deepEqual(noPrefs.coverage,{available:0,total:3,keys:[]})
 assert.equal(noPrefs.metrics.role.score,null);assert.equal(noPrefs.metrics.taste.score,null)
 assert.equal(noPrefs.metrics.role.status,'unconfigured')
 const noTarget=evaluateProjectHarmony({...input,tracks:{},project:{...project,audioSource:undefined}})
@@ -92,13 +92,13 @@ for(const patch of [{rms:.0005},{peak:.001},{rms:NaN},{peak:Infinity},{durationS
  assert.equal(value.score,null,'Explicit inaudible levels or a too-short own sample cannot produce an index')
  assert.equal(value.coverage.available,0)
 }
-assert.equal(evaluateProjectHarmony({...input,profile:{...profile,sampleFeatures:{...features(.6,.5),rms:.001,peak:.01,durationSec:3}}}).score,82,'A three-second audible own sample is usable')
+assert.equal(evaluateProjectHarmony({...input,profile:{...profile,sampleFeatures:{...features(.6,.5),rms:.001,peak:.01,durationSec:3}}}).score,null,'A three-second audible own sample is usable')
 assert.equal(evaluateProjectHarmony({...input,tracks:{a:track('a','one',{...features(.2,.8),durationSec:.5,rms:.005,peak:.02},hash('a'))}}).compared,1,'The own-sample minimum does not incorrectly reject a shorter real submitted Track')
 assert.equal(evaluateProjectHarmony({...input,tracks:{a:track('a','one',silentFeatures,hash('a'))}}).metrics.timbre.score,null,'Silent project Tracks do not become a reference')
 assert.equal(evaluateProjectHarmony({...input,tracks:{},projectReference:{...reference,features:silentFeatures}}).score,null,'Silent registered guide analysis is unusable too')
 assert.equal(evaluateProjectHarmony({profile:null}).score,null,'Missing empty inputs do not crash the Detail render')
 assert.equal(evaluatePartFit({rangeData:{lowMidi:48,highMidi:72},part:{range:'C3–C5'}}).eligible,true,'Part range feasibility remains independent from project harmony')
-console.log('PASS project aggregate timbre/reference provenance, declared musical roles and project-song taste; missing/demo data excluded; optional preferences unpenalized; deterministic 0–100 reference indices and immutable input data')
+console.log('PASS project aggregate timbre/reference provenance, declared musical roles and project-song taste; missing/demo data excluded; optional preferences unpenalized; no unvalidated acoustic/overall percentage and immutable input data')
 
 // Keep approved, explicit demo examples separate from real registration.
 const {demoProfile,demoMatchPreview}=await import('../src/demoSession.js')
@@ -113,3 +113,18 @@ assert.deepEqual(demo,snapshot)
 for(const score of Object.values(demoMatchPreview(demo)))assert.ok(score>=0&&score<=100)
 assert.ok(demo.roles.length&&demo.genres.length&&demo.taste.length&&demo.sampleUrl&&demo.sampleFeatures)
 console.log('PASS registered demo96/92 remains an explicit example; copied demo descriptors cannot produce a real-project index')
+
+assert.ok(Math.abs(result.metrics.timbre.brightnessDistance-.1)<1e-9)
+assert.equal(result.metrics.timbre.roughnessDistance,0)
+assert.equal(same.score,null,'An identical timbre is not automatically a good ensemble')
+const open={id:'lower',name:'Lower Harmony',musicalRole:'harmony',status:'open',range:'C3–G3'}
+const lead={id:'lead',name:'Lead',participantId:'singer',musicalRole:'melody'}
+const complemented=evaluateProjectHarmony({...input,profile:{...profile,rangeData:{lowMidi:48,highMidi:60}},parts:[lead,open],selectedPart:open})
+assert.deepEqual(complemented.ensemble.addedRoles,['harmony'])
+assert.equal(complemented.ensemble.projectedFilledParts,2)
+assert.equal(complemented.ensemble.partFit.eligible,true)
+assert.equal(complemented.score,null,'Coverage is not listening quality')
+const taken={...open,participantId:'other'}
+assert.equal(evaluateProjectHarmony({...input,parts:[lead,taken],selectedPart:open}).ensemble.projectedFilledParts,2,'Do not add a person to an occupied Part')
+assert.deepEqual(evaluateProjectHarmony({...input,parts:[lead,{...open,name:'Tenor',musicalRole:undefined}],selectedPart:open}).ensemble.addedRoles,[],'Do not infer musical role from register')
+console.log('PASS ensemble role coverage and current Part range without similarity-as-harmony scoring')

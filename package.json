@@ -66,7 +66,8 @@
     "qa:project-music-catalog": "node qa/verify-project-music-catalog-browser.mjs",
     "qa:project-music-recovery": "node qa/verify-project-music-recovery.mjs",
     "qa:record-visibility": "node qa/verify-record-visibility-browser.mjs",
-    "qa:project-harmony": "node qa/verify-project-harmony.mjs"
+    "qa:project-harmony": "node qa/verify-project-harmony.mjs",
+    "qa:ensemble": "node qa/verify-home-part-recommendations.mjs && node qa/verify-project-harmony.mjs && node qa/verify-licensed-duet.mjs"
   },
   "dependencies": {
     "@fortawesome/free-regular-svg-icons": "^7.3.1",

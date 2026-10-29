@@ -1,0 +1,34 @@
+{
+  "duration": 397.2,
+  "sourceSha256": "1f2270ac18af16028e0a86488ce88898a652c5fa13895d4db18948acc5a4f4c4",
+  "backingFile": "/audio/slowly-coloring-us-v1/backing.mp3",
+  "backingSha256": "fd574d8e5a2feb7775d0a518428e6d8b7fcf82af74056e52e8e05f22cf8e3cf2",
+  "referenceFile": "/audio/presentation/slowly-coloring-us.mp3",
+  "referenceSha256": "1f2270ac18af16028e0a86488ce88898a652c5fa13895d4db18948acc5a4f4c4",
+  "combinedVocalFile": "/audio/slowly-coloring-us-v1/vocals.mp3",
+  "combinedVocalSha256": "240c71d510f687eaeb5fb4d883704de6a0ec6c6946849face57f2171ce72d346",
+  "provenance": {
+    "sourcePage": "https://musebox.co.kr/t/천천히-물드는-우리/",
+    "downloadUrl": "https://musebox.co.kr/api/tracks/fcd9f5d8-0c1e-4bdc-a71e-8821c5dc7cb4/download",
+    "license": "CC0-1.0",
+    "licenseEvidence": "Publisher page explicitly permits editing and redistribution; original download byte-identical to retained source",
+    "model": {
+      "sha256": "8289784cda38543ff431add4070662813311a8cccfc0112ca82f76d9dba2b4ca",
+      "modelHash": "53c4baf4d12c3e6c3831bb8f5b532b93",
+      "config": {
+        "compensate": 1.043,
+        "mdx_dim_f_set": 3072,
+        "mdx_dim_t_set": 8,
+        "mdx_n_fft_scale_set": 7680,
+        "primary_stem": "Vocals"
+      }
+    },
+    "decodedSourceSha256": "2efe9573a8cdfef68af2b9f7c96ebbdd896b70647fedd892c119f4dbf13fe6a9",
+    "separationResidualPeak": 0.0,
+    "exportGain": 1.0,
+    "listeningAcceptance": "pending",
+    "partGuideStatus": "not-separated-per-singer",
+    "partRangeStatus": "unverified",
+    "lyricTimingStatus": "unverified"
+  }
+}

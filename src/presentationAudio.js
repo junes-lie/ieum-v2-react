@@ -12,7 +12,9 @@ export const PRESENTATION_AUDIO = Object.freeze({
     receivedOn:'2026-10-23',
     source:'user-provided attachment',
     metadataArtist:'ybw3923',
-    licenseStatus:'unverified; CC0 not independently confirmed',
+    licenseStatus:'CC0-1.0 declared on publisher page; original download SHA256 verified',
+    sourcePage:'https://musebox.co.kr/t/천천히-물드는-우리/',
+    downloadUrl:'https://musebox.co.kr/api/tracks/fcd9f5d8-0c1e-4bdc-a71e-8821c5dc7cb4/download',
     intendedUse:'presentation playback only; independent participant Tracks remain separate'
   }
 })

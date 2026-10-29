@@ -62,6 +62,15 @@ export function recommendSampleSongs(rangeData, songs) {
     .sort((a,b)=>Number(b.fit.eligible)-Number(a.fit.eligible))
 }
 
+export function recommendOpenParts(rangeData, projects) {
+  return projects.flatMap(project=>(project.parts || [])
+    .filter(part=>!part.participantId && !part.participant && ['open','recruiting'].includes(part.status))
+    // Part ranges are registered in the Project's current key, not the solo Song range.
+    .map(part=>({projectId:project.id,partId:part.id,partName:part.name,key:project.key,
+      fit:evaluatePartFit({rangeData,part})}))
+    .filter(row=>row.fit.eligible))
+}
+
 export function openProjectRangeAvailability(rangeData, projects) {
   let matchingProjects=0,unverifiedProjects=0
   for(const project of projects){
@@ -73,12 +82,10 @@ export function openProjectRangeAvailability(rangeData, projects) {
   return {matchingProjects,unverifiedProjects}
 }
 
-// These are explainable reference indices, not probabilities, AI judgements or
-// singing-ability scores. Range feasibility remains in evaluatePartFit above.
-// v1: timbre = 100 × (1 - mean absolute brightness/roughness distance),
-// role = declared-role overlap, taste = declared project-tag coverage (or an
-// explicitly selected song). Overall equally averages ONLY available indices.
-export const PROJECT_HARMONY_METHOD = 'project-reference-indices-v1'
+// Similarity to a centroid does not predict a balanced ensemble. Keep measured
+// descriptors as evidence; do not turn closeness OR difference into harmony %.
+// Preference overlap remains separate from arrangement coverage and vocal quality.
+export const PROJECT_HARMONY_METHOD = 'ensemble-evidence-v2'
 const unit = value => Number.isFinite(value) && value >= 0 && value <= 1
 const measuredVoice = features => isSupportedVoiceAnalysis(features) &&
   ['brightness','roughness'].every(key=>unit(features[key])) && !String(features.fingerprint || '').startsWith('demo-') &&
@@ -188,7 +195,7 @@ export function evaluateProjectHarmony({profile,parts=[],tracks={},selectedPart,
         ? {kind:'submitted-track-aggregate',count:measured.length,expectedCount:members.length,audioSha256:measured.map(row=>row.audioSha256)}
         : {kind:'project-vocal-reference',count:1,projectId:project.id,songId:projectReference.songId,key:projectReference.key,revision:projectReference.revision,audioSha256:[projectReference.audioSha256],sourceFile:projectReference.sourceFile}
       const label=measured.length ? `프로젝트 제출 음성 ${measured.length}개를 합산한 평균` : '이 프로젝트에 등록된 보컬 가이드'
-      metrics.timbre=availableMetric(100*(1-(brightnessDistance+roughnessDistance)/2),`${label}과 내 샘플의 밝기·거칠기를 비교한 유사도예요.`,{brightnessDistance,roughnessDistance,target:{brightness:target.brightness,roughness:target.roughness},source})
+      metrics.timbre={...absentMetric(`${label}과 밝기·질감 차이를 확인했어요. 비슷하거나 다르다는 사실만으로 합주 균형을 판단하지 않아요.`,'evidence-only'),brightnessDistance,roughnessDistance,target:{brightness:target.brightness,roughness:target.roughness},source}
     } else metrics.timbre=absentMetric('이 프로젝트의 실제 제출 음성이나 확인된 보컬 가이드 분석값이 아직 없어요.')
 
     const ownRoles=roleKinds(list(profile.roles))
@@ -226,14 +233,28 @@ export function evaluateProjectHarmony({profile,parts=[],tracks={},selectedPart,
         ? '이 곡에 비교할 선호 장르·취향을 아직 선택하지 않아 취향 지수는 제외해요.'
         : '프로젝트 곡의 비교 가능한 장르·취향 정보가 없어 취향 지수는 제외해요.',!ownGenres.length && !ownTaste.length?'unconfigured':'unavailable')
   }
+  const selected=selectedPart && parts.find(part=>part.id===selectedPart.id)
+  const canFill=Boolean(selected && !selected.participantId && !selected.participant && ['open','recruiting'].includes(selected.status))
+  const rolesFor=part=>roleKinds([...list(part.musicalRoles),...list(part.musicalRole),...list(part.collaborationRoles),...list(part.role),...list(part.name)])
+  const occupied=parts.filter(part=>part.participantId || part.participant)
+  const coveredRoles=unique(occupied.flatMap(rolesFor))
+  const addedRoles=canFill?rolesFor(selected).filter(role=>!coveredRoles.includes(role)):[]
+  const ensemble={
+    filledParts:occupied.length,totalParts:parts.length,
+    projectedFilledParts:occupied.length+Number(canFill),
+    addedRoles,selectedPartId:selected?.id || null,
+    partFit:selected?evaluatePartFit({rangeData:profile?.rangeData,part:selected}):null,
+    // Occupancy describes arrangement coverage, never audible mix quality.
+    reason:canFill?`${selected.name}에 참여하면 ${occupied.length}/${parts.length}에서 ${occupied.length+1}/${parts.length} Part를 채워요.${addedRoles.length?' 아직 없는 '+addedRoles.map(role=>role==='melody'?'멜로디':'화음') .join('·')+' 역할을 더해요.':''}`:'참여할 OPEN Part를 선택하면 기존 구성에 더해지는 역할을 확인해요.'
+  }
   const available=Object.values(metrics).filter(metric=>Number.isFinite(metric.score))
-  const score=metrics.timbre.score!==null ? roundedIndex(available.reduce((sum,metric)=>sum+metric.score,0)/available.length) : null
+  const score=null // Requires validated arrangement-aware listening evidence, not an invented weighted mean.
   return {
-    method:PROJECT_HARMONY_METHOD,methodLabel:'실측·등록 정보 기반 참고 지수',
-    status:score===null?'insufficient':available.length===3?'compared':'partial',score,metrics,
+    method:PROJECT_HARMONY_METHOD,methodLabel:'Part·역할 보완 근거',
+    status:source?'evidence-only':'insufficient',score,metrics,ensemble,
     coverage:{available:available.length,total:3,keys:Object.keys(metrics).filter(key=>metrics[key].score!==null)},
     compared:measured.length,missing,
     provenance:{projectId:project.id || null,songId:project.songId || song.id || null,ownFingerprint:validOwn?profile.sampleFeatures.fingerprint || null:null,target:source},
-    reasons:[['음색',metrics.timbre.reason],['역할',metrics.role.reason],['취향',metrics.taste.reason]]
+    reasons:[['음색',metrics.timbre.reason],['역할',ensemble.reason+' '+metrics.role.reason],['취향',metrics.taste.reason]]
   }
 }
