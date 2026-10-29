@@ -84,7 +84,8 @@ export function SectionHeading({title,action,onAction}) {
 
 // One circular control for in-page scrolling and Home section navigation.
 export function CircularScrollControl({direction='down',label,onClick}) {
-  return <button className={`v2-scroll-control v2-scroll-control-${direction}`} type="button" aria-label={label} onClick={onClick}><span className="v2-scroll-art" aria-hidden="true"><img className="v2-scroll-ring" src="/artwork/first-visit-scroll-ring.svg" width="70" height="70" alt=""/><img className="v2-scroll-arrow" src="/artwork/first-visit-scroll-arrow.svg" width="26" height="26" alt=""/></span></button>
+  const ringSrc=direction==='right'?'/artwork/view-all-ring.svg':'/artwork/first-visit-scroll-ring.svg'
+  return <button className={`v2-scroll-control v2-scroll-control-${direction}`} type="button" aria-label={label} onClick={onClick}><span className="v2-scroll-art" aria-hidden="true"><img className="v2-scroll-ring" src={ringSrc} width="70" height="70" alt=""/><img className="v2-scroll-arrow" src="/artwork/first-visit-scroll-arrow.svg" width="26" height="26" alt=""/></span></button>
 }
 
 function HomeSectionHeading({title,note,onAction}) {
