@@ -136,7 +136,7 @@ export function HomeView({header,profile,startVoiceSetup,entries,songs,renderRec
   }):[]
   const open=entry=>entry.complete?openProject(entry):openSong(entry.song.id,entry.project.id)
   return <div className="screen figma-v2 home-v2-screen" data-screen-id="01">
-    <section className="v2-hero"><img className="v2-hero-artwork" src="/artwork/home-hero.webp" width="430" height="400" alt="" fetchPriority="high"/>{header}<div className="v2-hero-copy-scrim" aria-hidden="true"/><div className="v2-hero-copy"><h1>다른 목소리,<br/>하나의 노래.</h1><p>함께 부를 곡을 고르고,<br/>당신의 목소리를 더해보세요.</p></div></section>
+    <section className="v2-hero"><img className="v2-hero-artwork" src="/artwork/home-hero.webp" width="430" height="400" alt="" fetchPriority="high"/><img className="v2-hero-highlight-shade" src="/artwork/home-hero-highlight-shade.svg" width="430" height="400" alt="" aria-hidden="true"/>{header}<div className="v2-hero-copy-scrim" aria-hidden="true"/><div className="v2-hero-copy"><h1>다른 목소리,<br/>하나의 노래.</h1><p>함께 부를 곡을 고르고,<br/>당신의 목소리를 더해보세요.</p></div></section>
     <main>
       {!profile&&<section className="v2-first-visit-guide" aria-label="처음 방문한 사용자를 위한 안내">
         <div className="v2-first-visit-row">
