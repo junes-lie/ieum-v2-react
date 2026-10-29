@@ -14,7 +14,7 @@ const newRun=item=>item.entry?crypto.randomUUID():null
 export default function DemoStage({initialScenario}) {
   const [selected,setSelected]=useState(()=>resolveEntry(initialScenario))
   const [run,setRun]=useState(()=>safeRun(new URLSearchParams(location.search).get('run'))||newRun(resolveEntry(initialScenario)))
-  const [width,setWidth]=useState(430)
+  const [width,setWidth]=useState('auto')
   const [error,setError]=useState('')
   const [switching,setSwitching]=useState(false)
   const [snapshot,setSnapshot]=useState(null)
@@ -50,13 +50,13 @@ export default function DemoStage({initialScenario}) {
   const status=current?.status==='error'?'저장 상태를 확인하지 못했어요.':current?.status!=='ready'?'시작 상태 준비 중…':`${current.hasProfile?'프로필 있음':'프로필 없음'} · ${current.joined?'참여 확정':current.pendingInvitations?'받은 초대 대기':'미참여'}`
   const screenNames={home:'홈',detail:'곡·프로젝트 상세',projects:'내 프로젝트',workspace:'작업실',record:'녹음·Review',voice:'목소리 등록',finder:'보컬 찾기',search:'검색',my:'내 목소리',collection:'컬렉션',complete:'완성곡','vocal-profile':'보컬 프로필','create-project':'새 프로젝트'}
   const src=selected.id==='saved'?`?embedded=1${initialHash.current}`:`?scene=${selected.id}${run?'&run='+run:''}`
-  return <main className="demo-stage" style={{'--demo-width':`${width}px`}}>
+  return <main className="demo-stage" style={width==='auto'?undefined:{'--demo-width':`${width}px`}}>
     <aside className="demo-menu" aria-label="유저플로우 진입점">
       <a className="demo-brand" href="./">IEUM · PRESENTATION</a>
       <h1>시작 상황을 선택하세요.</h1>
       <nav aria-label="사용자 시작 상황">{entries.map((item,index)=><a key={item.id} href={href(item.id,null)} aria-current={selected.id===item.id?'page':undefined} aria-disabled={switching} onClick={event=>{event.preventDefault();choose(item)}}><span>{String(index+1).padStart(2,'0')}</span><span><strong>{item.label}</strong><small>{item.detail}</small></span></a>)}</nav>
       <p className="demo-entry-note">상황을 선택하면 해당 시작 상태로 열려요.<br/>화면을 이동해도 이 메뉴는 유지됩니다.</p>
-      <div className="demo-preview-caption"><div aria-label="모바일 화면 폭">{[390,430].map(size=><button key={size} aria-pressed={width===size} onClick={()=>setWidth(size)}>{size}</button>)}</div></div>
+      <div className="demo-preview-caption"><div aria-label="모바일 화면 폭">{['auto',390,430].map(size=><button key={size} aria-pressed={width===size} onClick={()=>setWidth(size)}>{size==='auto'?'자동':size}</button>)}</div></div>
 
       <p className="demo-profile-status" role="status" data-demo-profile-state={current?.status==='ready'?(current.hasProfile?'present':'absent'):current?.status||'loading'}>{status}</p>
       {error&&<p role="alert">{error}</p>}
