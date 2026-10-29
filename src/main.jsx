@@ -5,6 +5,7 @@ import './styles.css'
 import './design-system-v2.css'
 import './integration-v2.css'
 import './shared-screens-v2.css'
+import './typography-restored.css'
 import DemoStage from './DemoStage.jsx'
 
 const params=new URLSearchParams(location.search)
