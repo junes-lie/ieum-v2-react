@@ -26,7 +26,7 @@ export function ParticipantKnot({participantId,name,color}) {
 }
 
 export function MyVoiceIcon({profile}) {
-  return <span className="v2-profile-icon" data-profile-state={profile?'present':'absent'} aria-hidden="true">{profile?<img src="/artwork/identicon-teal-presentation.png" alt="" width="26" height="26"/>:<Icon name="user" size={20}/>}</span>
+  return <span className="v2-profile-icon" data-profile-state={profile?'present':'absent'} aria-hidden="true">{profile?<img src="/artwork/identicon-green-user-v2.webp" alt="" width="26" height="26"/>:<Icon name="user" size={20}/>}</span>
 }
 
 export function SongArtwork({song,className=''}) {
