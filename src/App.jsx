@@ -194,7 +194,7 @@ function VoiceIdentity({ identity, suppliedPreview = false }) {
   },[selectorKey])
   const displayed=selectorKey?(stored?.key===selectorKey && !stored.result?.disposed?stored.result:null):identity
   if (!displayed?.image && suppliedPreview && !selectorKey) return <figure className="voice-identity" data-artwork-kind="presentation-generated-identicon" aria-label="프로필 매듭 미리보기">
-    <img src="/artwork/identicon-teal-presentation.png" alt="내 프로필 매듭 · 시연용 이미지" style={{objectFit:'contain'}} />
+    <img src="/artwork/identicon-green-user-v2.webp" alt="내 프로필 매듭 · 시연용 이미지" style={{objectFit:'contain'}} />
     <figcaption>시연용 매듭 이미지 · 개인 음성 기반 분석 결과 아님</figcaption>
   </figure>
   if (!displayed?.image) return <figure className="voice-identity pending" aria-label="Voice Identity 생성 대기">

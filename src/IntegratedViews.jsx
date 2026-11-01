@@ -9,7 +9,7 @@ import {CURRENT_USER_ID} from './catalog.js'
 const participantKnots = {
   yoonseul: '/artwork/identicon-blue.png',
   doyoon: '/artwork/identicon-coral.png',
-  jisun: '/artwork/identicon-teal-presentation.png',
+  jisun: '/artwork/identicon-green-user-v2.webp',
   min: '/artwork/identicon-cream.png'
 }
 
