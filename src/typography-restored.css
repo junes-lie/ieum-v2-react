@@ -1,5 +1,6 @@
 /* IEUM/Typography: existing approved roles; contextual artwork lettering is preserved. */
 .figma-v2 {
+  --type-title-3-kr: 500 20px/28px var(--font-interface);
   --type-heading-en: 500 18px/24px var(--font-functional-en);
   --type-heading-kr: 600 18px/24px var(--font-interface);
   --type-body-kr: 400 15px/22px var(--font-interface);
@@ -46,3 +47,5 @@
 .detail-v2-screen .detail-project-copy strong { font:var(--type-label-en);letter-spacing:.02em; }
 .detail-v2-screen .detail-project-copy small { font:var(--type-meta-kr);letter-spacing:0; }
 .figma-v2 .presentation-fixture-note { font:var(--type-body-small-kr);letter-spacing:0; }
+
+.home-v2-screen .v2-first-visit-copy h2 { font:var(--type-title-3-kr);letter-spacing:-.005em; }

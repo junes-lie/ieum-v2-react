@@ -27,7 +27,7 @@ const server=await createServer({server:{middlewareMode:true},appType:'custom'})
 const host=document.createElement('div');document.body.append(host)
 const root=createRoot(host)
 try {
-  const {HomeView}=await server.ssrLoadModule('/src/IntegratedViews.jsx')
+  const {HomeView,RecentProjectRow}=await server.ssrLoadModule('/src/IntegratedViews.jsx')
   const clicks=[]
   const props={profile,entries:[{project,song,complete:false,openParts:project.parts.filter(p=>p.status==='open')}],songs:[song],
     renderRecord:()=>null,renderPreview:()=>null,openSong:(...args)=>clicks.push(args),openSearch:()=>{},formatDuration:()=>'',openCreateProject:()=>{},openProject:()=>{}}
@@ -40,7 +40,11 @@ try {
   assert.deepEqual(clicks,[[song.id,project.id,'lower']],'Open the recommended Project and Part, without joining')
   await act(()=>root.render(React.createElement(HomeView,{...props,profile:null})))
   assert.equal(host.querySelector('.v2-recommended').dataset.recommendationMode,'general')
-  assert.ok(!host.querySelector('.v2-song-count').textContent.includes('Lower Harmony'))
+  assert.equal(host.querySelector('.v2-song-count'),null,'Unregistered recommendations omit project counts')
+  const threePartEntry={song,project,complete:false,participantCount:0,submitted:0,partCount:3,openParts:[{name:'Tenor'},{name:'Upper Harmony'},{name:'Lower Harmony'}]}
+  await act(()=>root.render(React.createElement(RecentProjectRow,{entry:threePartEntry,renderRecord:()=>null,onOpen:()=>{}})))
+  assert.ok(host.querySelector('.v2-project-row-tall'))
+  assert.deepEqual([...host.querySelectorAll('.v2-role-tag')].map(n=>n.textContent),['테너','높은 화음','낮은 화음'])
   console.log('PASS whole-Song range ignored; OPEN Part eligibility, missing/occupied exclusion, Home Part label and targeted navigation; DOM only')
 } finally {
   await act(()=>root.unmount());await server.close();window.happyDOM.abort()
