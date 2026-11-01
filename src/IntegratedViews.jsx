@@ -140,8 +140,8 @@ export function HomeView({header,profile,startVoiceSetup,entries,songs,renderRec
     <main>
       {!profile&&<section className="v2-first-visit-guide" aria-label="처음 방문한 사용자를 위한 안내">
         <div className="v2-first-visit-row">
-          <div className="v2-first-visit-copy"><h2>한 곡의 빈 Part를<br/>함께 채워요.</h2><p>마음에 드는 곡의 빈 파트를 골라 함께 불러요.<br/>각자의 녹음이 모이면 하나의 노래가 완성돼요.<br/>참여할 프로젝트를 탐색해 보세요.</p></div>
-          <CircularScrollControl label="파트 모집 중으로 이동" onClick={()=>{
+          <div className="v2-first-visit-copy"><h2>한 곡을 나눠 부르고,<br/>함께 완성해요.</h2><p>마음에 드는 곡에서 내가 부를 파트를 골라요.<br/>각자의 목소리를 녹음해 한 곡을 완성해요.</p></div>
+          <CircularScrollControl label="함께 부를 곡 목록으로 이동" onClick={()=>{
             const target=document.getElementById('recruiting-projects')
             target?.focus({preventScroll:true})
             target?.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth',block:'start'})
@@ -149,7 +149,7 @@ export function HomeView({header,profile,startVoiceSetup,entries,songs,renderRec
         </div>
       </section>}
       <section className="v2-recruitment" id="recruiting-projects" tabIndex={-1}>
-        <div className="v2-recruitment-heading"><HomeSectionHeading title="파트 모집 중" note="함께할 파트를 찾아보세요." onAction={()=>openSearch('projects')}/></div>
+        <div className="v2-recruitment-heading"><HomeSectionHeading title="함께 부를 사람을 찾고 있어요" note="마음에 드는 곡에 목소리를 더해보세요." onAction={()=>openSearch('projects')}/></div>
         {selected?<div className="v2-recruitment-feature"><div className="v2-recruitment-media"><div className="v2-carousel-nav"><button aria-label="이전 모집 프로젝트" disabled={recruiting.length<2} onClick={()=>change(-1)}><img src={figmaAssets.imgFaFaChevronLeft} width="44" height="44" alt=""/></button><span aria-live="polite">{String(selectedIndex+1).padStart(2,'0')} / {String(recruiting.length).padStart(2,'0')}</span><button aria-label="다음 모집 프로젝트" disabled={recruiting.length<2} onClick={()=>change(1)}><img className="v2-carousel-next-arrow" src={figmaAssets.imgFaFaChevronLeft} width="44" height="44" alt=""/></button></div>
           <div className="v2-recruitment-player">
           <div className="v2-turntable-stage" role="group" aria-label="모집 프로젝트 레코드 탐색" data-direction={direction} onPointerDown={event=>{pointer.current={x:event.clientX,y:event.clientY};swiped.current=false}} onPointerUp={event=>{if(pointer.current){const dx=event.clientX-pointer.current.x,dy=event.clientY-pointer.current.y;if(Math.abs(dx)>45&&Math.abs(dx)>Math.abs(dy)){swiped.current=true;change(dx<0?1:-1)}}pointer.current=null}} onPointerCancel={()=>{pointer.current=null;swiped.current=false}} onClickCapture={event=>{if(swiped.current){event.preventDefault();event.stopPropagation();swiped.current=false}}}>
