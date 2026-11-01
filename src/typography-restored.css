@@ -1,5 +1,6 @@
 /* IEUM/Typography: existing approved roles; contextual artwork lettering is preserved. */
 .figma-v2 {
+  --type-heading-en: 500 18px/24px var(--font-functional-en);
   --type-heading-kr: 600 18px/24px var(--font-interface);
   --type-body-kr: 400 15px/22px var(--font-interface);
   --type-body-small-kr: 400 13px/19px var(--font-interface);
@@ -29,9 +30,10 @@
 .recording-v2-screen .v2-instrument-readout .v2-recording-time :is(span,b) { font:var(--type-meta-en);letter-spacing:.02em; }
 .recording-v2-screen .v2-recording-time:not([data-state=recording])>span:not(.v2-recording-indicator) { font:var(--type-meta-kr);letter-spacing:0; }
 .recording-v2-screen .record-review h2 { font:500 15px/22px var(--font-interface);letter-spacing:0; }
-/* Restore the pre-change header recipes without introducing a new logo style. */
-.home-v2-screen .wordmark { line-height:1.35; }
-.workspace-v2-screen .topbar-center { font:var(--type-body-kr);letter-spacing:0; }
+/* Shared IEUM header lettering: existing IEUM/Typography/Heading/EN. */
+.figma-v2 .wordmark,
+.workspace-v2-screen .topbar-center,
+.recording-v2-screen .topbar-center h1[lang=en] { font:var(--type-heading-en);letter-spacing:0; }
 .finder-screen .topbar-center { font:var(--type-heading-kr);letter-spacing:-.005em; }
 .figma-v2 .loading-state p { font:var(--type-body-kr);letter-spacing:0; }
 
