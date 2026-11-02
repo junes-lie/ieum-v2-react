@@ -815,21 +815,22 @@ body:has(.v2-vp-recording-screen)>.bottom-nav,body:has(.voice-screen[data-sample
 .home-v2-screen .v2-home-section-heading{position:relative;padding-right:56px;}
 .home-v2-screen .v2-home-section-heading>.v2-scroll-control-right{position:absolute;inset:-5px 0 auto auto;margin:0;}
 .home-v2-screen .v2-completed>.v2-home-section-heading>.v2-scroll-control-right{inset:-5px 0 auto auto;}
-.home-v2-screen .v2-recruitment{gap:8px;}
+.home-v2-screen .v2-recruitment{gap:2px;}
 .home-v2-screen .v2-recruitment-feature{gap:0;}
 .home-v2-screen .v2-turntable-live-record{left:23px;top:32.2px;width:185px;height:185px;}
-.home-v2-screen .v2-recruit-info{margin:-5px auto 0;min-height:58px;gap:12px;}
+.home-v2-screen .v2-recruit-info{margin:-2px auto 0;min-height:58px;gap:16px;}
+.home-v2-screen .v2-recruit-jacket{flex-basis:48px;width:48px;height:48px;}
 .home-v2-screen .v2-recruit-copy{gap:2px;}
 .home-v2-screen .v2-recruit-info h3{margin:0;font-size:32px;line-height:40px;}
 .home-v2-screen .v2-recruit-info h3:lang(ko){font:500 32px/40px var(--font-interface);letter-spacing:-.32px;}
 .home-v2-screen .v2-recruit-info p{display:flex;flex-wrap:wrap;gap:4px 12px;margin:2px 0 0;}
 .home-v2-screen .v2-recruit-info p span{margin:0;}
-.home-v2-screen .v2-recruitment .v2-carousel-nav{display:flex;justify-content:center;align-items:center;gap:0;width:auto;height:6px;min-height:6px;margin:32px 0 24px;padding:0;}
+.home-v2-screen .v2-recruitment .v2-carousel-nav{display:flex;justify-content:center;align-items:center;gap:0;width:auto;height:6px;min-height:6px;margin:16px 0 32px;padding:0;}
 .home-v2-screen .v2-carousel-nav button{display:grid;place-items:center;min-width:20px;width:20px;min-height:24px;height:24px;padding:0;border:0;background:none;border-radius:0;box-shadow:none;}
 .home-v2-screen .v2-carousel-nav button span{display:block;width:6px;height:6px;border-radius:50%;background:#69635d;}
 .home-v2-screen .v2-carousel-nav button[aria-current=true] span{background:#d6b895;}
 .home-v2-screen .v2-carousel-nav button:focus-visible{outline:1px solid var(--text-primary);outline-offset:0;border-radius:4px;}
-.home-v2-screen .v2-recommended{gap:24px;}
+.home-v2-screen .v2-recommended{gap:20px;}
 .home-v2-screen .v2-recommended-heading{gap:16px;}
 .home-v2-screen .v2-project-row{min-height:98px;padding:8px 12px;gap:12px;border:.5px solid var(--line-default);background:var(--bg-elevated);}
 .home-v2-screen .v2-project-row>.v2-project-thumbnail{display:block;flex:0 0 80px;width:80px;height:80px;}
@@ -860,3 +861,7 @@ body:has(.v2-vp-recording-screen)>.bottom-nav,body:has(.voice-screen[data-sample
 .home-v2-screen [data-dragging="true"],
 .home-v2-screen [data-dragging="true"] button {cursor:grabbing;}
 .home-v2-screen .v2-completed-carousel[data-dragging="true"] {scroll-snap-type:none;scroll-behavior:auto;}
+
+/* Latest manually adjusted Home section headings: Figma 4155:65994. */
+.home-v2-screen .v2-recent .v2-project-rows{margin-top:20px;gap:8px;}
+.home-v2-screen .v2-completed-carousel{margin-top:20px;}
