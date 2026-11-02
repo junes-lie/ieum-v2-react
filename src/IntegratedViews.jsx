@@ -120,6 +120,57 @@ export function RecentProjectRow({entry,renderRecord,onOpen}) {
   </button>
 }
 
+// Touch scroll stays native; mouse/pen dragging must not select text or drag images.
+function useCarouselDrag({onSwipe,scroll=false}) {
+  const gesture=useRef(null)
+  const moved=useRef(false)
+  const finish=(event,cancelled=false)=>{
+    const state=gesture.current
+    if(!state||state.id!==event.pointerId)return
+    const node=event.currentTarget
+    gesture.current=null
+    delete node.dataset.dragging
+    if(node.hasPointerCapture(event.pointerId))node.releasePointerCapture(event.pointerId)
+    if(cancelled){moved.current=false;return}
+    const dx=event.clientX-state.x,dy=event.clientY-state.y
+    if(!scroll&&Math.abs(dx)>45&&Math.abs(dx)>Math.abs(dy))onSwipe?.(dx<0?1:-1)
+    if(scroll&&moved.current){
+      const cards=[...node.querySelectorAll('.v2-completed-card')]
+      const max=node.scrollWidth-node.clientWidth
+      const stops=cards.map(card=>Math.min(max,Math.max(0,card.getBoundingClientRect().left-node.getBoundingClientRect().left+node.scrollLeft)))
+      const left=stops.reduce((best,stop)=>Math.abs(stop-node.scrollLeft)<Math.abs(best-node.scrollLeft)?stop:best,node.scrollLeft===0?0:stops[0]||0)
+      node.scrollTo({left,behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'})
+    }
+  }
+  return {
+    onDragStart:event=>event.preventDefault(),
+    onPointerDown:event=>{
+      if(!event.isPrimary||event.button!==0)return
+      moved.current=false
+      if(scroll&&event.pointerType==='touch')return
+      gesture.current={id:event.pointerId,x:event.clientX,y:event.clientY,left:event.currentTarget.scrollLeft}
+    },
+    onPointerMove:event=>{
+      const state=gesture.current
+      if(!state||state.id!==event.pointerId)return
+      const dx=event.clientX-state.x,dy=event.clientY-state.y
+      if(!moved.current&&Math.abs(dx)>8&&Math.abs(dx)>Math.abs(dy)){
+        moved.current=true
+        event.currentTarget.setPointerCapture(event.pointerId)
+        event.currentTarget.dataset.dragging='true'
+      }
+      if(moved.current){
+        event.preventDefault()
+        if(scroll)event.currentTarget.scrollLeft=state.left-dx
+      }
+    },
+    onPointerUp:event=>finish(event),
+    onPointerCancel:event=>finish(event,true),
+    onLostPointerCapture:()=>{gesture.current=null},
+    onClickCapture:event=>{if(moved.current){event.preventDefault();event.stopPropagation();moved.current=false}},
+  }
+}
+
 export function HomeView({header,profile,startVoiceSetup,entries,songs,renderRecord,renderPreview,openSong,openProject,openSearch,openCreateProject,formatDuration}) {
   const recruiting=entries.filter(entry=>!entry.complete&&entry.openParts.length).sort((a,b)=>Number(Boolean(b.project.presentationFinale))-Number(Boolean(a.project.presentationFinale)))
   const completed=entries.filter(entry=>entry.complete)
@@ -135,9 +186,9 @@ export function HomeView({header,profile,startVoiceSetup,entries,songs,renderRec
   const selected=recruiting[selectedIndex]
   const previous=recruiting[(selectedIndex-1+recruiting.length)%recruiting.length]
   const next=recruiting[(selectedIndex+1)%recruiting.length]
-  const pointer=useRef(null)
-  const swiped=useRef(false)
   const change=delta=>{setDirection(delta);setIndex(current=>current+delta)}
+  const recruitmentDrag=useCarouselDrag({onSwipe:change})
+  const completedDrag=useCarouselDrag({scroll:true})
   // Stable virtual positions retain each live Canvas as it travels between slots.
   // The outer two records enter/leave beyond the clipped carousel viewport.
   const slides=selected?Array.from({length:recruiting.length>1?5:1},(_,offset)=>{
@@ -164,7 +215,7 @@ export function HomeView({header,profile,startVoiceSetup,entries,songs,renderRec
         <div className="v2-recruitment-heading"><HomeSectionHeading title="함께 부를 사람을 찾고 있어요" note="마음에 드는 곡에 목소리를 더해보세요." onAction={()=>openSearch('projects')}/></div>
         {selected?<div className="v2-recruitment-feature"><div className="v2-recruitment-media">
           <div className="v2-recruitment-player">
-          <div className="v2-turntable-stage" role="group" aria-label="모집 프로젝트 레코드 탐색" data-direction={direction} onPointerDown={event=>{pointer.current={x:event.clientX,y:event.clientY};swiped.current=false}} onPointerUp={event=>{if(pointer.current){const dx=event.clientX-pointer.current.x,dy=event.clientY-pointer.current.y;if(Math.abs(dx)>45&&Math.abs(dx)>Math.abs(dy)){swiped.current=true;change(dx<0?1:-1)}}pointer.current=null}} onPointerCancel={()=>{pointer.current=null;swiped.current=false}} onClickCapture={event=>{if(swiped.current){event.preventDefault();event.stopPropagation();swiped.current=false}}}>
+          <div className="v2-turntable-stage" role="group" aria-label="모집 프로젝트 레코드 탐색" data-direction={direction} {...recruitmentDrag}>
             {recruiting.length>1&&<button className="v2-carousel-neighbor v2-carousel-neighbor-previous" aria-label={`이전 프로젝트 선택: ${previous.song.title}`} onClick={()=>change(-1)}/>}
             <div className="v2-recruit-record" data-project-id={selected.project.id}><TurntableFrame housing="/artwork/turntable-housing-current.png" control={renderPreview?.(selected)}>{slides.map(({slot,position,entry})=><RecordSlide key={position} projectId={entry.project.id} slot={slot}>{renderRecord(entry,{recruitment:true})}</RecordSlide>)}</TurntableFrame></div>
             {recruiting.length>1&&<button className="v2-carousel-neighbor v2-carousel-neighbor-next" aria-label={`다음 프로젝트 선택: ${next.song.title}`} onClick={()=>change(1)}/>}
@@ -172,7 +223,7 @@ export function HomeView({header,profile,startVoiceSetup,entries,songs,renderRec
       </section>
       <section className="v2-recommended" data-recommendation-mode={personalized?'range':'general'}><div className="v2-recommended-heading"><HomeSectionHeading title={personalized?"내 음역에 맞는 Part":"어떤 곡으로 시작할까요"} onAction={()=>openSearch('songs')} note={!hasRange?'내 목소리를 등록하면 음역에 맞는 파트를 추천해요.':personalized?`${profile.demo?'시연 프로필의':'등록된'} 음역 안에 OPEN Part가 있는 곡이에요.`:'음역이 확인된 OPEN Part가 없어 전체 곡을 보여드려요.'}/>{!profile&&startVoiceSetup&&<button className="secondary v2-profile-register" data-action="home-voice-setup" onClick={startVoiceSetup}>보이스 프로필 등록하기</button>}</div><div className="v2-song-grid">{recommended.slice(0,3).map(({song,matchingParts})=><button className="v2-song-card" key={song.id} onClick={()=>openSong(song.id,matchingParts[0]?.projectId,matchingParts[0]?.partId)}><SongArtwork song={song} className="v2-cover-slot"/><strong>{song.title}</strong><small>{song.artist}</small>{personalized&&<small className="v2-song-count">{`${matchingParts.map(part=>part.partName).filter(Boolean).filter((name,index,names)=>names.indexOf(name)===index).join(" · ")} · OPEN ${matchingParts.length}`}</small>}</button>)}</div></section>
       <section className="v2-recent"><HomeSectionHeading title="최근 열린 프로젝트" onAction={()=>openSearch('projects')}/><div className="v2-project-rows">{[...entries.filter(entry=>entry.isCreated),...entries.filter(entry=>!entry.isCreated&&!entry.publicExample)].slice(0,3).map(entry=><RecentProjectRow key={entry.project.id} entry={entry} renderRecord={renderRecord} onOpen={()=>open(entry)}/>)}</div></section>
-      <section className="v2-completed"><HomeSectionHeading title="완성곡 둘러보기" onAction={()=>openSearch('completed')}/><div className="v2-completed-carousel">{completed.length?completed.map(entry=>{
+      <section className="v2-completed"><HomeSectionHeading title="완성곡 둘러보기" onAction={()=>openSearch('completed')}/><div className="v2-completed-carousel" role="region" aria-label="완성곡 목록" tabIndex={0} {...completedDrag} onKeyDown={event=>{if(event.key==='ArrowLeft'||event.key==='ArrowRight'){event.preventDefault();const node=event.currentTarget;node.scrollBy({left:(event.key==='ArrowRight'?1:-1)*(node.querySelector('.v2-completed-card')?.offsetWidth+12||node.clientWidth),behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'})}}}>{completed.length?completed.map(entry=>{
         const duration=Number.isFinite(entry.mix?.duration)&&entry.mix.duration>0?formatDuration(entry.mix.duration):'—'
         return <button className={`v2-completed-card${entry.publicExample?' v2-completed-public-example':''}`} key={entry.project.id} data-project-id={entry.project.id} onClick={()=>openProject(entry)}>
           <div className={entry.publicExample?'v2-completed-example-artwork':undefined}>{entry.publicExample?<img src="/artwork/home-completed-vinyl-3d.png" width="228" height="228" alt=""/>:renderRecord(entry)}</div>

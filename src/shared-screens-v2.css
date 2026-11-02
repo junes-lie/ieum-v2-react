@@ -850,3 +850,13 @@ body:has(.v2-vp-recording-screen)>.bottom-nav,body:has(.voice-screen[data-sample
 .home-v2-screen .v2-project-row-tall .v2-open-roles{min-height:101px;}
 .home-v2-screen .v2-project-row-tall .v2-role-tags{min-height:80px;}
 .home-v2-screen .v2-home-preview-surface>svg{width:9px;height:9px;transform:translateX(.25px);}
+
+/* Carousel gestures: preserve native vertical touch scroll and normal button clicks. */
+.home-v2-screen .v2-turntable-stage,
+.home-v2-screen .v2-completed-carousel {user-select:none;-webkit-user-select:none;cursor:grab;}
+.home-v2-screen .v2-turntable-stage img,
+.home-v2-screen .v2-completed-carousel img {-webkit-user-drag:none;}
+.home-v2-screen .v2-completed-carousel {position:relative;overscroll-behavior-x:contain;}
+.home-v2-screen [data-dragging="true"],
+.home-v2-screen [data-dragging="true"] button {cursor:grabbing;}
+.home-v2-screen .v2-completed-carousel[data-dragging="true"] {scroll-snap-type:none;scroll-behavior:auto;}

@@ -13,7 +13,7 @@ if(!process.env.IEUM_BASE_URL){
 }
 await mkdir(output,{recursive:true})
 const browser=await chromium.launch({headless:true,executablePath:process.env.CHROMIUM_EXECUTABLE_PATH||undefined,args:['--no-sandbox','--no-zygote','--use-gl=angle','--use-angle=swiftshader','--enable-unsafe-swiftshader']})
-const page=await browser.newPage({viewport:{width:430,height:932},reducedMotion:'reduce'})
+const page=await browser.newPage({viewport:{width:430,height:932},reducedMotion:'reduce',hasTouch:true})
 const errors=[];page.on('pageerror',e=>errors.push(e.message));const results=[]
 const near=(actual,expected,message)=>assert.ok(Math.abs(actual-expected)<1.1,`${message}: ${actual} != ${expected}`)
 try{
@@ -41,6 +41,48 @@ try{
   const seen=new Set()
   for(let i=0;i<count;i++){await dots.nth(i).click();assert.equal(await dots.nth(i).getAttribute('aria-current'),'true');seen.add(await page.locator('.v2-recruit-record').getAttribute('data-project-id'))}
   assert.equal(seen.size,count);await dots.first().click()
+  // Real mouse gestures over the artwork: no selection, native image drag or accidental click.
+  const stage=page.locator('.v2-turntable-stage')
+  await stage.scrollIntoViewIfNeeded()
+  const sb=await stage.boundingBox()
+  const startProject=await page.locator('.v2-recruit-record').getAttribute('data-project-id')
+  await page.evaluate(()=>{window.__nativeDrags=0;document.addEventListener('dragstart',()=>window.__nativeDrags++)})
+  await page.mouse.move(sb.x+sb.width*.7,sb.y+90);await page.mouse.down()
+  await page.mouse.move(sb.x+sb.width*.25,sb.y+90,{steps:12});await page.mouse.up()
+  assert.notEqual(await page.locator('.v2-recruit-record').getAttribute('data-project-id'),startProject)
+  assert.equal(await page.evaluate(()=>window.getSelection().toString()),'')
+  assert.equal(await page.evaluate(()=>window.__nativeDrags),0)
+  assert.equal(await page.locator('.home-v2-screen').count(),1)
+  // Normal click still selects the neighbour after dragging.
+  const draggedProject=await page.locator('.v2-recruit-record').getAttribute('data-project-id')
+  await page.locator('.v2-carousel-neighbor-next').click()
+  assert.notEqual(await page.locator('.v2-recruit-record').getAttribute('data-project-id'),draggedProject)
+  const rail=page.locator('.v2-completed-carousel')
+  await rail.scrollIntoViewIfNeeded()
+  const rb=await rail.boundingBox(),cardCount=await rail.locator('.v2-completed-card').count()
+  assert.ok(cardCount>1,'Fixture must contain multiple real completed entries')
+  await page.mouse.move(rb.x+rb.width-35,rb.y+80);await page.mouse.down()
+  await page.mouse.move(rb.x+35,rb.y+80,{steps:16});await page.mouse.up()
+  await page.waitForFunction(()=>document.querySelector('.v2-completed-carousel').scrollLeft>100)
+  assert.equal(await page.locator('.home-v2-screen').count(),1,'Drag must not open completed song')
+  assert.equal(await page.evaluate(()=>window.getSelection().toString()),'')
+  await rail.focus();await page.keyboard.press('ArrowLeft')
+  await page.waitForFunction(()=>document.querySelector('.v2-completed-carousel').scrollLeft<2)
+  // Actual touch input uses the native horizontal scroller; vertical page scrolling stays available.
+  const cdp=await page.context().newCDPSession(page)
+  await cdp.send('Emulation.setTouchEmulationEnabled',{enabled:true,maxTouchPoints:1})
+  const touchBox=await rail.boundingBox(),tx=touchBox.x+touchBox.width-35,ty=touchBox.y+80
+  await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:tx,y:ty}]})
+  for(let i=1;i<=12;i++)await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:tx-(touchBox.width-70)*i/12,y:ty}]})
+  await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]})
+  await page.waitForFunction(()=>document.querySelector('.v2-completed-carousel').scrollLeft>100)
+  await cdp.detach()
+  await page.screenshot({path:`${output}/${scene}-${width}-completed-slide.png`})
+  // Click after a drag still opens the real completed item.
+  const visibleCard=await rail.evaluate(n=>[...n.children].findIndex(c=>c.getBoundingClientRect().left>=n.getBoundingClientRect().left-2))
+  await rail.locator('.v2-completed-card').nth(Math.max(0,visibleCard)).click()
+  await page.waitForSelector('.complete-screen')
+  await page.goto(url.href);await page.waitForSelector('.v2-project-action')
   await page.locator('.v2-project-action').click();await page.waitForSelector('.detail-screen')
   await page.getByRole('button',{name:'뒤로',exact:true}).click();await page.waitForSelector('.home-v2-screen')
   await page.getByRole('button',{name:'최근 열린 프로젝트 전체 보기',exact:true}).click();await page.waitForSelector('.search-screen,.search-v2-screen')
