@@ -39,6 +39,36 @@ try{
   await page.screenshot({path:`${output}/${scene}-${width}-viewport.png`})
   const style=await page.addStyleTag({content:'.bottom-nav{visibility:hidden!important}'})
   await page.screenshot({path:`${output}/${scene}-${width}.png`,fullPage:true});await style.evaluate(n=>n.remove())
+  if(scene==='first-visit'){
+   const registration=await page.evaluate(()=>{const r=s=>document.querySelector(s).getBoundingClientRect();const h=r('.v2-recommended .v2-home-section-heading'),b=r('.v2-profile-register'),n=r('.v2-recommended-registration p');return {titleGap:b.top-h.bottom,noteGap:n.top-b.bottom,gridGap:r('.v2-song-grid').top-n.bottom}})
+   near(registration.titleGap,16,'Recommended title to CTA');near(registration.noteGap,8,'CTA to supporting note');near(registration.gridGap,20,'Note to songs')
+  }
+  const songsRail=page.locator('.v2-song-grid')
+  await songsRail.scrollIntoViewIfNeeded()
+  const maxSongsScroll=await songsRail.evaluate(n=>n.scrollWidth-n.clientWidth)
+  if(scene==='first-visit')assert.ok(await songsRail.locator('.v2-song-card').count()>3,'Show catalogue beyond the original three cards')
+  if(maxSongsScroll>2){
+   const sr=await songsRail.boundingBox()
+   await page.mouse.move(sr.x+sr.width-30,sr.y+60);await page.mouse.down();await page.mouse.move(sr.x+25,sr.y+60,{steps:12});await page.mouse.up()
+   await page.waitForFunction(()=>document.querySelector('.v2-song-grid').scrollLeft>2)
+   assert.equal(await page.locator('.home-v2-screen').count(),1,'Recommended drag must not open song')
+   assert.equal(await page.evaluate(()=>window.getSelection().toString()),'')
+   await songsRail.evaluate(n=>n.scrollTo({left:0,behavior:'instant'}))
+   await songsRail.focus();await page.keyboard.press('ArrowRight')
+   await page.waitForFunction(()=>document.querySelector('.v2-song-grid').scrollLeft>2)
+   await songsRail.evaluate(n=>n.scrollTo({left:0,behavior:'instant'}))
+   await songsRail.scrollIntoViewIfNeeded()
+   const touch=await page.context().newCDPSession(page)
+   await touch.send('Emulation.setTouchEmulationEnabled',{enabled:true,maxTouchPoints:1})
+   const tr=await songsRail.boundingBox(),tx=tr.x+tr.width-30,ty=tr.y+60
+   await touch.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:tx,y:ty}]})
+   for(let i=1;i<=12;i++)await touch.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:tx-(tr.width-60)*i/12,y:ty}]})
+   await touch.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});await touch.detach()
+   await page.waitForFunction(()=>document.querySelector('.v2-song-grid').scrollLeft>2)
+  }
+  await songsRail.evaluate(n=>n.scrollTo({left:0,behavior:'instant'}))
+  await songsRail.locator('.v2-song-card').first().click();await page.waitForSelector('.detail-screen')
+  await page.getByRole('button',{name:'뒤로',exact:true}).click();await page.waitForSelector('.home-v2-screen')
   const dots=page.locator('.v2-carousel-nav button'),count=await dots.count()
   const seen=new Set()
   for(let i=0;i<count;i++){await dots.nth(i).click();assert.equal(await dots.nth(i).getAttribute('aria-current'),'true');seen.add(await page.locator('.v2-recruit-record').getAttribute('data-project-id'))}

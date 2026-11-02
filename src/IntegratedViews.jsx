@@ -121,7 +121,7 @@ export function RecentProjectRow({entry,renderRecord,onOpen}) {
 }
 
 // Touch scroll stays native; mouse/pen dragging must not select text or drag images.
-function useCarouselDrag({onSwipe,scroll=false}) {
+function useCarouselDrag({onSwipe,scroll=false,cardSelector='.v2-completed-card'}) {
   const gesture=useRef(null)
   const moved=useRef(false)
   const finish=(event,cancelled=false)=>{
@@ -135,7 +135,7 @@ function useCarouselDrag({onSwipe,scroll=false}) {
     const dx=event.clientX-state.x,dy=event.clientY-state.y
     if(!scroll&&Math.abs(dx)>45&&Math.abs(dx)>Math.abs(dy))onSwipe?.(dx<0?1:-1)
     if(scroll&&moved.current){
-      const cards=[...node.querySelectorAll('.v2-completed-card')]
+      const cards=[...node.querySelectorAll(cardSelector)]
       const max=node.scrollWidth-node.clientWidth
       const stops=cards.map(card=>Math.min(max,Math.max(0,card.getBoundingClientRect().left-node.getBoundingClientRect().left+node.scrollLeft)))
       const left=stops.reduce((best,stop)=>Math.abs(stop-node.scrollLeft)<Math.abs(best-node.scrollLeft)?stop:best,node.scrollLeft===0?0:stops[0]||0)
@@ -143,6 +143,7 @@ function useCarouselDrag({onSwipe,scroll=false}) {
     }
   }
   return {
+    onKeyDown:scroll?event=>{if(event.key==='ArrowLeft'||event.key==='ArrowRight'){event.preventDefault();const node=event.currentTarget;node.scrollBy({left:(event.key==='ArrowRight'?1:-1)*((node.querySelector(cardSelector)?.offsetWidth||node.clientWidth)+12),behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'})}}:undefined,
     onDragStart:event=>event.preventDefault(),
     onPointerDown:event=>{
       if(!event.isPrimary||event.button!==0)return
@@ -189,6 +190,7 @@ export function HomeView({header,profile,startVoiceSetup,entries,songs,renderRec
   const change=delta=>{setDirection(delta);setIndex(current=>current+delta)}
   const recruitmentDrag=useCarouselDrag({onSwipe:change})
   const completedDrag=useCarouselDrag({scroll:true})
+  const recommendedDrag=useCarouselDrag({scroll:true,cardSelector:'.v2-song-card'})
   // Stable virtual positions retain each live Canvas as it travels between slots.
   // The outer two records enter/leave beyond the clipped carousel viewport.
   const slides=selected?Array.from({length:recruiting.length>1?5:1},(_,offset)=>{
@@ -221,7 +223,18 @@ export function HomeView({header,profile,startVoiceSetup,entries,songs,renderRec
             {recruiting.length>1&&<button className="v2-carousel-neighbor v2-carousel-neighbor-next" aria-label={`다음 프로젝트 선택: ${next.song.title}`} onClick={()=>change(1)}/>}
           </div><div className="v2-recruit-info"><SongArtwork song={selected.song} className="v2-recruit-jacket"/><div className="v2-recruit-copy"><h3 lang={/[가-힣]/.test(selected.song.title)?'ko':'en'}>{selected.song.title}</h3><p><span className="v2-recruit-open">OPEN · {selected.openParts.map(part=>part.name).join(' · ')}</span><span>{selected.participantCount}명 참여</span></p></div></div></div></div><div className="v2-carousel-nav" role="group" aria-label="모집 프로젝트 선택">{recruiting.map((entry,position)=><button key={entry.project.id} type="button" aria-label={`${position+1}번째 프로젝트: ${entry.song.title}`} aria-current={position===selectedIndex?'true':undefined} onClick={()=>change(position-selectedIndex)}><span/></button>)}</div><ProjectActionButton label="프로젝트 보기" onClick={()=>open(selected)}/></div>:<p className="empty-proof">현재 모집 중인 프로젝트가 없어요.</p>}
       </section>
-      <section className="v2-recommended" data-recommendation-mode={personalized?'range':'general'}><div className="v2-recommended-heading"><HomeSectionHeading title={personalized?"내 음역에 맞는 Part":"어떤 곡으로 시작할까요"} onAction={()=>openSearch('songs')} note={!hasRange?'내 목소리를 등록하면 음역에 맞는 파트를 추천해요.':personalized?`${profile.demo?'시연 프로필의':'등록된'} 음역 안에 OPEN Part가 있는 곡이에요.`:'음역이 확인된 OPEN Part가 없어 전체 곡을 보여드려요.'}/>{!profile&&startVoiceSetup&&<button className="secondary v2-profile-register" data-action="home-voice-setup" onClick={startVoiceSetup}>보이스 프로필 등록하기</button>}</div><div className="v2-song-grid">{recommended.slice(0,3).map(({song,matchingParts})=><button className="v2-song-card" key={song.id} onClick={()=>openSong(song.id,matchingParts[0]?.projectId,matchingParts[0]?.partId)}><SongArtwork song={song} className="v2-cover-slot"/><strong>{song.title}</strong><small>{song.artist}</small>{personalized&&<small className="v2-song-count">{`${matchingParts.map(part=>part.partName).filter(Boolean).filter((name,index,names)=>names.indexOf(name)===index).join(" · ")} · OPEN ${matchingParts.length}`}</small>}</button>)}</div></section>
+      <section className="v2-recommended" data-recommendation-mode={personalized?'range':'general'}>
+        <div className="v2-recommended-heading">
+          <HomeSectionHeading title={personalized?"내 음역에 맞는 Part":"어떤 곡으로 시작할까요"} onAction={()=>openSearch('songs')} note={profile?(!hasRange?'내 목소리를 등록하면 음역에 맞는 파트를 추천해요.':personalized?`${profile.demo?'시연 프로필의':'등록된'} 음역 안에 OPEN Part가 있는 곡이에요.`:'음역이 확인된 OPEN Part가 없어 전체 곡을 보여드려요.'):undefined}/>
+          {!profile&&<div className="v2-recommended-registration">
+            {startVoiceSetup&&<button className="secondary v2-profile-register" data-action="home-voice-setup" onClick={startVoiceSetup}>보이스 프로필 등록하기</button>}
+            <p className="v2-section-note">내 목소리를 등록하면 음역과 취향에 맞는 곡을 추천해요.</p>
+          </div>}
+        </div>
+        <div className="v2-song-grid" role="region" aria-label="추천곡 목록" tabIndex={0} {...recommendedDrag}>
+          {recommended.map(({song,matchingParts})=><button className="v2-song-card" key={song.id} onClick={()=>openSong(song.id,matchingParts[0]?.projectId,matchingParts[0]?.partId)}><SongArtwork song={song} className="v2-cover-slot"/><strong>{song.title}</strong><small>{song.artist}</small>{personalized&&<small className="v2-song-count">{`${matchingParts.map(part=>part.partName).filter(Boolean).filter((name,index,names)=>names.indexOf(name)===index).join(" · ")} · OPEN ${matchingParts.length}`}</small>}</button>)}
+        </div>
+      </section>
       <section className="v2-recent"><HomeSectionHeading title="최근 열린 프로젝트" onAction={()=>openSearch('projects')}/><div className="v2-project-rows">{[...entries.filter(entry=>entry.isCreated),...entries.filter(entry=>!entry.isCreated&&!entry.publicExample)].slice(0,3).map(entry=><RecentProjectRow key={entry.project.id} entry={entry} renderRecord={renderRecord} onOpen={()=>open(entry)}/>)}</div></section>
       <section className="v2-completed"><HomeSectionHeading title="완성곡 둘러보기" onAction={()=>openSearch('completed')}/><div className="v2-completed-carousel" role="region" aria-label="완성곡 목록" tabIndex={0} {...completedDrag} onKeyDown={event=>{if(event.key==='ArrowLeft'||event.key==='ArrowRight'){event.preventDefault();const node=event.currentTarget;node.scrollBy({left:(event.key==='ArrowRight'?1:-1)*(node.querySelector('.v2-completed-card')?.offsetWidth+12||node.clientWidth),behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'})}}}>{completed.length?completed.map(entry=>{
         const duration=Number.isFinite(entry.mix?.duration)&&entry.mix.duration>0?formatDuration(entry.mix.duration):'—'
