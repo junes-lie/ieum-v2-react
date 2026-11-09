@@ -766,7 +766,7 @@ body:has(.v2-vp-recording-screen)>.bottom-nav,body:has(.voice-screen[data-sample
 .recording-v2-screen .v2-guide-volume input{width:44px;touch-action:none;}
 
 /* Home 4155:65994: approved section rhythm; semantic groups own their spacing. */
-.home-v2-screen>main{display:flex;flex-direction:column;gap:76px;padding:16px 0 64px!important;}
+.home-v2-screen>main{display:flex;flex-direction:column;gap:76px;padding:76px 0 64px!important;}
 .home-v2-screen>main>:is(.v2-first-visit-guide,.v2-recruitment,.v2-recommended,.v2-recent){margin:0;padding:0 24px;}
 .home-v2-screen>main>.v2-completed{margin:0;padding:0 0 0 24px;}
 .home-v2-screen .v2-first-visit-row{grid-template-columns:minmax(0,269px) 70px;column-gap:24px;justify-content:space-between;}
@@ -800,15 +800,15 @@ body:has(.v2-vp-recording-screen)>.bottom-nav,body:has(.voice-screen[data-sample
 .home-v2-screen .v2-hero-highlight-shade{position:absolute;inset:0;width:100%;height:400px;pointer-events:none;z-index:0;}
 
 /* Current Home composition — Figma 4155:65994 / row 4226:68837. */
-.home-v2-screen .v2-hero{min-height:556px;height:auto;overflow:hidden;padding-bottom:60px;}
+.home-v2-screen .v2-hero{min-height:556px;height:auto;overflow:hidden;padding-bottom:0;}
 .home-v2-screen .v2-hero-artwork{inset:0;width:100%;height:556px;object-fit:contain;object-position:center top;filter:none;opacity:1;}
 .home-v2-screen .v2-hero:before{content:"";position:absolute;inset:0 0 auto;height:64px;background:linear-gradient(#15110e,transparent);pointer-events:none;}
-.home-v2-screen .v2-hero:after{height:220px;bottom:auto;top:336px;background:linear-gradient(180deg,rgba(21,17,14,0),rgba(21,17,14,.1) 25%,rgba(21,17,14,.38) 50%,rgba(21,17,14,.74) 75%,#15110e);z-index:0;}
+.home-v2-screen .v2-hero:after{height:276px;bottom:auto;top:280px;background:linear-gradient(180deg,rgba(21,17,14,0),rgba(21,17,14,.1) 25%,rgba(21,17,14,.38) 50%,rgba(21,17,14,.74) 75%,#15110e);z-index:0;}
 .home-v2-screen .v2-hero>.topbar{padding-left:24px;}
 .home-v2-screen .v2-hero .wordmark{font:500 18px/24px var(--font-functional-en);letter-spacing:0;}
-.home-v2-screen .v2-intro-guide{position:relative;z-index:1;margin:312px 0 0;padding:0 24px;background:none;}
+.home-v2-screen .v2-intro-guide{position:relative;z-index:1;margin:282px 0 0;padding:0 24px;background:none;}
 .home-v2-screen .v2-first-visit-row{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;}
-.home-v2-screen .v2-first-visit-copy{display:flex;flex-direction:column;gap:12px;min-width:0;}
+.home-v2-screen .v2-first-visit-copy{display:flex;flex-direction:column;gap:8px;min-width:0;}
 .home-v2-screen .v2-first-visit-copy h2{margin:0;font:500 20px/28px var(--font-interface);letter-spacing:-.1px;}
 .home-v2-screen .v2-first-visit-copy p{font:400 15px/22px var(--font-interface);word-break:keep-all;}
 @media(max-width:400px){.home-v2-screen .v2-first-visit-row{gap:8px;}}
@@ -839,7 +839,7 @@ body:has(.v2-vp-recording-screen)>.bottom-nav,body:has(.voice-screen[data-sample
 .home-v2-screen .v2-thumbnail-sleeve{left:0;top:10px;width:60px;height:60px;}
 .home-v2-screen .v2-project-row>.v2-project-row-content{display:flex;flex-direction:row;align-items:flex-start;gap:20px;min-width:0;}
 .home-v2-screen .v2-project-song-info{display:flex;flex-direction:column;gap:4px;flex:1;min-width:0;}
-.home-v2-screen .v2-project-title-artist{display:flex;flex-direction:column;gap:4px;}
+.home-v2-screen .v2-project-title-artist{display:flex;flex-direction:column;gap:2px;}
 .home-v2-screen .v2-project-row strong{font:500 18px/24px var(--font-functional-en);}
 .home-v2-screen .v2-project-row strong:lang(ko){font:600 18px/24px var(--font-interface);letter-spacing:-.09px;}
 .home-v2-screen .v2-project-count{display:flex;align-items:center;gap:4px;min-height:24px;white-space:nowrap;}
@@ -874,3 +874,24 @@ body:has(.v2-vp-recording-screen)>.bottom-nav,body:has(.voice-screen[data-sample
 .home-v2-screen .v2-song-grid>.v2-song-card{flex:0 0 119px;width:119px;scroll-snap-align:start;}
 .home-v2-screen .v2-song-grid img{-webkit-user-drag:none;}
 .home-v2-screen .v2-song-grid[data-dragging="true"]{scroll-snap-type:none;scroll-behavior:auto;cursor:grabbing;}
+
+/* Figma 4155:65994 / 4303:75548: independent content groups, never equalized gaps. */
+.home-v2-screen[data-profile-state=present]>main{padding-top:12px!important;}
+.home-v2-screen[data-profile-state=present] .v2-intro-guide{margin-top:312px;padding-bottom:64px;}
+.home-v2-screen .v2-first-visit-row{position:relative;display:flex;flex-direction:column;align-items:stretch;gap:16px;}
+.home-v2-screen .v2-first-visit-row>.v2-scroll-control{position:absolute;right:0;bottom:0;}
+.home-v2-screen .v2-intro-registration{display:flex;flex-direction:column;align-items:flex-start;gap:12px;}
+.home-v2-screen .v2-intro-registration>p{margin:0;padding-right:70px;font:400 13px/19px var(--font-interface);color:var(--text-secondary);word-break:keep-all;}
+.home-v2-screen .v2-first-visit-copy p{margin:0;}
+.home-v2-screen .v2-recruit-info{display:flex;flex-direction:column;align-items:center;gap:12px;min-height:0;width:fit-content;max-width:100%;}
+.home-v2-screen .v2-recruit-song{display:flex;align-items:center;gap:16px;}
+.home-v2-screen .v2-recruit-copy{display:flex;flex-direction:column;gap:2px;}
+.home-v2-screen .v2-recruit-copy p{display:block;margin:0;font:400 13px/19px var(--font-interface);}
+.home-v2-screen .v2-recruit-roles{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:8px;font:400 13px/19px var(--font-interface);color:var(--text-secondary);}
+.home-v2-screen .v2-recruit-roles .v2-role-tag{flex:none;color:var(--text-primary);}
+.home-v2-screen .v2-recommended .v2-heading-copy{gap:8px;}
+.home-v2-screen .v2-song-grid>.v2-song-card{gap:8px;align-self:flex-start;height:auto;}
+.home-v2-screen .v2-song-card>.v2-song-info{display:flex;flex-direction:column;gap:2px;width:100%;min-width:0;}
+.home-v2-screen .v2-project-row>.v2-project-row-content{align-items:center;}
+.home-v2-screen .v2-project-row .v2-open-roles{align-self:stretch;}
+.home-v2-screen .v2-role-tags{flex:1;}

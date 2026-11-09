@@ -701,9 +701,9 @@ function HomeProjectPreview({entry}) {
   const tracks=submittedProjectTracks(project,entry.tracks)
   const reference=project.audioSource
   const hasReference=reference?.kind==='project-arrangement'&&reference.songId===project.songId&&reference.key===project.key&&Boolean(reference.referenceFile)&&/^[a-f0-9]{64}$/.test(reference.referenceSha256||'')
-  const available=tracks.length>0||hasReference
-  const kind=tracks.length?'current-mix':hasReference?'reference':'unavailable'
-  const label=tracks.length?'현재 Mix':'원곡 예시'
+  const available=Boolean(entry.mix?.url)||tracks.length>0||hasReference
+  const kind=entry.mix?.url?'completed-mix':tracks.length?'current-mix':hasReference?'reference':'unavailable'
+  const label=entry.mix?.url?'완성곡':tracks.length?'현재 Mix':'원곡 예시'
   const [status,setStatus]=useState('idle')
   const [error,setError]=useState('')
   const audioRef=useRef(null),requestRef=useRef(0),urlRef=useRef(null)
@@ -716,9 +716,11 @@ function HomeProjectPreview({entry}) {
     if(status==='playing'||status==='loading'){audio.pause();setStatus('idle');return}
     setStatus('loading');setError('')
     try{
-      if(!urlRef.current){
+      if(!audio.getAttribute('src')){
         let value
-        if(tracks.length){
+        if(entry.mix?.url){
+          value={url:entry.mix.url}
+        }else if(tracks.length){
           const backingBlob=await loadProjectBacking(project)
           if(request!==requestRef.current)return
           assertProjectTrackAudio(project,tracks)
@@ -729,7 +731,7 @@ function HomeProjectPreview({entry}) {
           value={url:URL.createObjectURL(blob)}
         }
         if(request!==requestRef.current){URL.revokeObjectURL(value.url);return}
-        urlRef.current=value.url;audio.src=value.url
+        urlRef.current=value.url.startsWith('blob:')?value.url:null;audio.src=value.url
       }
       await audio.play()
       if(request===requestRef.current)setStatus('playing')
@@ -738,14 +740,14 @@ function HomeProjectPreview({entry}) {
   return <><audio ref={audioRef} preload="none" data-home-preview-audio data-preview-kind={kind} onEnded={()=>setStatus('idle')} onError={()=>{requestRef.current++;setStatus('idle');setError('음원을 재생하지 못했어요.')}}/><button className="v2-home-preview" data-action="home-preview" data-preview-kind={kind} data-playback-state={status} disabled={!available} aria-busy={status==='loading'} aria-pressed={status==='playing'} aria-label={available?`${song.title} · ${label} ${status==='playing'?'일시정지':'미리듣기'}`:`${song.title} · 미리 들을 음원이 아직 없어요`} title={error||(!available?'아직 제출된 Track이나 등록된 원곡 예시가 없어요.':`${label} · ${status==='loading'?'준비 취소':status==='playing'?'일시정지':'미리듣기'}`)} onClick={toggle}><span className="v2-home-preview-surface" aria-hidden="true"><img src="/artwork/figma-player-play-surface.svg" width="48" height="48" alt=""/><Icon name={status==='playing'?'pause':'play'} size={9}/></span></button>{error&&<span className="v2-home-preview-error" role="alert">{error}</span>}</>
 }
 
-function Home({ startVoiceSetup, mainProject = PROJECT, openSong, openMyVoice, openSearch, layers, projectTracks, profile, mix, openCreateProject, openComplete, createdProjects = [], createdProjectTracks = {}, createdMixes = {}, openCreatedProject, joined = false, joinedPart = USER_PART_ID, candidateAccepted = false, invitedPerson }) {
+function Home({ openVocalProfile, startVoiceSetup, mainProject = PROJECT, openSong, openMyVoice, openSearch, layers, projectTracks, profile, mix, openCreateProject, openComplete, createdProjects = [], createdProjectTracks = {}, createdMixes = {}, openCreatedProject, joined = false, joinedPart = USER_PART_ID, candidateAccepted = false, invitedPerson }) {
   const entries=discoveryProjects({songs:SONGS,mainProject,mainTracks:projectTracks,mainMix:mix,createdProjects,createdTracks:createdProjectTracks,createdMixes,joined,joinedPart,currentUserName:profile?.name || CURRENT_USER_NAME,candidateAccepted,invitedPerson,publicResults:PUBLIC_COMPLETIONS})
   const renderRecord=(entry,{recruitment=false}={})=>{
     const preview=entry.publicExample||(!entry.isCreated&&!entry.project.voiceRecordRef&&!entry.submitted)
     const recordLayers=preview?recruitmentPreviewLayers(entry.project):entry.project.parts.map(part=>entry.tracks[part.id]?.layer||null)
     return <div className="v2-project-record-graphic" data-graphic-source={preview?'catalogue-preview':'project-tracks'}><ResonanceRecord counterRotate compact cataloguePreview={preview} recordRef={entry.project.voiceRecordRef} projectId={entry.project.id} parts={entry.project.parts} tracks={entry.tracks} layers={recordLayers} seed={entry.project.seed} label={preview?`${entry.song.title}, 프로젝트 예시 공명`:`${entry.song.title}, ${entry.submitted}/${entry.partCount} Track 제출`}/></div>
   }
-  return <HomeView startVoiceSetup={startVoiceSetup} header={<TopBar action={<MyVoiceIcon profile={profile}/>} actionLabel="마이보이스 열기" actionId="open-my-voice" onAction={openMyVoice}/>} profile={profile} entries={entries} songs={SONGS} openSong={openSong} openSearch={openSearch} openCreateProject={openCreateProject} formatDuration={fmt} openProject={entry=>entry.publicExample?openComplete(entry.project.id):entry.isCreated?openCreatedProject(entry.project.id):openComplete()} renderRecord={renderRecord} renderPreview={entry=><HomeProjectPreview key={`${entry.project.id}:${Object.values(entry.tracks).map(track=>track.id+':'+track.createdAt).join(',')}`} entry={entry}/>}/>
+  return <HomeView openVocalProfile={id=>id===CURRENT_USER_ID?openMyVoice():openVocalProfile(id)} startVoiceSetup={startVoiceSetup} header={<TopBar action={<MyVoiceIcon profile={profile}/>} actionLabel="마이보이스 열기" actionId="open-my-voice" onAction={openMyVoice}/>} profile={profile} entries={entries} songs={SONGS} openSong={openSong} openSearch={openSearch} openCreateProject={openCreateProject} formatDuration={fmt} openProject={entry=>entry.publicExample?openComplete(entry.project.id):entry.isCreated?openCreatedProject(entry.project.id):openComplete()} renderRecord={renderRecord} renderPreview={entry=><HomeProjectPreview key={`${entry.project.id}:${Object.values(entry.tracks).map(track=>track.id+':'+track.createdAt).join(',')}`} entry={entry}/>}/>
 }
 
 // Native touch/trackpad scrolling, plus desktop mouse dragging without selecting a card.
@@ -2470,7 +2472,7 @@ export default function App() {
   const voiceReturnPartId=detailContext.current[voiceReturnProject?.id] || (voiceReturnProject?.id===PROJECT_ID?readNavigationHint(`ieum:detail:${selectedSong.id}:part`,USER_PART_ID):'')
   const voiceReturnTarget=voiceReturnScreen==='detail'&&voiceReturnProject?{songTitle:selectedSong.title,projectName:voiceReturnProject.name,partName:voiceReturnProject.parts?.find(part=>part.id===voiceReturnPartId)?.name}:null
   let content
-  if (screen==='home') content=<Home invitedPerson={invitedPerson} startVoiceSetup={()=>go('voice')} openMyVoice={()=>go('my')} openSearch={openSearch} mainProject={mainProject} createdProjects={createdProjects} createdProjectTracks={createdProjectTracks} createdMixes={createdMixes} openCreatedProject={openCreatedProject} joined={joined} joinedPart={joinedPart} candidateAccepted={candidateAccepted} openSong={openSong} layers={layers} projectTracks={projectTracks} profile={profile} mix={mix} openCreateProject={()=>startCreateProject(null)} openComplete={openDiscoveredComplete}/>
+  if (screen==='home') content=<Home openVocalProfile={openVocalProfile} invitedPerson={invitedPerson} startVoiceSetup={()=>go('voice')} openMyVoice={()=>go('my')} openSearch={openSearch} mainProject={mainProject} createdProjects={createdProjects} createdProjectTracks={createdProjectTracks} createdMixes={createdMixes} openCreatedProject={openCreatedProject} joined={joined} joinedPart={joinedPart} candidateAccepted={candidateAccepted} openSong={openSong} layers={layers} projectTracks={projectTracks} profile={profile} mix={mix} openCreateProject={()=>startCreateProject(null)} openComplete={openDiscoveredComplete}/>
   else if (screen==='search') content=<SearchScreen entries={discoveryEntries} context={searchContext} openSong={openSong} openCreatedProject={openCreatedProject} openComplete={openDiscoveredComplete} openMyVoice={()=>go('my')} openSearch={openSearch} createdProjects={createdProjects} profile={profile}/>
   else if (screen==='detail') content=<Detail key={selectedInvitationId || 'discovery'} receivedInvitation={receivedInvitations.find(item=>item.id===selectedInvitationId)} respondToInvitation={respondToInvitation} invitationError={invitationError} go={go} back={()=>back('home')} song={selectedSong} profile={profile} join={join} layers={layers} projectTracks={projectTracks} songSaved={songSaved} toggleSongSave={toggleSongSave} openVocalProfile={openVocalProfile} createdProjects={createdProjects} createdProjectTracks={createdProjectTracks} createdMixes={createdMixes} onCreateProject={startCreateProject} onOpenCreatedProject={openCreatedProject} openMainWorkspace={openMainWorkspace} mainMix={mix} mainKeyLocked={mainKeyLocked} joined={joined} joinedPart={joinedPart} candidateAccepted={candidateAccepted} invitedPerson={invitedPerson} initialProjectId={selectedProjectId} onSelectProject={setSelectedProjectId} detailContext={detailContext} joinRegistered={(project,partId)=>{if(!profile||!project.audioSource||createdProjects.some(p=>p.id===project.id))return;const part=project.parts.find(p=>p.id===partId);if(!part||part.participantId)return;createProject({...project,ownerPartId:partId,parts:project.parts.map(p=>p.id===partId?{...p,participantId:CURRENT_USER_ID,participant:profile.name,status:'ready'}:p)})}}/>
   else if (screen==='song-browser') content=<SongBrowser back={()=>back('collection')} openSong={openSong} songSaves={songSaves} toggleSongSave={toggleSongSave} createdProjects={createdProjects} onCreateProject={startCreateProject}/>
