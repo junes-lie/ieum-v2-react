@@ -825,7 +825,7 @@ body:has(.v2-vp-recording-screen)>.bottom-nav,body:has(.voice-screen[data-sample
 .home-v2-screen .v2-recruit-info h3:lang(ko){font:500 32px/40px var(--font-interface);letter-spacing:-.32px;}
 .home-v2-screen .v2-recruit-info p{display:flex;flex-wrap:wrap;gap:4px 12px;margin:2px 0 0;}
 .home-v2-screen .v2-recruit-info p span{margin:0;}
-.home-v2-screen .v2-recruitment .v2-carousel-nav{display:flex;justify-content:center;align-items:center;gap:0;width:auto;height:6px;min-height:6px;margin:16px 0 32px;padding:0;}
+.home-v2-screen .v2-recruitment .v2-carousel-nav{display:flex;justify-content:center;align-items:center;gap:0;width:auto;height:6px;min-height:6px;margin:16px 0 24px;padding:0;}
 .home-v2-screen .v2-carousel-nav button{display:grid;place-items:center;min-width:20px;width:20px;min-height:24px;height:24px;padding:0;border:0;background:none;border-radius:0;box-shadow:none;}
 .home-v2-screen .v2-carousel-nav button span{display:block;width:6px;height:6px;border-radius:50%;background:#69635d;}
 .home-v2-screen .v2-carousel-nav button[aria-current=true] span{background:#d6b895;}
@@ -880,7 +880,7 @@ body:has(.v2-vp-recording-screen)>.bottom-nav,body:has(.voice-screen[data-sample
 .home-v2-screen[data-profile-state=present] .v2-intro-guide{margin-top:312px;padding-bottom:64px;}
 .home-v2-screen .v2-first-visit-row{position:relative;display:flex;flex-direction:column;align-items:stretch;gap:16px;}
 .home-v2-screen .v2-first-visit-row>.v2-scroll-control{position:absolute;right:0;bottom:0;}
-.home-v2-screen .v2-intro-registration{display:flex;flex-direction:column;align-items:flex-start;gap:12px;}
+.home-v2-screen .v2-intro-registration{display:flex;flex-direction:column;align-items:flex-start;gap:24px;}
 .home-v2-screen .v2-intro-registration>p{margin:0;padding-right:70px;font:400 13px/19px var(--font-interface);color:var(--text-secondary);word-break:keep-all;}
 .home-v2-screen .v2-first-visit-copy p{margin:0;}
 .home-v2-screen .v2-recruit-info{display:flex;flex-direction:column;align-items:center;gap:12px;min-height:0;width:fit-content;max-width:100%;}

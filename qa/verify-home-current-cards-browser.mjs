@@ -23,6 +23,13 @@ try{
   assert.equal(measures.body,width);near(measures.coverGap,8);near(measures.titleGap,2);near(measures.card.w,320);near(measures.card.h,254);near(measures.infoGap,4);near(measures.play.b,measures.media.b);assert.equal(measures.nestedButtons,0)
   for(let i=1;i<measures.sections.length;i++)near(measures.sections[i].y-measures.sections[i-1].b,76)
   assert.equal(await page.locator('[data-action=home-voice-setup]').count(),scene==='first-visit'?1:0)
+  const gaps=await page.evaluate(()=>{const box=s=>document.querySelector(s)?.getBoundingClientRect(),note=box('.v2-intro-registration>p'),register=box('.v2-profile-register'),nav=box('.v2-carousel-nav'),action=box('.v2-recruitment-feature>.v2-project-action');return{register:note?register.top-note.bottom:null,project:action.top-nav.bottom}})
+  if(scene==='first-visit')near(gaps.register,24)
+  near(gaps.project,24)
+  const credits=page.locator('.v2-completed-card').first().locator('.v2-completed-vocal')
+  assert.deepEqual(await credits.allTextContents(),['서윤','민서','지수','도윤'])
+  assert.equal(await page.locator('.v2-completed-card').first().locator('.v2-completed-vocals button').count(),0)
+
   await page.screenshot({path:`${output}/${scene}-${width}.png`,fullPage:true})
   const card=page.locator('.v2-completed-card').first(),play=card.locator('[data-action=home-preview]')
   await play.click();await page.waitForFunction(()=>document.querySelector('.v2-completed-card audio')?.currentTime>0)

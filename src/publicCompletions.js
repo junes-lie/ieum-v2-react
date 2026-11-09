@@ -6,6 +6,11 @@ const palette=[['soprano','#3b82f6'],['alto','#f16f61'],['tenor','#d6b895']]
 const covers=['/artwork/cover-pop.webp','/artwork/cover-folk.webp','/artwork/cover-rnb.webp']
 export const PUBLIC_COMPLETIONS=samples.map((sample,index)=>({
   publicExample:true,complete:true,isCreated:false,submitted:0,openParts:[],partCount:3,tracks:{},
+  // Approved card credits are presentation names, not registered account IDs.
+  displayCredits:[
+    {name:'서윤',knot:'blue'}, {name:'민서',knot:'coral'},
+    {name:'지수',knot:'green-user-v2'}, {name:'도윤',knot:'cream'}
+  ],
   song:{id:sample.id,title:sample.title,artist:'IEUM Originals',genre:sample.mood,cover:covers[index]},
   project:{id:`showcase:${sample.id}`,name:'완성곡 시연',seed:`ieum:showcase:${sample.id}`,key:sample.key,
     resultUrl:`https://ieum-v2-react.vercel.app/#complete?result=${encodeURIComponent('showcase:'+sample.id)}`,
