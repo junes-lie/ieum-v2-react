@@ -189,7 +189,7 @@
 
 - 사용자 “너 아예 이해못했어 완전빵점이야 원복시켜”. 4o는 기각됐으며 해당 다음 시작 지점은 폐기한다. 음역 반응 방식을 다시 활성화하거나 개선 대상으로 자동 재개하지 않는다.
 - 실행 빌드와 변경된 QA 두 파일을 실험 직전 `93e37fc3ab5005ccec27bdccb9aa27dc82716df9`의 Git blob으로 정확히 복원했다. 이번 추가 spectral 모듈과 전용 QA 3개는 현재 트리에서 제거하며 Git 이력은 남긴다. 기존 SiriWave 위상 분산·조형·스파클·진입점은 보존한다.
-- 기본 모드와 비교 UI도 실험 직전 상태로 복원한다. 새 원복 커밋을 Git 자동 배포하며 force push/수동 중복 배포는 하지 않는다.
+- 기본 모드와 비교 UI도 실험 직전 상태로 복원했다. 원복 커밋 `bc767005483cdb274d2f51ff2b98e1bc5f318bb9`, Git 자동 배포 `dpl_5YiAuFCR8dwsgAJmpdBcf7dUUjkU` READY. https://ieum-resonance-preview-gcd1p0cm0-junes-lie.vercel.app/ . 새 / 및 /repetition-candidate.html, 기본 alias https://ieum-resonance-preview.vercel.app/ 모두 HTTP 200이며 실험 직전 j4r0sybbj 배포의 HTML과 문자열 전체가 정확히 일치한다. 내장 JS까지 동일함을 확인했다. force push/수동 중복 배포는 하지 않았다.
 - 다음 시작: 복원된 기존 실행본 유지. 사용자의 추가 지시 없이 다른 모션 해석이나 재설계를 진행하지 않는다. 브라우저 실기기 검증 제한은 그대로이며 이번 원복을 새로운 미적 완성으로 보고하지 않는다.
 
 ## 5. 다음 시작 지점 / 범위
