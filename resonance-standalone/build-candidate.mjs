@@ -17,6 +17,7 @@ try {
  await fs.copyFile(path.join(root,'qa/experiments/music-box/motion.mjs'),path.join(dir,'src/music-box.mjs'));
  await fs.copyFile(path.join(root,'qa/experiments/music-box/siri-upper.mjs'),path.join(dir,'src/siri-upper.mjs'));
  await fs.copyFile(path.join(root,'qa/experiments/music-box/particle-flow.mjs'),path.join(dir,'src/particle-flow.mjs'));
+ await fs.copyFile(path.join(root,'qa/experiments/music-box/prepared-song.js'),path.join(dir,'src/prepared-song.js'));
  // Composite uses one parent per voice in both planar and raised modes.
  let profiles=await fs.readFile(path.join(dir,'src/profiles.js'),'utf8');
  profiles=profiles.replace("export {referenceContourCount,referenceThetaStart} from './referenceContours.js';", "export {referenceThetaStart} from './referenceContours.js';export const referenceContourCount=24;");
@@ -145,6 +146,7 @@ if(new URLSearchParams(location.search).get('composite')==='1'&&view){
  for(const name of ['app.js','profiles.js','visuals.js']){const file=path.join(dir,'src',name);let code=await fs.readFile(file,'utf8');code="import {resonanceOptions} from './entry-options.js';\n"+code.replaceAll('new URLSearchParams(location.search)','resonanceOptions()');await fs.writeFile(file,code);}
  let entryApp=await fs.readFile(path.join(dir,'src/app.js'),'utf8');
  entryApp+=`\nif(view&&resonanceOptions().get('composite')==='1'){const nav=document.createElement('nav');nav.setAttribute('aria-label','높이 비교');nav.style.cssText='display:flex;gap:8px;flex-wrap:wrap;margin:12px 0';for(const [label,value] of [['현재 높이','original'],['낮은 높이 비교','soft']]){const a=document.createElement('a'),url=new URL(location.href);url.searchParams.set('heightStudy',value);a.href=url.href;a.textContent=label;a.style.cssText='padding:8px 12px;color:inherit;border:1px solid #6c655b;border-radius:6px';if(resonanceOptions().get('heightStudy')===value)a.setAttribute('aria-current','page');nav.append(a);}const old=document.createElement('a');old.href='./IEUM-Resonance.html';old.textContent='기존 복구 실행본 ↗';old.style.cssText='padding:8px;color:inherit';nav.append(old);document.querySelector('#stage').before(nav);}\n`;
+ entryApp="import {installPreparedSong} from './prepared-song.js';\n"+entryApp+"\nwindow.ieumPreparedSong=installPreparedSong({transport,voices,note,updatePlay,format});\n";
  await fs.writeFile(path.join(dir,'src/app.js'),entryApp);
  const result=await build({entryPoints:[path.join(dir,'src/app.js')],nodePaths:[path.join(root,'node_modules')],bundle:true,format:'iife',minify:true,write:false,legalComments:'inline'});
  let html=await fs.readFile(path.join(root,'src/index.html'),'utf8');

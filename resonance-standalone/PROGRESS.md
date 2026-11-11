@@ -245,6 +245,13 @@
 
 - 4u 배포 확인: c8bf52a28f6efb7ccb03f4029b603332b816f404, dpl_BbixJHY9tZGCV7NnSxB1uwjMhvVg READY. https://ieum-resonance-preview-nfqu9wlmt-junes-lie.vercel.app/ HTTP200. 응답 내 수정된 planarBase 매개변수 존재, 잘못된 flat 매개변수 부재 확인. Git 자동 배포 1회, 수동 중복 없음.
 
+## 4v. 준비된 ‘오늘 같은 날’ 음원 연결
+- 통합 브랜치 src/projectMusic.js에서 ‘천천히 함께’의 최신 제목이 ‘오늘 같은 날’임을 확인했다. 등록 reference.mp3를 재사용한다. 원본 blob 1d46275f85673edf6224b9362ecc6dc678581475, SHA256 b1c604ebffb9acb51ed385a0fbbdc2646db4cc7381c74211fef7d50caf5c73a3, ffprobe 22.047347초. 기존 React/통합 브랜치는 읽기만 했다.
+- standalone/public/audio/today-like-this/reference.mp3로 동일 blob을 복사. 기본 재생 클릭 시 불러오고 ‘오늘 같은 날 · 22초’ 선택 버튼 추가. AudioContext decode 후 기존 재생/정지/탐색/반복을 사용한다.
+- 전체 믹스 1개를 한 번만 재생하고 분석값을 활성 색에 공유한다. 개인별 보컬 분리로 표시하지 않는다. 합성 데모/파일 업로드 전환 유지. 기존 선·입자 셰이더 및 모션은 변경하지 않았다.
+- npm run build, GLSL 회귀 컴파일 통과. qa/prepared-song.mjs의 첫 재생 로딩·한 소스·분석 공유·캐시·데모 복귀 검사 통과(모의 Transport). 실제 파일 해시/길이 검증과 모의 연결 검사를 실제 브라우저 청취/오디오 반응 검증으로 주장하지 않는다.
+- 다음: 새 Preview에서 재생하여 음원 청취·반응·정지/탐색/반복과 개인 파일 전환 확인. Chromium 소켓 권한 제한으로 실제 브라우저 검증은 미완료.
+
 ## 5. 다음 시작 지점 / 범위
 
 1. 최신 한 겹 합성본에서 이어간다. 실제 Chromium·모바일 에뮬레이션 렌더와 회귀 검증은 위 범위까지 수행했다. 예전 두 겹 또는 2D 두 겹/3D 한 겹으로 돌아가지 않는다.

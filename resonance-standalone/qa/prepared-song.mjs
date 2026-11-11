@@ -1,0 +1,13 @@
+import assert from 'node:assert/strict';
+import {installPreparedSong} from './experiments/music-box/prepared-song.js';
+const nodes=new Map();const node=()=>({disabled:false,textContent:'',value:'',parentElement:{before(){}},setAttribute(){},onclick(){},onchange(){}});
+for(const id of ['#play','#demo','#seek','#duration','#source-label','#voice-count'])nodes.set(id,node());
+globalThis.document={querySelector:s=>nodes.get(s),createElement:node};let fetches=0;
+globalThis.fetch=async()=>{fetches++;return{ok:true,arrayBuffer:async()=>new ArrayBuffer(4)}};
+const voices=Array.from({length:4},(_,i)=>{const m=node(),f=node();return{active:i<3,energy:0,card:{querySelector:s=>s==='.file'?f:m}}});
+const transport={items:[],duration:22,playing:false,ready:async()=>{},pause(){this.playing=false;},ctx:{decodeAudioData:async()=>({duration:22})},setItems(items){this.items=items;},tick(){this.items[0].energy=.4;this.items[0].bands={low:.3,mid:.4,high:.2};}};
+nodes.get('#play').onclick=()=>{transport.playing=!transport.playing;};
+const app=installPreparedSong({transport,voices,note(){},updatePlay(){},format:()=> '0:22'});
+await nodes.get('#play').onclick();assert.equal(transport.playing,true);assert.equal(transport.items.length,1);assert.equal(fetches,1);transport.tick(.016);assert.equal(voices[2].energy,.4);assert.equal(voices[3].energy,0);
+transport.setItems(voices);assert.equal(transport.items.length,1);await app.select();assert.equal(fetches,1);nodes.get('#demo').onclick();assert.equal(app.shared,false);transport.setItems(voices);assert.equal(transport.items.length,4);
+console.log('Prepared song: first-play load, one audible item, shared analysis, cache and demo exit passed (mock transport; not browser audio).');
