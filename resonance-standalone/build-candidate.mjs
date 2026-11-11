@@ -15,7 +15,6 @@ try {
  await fs.copyFile(path.join(root,'qa/experiments/blue-repetition/referenceContours.js'),path.join(dir,'src/referenceContours.js'));
  await fs.copyFile(path.join(root,'qa/experiments/blue-repetition/ordered-path.js'),path.join(dir,'src/ordered-path.js'));
  await fs.copyFile(path.join(root,'qa/experiments/music-box/motion.mjs'),path.join(dir,'src/music-box.mjs'));
- await fs.writeFile(path.join(dir,'src/spectral-motion.mjs'),(await fs.readFile(path.join(root,'qa/experiments/music-box/spectral-motion.mjs'),'utf8')).replace("'./motion.mjs'","'./music-box.mjs'"));
  // Composite uses one parent per voice in both planar and raised modes.
  let profiles=await fs.readFile(path.join(dir,'src/profiles.js'),'utf8');
  profiles=profiles.replace("export {referenceContourCount,referenceThetaStart} from './referenceContours.js';", "export {referenceThetaStart} from './referenceContours.js';export const referenceContourCount=24;");
@@ -91,10 +90,10 @@ if(new URLSearchParams(location.search).get('composite')==='1'&&view){
  for(const [label,value] of [['A · 기존 3D','original'],['B · 최고점·능선 조정','soft']]){const a=document.createElement('a'),url=new URL(location.href);url.searchParams.set('heightStudy',value);a.href=url.href;a.textContent=label;a.style.cssText='color:inherit;padding:10px 14px;border:1px solid #6c655b;border-radius:6px;text-decoration:none';if((new URLSearchParams(location.search).get('heightStudy')||'original')===value){a.style.background='#ece6dc';a.style.color='#15110e';a.setAttribute('aria-current','page');}bar.append(a);}
  $('#stage').before(bar);
 }\n`;
- app += `\nif(new URLSearchParams(location.search).get('compareMotion')==='1'&&view){setMode(1);const bar=document.createElement('nav');bar.setAttribute('aria-label','3D 모션 비교');bar.style.cssText='display:flex;gap:12px;flex-wrap:wrap;margin:12px 0';for(const [label,value] of [['기존 출렁임','legacy'],['SiriWave 기존 모션','box'],['굴곡별 음역 반응','spectral']]){const a=document.createElement('a'),url=new URL(location.href);url.searchParams.set('motionStudy',value);url.searchParams.set('heightStudy',new URLSearchParams(location.search).get('heightStudy')||'original');a.href=url.href;a.textContent=label;a.style.cssText='padding:10px 14px;border:1px solid #6c655b;border-radius:6px;color:#ece6dc';if((new URLSearchParams(location.search).get('motionStudy')||'spectral')===value){a.style.background='#ece6dc';a.style.color='#15110e';a.setAttribute('aria-current','page');}bar.append(a);}$('#stage').before(bar);}\n`;
+ app += `\nif(new URLSearchParams(location.search).get('compareMotion')==='1'&&view){setMode(1);const bar=document.createElement('nav');bar.setAttribute('aria-label','3D 모션 비교');bar.style.cssText='display:flex;gap:12px;flex-wrap:wrap;margin:12px 0';for(const [label,value] of [['기존 출렁임','legacy'],['음성 강도 → 높이','box']]){const a=document.createElement('a'),url=new URL(location.href);url.searchParams.set('motionStudy',value);url.searchParams.set('heightStudy',new URLSearchParams(location.search).get('heightStudy')||'original');a.href=url.href;a.textContent=label;a.style.cssText='padding:10px 14px;border:1px solid #6c655b;border-radius:6px;color:#ece6dc';if((new URLSearchParams(location.search).get('motionStudy')||'box')===value){a.style.background='#ece6dc';a.style.color='#15110e';a.setAttribute('aria-current','page');}bar.append(a);}$('#stage').before(bar);}\n`;
  await fs.writeFile(path.join(dir,'src/app.js'),app);
  let visual=await fs.readFile(path.join(dir,'src/visuals.js'),'utf8');
- visual="import {motionParams,motionPulse,motionGain,heightEnvelope,audioHeightAt,updateWaveform as updateSiriWaveform,findPulseCenters,motionGLSL} from './music-box.mjs';\nimport {updateWaveform as updateSpectralWaveform} from './spectral-motion.mjs';\nconst updateWaveform=new URLSearchParams(location.search).get('motionStudy')==='spectral'?updateSpectralWaveform:updateSiriWaveform;\nconst danceEnabled=new URLSearchParams(location.search).get('composite')==='1'&&new URLSearchParams(location.search).get('motionStudy')!=='legacy';\n"+visual;
+ visual="import {motionParams,motionPulse,motionGain,heightEnvelope,audioHeightAt,updateWaveform,findPulseCenters,motionGLSL} from './music-box.mjs';\nconst danceEnabled=new URLSearchParams(location.search).get('composite')==='1'&&new URLSearchParams(location.search).get('motionStudy')!=='legacy';\n"+visual;
  visual=visual.replace('vec3 deform(vec3 p,vec3 planarPoint){', '${motionGLSL}\nvec3 deform(vec3 p,vec3 planarPoint,float motionT){float heightCeiling=p.y;');
  visual=visual.replace('deform(aStart,aFlatStart)', 'deform(aStart,aFlatStart,aT)').replace('deform(aEnd,aFlatEnd)', 'deform(aEnd,aFlatEnd,aT+6.28318530718/360.)');
  visual=visual.replace('return p;}','if(uDanceOn>.5){p.y=.018+(1.-uMorph)*planarPoint.y+(heightCeiling-.018)*uLift*motionGain(motionT,aLane,uTime);}return p;}');
@@ -138,7 +137,7 @@ if(new URLSearchParams(location.search).get('composite')==='1'&&view){
  visual=visual.replace('CircleGeometry(.72,80)','CircleGeometry(.60,80)');
  await fs.writeFile(path.join(dir,'src/visuals.js'),visual);
  // Entry defaults are shared by / and the preserved comparison path. Explicit old queries still win.
- const optionsSource=`export function resonanceOptions(){const p=new URLSearchParams(location.search);for(const [k,v] of Object.entries({repetition:'1',composite:'1',compareMotion:'1',motionStudy:'spectral',heightStudy:'original'}))if(!p.has(k))p.set(k,v);return p;}\n`;
+ const optionsSource=`export function resonanceOptions(){const p=new URLSearchParams(location.search);for(const [k,v] of Object.entries({repetition:'1',composite:'1',compareMotion:'1',motionStudy:'box',heightStudy:'original'}))if(!p.has(k))p.set(k,v);return p;}\n`;
  await fs.writeFile(path.join(dir,'src/entry-options.js'),optionsSource);
  for(const name of ['app.js','profiles.js','visuals.js']){const file=path.join(dir,'src',name);let code=await fs.readFile(file,'utf8');code="import {resonanceOptions} from './entry-options.js';\n"+code.replaceAll('new URLSearchParams(location.search)','resonanceOptions()');await fs.writeFile(file,code);}
  let entryApp=await fs.readFile(path.join(dir,'src/app.js'),'utf8');
@@ -153,7 +152,7 @@ if(new URLSearchParams(location.search).get('composite')==='1'&&view){
  const licenses=['licenses/THREE-LICENSE.txt','licenses/Pitchy-MIT.txt','licenses/FFT-MIT.txt','licenses/Pretendard-OFL.txt','qa/experiments/music-box/siriwave-LICENSE.txt'];
  let notices='';for(const name of licenses)notices+='\n'+name+'\n'+await fs.readFile(path.join(root,name),'utf8');
  html=html.replace('</body>',()=>`<!-- Third-party notices\n${notices.replaceAll('--','—')}\n--></body>`);
- html=html.replace('</head>','<meta name="ieum-runtime" content="resonance-entry-v2;spectral-follow-v1"></head>');
+ html=html.replace('</head>','<meta name="ieum-runtime" content="resonance-entry-v1;siri-eased-3d82976"></head>');
  await fs.writeFile(path.join(root,'public/repetition-candidate.html'),html);
  await fs.writeFile(path.join(root,'public/index.html'),html);
  await fs.copyFile(path.join(root,'qa/renders/approved-repetition-reference.png'),path.join(root,'public/repetition-reference.png'));
