@@ -1,0 +1,52 @@
+name: Resonance browser verification
+on:
+  push:
+    branches: [qa/resonance-browser-verification]
+    paths: [.github/workflows/resonance-browser.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: resonance-browser-verification
+  cancel-in-progress: false
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install app dependencies
+        working-directory: resonance-standalone
+        run: npm ci
+      - name: Install isolated browser test dependencies
+        run: |
+          npm install --prefix "$RUNNER_TEMP/ieum-browser" playwright@1.56.1
+          "$RUNNER_TEMP/ieum-browser/node_modules/.bin/playwright" install --with-deps chromium
+          echo "IEUM_PLAYWRIGHT_PATH=$RUNNER_TEMP/ieum-browser/node_modules/playwright" >> "$GITHUB_ENV"
+      - name: Build current source
+        working-directory: resonance-standalone
+        run: npm run build
+      - name: Record tested revision
+        run: |
+          mkdir -p "$RUNNER_TEMP/ieum-results"
+          git rev-parse HEAD > "$RUNNER_TEMP/ieum-results/commit.txt"
+          sha256sum resonance-standalone/public/repetition-candidate.html > "$RUNNER_TEMP/ieum-results/build-sha256.txt"
+      - name: Verify desktop, mobile, audio and stability
+        working-directory: resonance-standalone
+        env:
+          IEUM_QA_OUTPUT: ${{ runner.temp }}/ieum-results
+          IEUM_QA_STABILITY_MS: '45000'
+        run: |
+          set -o pipefail
+          node qa/music-box.cjs 2>&1 | tee "$RUNNER_TEMP/ieum-results/browser.log"
+      - name: Save evidence even if verification fails
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: resonance-browser-${{ github.sha }}
+          path: ${{ runner.temp }}/ieum-results
+          if-no-files-found: error
+          retention-days: 14
