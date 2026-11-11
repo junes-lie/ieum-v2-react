@@ -237,6 +237,12 @@
 
 - 배포 확인: 코드 `8b64ee32eb9a768484dc3a5bc56ec179d90ac38d`, Git 자동 배포 `dpl_3tqFmHDiQKoYsJsDoY61cCTihdYn` READY. https://ieum-resonance-preview-idgxqn9uj-junes-lie.vercel.app/ . 공명 전용 프로젝트의 지정 Production Branch 배포이며 React 프로젝트 변경 없음. 수동 중복 배포 0회. 인증된 Vercel fetch에서 / 및 /repetition-candidate.html HTTP200, audio-curl-flow-v1 marker, 두 응답 전체 문자열 동일 확인. 원격 응답 확인은 실제 렌더 검증을 대신하지 않는다.
 
+## 4u. 선이 사라진 회귀 수정
+- 사용자: 입자만 보이고 선이 없어졌다고 지적. 4t에서 추가한 flowDeform의 매개변수 flat은 GLSL ES 3.00 예약어다. 선 셰이더 컴파일 실패로 별도 입자만 보일 수 있는 오류를 만들었다. 선 유지 보고는 실제 렌더 검증 없이 한 것이었다.
+- flat을 planarBase로 교체하는 최소 수정. 조형·입자·음악 매핑 변경 없음.
+- qa/flow-shader.py 추가: 브라우저 없이 Mesa EGL에서 실제 flowGLSL+motionGLSL를 GLSL ES 3.00으로 컴파일한다. 수정 전 error: unexpected FLAT 재현, 수정 후 compile status=1 확인. 전체 브라우저 렌더 검증과 구분한다.
+- 모션 계산 검사와 npm run build 통과. 다음 시작은 새 배포에서 24선 렌더와 입자 동시 표시 확인. 실제 PC/모바일 화면·WebGL 프로그램 링크 및 청취 QA는 아직 미검증이다.
+
 ## 5. 다음 시작 지점 / 범위
 
 1. 최신 한 겹 합성본에서 이어간다. 실제 Chromium·모바일 에뮬레이션 렌더와 회귀 검증은 위 범위까지 수행했다. 예전 두 겹 또는 2D 두 겹/3D 한 겹으로 돌아가지 않는다.

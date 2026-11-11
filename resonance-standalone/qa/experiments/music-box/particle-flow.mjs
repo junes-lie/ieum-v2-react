@@ -36,11 +36,11 @@ export function sampleFlow(wave,t){const x=((t/TAU)%1+1)%1*wave.length,i=Math.fl
 export function flowHeight(originalHeight,field,lift){return .018+lift*((originalHeight-.018)*(1+.42*field)+.10);}
 export const flowGLSL=`
 uniform float uFlowOn,uFlowLift;
-vec3 flowDeform(vec3 original,vec3 flat,float t){
+vec3 flowDeform(vec3 original,vec3 planarBase,float t){
  float f=motionGain(t,0.,0.);
- vec3 p=mix(flat,original,uMorph);
+ vec3 p=mix(planarBase,original,uMorph);
  p.xz*=1.+uMorph*uFlowLift*.025*f;
- p.y=.018+(1.-uMorph)*flat.y+uLift*uFlowLift*((original.y-.018)*(1.+.42*f)+.10);
+ p.y=.018+(1.-uMorph)*planarBase.y+uLift*uFlowLift*((original.y-.018)*(1.+.42*f)+.10);
  return p;
 }`;
 
