@@ -235,6 +235,8 @@
 - Chromium은 process_singleton_posix.cc:297 socket() failed: Operation not permitted 로 시작 실패. Computer Use/권한 확대 우회 없음. qa/particle-flow-browser.cjs는 준비 및 문법 확인만 수행. PC/390px 캡처·영상, 실제 WebGL/오디오 회귀·실기기·미적 품질은 미검증.
 - 다음 시작: flow/upper를 같은 음악·카메라로 실제 녹화 비교. 부착/부상, 각 굴곡 유지, 전체 둘레 변화, 교차부 밀집·스파클 및 모바일 잘림을 확인한다. 수치 통과로 시각 승인하지 않는다. 배포 결과는 후속 기록한다.
 
+- 배포 확인: 코드 `8b64ee32eb9a768484dc3a5bc56ec179d90ac38d`, Git 자동 배포 `dpl_3tqFmHDiQKoYsJsDoY61cCTihdYn` READY. https://ieum-resonance-preview-idgxqn9uj-junes-lie.vercel.app/ . 공명 전용 프로젝트의 지정 Production Branch 배포이며 React 프로젝트 변경 없음. 수동 중복 배포 0회. 인증된 Vercel fetch에서 / 및 /repetition-candidate.html HTTP200, audio-curl-flow-v1 marker, 두 응답 전체 문자열 동일 확인. 원격 응답 확인은 실제 렌더 검증을 대신하지 않는다.
+
 ## 5. 다음 시작 지점 / 범위
 
 1. 최신 한 겹 합성본에서 이어간다. 실제 Chromium·모바일 에뮬레이션 렌더와 회귀 검증은 위 범위까지 수행했다. 예전 두 겹 또는 2D 두 겹/3D 한 겹으로 돌아가지 않는다.
