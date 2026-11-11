@@ -254,6 +254,15 @@
 
 - 4v 배포: 926b1910c6c18c39b92339a657c43097bc43ab83, dpl_4MBz9su5djtbckmumiFStKQcnNYx READY. https://ieum-resonance-preview-50yix6asy-junes-lie.vercel.app/ . 기본 HTML과 음원 경로 HTTP200, HTML 내 상대 음원 경로 및 MP3 응답 ID3 헤더 확인. 실제 청취는 미검증. 수동 중복 배포 없음.
 
+
+## 4w. 듀엣 교체 및 보컬 전용 분석 — 2026-11-11
+- 사용자: 듀엣곡으로 교체하고 부르는 사람의 파형을 더 두드러지게 움직이기. 준비된 곡은 통합 브랜치 licensedMusic.js의 ‘천천히 물드는 우리’(397.2초). 통합 브랜치는 읽기만 했다.
+- 등록 metadata는 partGuideStatus=not-separated-per-singer, partRangeStatus=unverified. 존재하는 것은 reference와 combined vocals/backing이며 사람별 stem은 없다. 음역·번갈아 타이밍으로 가수 식별을 꾸미지 않는다. **사람별 활동 강조 요구는 미완료**.
+- 기본 곡을 해당 듀엣으로 변경. reference blob 7ca9bb65ec3e1c0939142e2be0022f6e3dd279ee, combined vocals blob 9fceb83d9fb85999654998725ebe8e99a84103d4 를 standalone 전용 경로에 복사. 기존 오늘 같은 날 음원 및 이전 Git 결과 보존.
+- 원곡은 출력 gain 1로 한 번 재생, combined vocals는 출력 gain 0의 동기 분석 소스로 사용. 기존 Transport의 공통 startAt/offset/seek/pause/loop 사용. 색들은 반주 대신 합쳐진 보컬의 RMS/FFT를 공유한다. UI에 사람별 분리 없음을 명시. 개인 파일 전환 시 공유 버퍼를 제거하여 다른 색에서 원곡이 중복 재생되지 않도록 했다.
+- 선/입자/굴곡/모션 커널 변경 없음. qa/prepared-song.mjs 모의 연결 검사: 2개 버퍼/출력1+무음분석1/믹스와 다른 보컬 분석값 전달/캐시/데모 복귀 통과. npm run build 통과, 기본 및 비교 HTML byte-identical. 실제 브라우저 청취/가수별 시각 반응은 미검증; 기존 Chromium socket 권한 제한을 우회하지 않는다.
+- 다음 시작: 동일 타임라인으로 정렬된 가수 A/B 독립 보컬 stem이 필요하다. 실제 분리 및 청취 검증 뒤 각 색의 분석 입력에 연결하고 A 독창/B 독창/겹침/무음에서 상대 움직임을 검증한다. 현재 combined vocal을 두 사람으로 표시하지 않는다. 이번 배포 확인은 후속 기록.
+
 ## 5. 다음 시작 지점 / 범위
 
 1. 최신 한 겹 합성본에서 이어간다. 실제 Chromium·모바일 에뮬레이션 렌더와 회귀 검증은 위 범위까지 수행했다. 예전 두 겹 또는 2D 두 겹/3D 한 겹으로 돌아가지 않는다.

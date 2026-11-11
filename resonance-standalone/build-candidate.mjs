@@ -18,6 +18,11 @@ try {
  await fs.copyFile(path.join(root,'qa/experiments/music-box/siri-upper.mjs'),path.join(dir,'src/siri-upper.mjs'));
  await fs.copyFile(path.join(root,'qa/experiments/music-box/particle-flow.mjs'),path.join(dir,'src/particle-flow.mjs'));
  await fs.copyFile(path.join(root,'qa/experiments/music-box/prepared-song.js'),path.join(dir,'src/prepared-song.js'));
+ // Analysis-only vocal stem stays synchronized but must never double the audible mix.
+ const audioPath=path.join(dir,'src/audio.js');
+ const audioSource=await fs.readFile(audioPath,'utf8');
+ if(!audioSource.includes('v.muted?0:1'))throw Error('Transport gain patch anchor missing');
+ await fs.writeFile(audioPath,audioSource.replace('v.muted?0:1','v.muted?0:(v.playbackGain??1)'));
  // Composite uses one parent per voice in both planar and raised modes.
  let profiles=await fs.readFile(path.join(dir,'src/profiles.js'),'utf8');
  profiles=profiles.replace("export {referenceContourCount,referenceThetaStart} from './referenceContours.js';", "export {referenceThetaStart} from './referenceContours.js';export const referenceContourCount=24;");

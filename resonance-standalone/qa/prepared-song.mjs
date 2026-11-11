@@ -5,9 +5,10 @@ for(const id of ['#play','#demo','#seek','#duration','#source-label','#voice-cou
 globalThis.document={querySelector:s=>nodes.get(s),createElement:node};let fetches=0;
 globalThis.fetch=async()=>{fetches++;return{ok:true,arrayBuffer:async()=>new ArrayBuffer(4)}};
 const voices=Array.from({length:4},(_,i)=>{const m=node(),f=node();return{active:i<3,energy:0,card:{querySelector:s=>s==='.file'?f:m}}});
-const transport={items:[],duration:22,playing:false,ready:async()=>{},pause(){this.playing=false;},ctx:{decodeAudioData:async()=>({duration:22})},setItems(items){this.items=items;},tick(){this.items[0].energy=.4;this.items[0].bands={low:.3,mid:.4,high:.2};}};
+const transport={items:[],duration:397.2,playing:false,ready:async()=>{},pause(){this.playing=false;},ctx:{decodeAudioData:async()=>({duration:397.2})},setItems(items){this.items=items;},tick(){this.items[0].energy=.95;this.items[1].energy=.4;this.items[1].bands={low:.3,mid:.4,high:.2};}};
 nodes.get('#play').onclick=()=>{transport.playing=!transport.playing;};
-const app=installPreparedSong({transport,voices,note(){},updatePlay(){},format:()=> '0:22'});
-await nodes.get('#play').onclick();assert.equal(transport.playing,true);assert.equal(transport.items.length,1);assert.equal(fetches,1);transport.tick(.016);assert.equal(voices[2].energy,.4);assert.equal(voices[3].energy,0);
-transport.setItems(voices);assert.equal(transport.items.length,1);await app.select();assert.equal(fetches,1);nodes.get('#demo').onclick();assert.equal(app.shared,false);transport.setItems(voices);assert.equal(transport.items.length,4);
-console.log('Prepared song: first-play load, one audible item, shared analysis, cache and demo exit passed (mock transport; not browser audio).');
+const app=installPreparedSong({transport,voices,note(){},updatePlay(){},format:()=> '6:37'});
+await nodes.get('#play').onclick();assert.equal(transport.playing,true);assert.equal(transport.items.length,2);assert.equal(fetches,2);assert.equal(transport.items[0].playbackGain,1);assert.equal(transport.items[1].playbackGain,0);transport.tick(.016);assert.equal(voices[2].energy,.4);assert.equal(voices[3].energy,0);
+transport.setItems(voices);assert.equal(transport.items.length,2);await app.select();assert.equal(fetches,2);nodes.get('#demo').onclick();assert.equal(app.shared,false);transport.setItems(voices);assert.equal(transport.items.length,4);
+assert.equal(voices[0].buffer,null);
+console.log('Duet: two buffers, one audible mix, silent vocal analysis, vocal-not-mix energy, cache, demo exit passed (mock transport; not browser audio or singer separation).');
