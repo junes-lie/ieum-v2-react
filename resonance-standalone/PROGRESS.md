@@ -243,6 +243,8 @@
 - qa/flow-shader.py 추가: 브라우저 없이 Mesa EGL에서 실제 flowGLSL+motionGLSL를 GLSL ES 3.00으로 컴파일한다. 수정 전 error: unexpected FLAT 재현, 수정 후 compile status=1 확인. 전체 브라우저 렌더 검증과 구분한다.
 - 모션 계산 검사와 npm run build 통과. 다음 시작은 새 배포에서 24선 렌더와 입자 동시 표시 확인. 실제 PC/모바일 화면·WebGL 프로그램 링크 및 청취 QA는 아직 미검증이다.
 
+- 4u 배포 확인: c8bf52a28f6efb7ccb03f4029b603332b816f404, dpl_BbixJHY9tZGCV7NnSxB1uwjMhvVg READY. https://ieum-resonance-preview-nfqu9wlmt-junes-lie.vercel.app/ HTTP200. 응답 내 수정된 planarBase 매개변수 존재, 잘못된 flat 매개변수 부재 확인. Git 자동 배포 1회, 수동 중복 없음.
+
 ## 5. 다음 시작 지점 / 범위
 
 1. 최신 한 겹 합성본에서 이어간다. 실제 Chromium·모바일 에뮬레이션 렌더와 회귀 검증은 위 범위까지 수행했다. 예전 두 겹 또는 2D 두 겹/3D 한 겹으로 돌아가지 않는다.
