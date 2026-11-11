@@ -263,6 +263,9 @@
 - 선/입자/굴곡/모션 커널 변경 없음. qa/prepared-song.mjs 모의 연결 검사: 2개 버퍼/출력1+무음분석1/믹스와 다른 보컬 분석값 전달/캐시/데모 복귀 통과. npm run build 통과, 기본 및 비교 HTML byte-identical. 실제 브라우저 청취/가수별 시각 반응은 미검증; 기존 Chromium socket 권한 제한을 우회하지 않는다.
 - 다음 시작: 동일 타임라인으로 정렬된 가수 A/B 독립 보컬 stem이 필요하다. 실제 분리 및 청취 검증 뒤 각 색의 분석 입력에 연결하고 A 독창/B 독창/겹침/무음에서 상대 움직임을 검증한다. 현재 combined vocal을 두 사람으로 표시하지 않는다. 이번 배포 확인은 후속 기록.
 
+
+- 4w 배포 확인: 최종 코드 0566ba3ed2cc278257561bae8e8b41b2d3af80f1, dpl_a7bHA1GccN8j47rLPRXpBHKW7gVz READY. https://ieum-resonance-preview-8p7hqn3cb-junes-lie.vercel.app/ 기본 HTML HTTP200. 첫 연결 커밋 c66a2db 뒤 로딩 안내의 전체 믹스 표현을 합쳐진 보컬로 바로잡아 후속 Git 배포가 발생했다. CLI/API 중복 배포 없음. 대용량 음원 endpoint 검증은 Vercel fetch Transport closed로 실패했으므로 원격 음원 재생 성공을 주장하지 않는다. 실제 청취 및 개인별 분리는 남아 있다.
+
 ## 5. 다음 시작 지점 / 범위
 
 1. 최신 한 겹 합성본에서 이어간다. 실제 Chromium·모바일 에뮬레이션 렌더와 회귀 검증은 위 범위까지 수행했다. 예전 두 겹 또는 2D 두 겹/3D 한 겹으로 돌아가지 않는다.
