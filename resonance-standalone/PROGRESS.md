@@ -252,6 +252,8 @@
 - npm run build, GLSL 회귀 컴파일 통과. qa/prepared-song.mjs의 첫 재생 로딩·한 소스·분석 공유·캐시·데모 복귀 검사 통과(모의 Transport). 실제 파일 해시/길이 검증과 모의 연결 검사를 실제 브라우저 청취/오디오 반응 검증으로 주장하지 않는다.
 - 다음: 새 Preview에서 재생하여 음원 청취·반응·정지/탐색/반복과 개인 파일 전환 확인. Chromium 소켓 권한 제한으로 실제 브라우저 검증은 미완료.
 
+- 4v 배포: 926b1910c6c18c39b92339a657c43097bc43ab83, dpl_4MBz9su5djtbckmumiFStKQcnNYx READY. https://ieum-resonance-preview-50yix6asy-junes-lie.vercel.app/ . 기본 HTML과 음원 경로 HTTP200, HTML 내 상대 음원 경로 및 MP3 응답 ID3 헤더 확인. 실제 청취는 미검증. 수동 중복 배포 없음.
+
 ## 5. 다음 시작 지점 / 범위
 
 1. 최신 한 겹 합성본에서 이어간다. 실제 Chromium·모바일 에뮬레이션 렌더와 회귀 검증은 위 범위까지 수행했다. 예전 두 겹 또는 2D 두 겹/3D 한 겹으로 돌아가지 않는다.
