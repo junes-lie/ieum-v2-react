@@ -179,10 +179,10 @@
 - 매번 0→최고점→0을 완주하는 펄스 대신 상태를 유지하는 2단 지수 추종을 사용한다. 단계별 시정수 상승 .10초/하강 .23초이며 전체 도달 시간이 .10/.23초라는 뜻은 아니다. 일정 목표에 대한 해석적 적분으로 프레임률 차이를 줄인다. Siri speed .05/생애/easing은 최대 4% 보조 강조로만 사용한다. 강한 지속음은 원래 높이를 유지하며 임의 생애 종료 때문에 바닥으로 꺼지지 않는다.
 - 정지 높은 형상·재생 시작 .18초 하강 및 바닥 프레임·.35초 연결·GPU 선과 CPU 입자 동일 64높이 배열 유지. 기존 스파클/음성 onset 강조는 변경하지 않았다. 형상·24선·경로·색·카메라·src 및 원본 motion.mjs는 변경하지 않았다.
 - 기본 `motionStudy=spectral`. 화면에서 굴곡별 음역 반응 / SiriWave 기존 모션(box) / 기존 출렁임(legacy) 선택. 두 HTML 진입점은 동일하다. 과거 비교 실행본과 배포는 삭제하지 않는다.
-- 실행 검증: `node qa/spectral-motion.mjs` 통과. 같은 음량/다른 음역의 굴곡 차이 >.35, 동일 입력 재현, 30초 지속음 최저 배율 1, 60Hz 최대 프레임 변화 .046754, 무음 3초 후 <.001, 정지=1/시작 하강=0, 30/60/120Hz 일정 목표 추종 일치. 기존 분석/기하 48개 검사·24선 폐곡선/색별 반경·build 통과. 두 HTML SHA256 `3f8fdd20b3bc1e7cc235eb8c67367a69350a5c3db6322c9702e766ca23d14de3` 일치.
+- 실행 검증: `node qa/spectral-motion.mjs` 통과. 같은 음량/다른 음역의 굴곡 차이 >.35, 동일 입력 재현, 30초 지속음 최저 배율 1, 60Hz 최대 프레임 변화 .046754, 무음 3초 후 <.001, 정지=1/시작 하강=0, 30/60/120Hz 일정 목표 추종 일치. 기존 분석/기하 48개 검사·24선 폐곡선/색별 반경·build 통과. 두 HTML SHA256 `5756c7404f1c4deff0885542af771832b6afce3cc17566b9b6e0fb9855f5052f` 일치.
 - 기존 entry QA의 비교 링크 수(2→3)와 시작 위상 검사(0 가정→실제 시작 위상 기준)를 최신 기능에 맞게 수정했다. `qa/spectral-browser.cjs`는 1100/390px에서 기존/새 모드의 동일 데모 재생·영상·캡처·상태 검사 스크립트다. 문법 검사만 통과했으며 브라우저 실행 통과로 기재하지 않는다.
 - **실제 렌더/오디오 검증 차단:** Chromium이 `process_singleton_posix.cc:297 socket() failed: Operation not permitted`로 종료했다. 실행 권한 확대도 자동 승인 정책에서 거절됐다. 따라서 이번 실제 PC/모바일 영상, WebGL/오디오 회귀, 실제 사람 보컬·iPhone·장시간 안정성 및 미적 품질은 미검증이다. 수치 통과를 시각 완성으로 간주하지 않는다.
-- 배포: 이 코드 커밋의 Git 자동 배포만 확인하며 CLI/API 중복 배포하지 않는다. 배포 결과는 확인 후 후속 문서 전용 커밋에 기록한다.
+- 배포 확인: 코드 커밋 `2135e8c834b7198285682390d2fb198f3d24a374`, Git 자동 배포 `dpl_6ZHs6niGSxe9Cjj6TvFVbZgN9oY7` READY. `https://ieum-resonance-preview-4yde01n8d-junes-lie.vercel.app/`. 지정 feature가 공명 전용 Production Branch이므로 target=production이며 기존 React 프로젝트는 변경하지 않았다. CLI/API 중복 배포 0회. 인증된 Vercel fetch로 / 및 /repetition-candidate.html HTTP 200과 runtime marker `resonance-entry-v2;spectral-follow-v1`를 확인했다. 두 원격 HTML의 SHA256은 위 로컬 빌드 해시와 일치한다. 로컬 복원 license 파일의 추가 EOF 개행을 원본과 맞춘 뒤 최종 해시를 기록했다. 복구 기본 HTML SHA256 `ee51d9449b80eba332cecf43c61864f8df30bea6eeb5897f04a9fe6a33a0fd2c`도 유지됐다. 원격 HTML 응답 확인은 실제 브라우저 시각 QA를 대신하지 않는다.
 - 다음 시작: 브라우저 실행 가능한 환경에서 `qa/spectral-browser.cjs`와 entry/entry-audio 검사를 실행한다. 같은 실제 음성 입력으로 box/spectral의 지속음 유지·음절 연결·무음 감쇠·높이 범위·교차부/스파클을 비교한다. 새 모드의 미적 채택은 사용자 확인 전이다.
 
 ## 5. 다음 시작 지점 / 범위
