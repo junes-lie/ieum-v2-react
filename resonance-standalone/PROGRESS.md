@@ -213,7 +213,7 @@
 - 검증 `qa/siri-orbit.mjs`: 실제 A/B/C/D 프로필 seed로 각 15초 계산. 각 색 256지점 모두 시간 변화 존재, 최소 이동폭 A=.6303/B=.6486/C=.6505/D=.6624(정규화 높이). 12구간 모두 변화 >.25. 60Hz 최대 프레임 변화 .0501 이하, 초기0/재생 부상/정지 후0, 재현성·비음수/상한·0↔2π 접합 통과. 이는 시간에 따른 전체 둘레 반응 검사이며 매 프레임 모든 지점이 같은 속도로 움직여야 한다는 기준은 아니다.
 - 기존 분석/기하 48개 및 빌드 통과. /와 /repetition-candidate.html SHA256 `0d3a9f4839c60a980a0d7cefda37a23ad92de292f808c06f70e820fc183c32cb` 일치. 복구 HTML `ee51d9449b80eba332cecf43c61864f8df30bea6eeb5897f04a9fe6a33a0fd2c` 유지. 기존 src, siri-upper 및 이전 모션 커널/스파클 변경 없음.
 - `qa/siri-upper-browser.cjs`를 orbit/upper/box 모드와 새 정지 정책에 맞게 갱신했다. 실행 시 Chromium이 기존 process-singleton socket Operation not permitted 오류로 시작하지 못했다. 실제 PC/390px 렌더·영상·오디오/WebGL·실기기 품질은 미검증이다. 새 계산 검사로 시각 완성을 주장하지 않는다.
-- 다음 시작: 전체 둘레 움직임과 부상/착지를 실제 렌더에서 확인하고 사용자가 맞다고 한 시간 리듬을 유지한다. 철회된 기준면 고정·정지 높은 형상 정책을 새 기본 모드에 다시 넣지 않는다. 배포 결과는 확인 후 기록한다.
+- 다음 시작: 전체 둘레 움직임과 부상/착지를 실제 렌더에서 확인하고 사용자가 맞다고 한 시간 리듬을 유지한다. 철회된 기준면 고정·정지 높은 형상 정책을 새 기본 모드에 다시 넣지 않는다. 배포 READY: 코드 `6dc9bb23fe34a533dac9070fc19e95e0a31d0fd0`, Git 자동 배포 `dpl_HQ5HqwuRmWp4SbK5qAC5UTHyaLNB`, https://ieum-resonance-preview-r9zoahqae-junes-lie.vercel.app/ . 원격 /와 /repetition-candidate.html HTTP200 및 `siri-orbit-float-v1` marker 확인, 두 응답과 로컬 빌드 SHA256 일치. 수동 중복 배포 없음.
 
 ## 5. 다음 시작 지점 / 범위
 
