@@ -4,7 +4,7 @@
 
 ## 1. 현재 작업본
 
-- `/`와 `/repetition-candidate.html`: 마지막 orbit 수정을 되돌린 4q SiriWave 실행본. 전체 둘레 움직임·재생 전 부착/재생 시 부상은 아직 해결되지 않았다. 4s 기록을 먼저 확인한다.
+- `/`와 `/repetition-candidate.html`: 4t Codrops 기반 flow 실행본. 이전 SiriWave upper 비교 보존. 실제 렌더 검증과 시각 승인은 미완료다. 4t를 먼저 확인한다.
 - 한 겹은 “선 한 줄”이 아니다. 동일한 큰 경로 안의 내부 결과 입자는 유지한다.
 - `/IEUM-Resonance.html`: 기존 복구 실행본. 이번 변경 범위 밖.
 - 예전 파랑 단독 비교·후보 링크는 역사적 비교 자료이며 최신 작업 시작점이 아니다.
@@ -222,6 +222,18 @@
 - 마지막 orbit 변경만 되돌려 사용자가 “움직임은 맞아진것같아”라고 평가한 `0cbec4ffc8dfc8816882105f71162e5d9bab0c65`의 실행 코드/QA blob을 복원한다. 새로운 모션 후보는 추가하지 않는다. 과거 커밋 이력은 남긴다.
 - 이번 복구는 사용자의 새 요구를 철회하는 것이 아니다. **재생 전 레코드에 붙음 → 재생 시 떠오름**, **전체 둘레가 움직임**, **굴곡과 맞아진 움직임 보존**은 모두 미완료 요구로 유지한다. 철회된 기준선=레코드/위쪽만 규칙을 다시 확정사항으로 삼지 않는다.
 - 다음 시작: 4q 복구본에서 굴곡·시간 움직임·전체 부상·공간 커버리지를 구분해 검증한다. 실제 렌더 관찰 없이 공간 폭/위치와 공통 높이를 동시에 바꾸거나 수치 검사로 리듬 보존을 단정하지 않는다. 이번에는 잘못된 최신 배포의 복구만 수행했다. 원복 코드 `584688dd35a65287346c74d4b7aeacce3f395438`, Git 자동 배포 `dpl_57FeMnEGUDiqaHMdekfSaFPqApec` READY, https://ieum-resonance-preview-gd6lfassv-junes-lie.vercel.app/ . 원격 / 및 /repetition-candidate.html은 HTTP200이며 4q fq9uegcs8 배포의 전체 HTML/내장 JS와 정확히 일치한다. 실제 렌더 검증을 새로 수행했다고 주장하지 않는다.
+
+## 4t. Codrops 음악 반응 적용 — 2026-11-11 KST
+
+- 사용자 지정 https://tympanus.net/Tutorials/ParticlesMusicVisualizer/ 분석 및 반영. 기준 HEAD c3a8b9bdd6b3c8ce71c6685ba4fb9f79b539d50d. 원본 tgcnzn/Interactive-Particles-Music-Visualizer @ afe366de4c10e15f627958d7893ab21da8290ea8 의 ReactiveParticles.js, vertex.glsl, BPMManager.js를 직접 읽었다.
+- 원본은 고음→amplitude=.7+.5*high, 중음→offsetGain=.6*mid, 저음→시간 증가 .2–.5/frame, curl 공간 변형을 결합한다. BPM 타이머의 무작위 box/cylinder 교체·elastic 회전은 기존 매듭 보존 및 펀치감 금지에 따라 제외했다. 원본 curl.y의 동일 좌표 차분도 복사하지 않았다.
+- 기존 SimplexNoise로 seed가 고정된 벡터장의 curl Y 성분을 폐곡선 전체에 샘플링. 저음→진행 속도, 고음→변형 강도, 중음→변형 폭으로 제한해 이식했다. 원본 입자 구름을 그대로 복제하거나 기각된 spectral 봉우리 배정을 재활성화한 것이 아니다.
+- 각 선의 원래 높이를 유지하고 공간별 변형을 더한다. 공통 절대 높이로 치환하지 않는다. 동적 반경 변화는 수%로 제한한다. 선/GPU와 입자/CPU가 같은 64필드/보간을 사용하며 입자는 같은 t/lane의 원래 record 높이를 다시 사용한다. 정지 lift=0, 재생 부상, 정지 감쇠 착지. 2D의 추가 공간 변형은 0.
+- 기본 flow, 이전 upper/box/legacy 비교 UI 유지. 원본 src/profiles, visuals, audio 및 runtime.patch, Siri 모듈, 스파클 셰이더·24선 보존. 복구 HTML SHA256 ee51d9449b80eba332cecf43c61864f8df30bea6eeb5897f04a9fe6a33a0fd2c 유지. 복구 스크립트 사용 없음.
+- qa/particle-flow.mjs: 같은 입력 재현, seed별 차이, 64지점 전체 시간 변화(최소 범위 1.34594), 60Hz 최대 필드 변화 .07891, 30/60/120Hz 최종 결과 차이 0, 정지 6초 후 lift 7.58e-10, 원래 높이 차이 보존, 10분 계산 finite 통과. 초기 급변/프레임률 차이를 .14초 필드 감쇠 및 120Hz 고정 적분으로 수정했다. 10분 계산은 렌더/오디오 안정성 검증이 아니다.
+- 기존 분석/기하 48개, 색별 지름·24선·폐곡선 및 npm run build 통과. /와 repetition-candidate.html SHA256 ae23ad75781a0a58cb2532b7a1bf099a04babe7c8b577294d62aac4aef698d37 동일.
+- Chromium은 process_singleton_posix.cc:297 socket() failed: Operation not permitted 로 시작 실패. Computer Use/권한 확대 우회 없음. qa/particle-flow-browser.cjs는 준비 및 문법 확인만 수행. PC/390px 캡처·영상, 실제 WebGL/오디오 회귀·실기기·미적 품질은 미검증.
+- 다음 시작: flow/upper를 같은 음악·카메라로 실제 녹화 비교. 부착/부상, 각 굴곡 유지, 전체 둘레 변화, 교차부 밀집·스파클 및 모바일 잘림을 확인한다. 수치 통과로 시각 승인하지 않는다. 배포 결과는 후속 기록한다.
 
 ## 5. 다음 시작 지점 / 범위
 
