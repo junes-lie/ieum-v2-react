@@ -25,7 +25,7 @@ export function installPreparedSong({transport,voices,note,updatePlay,format}) {
     voices.forEach(v=>{v.buffer=null;v.energy=0;v.muted=false;v.referenceRms=.2;v.card.querySelector('.mute').disabled=true;v.card.querySelector('.mute').setAttribute('aria-pressed','false');});
     transport.setItems(voices.filter(v=>v.active),false);
     $('#seek').max=transport.duration;$('#duration').textContent=format(transport.duration);label();
-    note('천천히 물드는 우리 · 듀엣 전체 믹스. 각 색은 같은 음원에 반응합니다.');return true;
+    note('천천히 물드는 우리 · 듀엣 · 반주를 제외한 합쳐진 보컬에 반응합니다. 사람별 보컬은 아직 분리되지 않았습니다.');return true;
    }catch(e){note('음원을 불러오지 못했습니다: '+e.message);return false;}
    finally{button.disabled=false;$('#play').disabled=voices.some(v=>v.busy);$('#demo').disabled=voices.some(v=>v.busy);pending=null;}
   })();return pending;
