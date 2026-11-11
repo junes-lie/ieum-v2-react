@@ -1,0 +1,14 @@
+{
+  "label": "after",
+  "input": "same six bend/part/generation/voicePhase tuples",
+  "phases": [
+    2.484263444458347,
+    5.737199571585021,
+    5.2466737430324795,
+    5.333561668297612,
+    1.04744834219924,
+    4.321464486410382
+  ],
+  "distinctPhases": 6,
+  "deterministic": true
+}

@@ -1,0 +1,14 @@
+{
+  "label": "before",
+  "input": "same six bend/part/generation/voicePhase tuples",
+  "phases": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "distinctPhases": 1,
+  "deterministic": true
+}
