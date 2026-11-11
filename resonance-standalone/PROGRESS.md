@@ -202,7 +202,7 @@
 - 검증: 실제 데모가 제공하는 siriwave.umd.js의 yPos와 같은 매개변수에서 3개 seed × 101지점(303점) 대조, 최대 오차 2.220446049250313e-16. 이는 seam/높이 스케일 적용 전 공간식 일치 검사다. `qa/siri-upper.mjs`: 15초 계산 최고 배율 .999686, 봉우리 위치 변화, 8세대 묶음 갱신, 비음수·상한·같은 입력 재현·폐곡선 접합·무음0/정지1/초기하강0·30/60/120Hz 일치 통과. 기존 분석/기하 48개·24선 폐곡선/색별 지름·빌드 통과.
 - 산출물 / 및 /repetition-candidate.html SHA256 `55834f8f546092539626eb522c1ad6ba2e9ea8b2e620c44a9966340f36bfaf35` 일치. 기존 복구 HTML SHA256 `ee51d9449b80eba332cecf43c61864f8df30bea6eeb5897f04a9fe6a33a0fd2c` 보존. src/profiles.js, src/visuals.js, 이전 motion.mjs는 원본 Git blob과 일치한다.
 - 브라우저 재시도는 동일한 `process_singleton_posix.cc:297 socket() failed: Operation not permitted`로 시작 실패했다. 앞서 거절된 권한 확대를 반복하지 않았다. `qa/siri-upper-browser.cjs`는 1100/390px upper/box 실제 재생·2D/3D·정지복귀·스파클·캡처/영상 검사를 제공하지만 이번에는 문법 검사만 수행했다. 실제 WebGL/오디오/PC·모바일 렌더/실기기·미적 품질은 미검증이며 수치 통과로 완료 처리하지 않는다.
-- 다음 시작: 이번 사용자 해석을 유지하며 실제 렌더 환경에서 upper/box를 같은 입력으로 비교한다. 특히 위쪽 윤곽의 이동·생애·교차·스파클 및 레코드 기준면을 확인한다. 사용자의 시각 확인 전 미적 완성 선언 금지. Git 자동 배포 결과는 확인 후 기록한다.
+- 다음 시작: 이번 사용자 해석을 유지하며 실제 렌더 환경에서 upper/box를 같은 입력으로 비교한다. 특히 위쪽 윤곽의 이동·생애·교차·스파클 및 레코드 기준면을 확인한다. 사용자의 시각 확인 전 미적 완성 선언 금지. Git 자동 배포 READY: `3d137b81b7a8f9f13d40ce7d7af9efaa22311426`, `dpl_BXb3W3wrMzh6hecRKU41xZ6HnKWr`, https://ieum-resonance-preview-fq9uegcs8-junes-lie.vercel.app/ . 인증된 fetch에서 / 및 /repetition-candidate.html HTTP200, `siri-upper-spatial-v1` marker, 양쪽 원격 HTML SHA256과 위 로컬 산출물 해시 일치 확인. 수동 중복 배포 없음. 원격 응답 확인은 실제 시각 검증을 뜻하지 않는다.
 
 ## 5. 다음 시작 지점 / 범위
 
