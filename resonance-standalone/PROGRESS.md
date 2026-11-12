@@ -1,6 +1,6 @@
 # IEUM Resonance — 현재 작업 상태
 
-최종 갱신: 2026-11-11 KST. **최신 사용자 결정: 2D·3D 모두 색마다 한 겹으로 통일. 선과 입자를 함께 사용한다. 시각 완성 승인은 아직 없다.**
+최종 갱신: 2026-11-13 KST. **최신 사용자 결정: 2D·3D 모두 색마다 한 겹으로 통일. 선과 입자를 함께 사용한다. 시각 완성 승인은 아직 없다.**
 
 ## 1. 현재 작업본
 
@@ -265,6 +265,15 @@
 
 
 - 4w 배포 확인: 최종 코드 0566ba3ed2cc278257561bae8e8b41b2d3af80f1, dpl_a7bHA1GccN8j47rLPRXpBHKW7gVz READY. https://ieum-resonance-preview-8p7hqn3cb-junes-lie.vercel.app/ 기본 HTML HTTP200. 첫 연결 커밋 c66a2db 뒤 로딩 안내의 전체 믹스 표현을 합쳐진 보컬로 바로잡아 후속 Git 배포가 발생했다. CLI/API 중복 배포 없음. 대용량 음원 endpoint 검증은 Vercel fetch Transport closed로 실패했으므로 원격 음원 재생 성공을 주장하지 않는다. 실제 청취 및 개인별 분리는 남아 있다.
+
+## 4x. Chance 독립 보컬 연결 — 2026-11-13 KST
+- 사용자 승인 곡 Chance(Kara Square / Steven M Bryant / The3amAssociation), CC BY-NC 3.0. 제작자가 제공한 두 독립 보컬 WAV 및 악기 5개를 실제 취득. 원곡 mix는 1회 출력, Steven/Kara/반주는 출력 gain 0 분석 소스. 파랑=Steven, 코랄=Kara, 크림=반주이며 네 번째 색은 미연결로 명시한다. 기존 조형·24선·스파클·모션 커널은 수정하지 않았다.
+- 원곡과 합산 WAV의 세 구간 상호상관에서 일관된 22.125ms 지연 확인(r=.868/.879/.871). 분석 스템에 44.1kHz 기준 976샘플 지연 및 끝 무음을 추가해 4개 파일의 decoded length=176.352653초로 정렬했다. 원본/배포파일 SHA256 및 출처·크레딧·변환 내역은 public/audio/chance/credits.json. 외부 hotlink 없이 동일 배포에서 로드하며 추가 음원 총량 약 9.9MB.
+- 반주에 따른 약한 기본 움직임 위에 가수별 실제 RMS/FFT를 전달한다. 기존 flow saturation(.18) 아래로 보컬 입력을 조정하여 강약을 보존한다. 가수 식별을 시간표로 흉내 내지 않는다. 전주/Steven/Kara/함께 부르기 탐색 버튼, 출처/라이선스 UI 추가. 이전 한국어 듀엣·오늘 같은 날은 선택 UI와 원본 파일로 보존. 데모/개인 파일 전환도 유지.
+- 로컬 검증: 48개 분석/기하, 모션 재현/10분 계산 finite, 실제 GLSL 컴파일, 빌드·두 진입점 동일 통과. qa/prepared-song.mjs의 입력 분리/캐시/기존곡/데모 복귀/로딩 중 업로드 취소 통과.
+- qa/chance-audio.mjs: 실제 배포 MP3 디코딩 → production Transport RMS 및 입력 매핑 → production flow 전체 곡 계산. Web Audio 노드/시계/FFT 응답은 모의이므로 브라우저 검증과 구분한다. 독창 4구간에서 해당 보컬 에너지 6.6–8.5배, 높이장 RMS 7.3–8.4배. 전주 양쪽 약한 움직임, 합창 양쪽 활성, 단일 audible mix, seek/pause/loop 소스 정리 통과.
+- 로컬 Chromium은 process_singleton_posix.cc:297 socket() failed: Operation not permitted로 시작 실패. 사용자가 제공한 GitHub Actions 실행 42993732342의 별도 검증 경로를 확인했다. qa/chance-browser.cjs로 이번 변경의 실제 PC1100/모바일390·독창 교대·45초 안정성·선/입자 캡처를 GitHub Actions에서 검증할 예정이며 결과를 후속 기록한다. 아직 새 렌더/청취/시각 승인으로 보고하지 않는다.
+- 다음 시작: 이번 Chance 커밋과 같은 소스의 CI 브라우저 결과/캡처를 확인한 뒤 feature 브랜치의 단일 Git 자동 배포 및 자산 정합성을 확인한다. 기존 main/React/다른 Vercel 프로젝트/Notion/Figma는 변경하지 않는다.
 
 ## 5. 다음 시작 지점 / 범위
 
