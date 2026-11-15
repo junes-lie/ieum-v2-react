@@ -20,28 +20,34 @@ try{
  for(const width of [390,430])for(const scene of ['first-visit','profile-ready']){
   await page.setViewportSize({width,height:932})
   const url=new URL(base);url.searchParams.set('scene',scene)
-  await page.goto(url.href);await page.waitForSelector('.v2-project-row');await page.evaluate(()=>document.fonts.ready)
+  await page.goto(url.href);await page.waitForSelector('.v2-project-row');await page.evaluate(async()=>{await document.fonts.ready;scrollTo(0,0)})
   const baseline=await page.evaluate(()=>({joined:window.__IEUM_V2__.state.joined,tracks:Object.keys(window.__IEUM_V2__.state.projectTracks).sort()}))
   const geometry=await page.evaluate(()=>{
    const box=n=>{const r=n.getBoundingClientRect();return {x:r.x,y:r.y,w:r.width,h:r.height,b:r.bottom}}
    const q=s=>box(document.querySelector(s))
-   return {width:innerWidth,body:document.body.scrollWidth,hero:q('.v2-hero'),guide:q('.v2-intro-guide'),info:q('.v2-recruit-info'),dots:q('.v2-carousel-nav'),cta:q('.v2-project-action'),recruitHeading:q('.v2-recruitment-heading'),stage:q('.v2-turntable-stage'),jacket:q('.v2-recruit-jacket'),recentHeading:q('.v2-recent .v2-home-section-heading'),recentRows:q('.v2-project-rows'),completedHeading:q('.v2-completed .v2-home-section-heading'),completedRail:q('.v2-completed-carousel'),recommendedHeading:q('.v2-recommended-heading'),songGrid:q('.v2-song-grid'),sections:[...document.querySelectorAll('main>section')].map(box),rows:[...document.querySelectorAll('.v2-project-row')].map(n=>({box:box(n),thumb:box(n.querySelector('.v2-project-thumbnail')),tags:[...n.querySelectorAll('.v2-role-tag')].map(box)})),heading:[...document.querySelectorAll('.v2-home-section-heading')].map(n=>({title:box(n.querySelector('h2')),arrow:box(n.querySelector('button'))})),broken:[...document.images].filter(i=>!i.complete||!i.naturalWidth).map(i=>i.getAttribute('src'))}
+   return {width:innerWidth,body:document.body.scrollWidth,hero:q('.v2-hero'),headerWordmark:q('.v2-hero>.topbar .wordmark'),headerAction:q('.v2-hero>.topbar .text-action'),headerProfile:q('.v2-hero>.topbar .v2-profile-icon'),heroCopy:q('.v2-hero-copy'),heroDescription:q('.v2-hero-copy p'),guide:q('.v2-intro-guide'),guideCopy:q('.v2-first-visit-copy'),guideScroll:q('.v2-first-visit-row .v2-scroll-control'),info:q('.v2-recruit-info'),dots:q('.v2-carousel-nav'),cta:q('.v2-project-action'),recruitHeading:q('.v2-recruitment-heading'),stage:q('.v2-turntable-stage'),jacket:q('.v2-recruit-jacket'),recentHeading:q('.v2-recent .v2-home-section-heading'),recentRows:q('.v2-project-rows'),completedHeading:q('.v2-completed .v2-home-section-heading'),completedRail:q('.v2-completed-carousel'),recommendedHeading:q('.v2-recommended-heading'),songGrid:q('.v2-song-grid'),sections:[...document.querySelectorAll('main>section')].map(box),rows:[...document.querySelectorAll('.v2-project-row')].map(n=>({box:box(n),thumb:box(n.querySelector('.v2-project-thumbnail')),tags:[...n.querySelectorAll('.v2-role-tag')].map(box)})),heading:[...document.querySelectorAll('.v2-home-section-heading')].map(n=>({title:box(n.querySelector('h2')),arrow:box(n.querySelector('button')),hasNote:Boolean(n.querySelector('.v2-section-note'))})),broken:[...document.images].filter(i=>!i.complete||!i.naturalWidth).map(i=>i.getAttribute('src'))}
   })
   assert.equal(geometry.body,width);assert.deepEqual(geometry.broken,[])
-  assert.ok(geometry.hero.h>=556);near(geometry.hero.h,556,'Home composition height');near(geometry.hero.b-geometry.guide.b,60,'Guide to artwork end');near(geometry.guide.y,384,'Guide inside artwork')
-  near(geometry.dots.y-geometry.info.b,16,'Info to pagination');near(geometry.cta.y-geometry.dots.b,32,'Pagination to action')
+  near(geometry.headerWordmark.x,24,'Header wordmark left edge')
+  near(geometry.headerAction.x+geometry.headerAction.w,width-20,'Header profile touch target right inset')
+  near(geometry.headerProfile.x+geometry.headerProfile.w,width-24,'Header visible profile right edge')
+  near(geometry.heroDescription.x+geometry.heroDescription.w,width-24,'Intro hero copy right edge')
+  near(geometry.guideCopy.x,24,'Intro guide copy left edge')
+  near(geometry.guideScroll.x+geometry.guideScroll.w,width-24,'Intro guide control right edge')
+  assert.ok(geometry.hero.h>=556);near(geometry.hero.h,scene==='first-visit'?584:556,'Home composition height');near(scene==='first-visit'?geometry.hero.b-geometry.guide.b:geometry.hero.b-geometry.guideCopy.b,scene==='first-visit'?0:64,'Guide to artwork end');near(geometry.guide.y,scene==='first-visit'?354:384,'Guide inside artwork')
+  near(geometry.dots.y-geometry.info.b,16,'Info to pagination');near(geometry.cta.y-geometry.dots.b,24,'Pagination to action')
   near(geometry.stage.y-geometry.recruitHeading.b,2,'Recruitment heading to stage');near(geometry.info.y-geometry.stage.b,-2,'Stage to info');near(geometry.jacket.w,48,'Recruitment sleeve');
   near(geometry.recentRows.y-geometry.recentHeading.b,20,'Recent heading to rows');near(geometry.completedRail.y-geometry.completedHeading.b,20,'Completed heading to cards');near(geometry.songGrid.y-geometry.recommendedHeading.b,20,'Recommended CTA to grid');
   near(geometry.cta.x,24,'CTA left');near(geometry.cta.w,width-48,'CTA fluid width')
   for(let i=1;i<geometry.sections.length;i++)near(geometry.sections[i].y-geometry.sections[i-1].b,76,'Section gap')
-  for(const h of geometry.heading){near(h.title.y+h.title.h/2,h.arrow.y+h.arrow.h/2,'Heading/arrow center');near(h.arrow.x+h.arrow.w,width-24,'Arrow right inset')}
+  for(const h of geometry.heading){if(!h.hasNote)near(h.title.y+h.title.h/2,h.arrow.y+h.arrow.h/2,'Heading/arrow center');near(h.arrow.x+h.arrow.w,width-24,'Arrow right inset')}
   for(const row of geometry.rows){near(row.box.h,98,'Two-tag row');near(row.thumb.w,80,'Thumbnail');for(const tag of row.tags){near(tag.h,24,'Tag height');assert.ok(tag.w<64,'Tags hug content')}}
   await page.screenshot({path:`${output}/${scene}-${width}-viewport.png`})
   const style=await page.addStyleTag({content:'.bottom-nav{visibility:hidden!important}'})
   await page.screenshot({path:`${output}/${scene}-${width}.png`,fullPage:true});await style.evaluate(n=>n.remove())
   if(scene==='first-visit'){
-   const registration=await page.evaluate(()=>{const r=s=>document.querySelector(s).getBoundingClientRect();const h=r('.v2-recommended .v2-home-section-heading'),b=r('.v2-profile-register'),n=r('.v2-recommended-registration p');return {titleGap:b.top-h.bottom,noteGap:n.top-b.bottom,gridGap:r('.v2-song-grid').top-n.bottom}})
-   near(registration.titleGap,16,'Recommended title to CTA');near(registration.noteGap,8,'CTA to supporting note');near(registration.gridGap,20,'Note to songs')
+   const registration=await page.evaluate(()=>{const r=s=>document.querySelector(s).getBoundingClientRect();const c=r('.v2-first-visit-copy'),g=r('.v2-intro-registration'),n=r('.v2-intro-registration p'),b=r('.v2-intro-registration .v2-profile-register');return {copyGap:g.top-c.bottom,actionGap:b.top-n.bottom}})
+   near(registration.copyGap,16,'Intro copy to registration');near(registration.actionGap,24,'Registration note to CTA')
   }
   const songsRail=page.locator('.v2-song-grid')
   await songsRail.scrollIntoViewIfNeeded()
