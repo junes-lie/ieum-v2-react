@@ -17,6 +17,11 @@ export function installPreparedSong({transport,voices,note,updatePlay,format}) {
  const button=document.createElement('button');button.id='prepared-song';button.textContent='선택한 음원 불러오기';$('#play').parentElement.before(button);
  const selector=document.createElement('select');selector.id='prepared-choice';selector.setAttribute('aria-label','준비된 음원');selector.innerHTML='<option value="chance">Chance · 개별 보컬</option><option value="slowly">천천히 물드는 우리 · 보컬 분리</option><option value="combined">천천히 물드는 우리 · 이전 합본</option><option value="today">오늘 같은 날 · 전체 믹스</option>';selector.value='chance';button.before(selector);const requested=new URLSearchParams(globalThis.location?.search||'').get('song');if(configs[requested]){selected=requested;selector.value=requested;}
  const credit=document.createElement('p');credit.id='song-credit';credit.style.cssText='font-size:12px;line-height:1.6;overflow-wrap:anywhere';credit.hidden=true;button.after(credit);
+ function showCredit(key){credit.hidden=key!=='chance'&&key!=='slowly';
+    credit.innerHTML='“Chance” — <a href="https://ccmixter.org/files/mindmapthat/31735" target="_blank" rel="noopener">Kara Square, Steven M Bryant, The3amAssociation</a> · <a href="https://creativecommons.org/licenses/by-nc/3.0/" target="_blank" rel="noopener">CC BY-NC 3.0</a> · 원곡 재생 / MP3 변환 및 스템 분석';
+    if(key==='slowly')credit.innerHTML='〈천천히 물드는 우리〉 — <a href="https://musebox.co.kr/t/천천히-물드는-우리/" target="_blank" rel="noopener">MUSEBOX</a> · CC0 1.0 · <a href="https://huggingface.co/Cyru5/MedleyVox" target="_blank" rel="noopener">MedleyVox (Cyru5)</a> AI 보컬 분리 · 원곡 재생 / 분리 음원 분석. 분리 음원에는 다른 목소리가 일부 남을 수 있습니다.';
+ }
+ showCredit(selected);
  const audition=document.createElement('select');audition.id='stem-audition';audition.setAttribute('aria-label','보컬 분리 청취');audition.hidden=true;credit.after(audition);
  function listen(index=-1){[mix,...stems].forEach((s,i)=>{s.playbackGain=i===index+1?1:0;s.gain?.gain.setTargetAtTime(s.playbackGain,transport.ctx.currentTime,.02);});}
  audition.onchange=()=>listen(Number(audition.value));
@@ -49,9 +54,9 @@ export function installPreparedSong({transport,voices,note,updatePlay,format}) {
     voices.forEach((v,i)=>{v.buffer=null;v.energy=0;v.bands={};v.muted=false;v.referenceRms=.12;v.card.querySelector('.mute').disabled=true;v.card.querySelector('.mute').setAttribute('aria-pressed','false');v.card.querySelector('.file-name').textContent=key==='slowly'?['보컬 A · AI 분리','보컬 B · AI 분리','반주','연결된 스템 없음'][i]:key==='chance'?['Steven M Bryant · 독립 보컬','Kara Square · 독립 보컬','반주 · 5개 악기 스템','연결된 스템 없음'][i]:config.title;v.card.querySelector('.descriptor').textContent=key==='slowly'?['파랑 · 분리 보컬 A에 반응','코랄 · 분리 보컬 B에 반응','크림 · 반주에 잔잔하게 반응','비교용 매듭 · 음원 미연결'][i]:key==='chance'?['파랑 · Steven의 목소리에 반응','코랄 · Kara의 목소리에 반응','크림 · 반주에 잔잔하게 반응','비교용 매듭 · 음원 미연결'][i]:'공유 음원 분석';});
     transport.setItems(voices.filter(v=>v.active),false);
     $('#seek').max=transport.duration;$('#duration').textContent=format(transport.duration);label();cues.hidden=key!=='chance';credit.hidden=key!=='chance'&&key!=='slowly';
-    credit.innerHTML='“Chance” — <a href="https://ccmixter.org/files/mindmapthat/31735" target="_blank" rel="noopener">Kara Square, Steven M Bryant, The3amAssociation</a> · <a href="https://creativecommons.org/licenses/by-nc/3.0/" target="_blank" rel="noopener">CC BY-NC 3.0</a> · 원곡 재생 / MP3 변환 및 스템 분석';
+    showCredit(key);
     audition.hidden=key!=='chance'&&key!=='slowly';audition.innerHTML='<option value="-1">원곡 듣기</option><option value="0">'+(key==='chance'?'Steven':'보컬 A')+'만 듣기</option><option value="1">'+(key==='chance'?'Kara':'보컬 B')+'만 듣기</option><option value="2">반주만 듣기</option>';audition.value='-1';
-    if(key==='slowly')credit.innerHTML='〈천천히 물드는 우리〉 — <a href="https://musebox.co.kr/t/천천히-물드는-우리/" target="_blank" rel="noopener">MUSEBOX</a> · CC0 1.0 · <a href="https://huggingface.co/Cyru5/MedleyVox" target="_blank" rel="noopener">MedleyVox (Cyru5)</a> AI 보컬 분리 · 원곡 재생 / 분리 음원 분석. 분리 음원에는 다른 목소리가 일부 남을 수 있습니다.';
+
     if(globalThis.history?.replaceState){const url=new URL(location.href);url.searchParams.set('song',key);history.replaceState(null,'',url);}
     note(key==='chance'?'Chance · 두 보컬의 독립 스템으로 반응합니다. 전주에는 반주에 맞춰 잔잔하게 움직입니다.':$('#source-label').textContent);return true;
    }catch(e){selector.value=selected;note('음원을 불러오지 못했습니다: '+e.message);return false;}
