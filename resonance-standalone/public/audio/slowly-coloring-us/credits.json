@@ -1,0 +1,49 @@
+{
+  "title": "천천히 물드는 우리",
+  "artist": "MUSEBOX",
+  "source": "https://musebox.co.kr/t/천천히-물드는-우리/",
+  "license": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "sourceMetadata": "feature/figma-v2-integration src/licensedDuetAudio.json @ 42dc59d",
+  "model": {
+    "name": "MedleyVox vocals 238",
+    "author": "Cyru5 (Carson Evans)",
+    "url": "https://huggingface.co/Cyru5/MedleyVox",
+    "license": "CC BY 4.0",
+    "checkpointSHA256": "793a3cbdadfdee2f833301d925938cd184f08b79d53a7e65c7ff01d5f2c6b4d5",
+    "configURL": "https://huggingface.co/Cyru5/MedleyVox/resolve/main/vocals%20238/vocals.json"
+  },
+  "method": "Full-song mono 24kHz Conv-TasNet STFT inference with EMA weights, two source mixture consistency; no pitch-band or timeline-based singer assignment. MP3 96kbps exports. Existing backing copied byte-identically. Original full mix is audible by default.",
+  "mapping": {
+    "blue": "AI separated vocal A (model output 0)",
+    "coral": "AI separated vocal B (model output 1)",
+    "cream": "Existing separated backing"
+  },
+  "limitations": "AI estimates, not original singer stems. Cross-voice leakage and identity consistency need listening review; A/B are not verified singer identities.",
+  "verification": {
+    "durationSeconds": 397.2,
+    "sourceCorrelation": 0.06970115285251928,
+    "listeningAcceptance": "pending"
+  },
+  "assets": {
+    "vocal-a.mp3": {
+      "bytes": 4767308,
+      "sha256": "9e7f92e92c54fb04d848a67b77a87d89f5e0035efc87a5ef633ebbb3b93dad04"
+    },
+    "reference.mp3": {
+      "bytes": 9177424,
+      "sha256": "1f2270ac18af16028e0a86488ce88898a652c5fa13895d4db18948acc5a4f4c4"
+    },
+    "vocal-b.mp3": {
+      "bytes": 4767308,
+      "sha256": "a9b639d15ed5ca62e211a445316cac11c8a5b9caf1101df4b9c1bf17afb96d33"
+    },
+    "backing.mp3": {
+      "bytes": 9534529,
+      "sha256": "fd574d8e5a2feb7775d0a518428e6d8b7fcf82af74056e52e8e05f22cf8e3cf2"
+    },
+    "vocals.mp3": {
+      "bytes": 9534529,
+      "sha256": "240c71d510f687eaeb5fb4d883704de6a0ec6c6946849face57f2171ce72d346"
+    }
+  }
+}

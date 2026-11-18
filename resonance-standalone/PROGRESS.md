@@ -1,6 +1,6 @@
 # IEUM Resonance — 현재 작업 상태
 
-최종 갱신: 2026-11-11 KST. **최신 사용자 결정: 2D·3D 모두 색마다 한 겹으로 통일. 선과 입자를 함께 사용한다. 시각 완성 승인은 아직 없다.**
+최종 갱신: 2026-11-13 KST. **최신 사용자 결정: 2D·3D 모두 색마다 한 겹으로 통일. 선과 입자를 함께 사용한다. 시각 완성 승인은 아직 없다.**
 
 ## 1. 현재 작업본
 
@@ -266,9 +266,30 @@
 
 - 4w 배포 확인: 최종 코드 0566ba3ed2cc278257561bae8e8b41b2d3af80f1, dpl_a7bHA1GccN8j47rLPRXpBHKW7gVz READY. https://ieum-resonance-preview-8p7hqn3cb-junes-lie.vercel.app/ 기본 HTML HTTP200. 첫 연결 커밋 c66a2db 뒤 로딩 안내의 전체 믹스 표현을 합쳐진 보컬로 바로잡아 후속 Git 배포가 발생했다. CLI/API 중복 배포 없음. 대용량 음원 endpoint 검증은 Vercel fetch Transport closed로 실패했으므로 원격 음원 재생 성공을 주장하지 않는다. 실제 청취 및 개인별 분리는 남아 있다.
 
+## 4x. Chance 독립 보컬 연결 — 2026-11-13 KST
+- 사용자 승인 곡 Chance(Kara Square / Steven M Bryant / The3amAssociation), CC BY-NC 3.0. 제작자가 제공한 두 독립 보컬 WAV 및 악기 5개를 실제 취득. 원곡 mix는 1회 출력, Steven/Kara/반주는 출력 gain 0 분석 소스. 파랑=Steven, 코랄=Kara, 크림=반주이며 네 번째 색은 미연결로 명시한다. 기존 조형·24선·스파클·모션 커널은 수정하지 않았다.
+- 원곡과 합산 WAV의 세 구간 상호상관에서 일관된 22.125ms 지연 확인(r=.868/.879/.871). 분석 스템에 44.1kHz 기준 976샘플 지연 및 끝 무음을 추가해 4개 파일의 decoded length=176.352653초로 정렬했다. 원본/배포파일 SHA256 및 출처·크레딧·변환 내역은 public/audio/chance/credits.json. 외부 hotlink 없이 동일 배포에서 로드하며 추가 음원 총량 약 9.9MB.
+- 반주에 따른 약한 기본 움직임 위에 가수별 실제 RMS/FFT를 전달한다. 기존 flow saturation(.18) 아래로 보컬 입력을 조정하여 강약을 보존한다. 가수 식별을 시간표로 흉내 내지 않는다. 전주/Steven/Kara/함께 부르기 탐색 버튼, 출처/라이선스 UI 추가. 이전 한국어 듀엣·오늘 같은 날은 선택 UI와 원본 파일로 보존. 데모/개인 파일 전환도 유지.
+- 로컬 검증: 48개 분석/기하, 모션 재현/10분 계산 finite, 실제 GLSL 컴파일, 빌드·두 진입점 동일 통과. qa/prepared-song.mjs의 입력 분리/캐시/기존곡/데모 복귀/로딩 중 업로드 취소 통과.
+- qa/chance-audio.mjs: 실제 배포 MP3 디코딩 → production Transport RMS 및 입력 매핑 → production flow 전체 곡 계산. Web Audio 노드/시계/FFT 응답은 모의이므로 브라우저 검증과 구분한다. 독창 4구간에서 해당 보컬 에너지 6.6–8.5배, 높이장 RMS 7.3–8.4배. 전주 양쪽 약한 움직임, 합창 양쪽 활성, 단일 audible mix, seek/pause/loop 소스 정리 통과.
+- 로컬 Chromium은 process_singleton_posix.cc:297 socket() failed: Operation not permitted로 시작 실패. 사용자가 제공한 GitHub Actions 실행 42993732342의 별도 검증 경로를 확인했다. qa/chance-browser.cjs로 이번 변경의 실제 PC1100/모바일390·독창 교대·45초 안정성·선/입자 캡처를 GitHub Actions에서 검증할 예정이며 결과를 후속 기록한다. 아직 새 렌더/청취/시각 승인으로 보고하지 않는다.
+- 다음 시작: 이번 Chance 커밋과 같은 소스의 CI 브라우저 결과/캡처를 확인한 뒤 feature 브랜치의 단일 Git 자동 배포 및 자산 정합성을 확인한다. 기존 main/React/다른 Vercel 프로젝트/Notion/Figma는 변경하지 않는다.
+
+## 4y. 두 듀엣 비교 버전 — 2026-11-16 KST
+- 사용자 요청: ① 천천히 물드는 우리 보컬 분리 버전 ② Chance 적용 버전 모두 제공. 인계에서 빠졌던 Chance 작업은 `qa/chance-browser-20261113`의 `47ee3d0`에 남아 있었다. standalone 디렉터리의 코드·자산·검사를 가져왔으며 QA workflow나 다른 브랜치는 변경하지 않았다.
+- 공통 실행본에서 `?song=slowly` / `?song=chance`로 곡을 선택한다. 재생 전에는 자동 다운로드·자동 재생하지 않는다. 이전 합본은 `?song=combined`, 오늘 같은 날은 `?song=today`로 보존했다. 곡 선택 UI 및 원곡/보컬 A/보컬 B/반주 개별 청취 선택을 제공한다.
+- 한국어 듀엣의 기존 combined vocals 397.2초 전체를 Cyru5/MedleyVox `vocals 238` EMA 모델로 실제 추론했다. mono 24kHz, Conv-TasNet STFT, 전체 곡 단일 추론 + mixture consistency. 임의 시간표/음역 필터/합본 복제를 보컬 분리로 표시하지 않았다. 결과는 `public/audio/slowly-coloring-us/vocal-a.mp3`, `vocal-b.mp3`. A/B는 모델 출력이며 실제 가수 이름/성별로 확정하지 않는다.
+- 기존 반주는 통합 브랜치 `42dc59d`에서 byte-identical 복사. 원곡 1개만 출력하고 두 보컬과 반주는 출력 gain 0의 독립 분석 입력으로 재생한다. 개별 청취 선택 때만 선택 소스를 출력한다. 원곡/분리 파일의 길이는 모두 397.2초. 모델·원본·자산 SHA256 및 한계는 `public/audio/slowly-coloring-us/credits.json`. 모델 자체는 저장소에 넣지 않았고 재현 스크립트는 `qa/separate-duet.py`.
+- 파랑=A 또는 Steven, 코랄=B 또는 Kara, 크림=반주. 전주/간주의 작은 기본 움직임과 실제 보컬별 RMS/FFT 반응을 함께 사용한다. 기존 조형·24선·색별 굴곡·스파클·flow 모션 커널·모바일 카메라 코드는 변경하지 않았다.
+- 수치 검증: 한국어 분리 소스 상관 .06970, 합산 복원 최대 오차 1.20e-7(인코딩 전). 전체 음원 MP3 디코딩 후 production Transport/flow 입력 검사에서 A/B 독창 4구간 상대 반응 약 3.16–6.42배, 합창 양쪽 활성, 전주 잔잔함, seek/pause/loop·출력 1개 검사 통과. 이 검사는 오디오 노드/시계가 모의이며 실제 브라우저 검사와 구분한다.
+- 48개 분석·기하, 10분 모션 계산·동일 입력 재현·GLSL 컴파일, build·준비곡 전환/캐시/업로드 취소 검사가 통과했다. 초기 브라우저 QA의 2D morph 정수 일치 가정과 느린 테스트 IPC 때문에 독창 구간을 넘기던 샘플 수집을 수정했다. 렌더/배포 결과는 검증 종료 후 아래에 기록한다.
+- 한계: AI 분리는 원본 독립 stem이 아니다. 상대 목소리 누출·전체 곡 가수 정체성 일관성 및 청취 승인은 미확인이다. 실제 iPhone 성능·터치·장시간 재생과 최종 미적 승인도 미완료다.
+
+- 실제 Chromium 141/SwiftShader 자동 검사 완료: 1100px DPR1·390px DPR2에서 두 곡 독창/합창의 개별 입력, 45초 재생 자원 유지, 2D/3D·입자·모션 감소, 탐색·정지 소스 해제, A/B 단독 청취 라우팅, 이전곡 전환, song URL 및 새로고침 유지 통과. JS/WebGL console 오류 0. 양쪽 크기의 실제 캡처에서 선과 입자·조형 표시 확인. 이 소프트웨어 렌더러 실행은 실제 iPhone 성능 검증이나 청취 승인으로 간주하지 않는다. 빌드 HTML SHA256 `ee8b6d99b2bcc8488eddcf9c85881696544b737786609aee9272d8fcd6370972`.
+
 ## 5. 다음 시작 지점 / 범위
 
-1. 최신 한 겹 합성본에서 이어간다. 실제 Chromium·모바일 에뮬레이션 렌더와 회귀 검증은 위 범위까지 수행했다. 예전 두 겹 또는 2D 두 겹/3D 한 겹으로 돌아가지 않는다.
+1. 최신 두 곡 비교 연결(4y)에서 이어간다. 한국어 AI 분리의 청취/가수 일관성을 우선 확인한다. 최신 한 겹 합성본에서 이어간다. 실제 Chromium·모바일 에뮬레이션 렌더와 회귀 검증은 위 범위까지 수행했다. 예전 두 겹 또는 2D 두 겹/3D 한 겹으로 돌아가지 않는다.
 2. 같은 경로를 유지하며 교차부의 깊이·선 밀도·펼쳐짐/모임과 색별 입자를 개선한다.
 3. 선/입자·2D↔3D·실제 오디오·2–4명·재현성·장시간 안정성을 검증한다.
 4. `feature/resonance-standalone`의 `resonance-standalone/`만 수정한다. main·기존 React 앱·Production·Notion·Figma는 변경하지 않는다. Computer Use 금지.

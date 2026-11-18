@@ -1,0 +1,49 @@
+{
+  "title": "Chance",
+  "source": "https://ccmixter.org/files/mindmapthat/31735",
+  "license": "https://creativecommons.org/licenses/by-nc/3.0/",
+  "credit": "Chance by Kara Square (Kara E Sherman), featuring Steven M Bryant and The3amAssociation.",
+  "adaptations": "MP3 transcoding; five instrumental stems mixed with equal 0.2 gain for analysis only. Original full mix is audible. No singer separation AI used.",
+  "mapping": {
+    "blue": "Steven M Bryant",
+    "coral": "Kara Square",
+    "cream": "Instrumental backing"
+  },
+  "sourceHashes": {
+    "Chance_1.zip": "3c2e69b2e86c81b10fc5130dce1cd572424e9c83b1c2fcd7a9a569a8bbc01dd7",
+    "Chance_3.zip": "cd8b0c3e7bd2306912121ba11d5b1f157f61e20ff543ae91a90880ed631855df",
+    "Chance.mp3": "dbcdf8c582b6cc43ca2e7dedd80c5a76e3fdfb29fd8ee9c9ee27ae32dba07821",
+    "Chance.zip": "9e54d8923c248494f5ef82928ce15fd962e8733427b32142c4bc76fc2daaad66",
+    "drums-bass/drums.wav": "527920edc9e1d30acc1e7ea0b35f9344e512d2fa327de05e40bb8baadeeffe6c",
+    "drums-bass/bass.wav": "28f6bba1d55026719f4ef190ec721c4631e4e51c5ac6794ca1c38a042ead6713",
+    "cello-piano/solo-cello.wav": "3fbf1e1f10374e4417e869496609584ab428d26649643cba139be4fbe2244559",
+    "cello-piano/piano.wav": "91618172f8d7d4096a3752c6b0f70a8441c1539393c83036c0ed55843e4bbf30",
+    "cello-piano/cello.wav": "bab4416354614269b66eed1401646586b7aec36aa6f2fb2ae545df943b4a83a4",
+    "vocals/Chance-Lyrics.pdf": "e9497def24eed55403d26f674f251838bf117dd2eba500a0f295dcc6d230aa22",
+    "vocals/2SteveVOX.wav": "315883f70088fe5110dc21574ada63748cc6c735b58ca2ea36922d12eaddb9f1",
+    "vocals/2KaraVOX.wav": "91078ac137668e9b1c89c10b7197bde7dec106461a82d299c94c25032600cd54"
+  },
+  "assets": {
+    "reference.mp3": {
+      "bytes": 2822829,
+      "sha256": "3e51df935f114c0714cdaf1feced689f7beecf7b18d405000fcd617a7042486b"
+    },
+    "backing.mp3": {
+      "bytes": 2822637,
+      "sha256": "41db16f81af719a79d03e3369fb048bd7d4efbf23a6fb1ea39a4971817a01812"
+    },
+    "steven.mp3": {
+      "bytes": 2117018,
+      "sha256": "08ee5f2a321f0d53434d189d2faade301321b0c27b52496c94b5cc01965cdb33"
+    },
+    "kara.mp3": {
+      "bytes": 2117018,
+      "sha256": "ee8e641d3b0bdf7742bbb806c7856662dc72b3f1684f275f47b22b1022b20d2a"
+    }
+  },
+  "alignment": {
+    "delaySamples44100": 976,
+    "durationSamples44100": 7777152,
+    "evidence": "Full mix vs summed original stems waveform cross-correlation at 8kHz: consistent +0.022125s in 10\u201360, 70\u2013120, 120\u2013155s windows (r=.868/.879/.871). Stems delayed and silence padded to mix duration."
+  }
+}
