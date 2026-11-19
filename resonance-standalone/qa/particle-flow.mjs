@@ -14,6 +14,11 @@ const a=run(.7),b=run(.7),other=run(1.9);
 assert.deepEqual(a.wave,b.wave);assert.notDeepEqual(a.wave,other.wave);
 assert.ok(a.minMotion>.1);assert.ok(a.maxDelta<.12);
 assert.ok(Math.abs(sampleFlow(a.wave,0)-sampleFlow(a.wave,Math.PI*2))<1e-9);
+const paused=createFlow(.7),pausedWave=new Float32Array(64);
+for(let i=0;i<180;i++){stepFlow(paused,1/60,true,.7,{low:.8,mid:.7,high:.5});fillFlow(pausedWave,paused);}
+const pauseClock=paused.clock;
+for(let i=0;i<240;i++){stepFlow(paused,1/60,false,0,{});fillFlow(pausedWave,paused);}
+assert.equal(paused.clock,pauseClock,'A stopped transport must not advance the hidden flow phase.');
 // Different original heights retain their ordering at the same spatial field.
 for(let f=-1.2;f<=1.2;f+=.1){assert.ok(flowHeight(1.5,f,1)>flowHeight(.5,f,1));assert.equal(flowHeight(1.5,f,0),.018);}
 for(let i=0;i<360;i++){stepFlow(a.s,1/60,false,0,{});fillFlow(a.wave,a.s);}
@@ -23,4 +28,4 @@ const quiet=run(.7,60,15,{low:.8,mid:.05,high:.05});assert.ok(Math.max(...b.wave
 const rates=[30,60,120].map(hz=>run(.7,hz));
 const rateError=Math.max(...rates[0].wave.map((x,i)=>Math.abs(x-rates[2].wave[i])));assert.ok(rateError<.02);
 const long=run(.7,30,600);assert.ok(long.minMotion>.1);
-console.log(JSON.stringify({deterministic:true,distinctVoices:true,all64PositionsMove:b.minMotion,maxFrameDelta:b.maxDelta,frameRateError:rateError,restLift:a.s.lift,tenMinuteFinite:true,originalHeightOrdering:true,visualApproval:false},null,2));
+console.log(JSON.stringify({deterministic:true,distinctVoices:true,all64PositionsMove:b.minMotion,maxFrameDelta:b.maxDelta,frameRateError:rateError,restLift:a.s.lift,pauseClockDrift:paused.clock-pauseClock,tenMinuteFinite:true,originalHeightOrdering:true,visualApproval:false},null,2));

@@ -1,0 +1,30 @@
+// Actual Chromium/SwiftShader check for flow phase stability across pause/resume.
+const fs=require('fs'),path=require('path'),assert=require('assert/strict'),http=require('http');
+const {chromium}=require(process.env.IEUM_PLAYWRIGHT_PATH||'playwright');
+const root=path.resolve(process.env.IEUM_G01_ROOT||path.join(__dirname,'../public'));
+const out=path.resolve(process.env.IEUM_QA_OUTPUT||'/tmp/ieum-g01-pause-resume');
+const port=Number(process.env.IEUM_QA_PORT||8791),expectFreeze=process.env.IEUM_EXPECT_PAUSE_FREEZE!=='0';
+fs.mkdirSync(out,{recursive:true});
+const server=http.createServer((q,r)=>{const pathname=decodeURIComponent(new URL(q.url,'http://localhost').pathname);const file=path.resolve(root,'.'+(pathname==='/'?'/index.html':pathname));if(!file.startsWith(root+path.sep)){r.writeHead(403);return r.end();}try{r.setHeader('Content-Type',file.endsWith('.mp3')?'audio/mpeg':file.endsWith('.json')?'application/json':'text/html');r.end(fs.readFileSync(file));}catch{r.writeHead(404);r.end();}});
+(async()=>{let browser,context;const errors=[],failedResources=[];try{
+ await new Promise((resolve,reject)=>{server.once('error',reject);server.listen(port,'127.0.0.1',resolve);});
+ browser=await chromium.launch({headless:true,executablePath:process.env.IEUM_CHROMIUM_PATH||'/usr/bin/chromium',args:['--no-sandbox','--use-angle=swiftshader','--enable-unsafe-swiftshader','--autoplay-policy=no-user-gesture-required']});
+ context=await browser.newContext({viewport:{width:390,height:844},deviceScaleFactor:2,recordVideo:{dir:out,size:{width:390,height:844}}});
+ const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{if(r.status()>=400)failedResources.push(`${r.status()} ${r.url()}`);});page.on('console',m=>{if(m.type()==='error'&&!m.text().startsWith('Failed to load resource:'))errors.push(m.text());});
+ await page.goto(`http://127.0.0.1:${port}/?composite=1&compareMotion=1&motionStudy=flow`);
+ await page.waitForFunction(()=>window.ieumDebug?.view?.layers?.length);
+ await page.click('#demo',{force:true});await page.click('#play',{force:true});
+ await page.waitForFunction(()=>ieumDebug.transport.playing&&ieumDebug.view.layers.every(l=>l.audioFlow));
+ await page.waitForTimeout(2200);await page.locator('#stage').scrollIntoViewIfNeeded();
+ const before=await page.evaluate(()=>ieumDebug.view.layers.map(l=>l.audioFlow.clock));
+ await page.click('#play',{force:true});await page.waitForFunction(()=>!ieumDebug.transport.playing);await page.waitForTimeout(2400);
+ const after=await page.evaluate(()=>ieumDebug.view.layers.map(l=>l.audioFlow.clock));
+ const drift=after.map((x,i)=>x-before[i]),maxDrift=Math.max(...drift.map(Math.abs));
+ if(expectFreeze)assert.ok(maxDrift<1e-9,`paused flow drifted ${maxDrift}`);else assert.ok(maxDrift>.01,`baseline drift was not reproduced: ${maxDrift}`);
+ await page.click('#play',{force:true});await page.waitForFunction(()=>ieumDebug.transport.playing);await page.waitForTimeout(2200);
+ const resumed=await page.evaluate(()=>({clock:ieumDebug.view.layers.map(l=>l.audioFlow.clock),finite:ieumDebug.view.layers.every(l=>l.pos.every(Number.isFinite)),sources:ieumDebug.transport.sources.length}));
+ assert.ok(resumed.finite);assert.ok(resumed.sources>0);assert.deepEqual(errors,[]);
+ const video=page.video();await page.close();await context.close();context=null;const videoPath=await video.path();
+ const report={expectFreeze,before,after,drift,maxDrift,resumed,errors,failedResources,video:path.basename(videoPath),scope:'390px Chromium/SwiftShader synthetic demo; same play-pause-resume input. Not physical-device or aesthetic approval.'};
+ fs.writeFileSync(path.join(out,'report.json'),JSON.stringify(report,null,2));console.log(JSON.stringify(report));
+ }finally{if(context)await context.close();if(browser)await browser.close();server.close();}})().catch(e=>{console.error(e);process.exitCode=1;});

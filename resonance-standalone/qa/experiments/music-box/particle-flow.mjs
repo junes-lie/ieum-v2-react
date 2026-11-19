@@ -18,7 +18,7 @@ function integrate(state,dt,playing,energy,bands={},freeze=false){
  // Original .2–.5/frame clock, followed by *.05 in curl coordinates.
  // Convert the spatial clock to seconds (60 Hz), keeping speed continuous.
  const speed=.6+.9*clamp((state.low-.6)/.4);
- if(!freeze)state.clock+=dt*(playing?speed:.09);
+ if(!freeze&&playing)state.clock+=dt*speed;
  return state;
 }
 function fillStep(wave,state){
